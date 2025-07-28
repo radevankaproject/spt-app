@@ -14,6 +14,12 @@ class ParkingLocation extends Model
         'road_section_id',
         'name',
         'status',
+        'daily_deposit', // ✅ Tambahkan ini
+        'latitude',      // ✅ Tambahkan ini
+        'longitude',     // ✅ Tambahkan ini
+        'image',         // ✅ Tambahkan ini
+        'proposal_document', // ✅ Tambahkan ini
+        'official_report_document', // ✅ Tambahkan ini
     ];
 
     //Relaso RoadSection

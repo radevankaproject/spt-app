@@ -3,12 +3,10 @@
 @section('title', 'Tambah Lokasi Parkir Baru')
 
 @push('styles')
-    {{-- CSS untuk Select2 --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 @endpush
 
 @section('content')
-    {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">Tambah Lokasi Parkir Baru</h4>
         <div class="d-flex align-items-center">
@@ -23,7 +21,6 @@
         </div>
     </div>
 
-    {{-- Menampilkan Pesan Error Validasi --}}
     @if ($errors->any())
         <div class="alert alert-danger" role="alert">
             <p class="mb-0"><strong>Oops! Terjadi beberapa kesalahan:</strong></p>
@@ -37,54 +34,92 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('masterdata.parking-locations.store') }}" method="POST">
+            <form action="{{ route('masterdata.parking-locations.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row g-6">
-                    <!-- Pilihan Zona -->
+                    <div class="col-12">
+                        <h5 class="mb-0">Informasi Dasar</h5>
+                        <hr class="mt-2">
+                    </div>
                     <div class="col-md-6">
                         <label class="form-label">1. Pilih Zona</label>
                         <div class="d-flex pt-2">
-                            <div class="form-check me-4">
-                                <input name="zone_filter" class="form-check-input" type="radio" value="Zona 2"
-                                    id="zone2" />
-                                <label class="form-check-label" for="zone2"> Zona 2 </label>
-                            </div>
-                            <div class="form-check">
-                                <input name="zone_filter" class="form-check-input" type="radio" value="Zona 3"
-                                    id="zone3" />
-                                <label class="form-check-label" for="zone3"> Zona 3 </label>
-                            </div>
+                            <div class="form-check me-4"><input name="zone_filter" class="form-check-input" type="radio"
+                                    value="Zona 2" id="zone2" /><label class="form-check-label" for="zone2"> Zona
+                                    2</label></div>
+                            <div class="form-check"><input name="zone_filter" class="form-check-input" type="radio"
+                                    value="Zona 3" id="zone3" /><label class="form-check-label" for="zone3"> Zona
+                                    3</label></div>
                         </div>
                     </div>
 
-                    <!-- Pilihan Ruas Jalan -->
                     <div class="col-md-6">
                         <label for="road_section_id" class="form-label">2. Pilih Ruas Jalan</label>
-                        {{-- Dropdown ini akan diisi oleh JavaScript --}}
                         <select class="form-select select2" id="road_section_id" name="road_section_id" required disabled>
                             <option value="">Pilih Zona terlebih dahulu</option>
                         </select>
-                        @error('road_section_id')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
                     </div>
 
-                    <!-- Nama Lokasi Parkir -->
+                    <div class="col-12 mt-4">
+                        <h5 class="mb-0">Detail Lokasi</h5>
+                        <hr class="mt-2">
+                    </div>
                     <div class="col-12">
-                        <div class="form-floating form-floating-outline">
-                            <input type="text" class="form-control" id="name" name="name"
-                                placeholder="Contoh: Depan Toko ABC" value="{{ old('name') }}" required />
-                            <label for="name">3. Masukkan Nama Lokasi Parkir</label>
+                        <div class="form-floating form-floating-outline"><input type="text" class="form-control"
+                                id="name" name="name" placeholder="Contoh: Depan Toko ABC"
+                                value="{{ old('name') }}" required /><label for="name">Nama Lokasi Parkir</label>
                         </div>
-                        @error('name')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline"><input type="number" class="form-control"
+                                id="daily_deposit" name="daily_deposit" placeholder="Contoh: 15000"
+                                value="{{ old('daily_deposit') }}" required min="0" /><label
+                                for="daily_deposit">Setoran / Hari (Rp)</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline"><input type="text" class="form-control"
+                                id="latitude" name="latitude" placeholder="Contoh: 0.507067"
+                                value="{{ old('latitude') }}" /><label for="latitude">Latitude</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline"><input type="text" class="form-control"
+                                id="longitude" name="longitude" placeholder="Contoh: 101.447779"
+                                value="{{ old('longitude') }}" /><label for="longitude">Longitude</label></div>
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <h5 class="mb-0">Dokumen Pendukung</h5>
+                        <hr class="mt-2">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Foto Lokasi</label>
+                        <div class="card">
+                            <div class="card-body text-center p-3"><img
+                                    src="{{ asset('assets/img/illustrations/image-light.png') }}" alt="location-placeholder"
+                                    class="d-block rounded-3 mx-auto mb-3" id="image-preview"
+                                    style="max-height: 120px;" /><label for="image-upload"
+                                    class="btn btn-sm btn-primary"><i class="icon-base ri-upload-2-line me-1"></i>Pilih
+                                    Foto<input type="file" id="image-upload" name="image"
+                                        class="account-file-input" hidden accept="image/png, image/jpeg" /></label>
+                                <div id="image-error" class="mt-2 text-danger text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="proposal_document" class="form-label">PDF Pengajuan (Opsional)</label>
+                        <input class="form-control" type="file" id="proposal_document" name="proposal_document"
+                            accept=".pdf">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="official_report_document" class="form-label">PDF Berita Acara (Opsional)</label>
+                        <input class="form-control" type="file" id="official_report_document"
+                            name="official_report_document" accept=".pdf">
                     </div>
                 </div>
 
-                <!-- Tombol Aksi -->
                 <div class="pt-6 text-end">
-                    <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-outline-secondary">Batal</a>
+                    <a href="{{ route('masterdata.parking-locations.index') }}"
+                        class="btn btn-outline-secondary">Batal</a>
                     <button type="submit" class="btn btn-primary">Simpan Lokasi</button>
                 </div>
             </form>
@@ -93,37 +128,29 @@
 @endsection
 
 @push('vendors-js')
-    {{-- Pastikan jQuery dimuat sebelum Select2 --}}
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
 @endpush
 
 @push('scripts')
     <script>
-        // Gunakan $(function() { ... }) yang merupakan shortcut untuk $(document).ready()
         $(function() {
+            // --- Logika Select2 Dinamis (tidak berubah) ---
             const roadSectionSelect = $('#road_section_id');
-
-            // Inisialisasi Select2
             if (roadSectionSelect.length) {
                 roadSectionSelect.wrap('<div class="position-relative"></div>').select2({
                     placeholder: 'Pilih Ruas Jalan',
                     dropdownParent: roadSectionSelect.parent()
                 });
             }
-
-            // Event listener untuk radio button zona
             $('input[name="zone_filter"]').on('change', function() {
                 const selectedZone = $(this).val();
-
                 roadSectionSelect.empty().append('<option value="">Memuat...</option>').prop('disabled',
                     true).trigger('change');
-
                 if (selectedZone) {
-                    // Gunakan nama route yang benar dari file web.php Anda
                     const url = `{{ route('masterdata.road-sections.getByZone', ':zone') }}`.replace(
                         ':zone', selectedZone);
-
                     $.ajax({
                         url: url,
                         type: 'GET',
@@ -133,26 +160,66 @@
                                 '<option value="">Pilih Ruas Jalan</option>').prop(
                                 'disabled', false);
                             if (data.length > 0) {
-                                $.each(data, function(key, value) {
+                                $.each(data, (key, value) => {
                                     roadSectionSelect.append($('<option></option>')
                                         .attr('value', value.id).text(value.name));
                                 });
                             } else {
                                 roadSectionSelect.empty().append(
-                                    '<option value="">Tidak ada ruas jalan di zona ini</option>'
-                                    ).prop('disabled', true);
+                                    '<option value="">Tidak ada ruas jalan</option>').prop(
+                                    'disabled', true);
                             }
                             roadSectionSelect.trigger('change');
                         },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            console.error("AJAX Error:", textStatus, errorThrown);
+                        error: function() {
                             roadSectionSelect.empty().append(
-                                '<option value="">Gagal memuat data</option>').prop(
-                                'disabled', true).trigger('change');
+                                '<option value="">Gagal memuat</option>').prop('disabled',
+                                true).trigger('change');
                         }
                     });
                 }
             });
+
+            // --- Logika Upload & Kompresi Gambar ---
+            const fileInput = document.getElementById('image-upload');
+            const imagePreview = document.getElementById('image-preview');
+            const errorDiv = document.getElementById('image-error');
+            const defaultSrc = "{{ asset('assets/img/illustrations/image-light.png') }}";
+
+            if (fileInput) {
+                fileInput.addEventListener('change', async (e) => {
+                    const imageFile = e.target.files[0];
+                    if (!imageFile) {
+                        imagePreview.src = defaultSrc;
+                        return;
+                    }
+                    errorDiv.textContent = '';
+                    if (!['image/jpeg', 'image/png'].includes(imageFile.type)) {
+                        errorDiv.textContent = 'Hanya JPG/PNG.';
+                        fileInput.value = '';
+                        imagePreview.src = defaultSrc;
+                        return;
+                    }
+                    const options = {
+                        maxSizeMB: 0.3,
+                        maxWidthOrHeight: 1024,
+                        useWebWorker: true
+                    };
+                    try {
+                        const compressedFile = await imageCompression(imageFile, options);
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(new File([compressedFile], imageFile.name, {
+                            type: compressedFile.type
+                        }));
+                        fileInput.files = dataTransfer.files;
+                        imagePreview.src = URL.createObjectURL(compressedFile);
+                    } catch (error) {
+                        errorDiv.textContent = "Gagal kompres.";
+                        fileInput.value = '';
+                        imagePreview.src = defaultSrc;
+                    }
+                });
+            }
         });
     </script>
 @endpush

@@ -65,8 +65,8 @@
                     <div class="col-md-6">
                         <div class="form-floating form-floating-outline">
                             <input type="text" class="form-control" id="app_name" name="app_name"
-                                placeholder="Nama Website" value="{{ old('name', $profile->app_name) }}" required />
-                            <label for="name">Nama Website</label>
+                                placeholder="Nama Website" value="{{ old('app_name', $profile->app_name) }}" required />
+                            <label for="app_name">Nama Website</label>
                         </div>
                     </div>
                     <div class="col-md-6">

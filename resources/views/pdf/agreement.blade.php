@@ -481,6 +481,26 @@
                 tanggal tersebut di atas dalam rangkap 2 (dua) bermaterai cukup,masing-masing mempunyai kekuatan hukum
                 yang sama.</p>
 
+            <div style="margin-top: 40px; page-break-inside: avoid;">
+                <table width="100%">
+                    <tr>
+                        <td width="70%">
+                            {{-- Biarkan kosong atau isi dengan catatan tambahan --}}
+                        </td>
+                        <div style="position: absolute; bottom: 50px; right: 50px; text-align: center;">
+                            @if ($agreement->verification_code)
+                                <div style="display: inline-block; text-align: center;">
+                                    {{-- ✅ PERBAIKAN UTAMA DI SINI: Gunakan SVG yang di-encode --}}
+                                    <img src="data:image/svg+xml;base64,{{ base64_encode(QrCode::size(90)->generate(route('public.agreement.verify', $agreement->verification_code))) }}"
+                                        alt="QR Code">
+                                    <p style="font-size: 8pt; margin-top: 5px;">Pindai untuk Verifikasi</p>
+                                </div>
+                            @endif
+                        </div>
+                    </tr>
+                </table>
+            </div>
+
             <div class="signature-block">
 
                 <table width="100%" style="page-break-inside: avoid;">

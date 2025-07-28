@@ -12,6 +12,7 @@ class Agreement extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'verification_code',
         'agreement_number',
         'leader_id',
         'field_coordinator_id',

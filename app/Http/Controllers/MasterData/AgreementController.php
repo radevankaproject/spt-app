@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class AgreementController extends Controller
 {
@@ -126,6 +127,7 @@ class AgreementController extends Controller
                 ParkingLocation::where('id', $locationId)->update(['status' => 'tidak_tersedia']);
             }
             $agreement->parkingLocations()->attach($parkingLocationsToAttach);
+            $agreementData['verification_code'] = Str::uuid()->toString();
 
             DB::commit();
 
@@ -229,6 +231,9 @@ class AgreementController extends Controller
         $agreementData = $validatedData;
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
         $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
+
+        //code verification
+        // $agreementData['verification_code'] = Str::uuid()->toString();
 
         DB::beginTransaction();
         try {

@@ -13,10 +13,13 @@ use App\Http\Controllers\MasterData\DepositTransactionController;
 use App\Http\Controllers\MasterData\DepositReportController;
 use App\Http\Controllers\MasterData\AgreementHistoryController;
 use App\Http\Controllers\MasterData\BludBankAccountController;
+use App\Http\Controllers\PublicVerificationController;
 
 Route::get('/', function () {
     return view('auth/login');
 });
+
+Route::get('/verify/agreement/{code}', [PublicVerificationController::class, 'verifyAgreement'])->name('public.agreement.verify');
 
 // Rute dashboard umum (jika ada) atau redirect setelah login
 Route::middleware(['auth', 'verified'])->group(function () {

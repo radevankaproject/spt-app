@@ -11,6 +11,7 @@ class UptProfile extends Model
 
     protected $fillable = [
         'name',
+        'app_name',
         'address',
         'logo',
         'phone',
