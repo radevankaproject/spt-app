@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class LeaderController extends Controller
 {
@@ -81,36 +82,11 @@ class LeaderController extends Controller
         Log::info('LeaderController@store: User created with ID ' . $user->id);
 
         if ($request->hasFile('img')) {
-            Log::info('LeaderController@store: Image file detected.');
-            $imageName = time() . '.' . $request->img->extension();
-            $destinationPath = public_path('uploads/users');
-
-            Log::info('LeaderController@store: Destination Path: ' . $destinationPath);
-            Log::info('LeaderController@store: Image Name: ' . $imageName);
-
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0775, true);
-                Log::info('LeaderController@store: Created destination directory: ' . $destinationPath);
-            }
-
-            if (!is_writable($destinationPath)) {
-                Log::error('LeaderController@store: Destination directory is NOT writable: ' . $destinationPath);
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: Direktori tidak dapat ditulis.');
-            }
-
-            try {
-                $request->img->move($destinationPath, $imageName);
-                $user->img = 'uploads/users/' . $imageName;
-                $user->save();
-                Log::info('LeaderController@store: Image moved successfully to: ' . $user->img);
-            } catch (\Exception $e) {
-                Log::error('LeaderController@store: Error moving image: ' . $e->getMessage());
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: ' . $e->getMessage());
-            }
-        } else {
-            Log::info('LeaderController@store: No image file detected in request.');
+            $imgaName = time() . '_userLeader.' . $request->img->extension();
+            $path = $request->file('img')->storeAs('uploads/users', $imgaName, 'public');
+            $user->img = $path;
+            $user->save();
         }
-
         $leader = Leader::create([
             'user_id' => $user->id,
             'employee_number' => $validatedData['employee_number'],
@@ -186,26 +162,13 @@ class LeaderController extends Controller
         }
 
         if ($request->hasFile('img')) {
-            if ($leader->user->img && file_exists(public_path($leader->user->img))) {
-                unlink(public_path($leader->user->img));
-                Log::info('LeaderController@update: Old image deleted: ' . $leader->user->img);
-            }
-            $imageName = time() . '.' . $request->img->extension();
-            $destinationPath = public_path('uploads/users');
-
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0775, true);
-                Log::info('LeaderController@update: Created destination directory: ' . $destinationPath);
-            }
-            if (!is_writable($destinationPath)) {
-                Log::error('LeaderController@update: Destination directory is NOT writable: ' . $destinationPath);
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: Direktori tidak dapat ditulis.');
-            }
-
             try {
-                $request->img->move($destinationPath, $imageName);
-                $leader->user->img = 'uploads/users/' . $imageName;
-                Log::info('LeaderController@update: New image moved successfully to: ' . $leader->user->img);
+                if ($leader->user->img) {
+                    Storage::disk('public')->delete($leader->user->img);
+                }
+                $imageName = time() . '_userLeader.' . $request->img->extension();
+                $path = $request->file('img')->storeAs('uploads/users', $imageName, 'public');
+                $leader->user->img = $path;
             } catch (\Exception $e) {
                 Log::error('LeaderController@update: Error moving new image: ' . $e->getMessage());
                 return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: ' . $e->getMessage());
@@ -234,8 +197,8 @@ class LeaderController extends Controller
         Log::info('LeaderController@destroy: Attempting to delete leader ID ' . $leader->id);
 
         try {
-            if ($leader->user->img && file_exists(public_path($leader->user->img))) {
-                unlink(public_path($leader->user->img));
+            if ($leader->user->img) {
+                Storage::disk('public')->delete($leader->user->image);
                 Log::info('LeaderController@destroy: User image deleted: ' . $leader->user->img);
             }
             $leader->user->delete();

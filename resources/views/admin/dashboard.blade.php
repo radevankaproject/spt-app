@@ -50,49 +50,69 @@
         <div class="col-xl-4">
             <div class="row g-6">
                 <div class="col-md-6 col-xl-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar me-4">
-                                        @if (
-                                            $currentLeader &&
-                                                $currentLeader->user &&
-                                                $currentLeader->user->img &&
-                                                file_exists(public_path($currentLeader->user->img)))
-                                            <img src="{{ asset($currentLeader->user->img) }}" alt="Avatar"
-                                                class="rounded-circle">
-                                        @else
-                                            <img src="{{ asset('assets/img/avatars/1.png') }}" alt="Avatar"
-                                                class="rounded-circle">
-                                        @endif
-                                    </div>
-                                    <div class="me-2">
-                                        <h5 class="mb-0">{{ $currentLeader->user->name ?? 'Belum Ada' }}</h5>
-                                        <p class="card-subtitle mb-0">Pimpinan Saat Ini</p>
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-6 pt-2">
+                                @if (
+                                    $currentLeader &&
+                                        $currentLeader->user &&
+                                        $currentLeader->user->img &&
+                                        file_exists(public_path($currentLeader->user->img)))
+                                    <img class="img-fluid w-px-150 rounded-3" src="{{ asset($currentLeader->user->img) }}"
+                                        alt="Leader" />
+                                @else
+                                    <img class="img-fluid w-px-150"
+                                        src="{{ asset('assets/img/illustrations/faq-illustration.png') }}" alt="Leader" />
+                                @endif
+
+                            </div>
+                            <h5 class="mb-1 text-center">{{ $currentLeader->user->name ?? 'Belum Ada' }}</h5>
+                            <p class="mb-1 text-center">
+                                NIP. {{ formatNip($currentLeader->employee_number) }}
+                            </p>
+                            <p class="mb-6 text-center">
+                                Pimpinan BLUD UPT Perparkiran
+                            </p>
+                            <div class="row mb-6 g-4">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar flex-shrink-0 me-4">
+                                            <span class="avatar-initial rounded-3 bg-label-primary"><i
+                                                    class="icon-base ri ri-calendar-line icon-24px"></i></span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 text-nowrap fw-normal text-center">
+                                                {{ $startDate->translatedFormat('d F Y') }}</h6>
+                                            <small>Mulai Menjabat</small>
+                                        </div>
                                     </div>
                                 </div>
-                                <span class="badge bg-label-primary">Pihak Pertama</span>
+
                             </div>
+                            {{-- <a href="javascript:void(0);" class="btn btn-primary w-100">Join the event</a> --}}
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-6 col-xl-12">
                     <div class="card">
                         <div class="card-body">
                             @if ($activeBankAccount)
                                 <div class="d-flex justify-content-between">
                                     <div>
-                                        <p class="mb-0">Rekening BLUD Aktif</p>
-                                        <div class="d-flex align-items-center">
-                                            <h5 class="mb-0 me-2">{{ $activeBankAccount->account_number }}</h5>
-                                            <span
-                                                class="badge bg-label-success rounded-pill">{{ $activeBankAccount->bank_name }}</span>
+                                        <p class="mb-2">Rekening BLUD Aktif</p>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar">
+                                                <div class="avatar-initial bg-label-primary rounded">
+                                                    <i class="icon-base ri ri-bank-line icon-24px"></i>
+                                                </div>
+                                            </div>
+                                            <div class="card-info">
+                                                <h5 class="mb-0">{{ $activeBankAccount->account_number }}</h5>
+                                                <p class="mb-0 badge bg-label-success">{{ $activeBankAccount->bank_name }}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-label-secondary"><i
-                                                class="icon-base ri-bank-line ri-22px"></i></span>
                                     </div>
                                 </div>
                             @else
@@ -113,30 +133,27 @@
             </div>
         </div>
 
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Data Per Zona</h5>
                 </div>
-                <div class="card-body">
-                    <div class="row g-6 align-items-center">
-                        <div class="col-md-6">
-                            <div id="road-section-zone-chart"></div>
-                            <p class="text-center fw-medium mt-4">Total Ruas Jalan</p>
-                        </div>
-                        <div class="col-md-6">
-                            <div id="parking-location-zone-chart"></div>
-                            <p class="text-center fw-medium mt-4">Total Titik Lokasi</p>
-                        </div>
-                    </div>
+                <div class="card-body pb-0">
+                    <div id="road-section-zone-chart"></div>
+                    <p class="text-center fw-medium mt-4">Total Ruas Jalan</p>
+                </div>
+                <hr class="my-4" />
+                <div class="card-body pb-0">
+                    <div id="parking-location-zone-chart"></div>
+                    <p class="text-center fw-medium mt-4">Total Titik Lokasi</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-6">
+        <div class="col-lg-8">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Top 10 Ruas Jalan (by Titik Lokasi)</h5>
+                    <h5 class="card-title mb-0">Top 20 Ruas Jalan (by Titik Lokasi)</h5>
                 </div>
                 <div class="card-body">
                     <div id="locations-per-road-chart"></div>
@@ -360,7 +377,7 @@
                 const locationsPerRoadOptions = {
                     chart: {
                         type: 'bar',
-                        height: 280,
+                        height: 380,
                         toolbar: {
                             show: false
                         }

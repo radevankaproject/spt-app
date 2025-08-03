@@ -65,9 +65,9 @@
                                     <div class="d-flex justify-content-start align-items-center user-name">
                                         <div class="avatar-wrapper me-4">
                                             <div class="avatar avatar-sm">
-                                                @if ($coordinator->user && $coordinator->user->img && file_exists(public_path($coordinator->user->img)))
-                                                    <img src="{{ asset($coordinator->user->img) }}" alt="Avatar"
-                                                        class="rounded-circle">
+                                                @if ($coordinator->user && $coordinator->user->img)
+                                                    <img src="{{ asset('storage/' . $coordinator->user->img) }}"
+                                                        alt="Avatar" class="rounded-circle">
                                                 @else
                                                     <span
                                                         class="avatar-initial rounded-circle bg-label-warning">{{ strtoupper(substr($coordinator->user->name ?? 'K', 0, 2)) }}</span>

@@ -56,8 +56,8 @@
                                     <div class="d-flex justify-content-start align-items-center user-name">
                                         <div class="avatar-wrapper me-4">
                                             <div class="avatar avatar-sm">
-                                                @if ($user->img && file_exists(public_path($user->img)))
-                                                    <img src="{{ asset($user->img) }}" alt="Avatar"
+                                                @if ($user->img)
+                                                    <img src="{{ asset('storage/' . $user->img) }}" alt="Avatar"
                                                         class="rounded-circle">
                                                 @else
                                                     <span

@@ -56,8 +56,9 @@
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
                         {{-- ✅ PERBAIKAN UTAMA DI SINI --}}
-                        @if (Auth::user()->img && file_exists(public_path(Auth::user()->img)))
-                            <img src="{{ asset(Auth::user()->img) }}" alt="Avatar" class="rounded-circle" />
+                        @if (Auth::user()->img)
+                            <img src="{{ asset('storage/' . Auth::user()->img) }}" alt="Avatar"
+                                class="rounded-circle" />
                         @else
                             <span
                                 class="avatar-initial rounded-circle bg-label-secondary">{{ strtoupper(substr(Auth::user()->name, 0, 2)) }}</span>
@@ -71,8 +72,8 @@
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
                                         {{-- ✅ PERBAIKAN UTAMA DI SINI --}}
-                                        @if (Auth::user()->img && file_exists(public_path(Auth::user()->img)))
-                                            <img src="{{ asset(Auth::user()->img) }}" alt="Avatar"
+                                        @if (Auth::user()->img)
+                                            <img src="{{ asset('storage/' . Auth::user()->img) }}" alt="Avatar"
                                                 class="rounded-circle" />
                                         @else
                                             <span

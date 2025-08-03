@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
@@ -81,25 +82,17 @@ class UserController extends Controller
         ]);
 
         if ($request->hasFile('img')) {
-            $imageName = time() . '.' . $request->img->extension();
-            $destinationPath = public_path('uploads/users');
+            // 1. Tentukan nama file kustom Anda.
+            $imageName = time() . '_users.' . $request->img->extension();
 
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0775, true);
-            }
-            if (!is_writable($destinationPath)) {
-                Log::error('UserController@store: User image directory is NOT writable: ' . $destinationPath);
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: Direktori tidak dapat ditulis.');
-            }
+            // 2. Simpan file dengan nama kustom ke disk 'public'.
+            // Ini akan menyimpan file di: storage/app/public/uploads/users/
+            // Metode ini akan mengembalikan path lengkapnya, contoh: "uploads/users/1662...jpg"
+            $path = $request->file('img')->storeAs('uploads/users', $imageName, 'public');
 
-            try {
-                $request->img->move($destinationPath, $imageName);
-                $user->img = 'uploads/users/' . $imageName;
-                $user->save();
-            } catch (\Exception $e) {
-                Log::error('UserController@store: Error moving user image: ' . $e->getMessage());
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: ' . $e->getMessage());
-            }
+            // 3. Simpan path yang dikembalikan ke database.
+            $user->img = $path;
+            $user->save();
         }
 
         return redirect()->route('admin.users.index')
@@ -159,25 +152,18 @@ class UserController extends Controller
         }
 
         if ($request->hasFile('img')) {
-            // Hapus gambar lama jika ada
-            if ($user->img && file_exists(public_path($user->img))) {
-                unlink(public_path($user->img));
-            }
-            $imageName = time() . '.' . $request->img->extension();
-            $destinationPath = public_path('uploads/users');
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0775, true);
-            }
-            if (!is_writable($destinationPath)) {
-                Log::error('UserController@update: User image directory is NOT writable: ' . $destinationPath);
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: Direktori tidak dapat ditulis.');
-            }
             try {
-                $request->img->move($destinationPath, $imageName);
-                $user->img = 'uploads/users/' . $imageName;
+                //hapus gambar lama jika ada
+                if ($user->img) {
+                    Storage::disk('public')->delete($user->img);
+                }
+
+                $imageName = time() . '_users.' . $request->img->extension();
+                $path = $request->file('img')->storeAs('uploads/users', $imageName, 'public');
+                $user->img = $path;
             } catch (\Exception $e) {
-                Log::error('UserController@update: Error moving user image: ' . $e->getMessage());
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: ' . $e->getMessage());
+                Log::error('UserController@update: Error handling user image upload: ' . $e->getMessage());
+                return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan saat mengunggah gambar.');
             }
         }
         $user->save();
@@ -194,8 +180,8 @@ class UserController extends Controller
     {
         try {
             // Hapus gambar profil jika ada
-            if ($user->img && file_exists(public_path($user->img))) {
-                unlink(public_path($user->img));
+            if ($user->img) {
+                Storage::disk('public')->delete($user->img);
             }
             $user->delete(); // Soft delete user
         } catch (\Exception $e) {

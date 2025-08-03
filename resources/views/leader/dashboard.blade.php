@@ -1,125 +1,259 @@
-@extends('layouts.app') {{-- Ini memberitahu Blade untuk menggunakan layout app.blade.php --}}
+@extends('layouts.app')
 
-@section('title', 'Dashboard - Leader') {{-- Mengisi placeholder 'title' --}}
+@section('title', 'Dashboard Pimpinan')
 
-@section('page_title', 'Dashboard') {{-- Mengisi placeholder 'page_title' --}}
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+@endpush
 
-@section('breadcrumb') {{-- Mengisi placeholder 'breadcrumb' --}}
-<div class="md:flex hidden items-center gap-3 text-sm font-semibold">
-    <a href="#" class="text-sm font-medium text-default-700">Opatix</a>
-    <i class="i-tabler-chevron-right text-lg flex-shrink-0 text-default-500 rtl:rotate-180"></i>
-    <a href="#" class="text-sm font-medium text-default-700">Menu</a>
-    <i class="i-tabler-chevron-right text-lg flex-shrink-0 text-default-500 rtl:rotate-180"></i>
-    <a href="#" class="text-sm font-medium text-default-700" aria-current="page">Dashboard</a>
-</div>
+@section('content')
+    <div class="row g-6">
+        {{-- ✅ BAGIAN PENCARIAN BARU DENGAN SELECT2 --}}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-4 align-items-end">
+                        <!-- Pencarian PKS -->
+                        <div class="col-md-4">
+                            <label for="pks-search-select" class="form-label">Cari PKS (No / Korlap)</label>
+                            <select id="pks-search-select" class="form-select"></select>
+                        </div>
+                        <!-- Pencarian Titik Lokasi -->
+                        <div class="col-md-4">
+                            <label for="location-search-select" class="form-label">Cari Titik Lokasi</label>
+                            <select id="location-search-select" class="form-select"></select>
+                        </div>
+                        <!-- Pencarian Setoran -->
+                        <div class="col-md-4">
+                            <label for="deposit-search-select" class="form-label">Cari Setoran (6 Digit Terakhir
+                                Ref)</label>
+                            <select id="deposit-search-select" class="form-select"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Widget yang sudah ada (tidak berubah) --}}
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="avatar avatar-lg me-4"><img
+                            src="{{ $currentLeader && $currentLeader->user->img ? asset($currentLeader->user->img) : asset('assets/img/avatars/1.png') }}"
+                            alt="Avatar" class="rounded-circle"></div>
+                    <div>
+                        <h5 class="mb-0">Selamat Datang, {{ $currentLeader->user->name ?? 'Pimpinan' }}</h5><small
+                            class="text-muted">NIP: {{ $currentLeader->employee_number ?? '-' }}</small>
+                        <p class="mb-0">Mulai Menjabat: {{ $currentLeader->start_date->translatedFormat('d F Y') ?? '-' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="text-sm fw-medium text-muted mb-2">TOTAL SETORAN TAHUN INI</h5>
+                    <p class="text-3xl fw-bold">Rp {{ number_format($depositThisYear, 0, ',', '.') }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title m-0 me-2">Grafik Setoran Tervalidasi ({{ now()->year }})</h5>
+                </div>
+                <div class="card-body">
+                    <div id="deposit-chart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top 10 Ruas Jalan (by Titik Lokasi)</h5>
+                </div>
+                <div class="card-body">
+                    <div id="locations-per-road-chart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">PKS Terbaru</h5>
+                    @if ($totalAgreements > 10)
+                        <a href="{{ route('masterdata.agreements.index') }}" class="badge bg-label-primary">Lihat Semua</a>
+                    @endif
+                </div>
+                <div class="table-responsive text-nowrap" style="max-height: 280px;">
+                    <table class="table table-sm">
+                        <tbody>
+                            @forelse($recentAgreements as $pks)
+                                <tr>
+                                    <td>{{ $pks->agreement_number }}</td>
+                                    <td>{{ $pks->fieldCoordinator->user->name ?? 'N/A' }}</td>
+                            </tr>@empty<tr>
+                                    <td class="text-center">Tidak ada data.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Lokasi Terbaru</h5>
+                    @if ($totalParkingLocations > 10)
+                        <a href="{{ route('masterdata.parking-locations.index') }}" class="badge bg-label-primary">Lihat
+                            Semua</a>
+                    @endif
+                </div>
+                <div class="table-responsive text-nowrap" style="max-height: 280px;">
+                    <table class="table table-sm">
+                        <tbody>
+                            @forelse($recentParkingLocations as $loc)
+                                <tr>
+                                    <td>{{ $loc->name }}</td>
+                                    <td><span class="badge bg-label-secondary">{{ $loc->roadSection->zone }}</span></td>
+                            </tr>@empty<tr>
+                                    <td class="text-center">Tidak ada data.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
-@section('content') {{-- Konten utama halaman dashboard --}}
-<div class="grid xl:grid-cols-4 md:grid-cols-2 gap-6 mb-6">
-    <div
-        class="card group overflow-hidden transition-all duration-500 hover:shadow-lg hover:-translate-y-0.5">
-        <div class="card-body">
-            <div class="flex items- justify-between">
-                <div>
-                    <p class="text-xs tracking-wide font-semibold uppercase text-default-700 mb-3">Cost
-                        per Unit</p>
-                    <h4 class="font-semibold text-2xl text-default-700">$85.50</h4>
-                </div>
+@push('vendors-js')
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@endpush
 
-                <div
-                    class="rounded-full flex justify-center items-center size-14 bg-primary/10 text-primary">
-                    <i
-                        class="material-symbols-rounded text-2xl transition-all group-hover:fill-1">shopping_bag</i>
-                </div>
-            </div>
-        </div>
-        <div id="total-order"></div>
-    </div>
+@push('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Grafik Setoran
+            const depositChartEl = document.querySelector("#deposit-chart");
+            if (depositChartEl) {
+                new ApexCharts(depositChartEl, {
+                    chart: {
+                        type: 'area',
+                        height: 350,
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    series: [{
+                        name: 'Total Setoran',
+                        data: @json($depositChartData)
+                    }],
+                    xaxis: {
+                        categories: @json($depositChartLabels)
+                    },
+                    colors: [config.colors.success]
+                }).render();
+            }
 
-    <div
-        class="card group overflow-hidden transition-all duration-500 hover:shadow-lg hover:-translate-y-0.5">
-        <div class="card-body">
-            <div class="flex items- justify-between">
-                <div>
-                    <p class="text-xs tracking-wide font-semibold uppercase text-default-700 mb-3">
-                        Market Revenue</p>
-                    <h4 class="font-semibold text-2xl text-default-700">$12,548.25</h4>
-                </div>
+            // Grafik Lokasi
+            const barChartEl = document.querySelector("#locations-per-road-chart");
+            if (barChartEl) {
+                new ApexCharts(barChartEl, {
+                    chart: {
+                        type: 'bar',
+                        height: 350,
+                        toolbar: {
+                            show: false
+                        }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            barHeight: '70%',
+                            borderRadius: 5
+                        }
+                    },
+                    series: [{
+                        name: 'Jumlah Titik',
+                        data: @json($barChartData['data'])
+                    }],
+                    xaxis: {
+                        categories: @json($barChartData['labels'])
+                    },
+                    colors: [config.colors.info]
+                }).render();
+            }
 
-                <div
-                    class="rounded-full flex justify-center items-center size-14 bg-secondary/10 text-secondary">
-                    <i
-                        class="material-symbols-rounded text-2xl transition-all group-hover:fill-1">payments</i>
-                </div>
-            </div>
-        </div>
-        <div id="total-sale"></div>
-    </div>
+            // ✅ FUNGSI UNTUK MENGARAHKAN KE HALAMAN DETAIL
+            function redirectToPage(event, baseUrl) {
+                const data = event.params.data;
+                if (data.id) {
+                    let url = baseUrl.replace(':id', data.id);
+                    window.location.href = url;
+                }
+            }
 
-    <div
-        class="card group overflow-hidden transition-all duration-500 hover:shadow-lg hover:-translate-y-0.5">
-        <div class="card-body">
-            <div class="flex items- justify-between">
-                <div>
-                    <p class="text-xs tracking-wide font-semibold uppercase text-default-700 mb-3">
-                        Expenses</p>
-                    <h4 class="font-semibold text-2xl text-default-700">$8,451.28</h4>
-                </div>
+            // Inisialisasi Select2 untuk Pencarian PKS
+            $('#pks-search-select').select2({
+                placeholder: 'Ketik No. PKS / Nama Korlap...',
+                minimumInputLength: 2,
+                ajax: {
+                    url: "{{ route('masterdata.search-agreements-ajax') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: p => ({
+                        q: p.term
+                    }),
+                    processResults: d => ({
+                        results: d.results
+                    }),
+                    cache: true
+                }
+            }).on('select2:select', e => redirectToPage(e, '{{ route('masterdata.agreements.show', ':id') }}'));
 
-                <div
-                    class="rounded-full flex justify-center items-center size-14 bg-warning/10 text-warning">
-                    <i
-                        class="material-symbols-rounded text-2xl transition-all group-hover:fill-1">visibility</i>
-                </div>
-            </div>
-        </div>
-        <div id="total-visits"></div>
-    </div>
+            // ✅ Inisialisasi Select2 untuk Pencarian Titik Lokasi
+            $('#location-search-select').select2({
+                placeholder: 'Ketik nama titik lokasi...',
+                minimumInputLength: 2,
+                ajax: {
+                    url: "{{ route('masterdata.search-locations-ajax') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: p => ({
+                        q: p.term
+                    }),
+                    processResults: d => ({
+                        results: d.results
+                    }),
+                    cache: true
+                }
+            }).on('select2:select', e => redirectToPage(e,
+                '{{ route('masterdata.parking-locations.show', ':id') }}'));
 
-    <div
-        class="card group overflow-hidden transition-all duration-500 hover:shadow-lg hover:-translate-y-0.5">
-        <div class="card-body">
-            <div class="flex items- justify-between">
-                <div>
-                    <p class="text-xs tracking-wide font-semibold uppercase text-default-700 mb-3">Daily
-                        Visit</p>
-                    <h4 class="font-semibold text-2xl text-default-700">1,12,584</h4>
-                </div>
-
-                <div class="rounded-full flex justify-center items-center size-14 bg-danger/10 text-danger">
-                    <i
-                        class="material-symbols-rounded text-2xl transition-all group-hover:fill-1">account_balance</i>
-                </div>
-            </div>
-        </div>
-        <div id="chart4"></div>
-    </div>
-</div>
-
-<div class="grid xl:grid-cols-3 md:grid-cols-2 gap-6 mb-6">
-    <div class="xl:col-span-2">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Total Revenue</h4>
-                <div id="morris-line-example" class="morris-chart"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">Activity By Teams</h4>
-            <div id="morris-donut-example" class="morris-chart"></div>
-        </div>
-    </div>
-</div>
-@endsection
-
-@section('scripts') {{-- Menambahkan JavaScript khusus untuk halaman ini --}}
-<script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
-<script src="{{ asset('assets/libs/morris.js/morris.min.js') }}"></script>
-<script src="{{ asset('assets/libs/raphael/raphael.min.js') }}"></script>
-
-<script src="{{ asset('assets/js/pages/dashboard.js') }}"></script>
-@endsection
+            // ✅ Inisialisasi Select2 untuk Pencarian Setoran
+            $('#deposit-search-select').select2({
+                placeholder: 'Ketik 6 digit terakhir No. Referensi...',
+                minimumInputLength: 3,
+                ajax: {
+                    url: "{{ route('masterdata.search-deposits-ajax') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: p => ({
+                        q: p.term
+                    }),
+                    processResults: d => ({
+                        results: d.results
+                    }),
+                    cache: true
+                }
+            }).on('select2:select', e => redirectToPage(e,
+                '{{ route('masterdata.deposit-transactions.show', ':id') }}'));
+        });
+    </script>
+@endpush

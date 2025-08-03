@@ -2,8 +2,6 @@
 
 namespace App\Helpers;
 
-use Carbon\Carbon;
-
 class NumberToWords
 {
     public static function convert($number)
@@ -12,58 +10,54 @@ class NumberToWords
         $conjunction = ' ';
         $separator   = ' ';
         $negative    = 'minus ';
-        $decimal     = ' koma ';
+        $decimal     = ' koma '; // Bahasa Indonesia: koma
         $dictionary  = [
-            0   => 'nol',
-            1   => 'satu',
-            2   => 'dua',
-            3   => 'tiga',
-            4   => 'empat',
-            5   => 'lima',
-            6   => 'enam',
-            7   => 'tujuh',
-            8   => 'delapan',
-            9   => 'sembilan',
-            10  => 'sepuluh',
-            11  => 'sebelas',
-            12  => 'dua belas',
-            13  => 'tiga belas',
-            14  => 'empat belas',
-            15  => 'lima belas',
-            16  => 'enam belas',
-            17  => 'tujuh belas',
-            18  => 'delapan belas',
-            19  => 'sembilan belas',
-            20  => 'dua puluh',
-            30  => 'tiga puluh',
-            40  => 'empat puluh',
-            50  => 'lima puluh',
-            60  => 'enam puluh',
-            70  => 'tujuh puluh',
-            80  => 'delapan puluh',
-            90  => 'sembilan puluh',
-            100 => 'ratus',
-            1000 => 'ribu',
-            1000000 => 'juta',
-            1000000000 => 'miliar',
-            1000000000000 => 'triliun',
-            1000000000000000 => 'kuadriliun',
+            0                   => 'nol',
+            1                   => 'satu',
+            2                   => 'dua',
+            3                   => 'tiga',
+            4                   => 'empat',
+            5                   => 'lima',
+            6                   => 'enam',
+            7                   => 'tujuh',
+            8                   => 'delapan',
+            9                   => 'sembilan',
+            10                  => 'sepuluh',
+            11                  => 'sebelas',
+            12                  => 'dua belas',
+            13                  => 'tiga belas',
+            14                  => 'empat belas',
+            15                  => 'lima belas',
+            16                  => 'enam belas',
+            17                  => 'tujuh belas',
+            18                  => 'delapan belas',
+            19                  => 'sembilan belas',
+            20                  => 'dua puluh',
+            30                  => 'tiga puluh',
+            40                  => 'empat puluh',
+            50                  => 'lima puluh',
+            60                  => 'enam puluh',
+            70                  => 'tujuh puluh',
+            80                  => 'delapan puluh',
+            90                  => 'sembilan puluh',
+            100                 => 'ratus',
+            1000                => 'ribu',
+            1000000             => 'juta',
+            1000000000          => 'miliar',
+            1000000000000       => 'triliun',
+            1000000000000000    => 'kuadriliun',
             1000000000000000000 => 'kuintiliun'
         ];
 
-        // Hapus nol di depan, misalnya "02" -> "2"
-        if (is_string($number) && preg_match('/^0[0-9]+$/', $number)) {
-            $number = ltrim($number, '0');
-        }
-
-        // Pastikan numerik
         if (!is_numeric($number)) {
             return false;
         }
 
-        // Handle overflow
         if (($number >= 0 && (int) $number < 0) || (int) $number < 0 - PHP_INT_MAX) {
-            trigger_error('convert_number_to_words only accepts numbers between -' . PHP_INT_MAX . ' and ' . PHP_INT_MAX, E_USER_WARNING);
+            trigger_error(
+                'convert_number_to_words only accepts numbers between -' . PHP_INT_MAX . ' and ' . PHP_INT_MAX,
+                E_USER_WARNING
+            );
             return false;
         }
 
@@ -122,40 +116,16 @@ class NumberToWords
                 break;
         }
 
-        // Penanganan desimal
+        // Penanganan bagian desimal
         if (null !== $fraction && is_numeric($fraction) && (int)$fraction > 0) {
             $string .= $decimal;
             $words = [];
             foreach (str_split((string) $fraction) as $digit) {
-                $words[] = $dictionary[(int) $digit];
+                $words[] = $dictionary[$digit];
             }
             $string .= implode(' ', $words);
         }
 
         return $string;
-    }
-
-    /**
-     * Format untuk tanggal: "02 Agustus 2025" => "Dua Agustus Dua Ribu Dua Lima"
-     */
-    public static function convertTanggal($tanggalString)
-    {
-        $date = Carbon::parse($tanggalString);
-        $day = self::convert((int)$date->format('d'));
-        $month = $date->translatedFormat('F'); // Misal: "Agustus"
-        $year = str_split($date->format('Y'));
-        $yearWords = array_map(function ($digit) {
-            return self::convert((int)$digit);
-        }, $year);
-
-        return $day . ' ' . $month . ' ' . implode(' ', $yearWords);
-    }
-
-    /**
-     * Format untuk currency: 1100000 => "Satu Juta Seratus Ribu Rupiah"
-     */
-    public static function convertCurrency($amount)
-    {
-        return self::convert((int) $amount) . ' Rupiah';
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
 
 class FieldCoordinatorController extends Controller
 {
@@ -88,20 +89,10 @@ class FieldCoordinatorController extends Controller
 
             // Handle upload Foto Profil (img)
             if ($request->hasFile('img')) {
-                $profileImageName = time() . '_profile.' . $request->img->extension();
-                $profileDestinationPath = public_path('uploads/users');
-
-                if (!file_exists($profileDestinationPath)) {
-                    mkdir($profileDestinationPath, 0775, true);
-                }
-                if (!is_writable($profileDestinationPath)) {
-                    Log::error('FieldCoordinatorController@store: Profile image directory is NOT writable: ' . $profileDestinationPath);
-                    return redirect()->back()->withInput()->with('error', 'Gagal mengunggah foto profil: Direktori tidak dapat ditulis.');
-                }
-
                 try {
-                    $request->img->move($profileDestinationPath, $profileImageName);
-                    $user->img = 'uploads/users/' . $profileImageName;
+                    $profileImageName = time() . '_usersCoordinator.' . $request->img->extension();
+                    $path = $request->file('img')->storeAs('uploads/users', $profileImageName, 'public');
+                    $user->img = $path;
                     $user->save();
                 } catch (\Exception $e) {
                     Log::error('FieldCoordinatorController@store: Error moving profile image: ' . $e->getMessage());
@@ -111,19 +102,10 @@ class FieldCoordinatorController extends Controller
 
             // Handle upload Foto KTP (id_card_img)
             $idCardImageName = time() . '_idcard.' . $request->id_card_img->extension();
-            $idCardDestinationPath = public_path('uploads/id_cards');
-
-            if (!file_exists($idCardDestinationPath)) {
-                mkdir($idCardDestinationPath, 0775, true);
-            }
-            if (!is_writable($idCardDestinationPath)) {
-                Log::error('FieldCoordinatorController@store: ID Card image directory is NOT writable: ' . $idCardDestinationPath);
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah foto KTP: Direktori tidak dapat ditulis.');
-            }
+            // $idCardDestinationPath = public_path('uploads/id_cards');
 
             try {
-                $request->id_card_img->move($idCardDestinationPath, $idCardImageName);
-                $idCardImagePath = 'uploads/id_cards/' . $idCardImageName;
+                $idCardImagePath = $request->file('id_card_img')->storeAs('uploads/id_cards', $idCardImageName, 'public');
             } catch (\Exception $e) {
                 Log::error('FieldCoordinatorController@store: Error moving ID card image: ' . $e->getMessage());
                 return redirect()->back()->withInput()->with('error', 'Gagal mengunggah foto KTP: ' . $e->getMessage());
@@ -263,11 +245,11 @@ class FieldCoordinatorController extends Controller
     public function destroy(FieldCoordinator $fieldCoordinator)
     {
         try {
-            if ($fieldCoordinator->user->img && file_exists(public_path($fieldCoordinator->user->img))) {
-                unlink(public_path($fieldCoordinator->user->img));
+            if ($fieldCoordinator->user->img) {
+                Storage::disk('public')->delete($fieldCoordinator->user->image);
             }
-            if ($fieldCoordinator->id_card_img && file_exists(public_path($fieldCoordinator->id_card_img))) {
-                unlink(public_path($fieldCoordinator->id_card_img));
+            if ($fieldCoordinator->id_card_img) {
+                Storage::disk('public')->delete($fieldCoordinator->id_card_img);
             }
 
             $fieldCoordinator->user->delete();

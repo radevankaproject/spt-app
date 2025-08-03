@@ -76,19 +76,22 @@ class AgreementController extends Controller
         return response()->json($roadSections);
     }
 
-    /**
-     * ✅ METHOD BARU untuk mengambil Lokasi Parkir berdasarkan Ruas Jalan.
-     */
-    public function getParkingLocationsByRoadSection($roadSectionId)
+
+
+    public function getParkingLocationsByRoadSection(Request $request, $roadSectionId)
     {
+        // Ambil lokasi parkir yang statusnya 'tersedia'
+        // dan belum terikat perjanjian aktif
         $locations = ParkingLocation::where('road_section_id', $roadSectionId)
-            ->where('status', 'tersedia') // Hanya yang statusnya tersedia
-            ->orderBy('name', 'asc')
-            ->get(['id', 'name']); // Kirim hanya ID dan Nama
+            ->where('status', 'tersedia')
+            ->whereDoesntHave('agreements', function ($query) {
+                $query->where('agreement_parking_locations.status', 'active');
+            })
+            // ✅ Pastikan 'daily_deposit' ada di sini
+            ->get(['id', 'name', 'status', 'road_section_id', 'daily_deposit']);
 
         return response()->json($locations);
     }
-
     /**
      * Menyimpan perjanjian baru ke database.
      */
@@ -115,6 +118,7 @@ class AgreementController extends Controller
         $agreementData = $validatedData;
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30; // Asumsi 30 hari/bulan
         $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
+        $agreementData['verification_code'] = Str::uuid()->toString();
 
         DB::beginTransaction();
         try {
@@ -127,7 +131,6 @@ class AgreementController extends Controller
                 ParkingLocation::where('id', $locationId)->update(['status' => 'tidak_tersedia']);
             }
             $agreement->parkingLocations()->attach($parkingLocationsToAttach);
-            $agreementData['verification_code'] = Str::uuid()->toString();
 
             DB::commit();
 

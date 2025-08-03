@@ -5,10 +5,12 @@ namespace App\Http\Controllers\MasterData; // Namespace yang sudah kita sepakati
 use App\Http\Controllers\Controller;
 use App\Models\ParkingLocation;
 use App\Models\RoadSection;
+use App\Models\Agreement;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ParkingLocationController extends Controller
 {
@@ -37,7 +39,7 @@ class ParkingLocationController extends Controller
             });
         }
 
-        $parkingLocations = $query->latest()->paginate(15);
+        $parkingLocations = $query->latest()->paginate(10);
 
         return view('staff.parking_locations.index', compact('parkingLocations', 'search'));
     }
@@ -86,22 +88,28 @@ class ParkingLocationController extends Controller
         // Handle upload gambar lokasi
         if ($request->hasFile('image')) {
             $imageName = time() . '_location.' . $request->image->extension();
-            $request->image->move(public_path('uploads/locations/images'), $imageName);
-            $dataToStore['image'] = 'uploads/locations/images/' . $imageName;
+            // $request->image->move(public_path('uploads/locations/images'), $imageName);
+            // $dataToStore['image'] = 'uploads/locations/images/' . $imageName;
+            $dataToStore['image'] = $request->file('image')
+                ->storeAs('uploads/locations/images', $imageName, 'public');
         }
 
         // Handle upload PDF Pengajuan
         if ($request->hasFile('proposal_document')) {
             $proposalName = time() . '_proposal.' . $request->proposal_document->extension();
-            $request->proposal_document->move(public_path('uploads/locations/proposals'), $proposalName);
-            $dataToStore['proposal_document'] = 'uploads/locations/proposals/' . $proposalName;
+            // $request->proposal_document->move(public_path('uploads/locations/proposals'), $proposalName);
+            // $dataToStore['proposal_document'] = 'uploads/locations/proposals/' . $proposalName;
+            $dataToStore['proposal_document'] = $request->file('proposal_document')
+                ->storeAs('uploads/locations/proposals', $proposalName, 'public');
         }
 
         // Handle upload PDF Berita Acara
         if ($request->hasFile('official_report_document')) {
             $reportName = time() . '_report.' . $request->official_report_document->extension();
-            $request->official_report_document->move(public_path('uploads/locations/reports'), $reportName);
-            $dataToStore['official_report_document'] = 'uploads/locations/reports/' . $reportName;
+            // $request->official_report_document->move(public_path('uploads/locations/reports'), $reportName);
+            // $dataToStore['official_report_document'] = 'uploads/locations/reports/' . $reportName;
+            $dataToStore['official_report_document'] = $request->file('official_report_document')
+                ->storeAs('uploads/locations/reports', $reportName, 'public');
         }
 
         ParkingLocation::create($dataToStore);
@@ -115,9 +123,19 @@ class ParkingLocationController extends Controller
      */
     public function show(ParkingLocation $parkingLocation)
     {
-        // Untuk saat ini, kita tidak akan membuat halaman show terpisah
-        // Mungkin akan diarahkan ke halaman edit atau detail di modal.
-        return redirect()->route('masterdata.parking-locations.edit', $parkingLocation);
+        // Eager load relasi yang dibutuhkan untuk tampilan detail
+        $parkingLocation->load(['roadSection']);
+
+        // Cari perjanjian yang saat ini aktif dan terhubung dengan lokasi ini
+        $activeAgreement = Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
+            $query->where('parking_location_id', $parkingLocation->id)->where('agreement_parking_locations.status', 'active');
+        })
+            ->where('status', 'active') // Pastikan juga perjanjiannya sendiri aktif
+            ->with(['fieldCoordinator.user', 'leader.user'])
+            ->latest('start_date') // Ambil yang paling baru jika ada duplikasi
+            ->first();
+
+        return view('staff.parking_locations.show', compact('parkingLocation', 'activeAgreement'));
     }
 
     /**
@@ -125,6 +143,9 @@ class ParkingLocationController extends Controller
      */
     public function edit(ParkingLocation $parkingLocation)
     {
+        // if ($parkingLocation->status == 'tidak_tersedia') {
+        //     return redirect()->route('masterdata.parking-locations.index')->with('error', 'Lokasi parkir tidak tersedia untuk diedit!');
+        // }
         // Eager load relasi untuk mendapatkan nama zona
         $parkingLocation->load('roadSection');
 
@@ -157,8 +178,8 @@ class ParkingLocationController extends Controller
 
         // Fungsi untuk menghapus file lama jika ada
         $deleteOldFile = function ($filePath) {
-            if ($filePath && file_exists(public_path($filePath))) {
-                unlink(public_path($filePath));
+            if ($filePath) {
+                Storage::disk('public')->delete($filePath);
             }
         };
 
@@ -166,24 +187,27 @@ class ParkingLocationController extends Controller
         if ($request->hasFile('image')) {
             $deleteOldFile($parkingLocation->image);
             $imageName = time() . '_location.' . $request->image->extension();
-            $request->image->move(public_path('uploads/locations/images'), $imageName);
-            $dataToUpdate['image'] = 'uploads/locations/images/' . $imageName;
+            // $request->image->move(public_path('uploads/locations/images'), $imageName);
+            $dataToUpdate['image'] = $request->file('image')
+                ->storeAs('uploads/locations/images', $imageName, 'public');
         }
 
         // Handle upload PDF Pengajuan baru
         if ($request->hasFile('proposal_document')) {
             $deleteOldFile($parkingLocation->proposal_document);
             $proposalName = time() . '_proposal.' . $request->proposal_document->extension();
-            $request->proposal_document->move(public_path('uploads/locations/proposals'), $proposalName);
-            $dataToUpdate['proposal_document'] = 'uploads/locations/proposals/' . $proposalName;
+            // $request->proposal_document->move(public_path('uploads/locations/proposals'), $proposalName);
+            $dataToUpdate['proposal_document'] = $request->file('proposal_document')
+                ->storeAs('uploads/locations/proposals', $proposalName, 'public');
         }
 
         // Handle upload PDF Berita Acara baru
         if ($request->hasFile('official_report_document')) {
             $deleteOldFile($parkingLocation->official_report_document);
             $reportName = time() . '_report.' . $request->official_report_document->extension();
-            $request->official_report_document->move(public_path('uploads/locations/reports'), $reportName);
-            $dataToUpdate['official_report_document'] = 'uploads/locations/reports/' . $reportName;
+            // $request->official_report_document->move(public_path('uploads/locations/reports'), $reportName);
+            $dataToUpdate['official_report_document'] = $request->file('official_report_document')
+                ->storeAs('uploads/locations/reports', $reportName, 'public');
         }
 
         $parkingLocation->update($dataToUpdate);
@@ -198,6 +222,15 @@ class ParkingLocationController extends Controller
     public function destroy(ParkingLocation $parkingLocation)
     {
         try {
+            if ($parkingLocation->image) {
+                Storage::disk('public')->delete($parkingLocation->image);
+            }
+            if ($parkingLocation->proposal_document) {
+                Storage::disk('public')->delete($parkingLocation->proposal_document);
+            }
+            if ($parkingLocation->official_report_document) {
+                Storage::disk('public')->delete($parkingLocation->official_report_document);
+            }
             $parkingLocation->delete(); // Soft delete
         } catch (\Exception $e) {
             Log::error('ParkingLocationController@destroy: Error deleting parking location: ' . $e->getMessage());
@@ -207,13 +240,6 @@ class ParkingLocationController extends Controller
         return redirect()->route('masterdata.parking-locations.index')->with('success', 'Lokasi parkir berhasil dihapus!');
     }
 
-    /**
-     * Get parking locations by road section ID for AJAX requests.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $roadSectionId
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function getParkingLocationsByRoadSection(Request $request, $roadSectionId)
     {
         // Ambil lokasi parkir yang statusnya 'tersedia'
@@ -223,7 +249,7 @@ class ParkingLocationController extends Controller
             ->whereDoesntHave('agreements', function ($query) {
                 $query->where('agreement_parking_locations.status', 'active'); // Perbaikan wherePivot
             })
-            ->get(['id', 'name', 'status', 'road_section_id']); // Hanya ambil kolom yang dibutuhkan
+            ->get(['id', 'name', 'status', 'road_section_id', 'daily_deposit']); // Hanya ambil kolom yang dibutuhkan
 
         return response()->json($parkingLocations);
     }

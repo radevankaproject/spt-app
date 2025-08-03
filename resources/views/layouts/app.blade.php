@@ -35,7 +35,9 @@
             <div class="layout-container">
 
                 {{-- 1. Sidebar --}}
-                @include('layouts.partials._sidebar')
+                @if (!isset($hideSidebar) || !$hideSidebar)
+                    @include('layouts.partials._sidebar')
+                @endif
 
                 <div class="layout-page">
 

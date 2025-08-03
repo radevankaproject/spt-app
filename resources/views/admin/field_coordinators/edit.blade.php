@@ -92,7 +92,7 @@
                         <h5 class="card-title mb-0">Foto Profil (Opsional)</h5>
                     </div>
                     <div class="card-body text-center">
-                        <img src="{{ $fieldCoordinator->user && $fieldCoordinator->user->img && file_exists(public_path($fieldCoordinator->user->img)) ? asset($fieldCoordinator->user->img) : asset('assets/img/avatars/1.png') }}"
+                        <img src="{{ $fieldCoordinator->user && $fieldCoordinator->user->img ? asset('storage/' . $fieldCoordinator->user->img) : asset('assets/img/avatars/1.png') }}"
                             alt="user-avatar" class="d-block w-px-120 h-px-120 rounded-circle mx-auto mb-4"
                             id="avatar-preview" />
                         <label for="img-upload" class="btn btn-primary">
@@ -108,7 +108,7 @@
                         <h5 class="card-title mb-0">Foto KTP (Wajib)</h5>
                     </div>
                     <div class="card-body text-center">
-                        <img src="{{ $fieldCoordinator->id_card_img && file_exists(public_path($fieldCoordinator->id_card_img)) ? asset($fieldCoordinator->id_card_img) : asset('assets/img/illustrations/image-light.png') }}"
+                        <img src="{{ $fieldCoordinator->id_card_img ? asset('storage/' . $fieldCoordinator->id_card_img) : asset('assets/img/illustrations/image-light.png') }}"
                             alt="id-card-placeholder" class="d-block rounded-3 mx-auto mb-4" id="idcard-preview"
                             style="max-height: 120px;" />
                         <label for="idcard-upload" class="btn btn-primary">
@@ -188,10 +188,10 @@
             }
             setupImageUploader('img-upload', 'avatar-preview', 'img-error',
                 "{{ $fieldCoordinator->user && $fieldCoordinator->user->img && file_exists(public_path($fieldCoordinator->user->img)) ? asset($fieldCoordinator->user->img) : asset('assets/img/avatars/1.png') }}"
-                );
+            );
             setupImageUploader('idcard-upload', 'idcard-preview', 'idcard-error',
                 "{{ $fieldCoordinator->id_card_img && file_exists(public_path($fieldCoordinator->id_card_img)) ? asset($fieldCoordinator->id_card_img) : asset('assets/img/illustrations/image-light.png') }}"
-                );
+            );
         });
     </script>
 @endpush

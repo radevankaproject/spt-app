@@ -105,7 +105,7 @@
                         <label class="form-label">Foto Lokasi</label>
                         <div class="card">
                             <div class="card-body text-center p-3">
-                                <img src="{{ $parkingLocation->image ? asset($parkingLocation->image) : asset('assets/img/illustrations/image-light.png') }}"
+                                <img src="{{ $parkingLocation->image ? asset('storage/' . $parkingLocation->image) : asset('assets/img/illustrations/image-light.png') }}"
                                     alt="location-placeholder" class="d-block rounded-3 mx-auto mb-3" id="image-preview"
                                     style="max-height: 120px;" />
                                 <label for="image-upload" class="btn btn-sm btn-primary"><i
@@ -121,7 +121,7 @@
                         <input class="form-control" type="file" id="proposal_document" name="proposal_document"
                             accept=".pdf">
                         @if ($parkingLocation->proposal_document)
-                            <a href="{{ asset($parkingLocation->proposal_document) }}" target="_blank"
+                            <a href="{{ asset('storage/' . $parkingLocation->proposal_document) }}" target="_blank"
                                 class="form-text text-primary">Lihat file saat ini</a>
                         @endif
                     </div>
@@ -130,8 +130,8 @@
                         <input class="form-control" type="file" id="official_report_document"
                             name="official_report_document" accept=".pdf">
                         @if ($parkingLocation->official_report_document)
-                            <a href="{{ asset($parkingLocation->official_report_document) }}" target="_blank"
-                                class="form-text text-primary">Lihat file saat ini</a>
+                            <a href="{{ asset('storage/' . $parkingLocation->official_report_document) }}"
+                                target="_blank" class="form-text text-primary">Lihat file saat ini</a>
                         @endif
                     </div>
                 </div>

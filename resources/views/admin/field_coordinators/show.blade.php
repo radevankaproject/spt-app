@@ -10,9 +10,10 @@
                     <div class="card-body pt-12">
                         <div class="user-avatar-section">
                             <div class="d-flex align-items-center flex-column">
-                                @if ($fieldCoordinator->user && $fieldCoordinator->user->img && file_exists(public_path($fieldCoordinator->user->img)))
-                                    <img class="img-fluid rounded-3 mb-4" src="{{ asset($fieldCoordinator->user->img) }}"
-                                        height="120" width="120" alt="User avatar" />
+                                @if ($fieldCoordinator->user && $fieldCoordinator->user->img)
+                                    <img class="img-fluid rounded-3 mb-4"
+                                        src="{{ asset('storage/' . $fieldCoordinator->user->img) }}" height="120"
+                                        width="120" alt="User avatar" />
                                 @else
                                     <div class="avatar avatar-xl mb-4">
                                         <span
@@ -79,9 +80,9 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="pb-4 border-bottom mb-4">Foto KTP</h5>
-                        @if ($fieldCoordinator->id_card_img && file_exists(public_path($fieldCoordinator->id_card_img)))
+                        @if ($fieldCoordinator->id_card_img)
                             <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#ktpModal">
-                                <img src="{{ asset($fieldCoordinator->id_card_img) }}" alt="Foto KTP"
+                                <img src="{{ asset('storage/' . $fieldCoordinator->id_card_img) }}" alt="Foto KTP"
                                     class="img-fluid rounded-3">
                             </a>
                         @else
@@ -172,7 +173,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body text-center">
-                        <img src="{{ $fieldCoordinator->id_card_img && file_exists(public_path($fieldCoordinator->id_card_img)) ? asset($fieldCoordinator->id_card_img) : '' }}"
+                        <img src="{{ $fieldCoordinator->id_card_img ? asset('storage/' . $fieldCoordinator->id_card_img) : '' }}"
                             class="img-fluid" alt="Foto KTP">
                     </div>
                 </div>

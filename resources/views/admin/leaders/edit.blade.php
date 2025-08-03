@@ -139,8 +139,8 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-column align-items-center">
-                            @if ($leader->user && $leader->user->img && file_exists(public_path($leader->user->img)))
-                                <img src="{{ asset($leader->user->img) }}" alt="user-avatar"
+                            @if ($leader->user && $leader->user->img)
+                                <img src="{{ asset('storage/' . $leader->user->img) }}" alt="user-avatar"
                                     class="d-block w-px-120 h-px-120 rounded-circle mb-4" id="uploadedAvatar" />
                             @else
                                 <img src="{{ asset('assets/img/avatars/1.png') }}" alt="user-avatar"

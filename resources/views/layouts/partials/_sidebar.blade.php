@@ -38,7 +38,7 @@
                     </svg>
                 </span>
             </span>
-            <span class="app-brand-text demo menu-text fw-semibold ms-2">Materialize</span>
+            <span class="app-brand-text demo menu-text fw-semibold ms-2">SiPKS App</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
@@ -57,12 +57,20 @@
     <div class="menu-inner-shadow"></div>
 
     {{-- ...user Admin --}}
-    <li class="menu-header small"><span class="menu-header-text">Dashboard</span></li>
 
     <ul class="menu-inner py-1">
-        @if (Auth::user()->isStaffKeu() || Auth::user()->isStaffPks())
-            <li class="menu-item {{ request()->routeIs('staff.dashboard') ? 'active' : '' }}">
-                <a href="{{ route('staff.dashboard') }}" class="menu-link">
+        <li class="menu-header small"><span class="menu-header-text">Dashboard</span></li>
+        @if (Auth::user()->isStaffPks())
+            <li class="menu-item {{ request()->routeIs('staff-pks.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('staff-pks.dashboard') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-home-smile-line"></i>
+                    <div data-i18n="Dashboard">Dashboard</div>
+                </a>
+            </li>
+        @endif
+        @if (Auth::user()->isStaffKeu())
+            <li class="menu-item {{ request()->routeIs('staff-keuangan.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('staff-keuangan.dashboard') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-home-smile-line"></i>
                     <div data-i18n="Dashboard">Dashboard</div>
                 </a>

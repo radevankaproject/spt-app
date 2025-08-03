@@ -17,19 +17,12 @@ class RoadSectionController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $zoneFilter = $request->input('zone'); // ✅ Ambil filter zona dari request
-
         $query = RoadSection::query();
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
         }
-
-        if ($zoneFilter) {
-            $query->where('zone', $zoneFilter);
-        }
-
         $roadSections = $query->latest()->paginate(10);
-        return view('admin.road-sections.index', compact('roadSections', 'search', 'zoneFilter')); // <-- Tetap mengarah ke view admin karena ini master data
+        return view('admin.road-sections.index', compact('roadSections', 'search')); // <-- Tetap mengarah ke view admin karena ini master data
     }
 
     /**

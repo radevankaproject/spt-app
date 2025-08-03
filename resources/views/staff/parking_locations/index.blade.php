@@ -94,6 +94,11 @@
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center">
                                         {{-- ✅ Tombol Hapus hanya muncul jika status 'tersedia' --}}
+                                        <a class="btn btn-sm btn-icon"
+                                            href="{{ route('masterdata.parking-locations.show', $location->id) }}"
+                                            data-bs-toggle="tooltip" title="Details Lokasi">
+                                            <i class="icon-base ri ri-eye-line icon-22px"></i>
+                                        </a>
                                         @if ($location->status == 'tersedia')
                                             <a class="btn btn-sm btn-icon"
                                                 href="{{ route('masterdata.parking-locations.edit', $location->id) }}"

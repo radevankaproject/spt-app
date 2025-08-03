@@ -79,34 +79,17 @@
                                         value="{{ old('end_date', $agreement->end_date->format('Y-m-d')) }}"
                                         required /><label for="end_date">Tanggal Selesai Berlaku</label></div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-floating form-floating-outline"><input type="number" class="form-control"
-                                        id="daily_deposit_amount" name="daily_deposit_amount" placeholder="Contoh: 50000"
-                                        value="{{ old('daily_deposit_amount', $agreement->daily_deposit_amount) }}"
-                                        required min="0" step="1000" /><label for="daily_deposit_amount">Setoran
-                                        Harian</label></div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-floating form-floating-outline"><input type="text" class="form-control"
-                                        id="monthly_deposit" placeholder="Otomatis" readonly /><label
-                                        for="monthly_deposit">Estimasi Bulanan</label></div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-floating form-floating-outline"><input type="text" class="form-control"
-                                        id="total_deposit" placeholder="Otomatis" readonly /><label
-                                        for="total_deposit">Total Kontrak</label></div>
-                            </div>
-                            @php
-                                $endDate = \Carbon\Carbon::parse($agreement->end_date);
-                                $canChangeStatus = $endDate->isPast() || now()->diffInDays($endDate, false) <= 10;
-                            @endphp
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline"><input type="text" class="form-control"
                                         id="signed_date" name="signed_date"
                                         value="{{ old('signed_date', $agreement->signed_date->format('Y-m-d')) }}"
                                         required /><label for="signed_date">Tanggal TTD</label></div>
                             </div>
-                            <div class="col-6">
+                            @php
+                                $endDate = \Carbon\Carbon::parse($agreement->end_date);
+                                $canChangeStatus = $endDate->isPast() || now()->diffInDays($endDate, false) <= 10;
+                            @endphp
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline"><select name="status" id="status"
                                         class="form-select" required {{ !$canChangeStatus ? 'disabled' : '' }}>
                                         <option value="active"
@@ -127,6 +110,26 @@
                                     <div class="form-text text-warning">Status hanya bisa diubah jika PKS akan berakhir
                                         dalam 10 hari atau sudah kadaluarsa.</div>
                                 @endif
+                            </div>
+
+                            {{-- Kalkulasi Setoran --}}
+                            <div class="col-md-4">
+                                <div class="form-floating form-floating-outline"><input type="number" class="form-control"
+                                        id="daily_deposit_amount" name="daily_deposit_amount"
+                                        placeholder="Otomatis dari lokasi"
+                                        value="{{ old('daily_deposit_amount', $agreement->daily_deposit_amount) }}"
+                                        required readonly /><label for="daily_deposit_amount">Setoran Harian (Rp)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating form-floating-outline"><input type="text"
+                                        class="form-control" id="monthly_deposit" placeholder="Otomatis"
+                                        readonly /><label for="monthly_deposit">Estimasi Bulanan</label></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating form-floating-outline"><input type="text"
+                                        class="form-control" id="total_deposit" placeholder="Otomatis" readonly /><label
+                                        for="total_deposit">Total Kontrak</label></div>
                             </div>
                         </div>
                     </div>
@@ -156,7 +159,6 @@
                             <label for="road_section_filter" class="form-label">Filter Ruas Jalan</label>
                             <select id="road_section_filter" class="form-select select2">
                                 <option value="">Tampilkan Semua Lokasi</option>
-                                {{-- ✅ Menggunakan variabel yang sudah difilter dari Controller --}}
                                 @foreach ($allRoadSections as $section)
                                     <option value="{{ $section->id }}">{{ $section->name }}</option>
                                 @endforeach
@@ -170,6 +172,7 @@
                                     data-road-section="{{ $location->road_section_id }}">
                                     <input class="form-check-input" type="checkbox" name="parking_location_ids[]"
                                         value="{{ $location->id }}" id="location_{{ $location->id }}"
+                                        data-daily-deposit="{{ $location->daily_deposit }}"
                                         {{ in_array($location->id, old('parking_location_ids', $currentParkingLocationIds)) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="location_{{ $location->id }}">
                                         {{ $location->name }}
@@ -206,36 +209,33 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Inisialisasi Select2
-            $('.select2').each(function() {
-                $(this).wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Pilih salah satu',
-                    dropdownParent: $(this).parent(),
-                    allowClear: true
-                });
+            // Inisialisasi
+            $('.select2').select2({
+                placeholder: "Pilih atau cari...",
+                allowClear: true
             });
-
-            // Inisialisasi Flatpickr
-            const startDatePicker = flatpickr(document.getElementById('start_date'), {
+            const startDatePicker = flatpickr("#start_date", {
                 dateFormat: 'Y-m-d',
-                onChange: (selectedDates, dateStr) => {
+                onChange: (selected, dateStr) => {
                     endDatePicker.set('minDate', dateStr);
                     calculateTotals();
                 }
             });
-            const endDatePicker = flatpickr(document.getElementById('end_date'), {
+            const endDatePicker = flatpickr("#end_date", {
                 dateFormat: 'Y-m-d',
                 onChange: () => calculateTotals()
             });
-            flatpickr(document.getElementById('signed_date'), {
+            flatpickr("#signed_date", {
                 dateFormat: 'Y-m-d'
             });
 
-            // Logika Kalkulasi
             const dailyDepositInput = document.getElementById('daily_deposit_amount');
             const monthlyDepositInput = document.getElementById('monthly_deposit');
             const totalDepositInput = document.getElementById('total_deposit');
+            const roadSectionFilter = $('#road_section_filter');
+            const parkingContainer = $('#parking_location_checkboxes');
 
+            // ✅ FUNGSI UTAMA KALKULASI (tidak berubah)
             function calculateTotals() {
                 const dailyAmount = parseFloat(dailyDepositInput.value) || 0;
                 const startDate = startDatePicker.selectedDates[0];
@@ -253,22 +253,34 @@
                     totalDepositInput.value = '';
                 }
             }
-            dailyDepositInput.addEventListener('input', calculateTotals);
-            calculateTotals();
 
-            // ✅ PERBAIKAN: Logika Filter Lokasi Parkir (Client-side)
-            const roadSectionFilter = document.getElementById('road_section_filter');
-            const parkingLocationCheckboxesContainer = document.getElementById('parking_location_checkboxes');
-            if (roadSectionFilter) {
-                roadSectionFilter.addEventListener('change', function() {
-                    const selectedRoadSection = this.value;
-                    parkingLocationCheckboxesContainer.querySelectorAll('.location-item').forEach(div => {
-                        // Tampilkan jika tidak ada filter ATAU jika data-road-section cocok dengan filter
-                        div.style.display = (!selectedRoadSection || div.getAttribute(
-                            'data-road-section') === selectedRoadSection) ? 'block' : 'none';
-                    });
+            // ✅ FUNGSI BARU UNTUK MENGHITUNG TOTAL DARI CHECKBOX
+            function updateDailyDepositTotal() {
+                let total = 0;
+                $('input[name="parking_location_ids[]"]:checked', parkingContainer).each(function() {
+                    total += parseFloat($(this).data('daily-deposit')) || 0;
                 });
+                dailyDepositInput.value = total;
+                calculateTotals(); // Panggil fungsi kalkulasi utama setelah total harian diperbarui
             }
+
+            // ✅ EVENT LISTENER UNTUK FILTER RUAS JALAN
+            roadSectionFilter.on('change', function() {
+                const selectedSectionId = $(this).val();
+                parkingContainer.find('.location-item').each(function() {
+                    const show = !selectedSectionId || $(this).data('road-section') ==
+                        selectedSectionId;
+                    $(this).toggle(show);
+                });
+            });
+
+            // ✅ EVENT LISTENER SAAT CHECKBOX DI KLIK
+            parkingContainer.on('change', 'input[type="checkbox"]', function() {
+                updateDailyDepositTotal();
+            });
+
+            // ✅ PANGGIL FUNGSI SAAT HALAMAN DIMUAT PERTAMA KALI
+            updateDailyDepositTotal();
         });
     </script>
 @endpush
