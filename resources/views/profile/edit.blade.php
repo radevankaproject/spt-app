@@ -25,7 +25,7 @@
                             @csrf
                             @method('patch')
                             <div class="d-flex align-items-start align-items-sm-center gap-6">
-                                <img src="{{ Auth::user()->img ? asset(Auth::user()->img) : '<span class="avatar-initial rounded-circle bg-label-secondary">' . strtoupper(substr(Auth::user()->name, 0, 2)) . '</span>' }}"
+                                <img src="{{ Auth::user()->img ? asset('storage/' . Auth::user()->img) : '<span class="avatar-initial rounded-circle bg-label-secondary">' . strtoupper(substr(Auth::user()->name, 0, 2)) . '</span>' }}"
                                     alt="user-avatar" class="d-block w-px-120 h-px-120 rounded-3" id="uploadedAvatar" />
                                 <div class="button-wrapper">
                                     <label for="upload" class="btn btn-primary me-3" tabindex="0">

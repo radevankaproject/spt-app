@@ -7,14 +7,14 @@
         <style>
             @font-face {
                 font-family: 'Bookman Old Style';
-                src: url('{{ storage_path(' fonts/bookmanoldstyle.ttf') }}') format('truetype');
+                src: url('{{ storage_path('fonts/bookmanoldstyle.ttf') }}') format('truetype');
                 font-weight: normal;
                 font-style: normal;
             }
 
             @font-face {
                 font-family: 'Bookman Old Style';
-                src: url('{{ storage_path(' fonts/bookmanoldstylebold.ttf') }}') format('truetype');
+                src: url('{{ storage_path('fonts/bookmanoldstylebold.ttf') }}') format('truetype');
                 font-weight: bold;
                 font-style: normal;
             }
@@ -155,18 +155,40 @@
         {{-- Halaman Sampul --}}
         <div class="cover-page">
             <div class="cover-logo-container">
-                <img src="{{ public_path('assets/images/pekanbaru.png') }}" alt="Logo Pekanbaru">
-                <img src="{{ public_path('assets/images/dishub.png') }}" alt="Logo Dishub">
+                {{--
+                PENTING: Agar logo ini termuat, pastikan file gambar Anda berada di:
+                /public_html/pks/assets/images/pekanbaru.png
+                /public_html/pks/assets/images/dishub.png
+            --}}
+                @php
+                    // Menggunakan public_path() untuk membaca file dari folder public
+                    $logoPekanbaruPath = storage_path('images/pekanbaru.png');
+                    $logoDishubPath = storage_path('images/dishub.png');
+                @endphp
+
+                @if (file_exists($logoPekanbaruPath))
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logoPekanbaruPath)) }}"
+                        alt="Logo Pekanbaru">
+                @endif
+                @if (file_exists($logoDishubPath))
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents($logoDishubPath)) }}"
+                        alt="Logo Dishub">
+                @endif
             </div>
-            <h1>PERJANJIAN KERJASAMA</h1>
-            <h2>ANTARA</h2>
-            <h2>DINAS PERHUBUNGAN KOTA PEKANBARU</h2>
-            <h3>DENGAN</h3>
-            <h3>{{ $agreement->fieldCoordinator->user->name ?? 'MITRA KERJASAMA' }}</h3>
-            <h3>TENTANG</h3>
-            <h3>PENGELOLAAN JASA LAYANAN PARKIR TEPI JALAN UMUM</h3>
-            <p>NOMOR : {{ $agreement->agreement_number }}</p>
-            <p class="cover-year">TAHUN {{ $agreement->signed_date->format('Y') }}</p>
+            <div class="cover-title">
+                <h1>PERJANJIAN KERJASAMA</h1>
+                <h1 style="margin-top: 10px;">ANTARA</h1>
+                <h1 style="margin-top: 10px;">DINAS PERHUBUNGAN KOTA PEKANBARU</h1>
+                <h1 style="margin-top: 10px;">DENGAN</h1>
+                <h1 style="margin-top: 10px;">{{ strtoupper($agreement->fieldCoordinator->user->name) }}</h1>
+            </div>
+
+            <div class="cover-details">
+                <p class="font-bold">TENTANG</p>
+                <p class="font-bold">PENGELOLAAN JASA LAYANAN PARKIR TEPI JALAN UMUM</p>
+                <p style="margin-top: 30px;" class="font-bold">NOMOR: {{ $agreement->agreement_number }}</p>
+                <p style="margin-top: 30px;" class="font-bold">TAHUN {{ $agreement->start_date->year }}</p>
+            </div>
         </div>
         <div class="page-break"></div>
 

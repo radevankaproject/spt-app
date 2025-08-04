@@ -93,7 +93,7 @@
                                 <div class="form-floating form-floating-outline">
                                     <input type="number" class="form-control" id="daily_deposit_amount"
                                         name="daily_deposit_amount" placeholder="Otomatis dari lokasi"
-                                        value="{{ old('daily_deposit_amount', 0) }}" required readonly />
+                                        value="{{ old('daily_deposit_amount', 0) }}" required />
                                     <label for="daily_deposit_amount">Setoran Harian (Rp)</label>
                                 </div>
                             </div>

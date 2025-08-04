@@ -24,7 +24,11 @@ class FieldCoordinatorController extends Controller
         $search = $request->input('search');
 
         // Mulai query FieldCoordinator dengan eager loading user
-        $query = FieldCoordinator::with('user');
+        // $query = FieldCoordinator::with('user');
+
+        $query = FieldCoordinator::with(['user', 'agreements' => function ($query) {
+            $query->where('status', 'active');
+        }]);
 
         // Terapkan filter pencarian jika ada
         if ($search) {
@@ -245,12 +249,16 @@ class FieldCoordinatorController extends Controller
     public function destroy(FieldCoordinator $fieldCoordinator)
     {
         try {
-            if ($fieldCoordinator->user->img) {
-                Storage::disk('public')->delete($fieldCoordinator->user->image);
+            if ($fieldCoordinator->user && $fieldCoordinator->user->img) {
+                // ✅ PERBAIKAN: Ganti dari ->image menjadi ->img
+                Storage::disk('public')->delete($fieldCoordinator->user->img);
             }
-            if ($fieldCoordinator->id_card_img) {
-                Storage::disk('public')->delete($fieldCoordinator->id_card_img);
+            if ($fieldCoordinator->id_card_path) {
+                Storage::disk('public')->delete($fieldCoordinator->id_card_path);
             }
+
+            // Hapus data koordinator itu sendiri (ini akan memicu penghapusan user melalui event)
+            // $fieldCoordinator->delete();
 
             $fieldCoordinator->user->delete();
             $fieldCoordinator->delete();

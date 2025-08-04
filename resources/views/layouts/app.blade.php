@@ -113,6 +113,66 @@
                     }, 250); // Jeda 250 milidetik
                 }
             });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const changelogLink = document.getElementById('changelog-link');
+                const changelogContent = document.getElementById('changelog-content');
+                const changelogModal = new bootstrap.Modal(document.getElementById('changelogModal'));
+
+                changelogLink.addEventListener('click', function() {
+                    // Tampilkan loading spinner
+                    changelogContent.innerHTML =
+                        `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+
+                    // Ambil data dari server
+                    fetch('{{ route('app.versions') }}')
+                        .then(response => response.json())
+                        .then(data => {
+                            let html = '';
+                            if (data.length > 0) {
+                                data.forEach(version => {
+                                    // Format tanggal
+                                    const releaseDate = new Date(version.release_date)
+                                        .toLocaleDateString('id-ID', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        });
+
+                                    // Ubah changelog (asumsi Markdown sederhana) menjadi list HTML
+                                    const changelogItems = version.changelog.split('\\n').map(
+                                        item => {
+                                            if (item.trim().startsWith('- ')) {
+                                                return `<li>${item.trim().substring(2)}</li>`;
+                                            }
+                                            return '';
+                                        }).join('');
+
+                                    html += `
+                                    <div class="mb-4 pb-4 border-bottom">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-1"><strong>Versi ${version.version}</strong></h5>
+                                            <small class="text-muted">${releaseDate}</small>
+                                        </div>
+                                        <ul class="list-unstyled mt-2 mb-0 ps-3">
+                                            ${changelogItems}
+                                        </ul>
+                                    </div>
+                                `;
+                                });
+                            } else {
+                                html =
+                                    '<p class="text-center">Belum ada catatan versi yang ditambahkan.</p>';
+                            }
+                            changelogContent.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching changelog:', error);
+                            changelogContent.innerHTML =
+                                '<p class="text-center text-danger">Gagal memuat histori. Silakan coba lagi.</p>';
+                        });
+                });
+            });
         </script>
     </body>
 

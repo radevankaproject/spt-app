@@ -17,6 +17,7 @@ use App\Http\Controllers\MasterData\AgreementHistoryController;
 use App\Http\Controllers\MasterData\BludBankAccountController;
 use App\Http\Controllers\PublicVerificationController;
 use App\Http\Controllers\ProfileSettingController;
+use App\Http\Controllers\AppVersionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,35 +84,59 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- AKSES LIHAT (VIEW-ONLY) - TERMASUK UNTUK LEADER ---
     Route::middleware('role:admin,staff_pks,staff_keu,leader')->prefix('masterdata')->name('masterdata.')->group(function () {
-        Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
         Route::get('parking-locations/{parking_location}', [ParkingLocationController::class, 'show'])->name('parking-locations.show');
         Route::get('deposit-transactions/{deposit_transaction}', [DepositTransactionController::class, 'show'])->name('deposit-transactions.show');
         Route::get('deposit-transactions/{depositTransaction}/pdf', [DepositTransactionController::class, 'generatePdf'])
             ->name('deposit-transactions.pdf');
+        Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
+        // Route::get('agreements/{agreement}/pdf-history', [AgreementController::class, 'showPdfHistory'])->name('agreements.pdf-history');
+        Route::get('agreements/{agreement}/pdf-history', [AgreementController::class, 'showPdfHistory'])->name('agreements.pdf-history');
         Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'generatePdf'])->name('agreements.pdf');
-        Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'generatePdf'])->name('agreements.pdf');
+        // Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'generatePdf'])->name('agreements.pdf');
     });
 
 
     // --- RUTE-ROUTE ADMIN LAINNYA ---
-    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::post('/agreements/find', [DashboardController::class, 'findAgreement'])->name('agreements.find');
-        Route::resource('users', UserController::class);
-        Route::resource('leaders', LeaderController::class);
-        Route::resource('field-coordinators', FieldCoordinatorController::class);
-        Route::resource('blud-bank-accounts', BludBankAccountController::class);
-        Route::post('/agreements/find', [DashboardController::class, 'findAgreement'])->name('agreements.find');
-        Route::resource('users', UserController::class);
-        Route::resource('leaders', LeaderController::class);
-        Route::resource('field-coordinators', FieldCoordinatorController::class);
-        Route::resource('blud-bank-accounts', BludBankAccountController::class);
-        Route::get('backup', [BackupController::class, 'index'])->name('backup.index');
-        Route::post('backup', [BackupController::class, 'store'])->name('backup.store');
-        Route::get('backup/{backup}/download', [BackupController::class, 'download'])->name('backup.download');
-        Route::delete('backup/{backup}', [BackupController::class, 'destroy'])->name('backup.destroy');
-        Route::get('upt-profile', [UptProfileController::class, 'index'])->name('upt-profile.index');
-        Route::post('upt-profile', [UptProfileController::class, 'update'])->name('upt-profile.update');
-    });
+    Route::middleware('role:admin')
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            // Dashboard Admin
+            Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
+
+            // Pencarian PKS
+            Route::post('/agreements/find', [DashboardController::class, 'findAgreement'])->name('agreements.find');
+
+            // ✅ PERBAIKAN: Definisikan rute spesifik SEBELUM resource
+            // --- Users ---
+            Route::get('users/trashed', [UserController::class, 'trashed'])->name('users.trashed');
+            Route::patch('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+            Route::resource('users', UserController::class);
+
+            // --- Leaders ---
+            Route::get('leaders/trashed', [LeaderController::class, 'trashed'])->name('leaders.trashed');
+            Route::patch('leaders/{id}/restore', [LeaderController::class, 'restore'])->name('leaders.restore');
+            Route::resource('leaders', LeaderController::class);
+
+            // --- Field Coordinators ---
+            Route::get('field-coordinators/trashed', [FieldCoordinatorController::class, 'trashed'])->name('field-coordinators.trashed');
+            Route::patch('field-coordinators/{id}/restore', [FieldCoordinatorController::class, 'restore'])->name('field-coordinators.restore');
+            Route::resource('field-coordinators', FieldCoordinatorController::class);
+
+            // --- Rute lainnya ---
+            Route::resource('blud-bank-accounts', BludBankAccountController::class);
+
+            Route::get('backup', [BackupController::class, 'index'])->name('backup.index');
+            Route::post('backup', [BackupController::class, 'store'])->name('backup.store');
+            Route::get('backup/{backup}/download', [BackupController::class, 'download'])->name('backup.download');
+            Route::delete('backup/{backup}', [BackupController::class, 'destroy'])->name('backup.destroy');
+
+            Route::get('upt-profile', [UptProfileController::class, 'index'])->name('upt-profile.index');
+            Route::post('upt-profile', [UptProfileController::class, 'update'])->name('upt-profile.update');
+
+            Route::get('app-versions/manage', [AppVersionController::class, 'manage'])->name('app-versions.manage');
+            Route::post('app-versions/manage', [AppVersionController::class, 'store'])->name('app-versions.store');
+        });
 
 
     // --- RUTE-ROUTE AJAX (Bisa diakses oleh beberapa role) ---
@@ -123,6 +148,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('search-locations-ajax', [DashboardController::class, 'searchParkingLocationsAjax'])->name('search-locations-ajax');
         Route::get('search-deposits-ajax', [DashboardController::class, 'searchDepositsAjax'])->name('search-deposits-ajax');
     });
+
+    Route::get('/app-versions', [AppVersionController::class, 'index'])->name('app.versions');
 });
 
 require __DIR__ . '/auth.php';

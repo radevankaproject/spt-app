@@ -115,9 +115,9 @@
                         <hr class="mt-6 mb-6" />
                         <div class="card-body p-0">
                             <h6 class="mb-4">Bukti Transfer:</h6>
-                            <a href="{{ asset($depositTransaction->proof_of_transfer) }}" target="_blank">
-                                <img src="{{ asset($depositTransaction->proof_of_transfer) }}" alt="Bukti Transfer"
-                                    class="img-fluid rounded-3 border" style="max-width: 400px;">
+                            <a href="{{ asset('storage/' . $depositTransaction->proof_of_transfer) }}" target="_blank">
+                                <img src="{{ asset('storage/' . $depositTransaction->proof_of_transfer) }}"
+                                    alt="Bukti Transfer" class="img-fluid rounded-3 border" style="max-width: 400px;">
                             </a>
                         </div>
                     @endif

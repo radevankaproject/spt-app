@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DepositTransactionController extends Controller
@@ -138,8 +139,9 @@ class DepositTransactionController extends Controller
 
             if ($request->hasFile('proof_of_transfer')) {
                 $imageName = time() . '_proof.' . $request->proof_of_transfer->extension();
-                $request->proof_of_transfer->move(public_path('uploads/proofs'), $imageName);
-                $transactionData['proof_of_transfer'] = 'uploads/proofs/' . $imageName;
+                // $request->proof_of_transfer->move(public_path('uploads/proofs'), $imageName);
+                $transactionData['proof_of_transfer'] = $request->file('proof_of_transfer')
+                    ->storeAs('uploads/proofs', $imageName, 'public');
             }
 
             DepositTransaction::create($transactionData);
@@ -209,14 +211,15 @@ class DepositTransactionController extends Controller
         // 3. ✅ Logika untuk handle file upload baru
         if ($request->hasFile('proof_of_transfer')) {
             // Hapus bukti transfer lama jika ada
-            if ($depositTransaction->proof_of_transfer && file_exists(public_path($depositTransaction->proof_of_transfer))) {
-                unlink(public_path($depositTransaction->proof_of_transfer));
+            if ($depositTransaction->proof_of_transfer) {
+                Storage::disk('public')->delete($depositTransaction->proof_of_transfer);
             }
 
             // Simpan bukti transfer yang baru
             $imageName = time() . '_proof.' . $request->proof_of_transfer->extension();
-            $request->proof_of_transfer->move(public_path('uploads/proofs'), $imageName);
-            $transactionData['proof_of_transfer'] = 'uploads/proofs/' . $imageName;
+            // $request->proof_of_transfer->move(public_path('uploads/proofs'), $imageName);
+            $transactionData['proof_of_transfer'] = $request->file('proof_of_transfer')
+                ->storeAs('uploads/proofs', $imageName, 'public');
         }
 
         $depositTransaction->update($transactionData);
@@ -231,6 +234,7 @@ class DepositTransactionController extends Controller
     public function destroy(DepositTransaction $depositTransaction)
     {
         try {
+            Storage::disk('public')->delete($depositTransaction->proof_of_transfer);
             $depositTransaction->delete();
         } catch (\Exception $e) {
             Log::error('DepositTransactionController@destroy: Error deleting deposit transaction: ' . $e->getMessage());
@@ -257,12 +261,6 @@ class DepositTransactionController extends Controller
         return redirect()->back()->with('success', 'Setoran berhasil divalidasi!');
     }
 
-    /**
-     * AJAX endpoint to search for active agreements for Select2.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function searchActiveAgreements(Request $request)
     {
         $search = $request->input('term'); // Select2 sends the search term as 'term'

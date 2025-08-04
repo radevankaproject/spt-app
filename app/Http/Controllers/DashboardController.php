@@ -9,6 +9,7 @@ use App\Models\ParkingLocation;
 use App\Models\RoadSection;
 use App\Models\Leader;
 use App\Models\BludBankAccount;
+use App\Models\AppVersion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -90,7 +91,7 @@ class DashboardController extends Controller
             'mainChartLabels',
             'mainChartData',
             'zoneChartData',
-            'barChartData'
+            'barChartData',
         ));
     }
 
@@ -295,7 +296,7 @@ class DashboardController extends Controller
 
         // Mencari transaksi yang nomor referensinya BERAKHIRAN dengan term yang diketik
         $deposits = DepositTransaction::with('agreement')
-            ->where('referral_code ', 'like', '%' . $term . '%' )
+            ->where('referral_code ', 'like', '%' . $term . '%')
             ->latest('deposit_date')
             ->limit(20)
             ->get();

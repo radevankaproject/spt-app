@@ -70,11 +70,16 @@
                                         {{ $agreement->end_date->translatedFormat('d M y') }}</span></li>
                             </ul>
                             <div class="d-flex justify-content-center gap-2">
-                                <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}"
-                                    class="btn btn-primary"><i class="icon-base ri ri-pencil-line me-2"></i>Edit</a>
+                                <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}" class="btn btn-primary"
+                                    data-bs-toggle="tooltip" title="Edit Perjanjian"><i
+                                        class="icon-base ri ri-pencil-line me-2"></i></a>
                                 <a href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
-                                    class="btn btn-outline-danger"><i class="icon-base ri ri-printer-line me-2"></i>Cetak
-                                    PKS</a>
+                                    class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Cetak PKS"><i
+                                        class="icon-base ri ri-printer-line me-2"></i></a>
+                                <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
+                                    class="btn btn-info" data-bs-toggle="tooltip" title="Histori Perjanjian"><i
+                                        class="icon-base ri ri-file-copy-2-line me-2"></i></a>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -104,10 +109,12 @@
                                             @forelse ($agreement->activeParkingLocations as $location)
                                                 <tr>
                                                     <td><i
-                                                            class="icon-base ri ri-arrow-right-s-fill text-primary me-2"></i>{{ $location->name }}
+                                                            class="icon-base ri ri-arrow-right-s-fill text-primary me-2"></i><a
+                                                            href="{{ route('masterdata.parking-locations.show', $location->id) }}">{{ $location->name }}</a>
                                                     </td>
                                                     <td><span
-                                                            class="text-muted">{{ $location->roadSection->name ?? 'N/A' }}</span>
+                                                            class="text-muted">{{ $location->roadSection->name ?? 'N/A' }}
+                                                        </span>
                                                     </td>
                                                     <td><span
                                                             class="badge bg-label-dark rounded-pill">{{ $location->roadSection->zone ?? 'N/A' }}</span>
@@ -144,7 +151,8 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="3" class="text-center text-muted py-4">Belum ada riwayat
+                                                    <td colspan="3" class="text-center text-muted py-4">Belum ada
+                                                        riwayat
                                                         setoran.</td>
                                                 </tr>
                                             @endforelse

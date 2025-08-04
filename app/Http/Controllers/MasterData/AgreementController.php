@@ -12,9 +12,11 @@ use App\Models\RoadSection;
 use App\Models\AgreementHistory;
 use App\Models\BludBankAccount;
 use App\Models\UptProfile;
+use App\Models\AgreementPdfHistory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -106,17 +108,17 @@ class AgreementController extends Controller
             'daily_deposit_amount' => 'required|numeric|min:0',
             'status' => 'required|string|in:active,expired,terminated,pending_renewal',
             'signed_date' => 'required|date',
-            'parking_location_ids' => 'required|array|min:1', // Validasi minimal 1 lokasi
+            'parking_location_ids' => 'required|array|min:1',
             'parking_location_ids.*' => 'exists:parking_locations,id',
         ]);
-        // ✅ Logika Kalkulasi
+
         $dailyAmount = (float) $validatedData['daily_deposit_amount'];
         $startDate = Carbon::parse($validatedData['start_date']);
         $endDate = Carbon::parse($validatedData['end_date']);
         $durationInDays = $endDate->diffInDays($startDate) + 1;
 
         $agreementData = $validatedData;
-        $agreementData['monthly_deposit_target'] = $dailyAmount * 30; // Asumsi 30 hari/bulan
+        $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
         $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
         $agreementData['verification_code'] = Str::uuid()->toString();
 
@@ -126,11 +128,14 @@ class AgreementController extends Controller
 
             $parkingLocationsToAttach = [];
             foreach ($validatedData['parking_location_ids'] as $locationId) {
-                // Saat membuat, semua lokasi yang dilampirkan otomatis 'active'
                 $parkingLocationsToAttach[$locationId] = ['assigned_date' => now(), 'status' => 'active'];
                 ParkingLocation::where('id', $locationId)->update(['status' => 'tidak_tersedia']);
             }
             $agreement->parkingLocations()->attach($parkingLocationsToAttach);
+
+            // ✅ PERBAIKAN: Ambil data agreement yang paling fresh dari database untuk memastikan semua relasi termuat
+            $freshAgreement = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection'])->find($agreement->id);
+            $this->generateAndStorePdfHistory($freshAgreement, 'Perjanjian awal dibuat');
 
             DB::commit();
 
@@ -225,7 +230,6 @@ class AgreementController extends Controller
             'parking_location_ids.*' => 'exists:parking_locations,id',
         ]);
 
-        // ✅ Logika Kalkulasi
         $dailyAmount = (float) $validatedData['daily_deposit_amount'];
         $startDate = Carbon::parse($validatedData['start_date']);
         $endDate = Carbon::parse($validatedData['end_date']);
@@ -234,9 +238,6 @@ class AgreementController extends Controller
         $agreementData = $validatedData;
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
         $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
-
-        //code verification
-        // $agreementData['verification_code'] = Str::uuid()->toString();
 
         DB::beginTransaction();
         try {
@@ -247,10 +248,98 @@ class AgreementController extends Controller
             $allRelatedLocations = $oldData->parkingLocations()->get()->keyBy('id');
             $currentActiveLocationIds = $oldData->activeParkingLocations()->pluck('parking_locations.id')->toArray();
 
-            // Siapkan array untuk menampung semua catatan riwayat
             $historyRecords = [];
+            $now = now();
 
-            // A. Catat perubahan data utama
+            // --- MULAI LOGIKA PERBANDINGAN DAN PENCATATAN RIWAYAT ---
+
+            // 1. Cek perubahan Pimpinan
+            if ($oldData->leader_id != $agreement->leader_id) {
+                $historyRecords[] = [
+                    'notes' => 'Pimpinan diubah dari "' . ($oldData->leader->user->name ?? 'N/A') . '" menjadi "' . ($agreement->leader->user->name ?? 'N/A') . '".',
+                ];
+            }
+
+            // 2. Cek perubahan Tanggal Mulai
+            if (!$oldData->start_date->isSameDay($agreement->start_date)) {
+                $historyRecords[] = [
+                    'notes' => 'Tanggal mulai diubah dari "' . $oldData->start_date->translatedFormat('d M Y') . '" menjadi "' . $agreement->start_date->translatedFormat('d M Y') . '".',
+                ];
+            }
+
+            // 3. Cek perubahan Tanggal Selesai
+            if (!$oldData->end_date->isSameDay($agreement->end_date)) {
+                $historyRecords[] = [
+                    'notes' => 'Tanggal selesai diubah dari "' . $oldData->end_date->translatedFormat('d M Y') . '" menjadi "' . $agreement->end_date->translatedFormat('d M Y') . '".',
+                ];
+            }
+
+            // 4. Cek perubahan Jumlah Setoran
+            if ($oldData->daily_deposit_amount != $agreement->daily_deposit_amount) {
+                $historyRecords[] = [
+                    'event_type' => 'deposit_changed',
+                    'notes' => 'Setoran diubah dari Rp ' . number_format($oldData->daily_deposit_amount) . ' menjadi Rp ' . number_format($agreement->daily_deposit_amount) . '.',
+                ];
+            }
+
+            // 5. Cek perubahan Status
+            if ($oldData->status != $agreement->status) {
+                $historyRecords[] = [
+                    'event_type' => 'status_changed',
+                    'notes' => 'Status diubah dari "' . ucfirst($oldData->status) . '" menjadi "' . ucfirst($agreement->status) . '".',
+                ];
+            }
+
+            // 6. Proses perubahan Lokasi Parkir
+            $newLocationIds = $validatedData['parking_location_ids'] ?? [];
+            $currentLocationIds = $oldData->activeParkingLocations->pluck('id')->toArray();
+
+            // Lokasi yang Dikeluarkan
+            $locationsToRemoveIds = array_diff($currentLocationIds, $newLocationIds);
+            if (!empty($locationsToRemoveIds)) {
+                $agreement->activeParkingLocations()->detach($locationsToRemoveIds);
+                ParkingLocation::whereIn('id', $locationsToRemoveIds)->update(['status' => 'tersedia']);
+                $removedLocations = ParkingLocation::whereIn('id', $locationsToRemoveIds)->get();
+                foreach ($removedLocations as $location) {
+                    $historyRecords[] = [
+                        'event_type' => 'location_removed',
+                        'notes' => 'Lokasi Parkir "' . $location->name . '" dikeluarkan.',
+                    ];
+                }
+            }
+
+            // Lokasi yang Ditambahkan
+            $locationsToAddIds = array_diff($newLocationIds, $currentLocationIds);
+            if (!empty($locationsToAddIds)) {
+                $agreement->parkingLocations()->attach($locationsToAddIds, ['assigned_date' => $now, 'status' => 'active']);
+                ParkingLocation::whereIn('id', $locationsToAddIds)->update(['status' => 'tidak_tersedia']);
+                $addedLocations = ParkingLocation::whereIn('id', $locationsToAddIds)->get();
+                foreach ($addedLocations as $location) {
+                    $historyRecords[] = [
+                        'event_type' => 'location_added',
+                        'notes' => 'Lokasi Parkir "' . $location->name . '" ditambahkan.',
+                    ];
+                }
+            }
+
+            // --- SELESAI LOGIKA PERBANDINGAN ---
+
+            // Simpan semua catatan riwayat dalam satu kali perintah query
+            if (!empty($historyRecords)) {
+                // Tambahkan data umum ke setiap catatan
+                foreach ($historyRecords as &$record) {
+                    $record['agreement_id'] = $agreement->id;
+                    $record['changed_by_user_id'] = Auth::id();
+                    $record['created_at'] = $now;
+                    $record['updated_at'] = $now;
+                    // Set event_type default jika belum ada
+                    if (!isset($record['event_type'])) {
+                        $record['event_type'] = 'details_updated';
+                    }
+                }
+                AgreementHistory::insert($historyRecords);
+            }
+
             if ($oldData->daily_deposit_amount != $agreement->daily_deposit_amount) {
                 $historyRecords[] = ['agreement_id' => $agreement->id, 'event_type' => 'deposit_changed', 'changed_by_user_id' => Auth::id(), 'notes' => 'Setoran diubah dari Rp ' . number_format($oldData->daily_deposit_amount) . ' ke Rp ' . number_format($agreement->daily_deposit_amount) . '.', 'created_at' => now(), 'updated_at' => now()];
             }
@@ -258,19 +347,16 @@ class AgreementController extends Controller
                 $historyRecords[] = ['agreement_id' => $agreement->id, 'event_type' => 'status_changed', 'changed_by_user_id' => Auth::id(), 'notes' => 'Status diubah dari "' . ucfirst($oldData->status) . '" ke "' . ucfirst($agreement->status) . '".', 'created_at' => now(), 'updated_at' => now()];
             }
 
-            // B. Proses lokasi yang dinonaktifkan
             $locationsToDeactivate = array_diff($currentActiveLocationIds, $newLocationIds);
             if (!empty($locationsToDeactivate)) {
                 $deactivatedLocationsDetails = ParkingLocation::whereIn('id', $locationsToDeactivate)->get();
                 foreach ($deactivatedLocationsDetails as $location) {
                     $agreement->parkingLocations()->updateExistingPivot($location->id, ['status' => 'inactive', 'removed_date' => now()]);
-                    // Kumpulkan data riwayat, jangan langsung create
                     $historyRecords[] = ['agreement_id' => $agreement->id, 'event_type' => 'location_removed', 'changed_by_user_id' => Auth::id(), 'notes' => 'Lokasi "' . $location->name . '" dikeluarkan.', 'created_at' => now(), 'updated_at' => now()];
                 }
                 ParkingLocation::whereIn('id', $locationsToDeactivate)->update(['status' => 'tersedia']);
             }
 
-            // C. Proses lokasi yang diaktifkan kembali atau baru ditambahkan
             $attachData = [];
             foreach ($newLocationIds as $locationId) {
                 if (isset($allRelatedLocations[$locationId])) {
@@ -291,15 +377,22 @@ class AgreementController extends Controller
                 }
             }
 
-            // Simpan semua catatan riwayat dalam satu kali perintah query
+            $pdfNotes = 'Perjanjian diperbarui.';
             if (!empty($historyRecords)) {
-                AgreementHistory::insert($historyRecords);
+                // Ambil semua 'notes' dari array, lalu gabungkan menjadi satu string
+                $notesArray = Arr::pluck($historyRecords, 'notes');
+                $pdfNotes = implode('; ', $notesArray);
             }
 
-            // Update status lokasi yang aktif
             if (!empty($newLocationIds)) {
                 ParkingLocation::whereIn('id', $newLocationIds)->update(['status' => 'tidak_tersedia']);
             }
+
+            // ✅ PERBAIKAN UTAMA: Ambil data agreement yang paling fresh dari database
+            // Ini memastikan semua relasi yang dibutuhkan oleh PDF sudah termuat dengan benar.
+            // Generate dan simpan PDF versi terbaru
+            $freshAgreement = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection'])->find($agreement->id);
+            $this->generateAndStorePdfHistory($freshAgreement, $pdfNotes);
 
             DB::commit();
 
@@ -312,9 +405,7 @@ class AgreementController extends Controller
         }
     }
 
-    /**
-     * Menghapus perjanjian (soft delete).
-     */
+
     public function destroy(Agreement $agreement)
     {
         DB::beginTransaction();
@@ -371,5 +462,44 @@ class AgreementController extends Controller
 
         $pdf = Pdf::loadView('pdf.agreement', compact('agreement', 'activeBankAccount', 'uptProfile'));
         return $pdf->stream(str_replace('/', '_', $agreement->agreement_number) . '_' . date('dmY', strtotime($agreement->start_date)) . '-' . date('dmy', strtotime($agreement->end_date)) . '.pdf');
+    }
+
+    private function generateAndStorePdfHistory(Agreement $agreement, string $notes)
+    {
+        try {
+            $activeBankAccount = BludBankAccount::where('is_active', true)->first();
+            if (!$activeBankAccount) {
+                Log::warning("No active BLUD bank account found for generating PDF for agreement ID: {$agreement->id}");
+            }
+            $uptProfile = UptProfile::first();
+
+            $pdf = Pdf::loadView('pdf.agreement', compact('agreement', 'activeBankAccount', 'uptProfile'));
+            $pdfContent = $pdf->output();
+
+            $fileName = 'PKS_' . str_replace('/', '_', $agreement->agreement_number) . '_' . time() . '.pdf';
+            $filePath = 'agreements_history/' . $fileName;
+
+            Storage::disk('public')->put($filePath, $pdfContent);
+
+            AgreementPdfHistory::create([
+                'agreement_id' => $agreement->id,
+                'file_path' => $filePath,
+                'notes' => $notes,
+                'generated_by_user_id' => Auth::id(),
+            ]);
+
+            Log::info("Successfully generated PDF history for agreement ID: {$agreement->id}");
+        } catch (\Exception $e) {
+            // Re-throw exception agar proses utama tahu ada yang gagal
+            Log::error("Failed to generate PDF history for agreement ID {$agreement->id}: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function showPdfHistory(Agreement $agreement)
+    {
+        // ✅ PERBAIKAN: Relasi ke generator adalah 'generator', bukan 'generator.user'
+        $histories = $agreement->pdfHistories()->with('generator')->paginate(10);
+        return view('staff.agreements.pdf_history', compact('agreement', 'histories'));
     }
 }

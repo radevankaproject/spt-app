@@ -123,6 +123,12 @@
                     <div data-i18n="Backup Database">Backup Database</div>
                 </a>
             </li>
+            <li class="menu-item {{ request()->routeIs('admin.app-versions.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.app-versions.manage') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-git-branch-line"></i>
+                    <div data-i18n="Manajemen Versi">Manajemen Versi</div>
+                </a>
+            </li>
         @endif
         @if (Auth::user()->isAdmin() || Auth::user()->isStaffPks())
             <li class="menu-header small"><span class="menu-header-text">Lokasi Parkir & Perjanjian PKS</span></li>

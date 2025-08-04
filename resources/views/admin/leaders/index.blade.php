@@ -33,6 +33,9 @@
                     <input type="search" name="search" class="form-control" placeholder="Cari..."
                         value="{{ request('search') }}">
                 </form>
+                <a href="{{ route('admin.leaders.trashed') }}" class="btn btn-outline-secondary">
+                    <i class="icon-base ri ri-archive-line me-2"></i>Lihat Arsip
+                </a>
                 {{-- Tombol Tambah --}}
                 <a href="{{ route('admin.leaders.create') }}" class="btn btn-primary">
                     <i class="icon-base ri ri-add-line me-2"></i>Tambah Leader

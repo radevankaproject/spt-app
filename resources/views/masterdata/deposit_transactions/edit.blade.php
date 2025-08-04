@@ -95,9 +95,9 @@
                         <div class="card">
                             <div class="card-body text-center">
                                 {{-- ✅ PERBAIKAN DI SINI: Tampilkan gambar lama --}}
-                                @if ($depositTransaction->proof_of_transfer && file_exists(public_path($depositTransaction->proof_of_transfer)))
-                                    <img src="{{ asset($depositTransaction->proof_of_transfer) }}" alt="proof-placeholder"
-                                        class="d-block rounded-3 mx-auto mb-4" id="proof-preview"
+                                @if ($depositTransaction->proof_of_transfer)
+                                    <img src="{{ asset('storage/' . $depositTransaction->proof_of_transfer) }}"
+                                        alt="proof-placeholder" class="d-block rounded-3 mx-auto mb-4" id="proof-preview"
                                         style="max-height: 150px;" />
                                 @else
                                     <img src="{{ asset('assets/img/illustrations/image-light.png') }}"

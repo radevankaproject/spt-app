@@ -34,6 +34,9 @@
                     <input type="search" name="search" class="form-control" placeholder="Cari nama/NIK..."
                         value="{{ request('search') }}">
                 </form>
+                {{-- <a href="{{ route('admin.field-coordinators.trashed') }}" class="btn btn-outline-secondary">
+                    <i class="icon-base ri ri-archive-line me-2"></i>Lihat Arsip
+                </a> --}}
                 {{-- Tombol Tambah --}}
                 <a href="{{ route('admin.field-coordinators.create') }}" class="btn btn-primary">
                     <i class="icon-base ri ri-add-line me-2"></i>Tambah Korlap
@@ -54,7 +57,7 @@
                             <th>Koordinator</th>
                             <th>Kontak</th>
                             <th>NIK</th>
-                            <th>Status</th>
+                            <th>Perjanjian Aktif</th> {{-- ✅ Kolom Baru --}}
                             <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -65,7 +68,7 @@
                                     <div class="d-flex justify-content-start align-items-center user-name">
                                         <div class="avatar-wrapper me-4">
                                             <div class="avatar avatar-sm">
-                                                @if ($coordinator->user && $coordinator->user->img)
+                                                @if ($coordinator->user && $coordinator->user->img && file_exists(public_path($coordinator->user->img)))
                                                     <img src="{{ asset('storage/' . $coordinator->user->img) }}"
                                                         alt="Avatar" class="rounded-circle">
                                                 @else
@@ -88,10 +91,20 @@
                                     </div>
                                 </td>
                                 <td><span class="fw-medium">{{ $coordinator->id_card_number }}</span></td>
-                                <td><span class="badge bg-label-success">Aktif</span></td>
+                                <td>
+                                    {{-- ✅ Logika untuk menampilkan Info PKS --}}
+                                    @if ($coordinator->agreements->isNotEmpty())
+                                        @php $activeAgreement = $coordinator->agreements->first(); @endphp
+                                        <a href="{{ route('masterdata.agreements.show', $activeAgreement->id) }}"
+                                            class="badge bg-label-primary">
+                                            {{ $activeAgreement->agreement_number }}
+                                        </a>
+                                    @else
+                                        <span class="badge bg-label-secondary">Belum Ada PKS</span>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center">
-                                        {{-- ✅ TOMBOL DETAIL DITAMBAHKAN DI SINI --}}
                                         <a class="btn btn-sm btn-icon"
                                             href="{{ route('admin.field-coordinators.show', $coordinator->id) }}"
                                             data-bs-toggle="tooltip" title="Lihat Detail">

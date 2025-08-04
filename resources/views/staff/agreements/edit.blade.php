@@ -118,7 +118,7 @@
                                         id="daily_deposit_amount" name="daily_deposit_amount"
                                         placeholder="Otomatis dari lokasi"
                                         value="{{ old('daily_deposit_amount', $agreement->daily_deposit_amount) }}"
-                                        required readonly /><label for="daily_deposit_amount">Setoran Harian (Rp)</label>
+                                        required /><label for="daily_deposit_amount">Setoran Harian (Rp)</label>
                                 </div>
                             </div>
                             <div class="col-md-4">

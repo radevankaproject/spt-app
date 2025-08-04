@@ -5,11 +5,10 @@ namespace App\Models;
 use App\Http\Controllers\Admin\UptProfileController;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Agreement extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'verification_code',
@@ -94,5 +93,10 @@ class Agreement extends Model
     public function changer()
     {
         return $this->belongsTo(User::class, 'changed_by_user_id');
+    }
+
+    public function pdfHistories()
+    {
+        return $this->hasMany(AgreementPdfHistory::class)->latest();
     }
 }

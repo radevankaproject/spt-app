@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -54,8 +55,8 @@ class ProfileSettingController extends Controller
         // Handle upload foto profil
         if ($request->hasFile('img')) {
             // ✅ PERBAIKAN 1: Gunakan file_exists() untuk pengecekan yang aman
-            if ($user->img && file_exists(public_path($user->img))) {
-                unlink(public_path($user->img));
+            if ($user->img) {
+                Storage::disk('public')->delete($user->img);
             }
 
             // Panggil method kompresi dan simpan path yang dikembalikan
@@ -90,13 +91,11 @@ class ProfileSettingController extends Controller
      */
     private function compressAndStoreImage($file)
     {
-        $fileName = time() . '.' . $file->getClientOriginalExtension();
+        // 1. Tentukan nama dan path file seperti biasa.
+        $fileName = time() . '_users.' . $file->getClientOriginalExtension();
         $path = 'uploads/users/' . $fileName;
 
-        // ✅ PERBAIKAN 2: Simpan ke public_path(), bukan storage_path()
-        $destinationPath = public_path('uploads/users');
-
-        // Buat gambar dari file yang diupload
+        // 2. Buat resource gambar dari file yang diupload.
         $image = null;
         $extension = strtolower($file->getClientOriginalExtension());
         if ($extension == 'jpg' || $extension == 'jpeg') {
@@ -105,26 +104,28 @@ class ProfileSettingController extends Controller
             $image = imagecreatefrompng($file);
         }
 
+        // 3. Jika format gambar didukung untuk kompresi:
         if ($image) {
-            // Pastikan direktori ada
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            // Simpan gambar dengan kompresi (kualitas 75%)
+            // "Menangkap" output gambar yang sudah dikompresi ke dalam sebuah variabel
+            ob_start();
             if ($extension == 'jpg' || $extension == 'jpeg') {
-                imagejpeg($image, $destinationPath . '/' . $fileName, 75);
+                imagejpeg($image, null, 75); // Kualitas 75%
             } elseif ($extension == 'png') {
-                imagepng($image, $destinationPath . '/' . $fileName, 6);
+                imagepng($image, null, 6); // Level kompresi 6
             }
-
+            $compressedImageData = ob_get_clean();
             imagedestroy($image);
 
-            return $path; // Kembalikan path relatif untuk disimpan di database
+            // 4. Simpan konten gambar yang sudah dikompresi menggunakan Storage facade.
+            // Ini setara dengan storeAs() tapi untuk konten mentah.
+            // File akan disimpan di: storage/app/public/uploads/users/
+            Storage::disk('public')->put($path, $compressedImageData);
+
+            // 5. Kembalikan path relatif untuk disimpan di database.
+            return $path;
         }
 
-        // Fallback jika format tidak didukung (jarang terjadi)
-        $file->move($destinationPath, $fileName);
-        return $path;
+        // 6. Fallback: Jika format tidak didukung (misal: webp), gunakan storeAs() biasa.
+        return $file->storeAs('uploads/users', $fileName, 'public');
     }
 }

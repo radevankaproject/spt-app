@@ -32,6 +32,9 @@
                     <input type="search" name="search" class="form-control" placeholder="Cari nama/email..."
                         value="{{ request('search') }}">
                 </form>
+                <a href="{{ route('admin.users.trashed') }}" class="btn btn-outline-secondary">
+                    <i class="icon-base ri ri-archive-line me-2"></i>Lihat Arsip
+                </a>
                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
                     <i class="icon-base ri ri-add-line me-2"></i>Tambah User
                 </a>
