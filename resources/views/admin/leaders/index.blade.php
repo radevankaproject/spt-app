@@ -2,6 +2,10 @@
 
 @section('title', 'Manajemen Leader')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-users-index')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
 @endpush

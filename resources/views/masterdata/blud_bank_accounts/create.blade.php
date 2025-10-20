@@ -2,6 +2,10 @@
 
 @section('title', 'Tambah Rekening BLUD Baru')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-blud-bank-form')
+@endsection
+
 @section('content')
     {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">

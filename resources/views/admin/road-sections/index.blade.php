@@ -2,6 +2,10 @@
 
 @section('title', 'Manajemen Ruas Jalan')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-road-sections-index')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
 @endpush

@@ -1,14 +1,12 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DepositTransaction extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'referral_code', // <-- TAMBAHKAN INI
@@ -23,9 +21,9 @@ class DepositTransaction extends Model
     ];
 
     protected $casts = [
-        'deposit_date' => 'date',
-        'amount' => 'decimal:2',
-        'is_validated' => 'boolean',
+        'deposit_date'    => 'date',
+        'amount'          => 'decimal:2',
+        'is_validated'    => 'boolean',
         'validation_date' => 'datetime', // <-- UBAH INI (dan pastikan tipe castnya datetime, bukan date)
     ];
 

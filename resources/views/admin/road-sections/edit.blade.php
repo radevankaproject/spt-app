@@ -2,6 +2,10 @@
 
 @section('title', 'Edit Ruas Jalan')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-road-sections-form')
+@endsection
+
 @section('content')
     {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">

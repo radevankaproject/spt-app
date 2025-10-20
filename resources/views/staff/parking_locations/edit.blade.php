@@ -2,6 +2,10 @@
 
 @section('title', 'Edit Lokasi Parkir')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-parking-locations-form')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 @endpush

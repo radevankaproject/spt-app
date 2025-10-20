@@ -3,18 +3,18 @@
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Bukti Setoran - #{{ $depositTransaction->id }}</title>
+        <title>Bukti Setoran - #{{ $depositTransaction->referral_code }}</title>
         <style>
             @font-face {
                 font-family: 'Bookman Old Style';
-                src: url('{{ storage_path(' fonts/bookmanoldstyle.ttf') }}') format('truetype');
+                src: url('{{ storage_path('fonts/bookmanoldstyle.ttf') }}') format('truetype');
                 font-weight: normal;
                 font-style: normal;
             }
 
             @font-face {
                 font-family: 'Bookman Old Style';
-                src: url('{{ storage_path(' fonts/bookmanoldstylebold.ttf') }}') format('truetype');
+                src: url('{{ storage_path('fonts/bookmanoldstylebold.ttf') }}') format('truetype');
                 font-weight: bold;
                 font-style: normal;
             }
@@ -36,6 +36,11 @@
             .header {
                 text-align: center;
                 margin-bottom: 20px;
+            }
+
+            .header img {
+                height: 60px;
+                margin-bottom: 15px;
             }
 
             .header h3 {
@@ -61,7 +66,6 @@
                 font-weight: bold;
             }
 
-            /* ✅ STYLE BARU UNTUK CATATAN */
             .notes-section {
                 margin-top: 20px;
                 padding: 10px;
@@ -81,9 +85,27 @@
                 text-align: right;
             }
 
-            .total-section h4 {
-                margin: 0;
-                font-size: 16px;
+            /* ✅ STYLE BARU UNTUK BADGE */
+            .badge {
+                display: inline-block;
+                padding: 4px 8px;
+                font-size: 10px;
+                font-weight: bold;
+                line-height: 1;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: baseline;
+                border-radius: 0.375rem;
+            }
+
+            .badge-success {
+                color: #1a5632;
+                background-color: #d4edda;
+            }
+
+            .badge-warning {
+                color: #664d03;
+                background-color: #fff3cd;
             }
         </style>
     </head>
@@ -91,6 +113,13 @@
     <body>
         <div class="container">
             <div class="header">
+                {{-- ✅ PERUBAHAN 1: Menambahkan Logo --}}
+                @if ($uptProfile->logo && file_exists(public_path('storage/' . $uptProfile->logo)))
+                    <img src="{{ public_path('storage/' . $uptProfile->logo) }}" alt="Logo">
+                @else
+                    <img src="{{ public_path('logo.png') }}" alt="Logo">
+                @endif
+
                 <h3>BUKTI SETORAN DANA</h3>
                 <p>{{ $uptProfile->name }}</p>
                 <p>{{ $uptProfile->address }}</p>
@@ -128,7 +157,14 @@
                 </tr>
                 <tr>
                     <td>Status</td>
-                    <td>: {{ $depositTransaction->is_validated ? 'Tervalidasi' : 'Pending' }}</td>
+                    {{-- ✅ PERUBAHAN 2: Mengubah Status menjadi Badge --}}
+                    <td>:
+                        @if ($depositTransaction->is_validated)
+                            <span class="badge badge-success">Tervalidasi</span>
+                        @else
+                            <span class="badge badge-warning">Pending</span>
+                        @endif
+                    </td>
                 </tr>
                 @if ($depositTransaction->is_validated)
                     <tr>
@@ -140,12 +176,13 @@
                 @endif
             </table>
 
-            {{-- ✅ PERUBAHAN DI SINI: Menambahkan Catatan --}}
             @if (!empty($depositTransaction->notes))
                 <div class="notes-section">
                     <p><strong>Catatan:</strong><br>{{ $depositTransaction->notes }}</p>
                 </div>
             @endif
+
+            {{-- Bagian bukti transfer sudah dihapus --}}
 
             <div class="total-section">
                 <p>Jumlah Yang Dibayarkan:</p>

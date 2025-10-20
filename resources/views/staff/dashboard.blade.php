@@ -218,7 +218,7 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar avatar-xs me-2"><img
-                                                            src="{{ $coordinator->user && $coordinator->user->img ? asset($coordinator->user->img) : asset('assets/img/avatars/1.png') }}"
+                                                           src="{{ $coordinator->user && $coordinator->user->img ? asset('storage/' . $coordinator->user->img) : strtoupper(substr($coordinator->user->name ?? 'K', 0, 2)) }}"
                                                             alt="Avatar" class="rounded-circle"></div>
                                                     <span>{{ Str::limit($coordinator->user->name, 15) }}</span>
                                                 </div>

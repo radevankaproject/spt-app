@@ -2,6 +2,10 @@
 
 @section('title', 'Histori Perjanjian Kerjasama')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-agreement-history-index')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     {{-- CSS untuk timeline bawaan template --}}
@@ -108,19 +112,19 @@
                                 <div class="card-body">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-xs me-2">
-                                            @if ($history->creator && $history->creator->img && file_exists(public_path($history->creator->img)))
-                                                <img src="{{ asset($history->creator->img) }}" alt="Avatar"
-                                                    class="rounded-circle" />
-                                            @else
+                                            <img src="{{ $history->changer && $history->changer->img ? asset('storage/' . $history->changer->img) : strtoupper(substr($history->changer->name ?? 'S', 0, 1)) }}"
+                                                alt="Avatar" class="rounded-circle" />
+                                            {{-- @else
                                                 <span
                                                     class="avatar-initial rounded-circle bg-label-secondary">{{ strtoupper(substr($history->creator->name ?? 'S', 0, 1)) }}</span>
-                                            @endif
+                                            @endif --}}
                                         </div>
                                         <span>Oleh: <span
-                                                class="fw-medium">{{ $history->creator->name ?? 'Sistem' }}</span></span>
+                                                class="fw-medium">{{ $history->changer->name ?? 'Sistem' }}</span></span>
                                     </div>
                                 </div>
-                                <div class="timeline-event-time">{{ $history->created_at->translatedFormat('d M Y, H:i') }}
+                                <div class="timeline-event-time">
+                                    {{ $history->created_at->translatedFormat('d M y, H:i') }}
                                 </div>
                             </div>
                         </li>

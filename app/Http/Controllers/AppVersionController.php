@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\AppVersion;
@@ -34,9 +33,9 @@ class AppVersionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'version' => 'required|string|max:255|unique:app_versions,version',
+            'version'      => 'required|string|max:255|unique:app_versions,version',
             'release_date' => 'required|date',
-            'changelog' => 'required|string',
+            'changelog'    => 'required|string',
         ]);
 
         AppVersion::create($request->all());

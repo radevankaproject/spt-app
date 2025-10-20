@@ -2,6 +2,10 @@
 
 @section('title', 'Manajemen Koordinator Lapangan')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-users-index')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
 @endpush
@@ -68,15 +72,13 @@
                                     <div class="d-flex justify-content-start align-items-center user-name">
                                         <div class="avatar-wrapper me-4">
                                             <div class="avatar avatar-sm">
-                                                @if ($coordinator->user && $coordinator->user->img && file_exists(public_path($coordinator->user->img)))
-                                                    <img src="{{ asset('storage/' . $coordinator->user->img) }}"
+
+                                                    <img src="{{ $coordinator->user && $coordinator->user->img ? asset('storage/' . $coordinator->user->img) : strtoupper(substr($coordinator->user->name ?? 'K', 0, 2)) }}"
                                                         alt="Avatar" class="rounded-circle">
-                                                @else
-                                                    <span
-                                                        class="avatar-initial rounded-circle bg-label-warning">{{ strtoupper(substr($coordinator->user->name ?? 'K', 0, 2)) }}</span>
-                                                @endif
+
                                             </div>
                                         </div>
+
                                         <div class="d-flex flex-column">
                                             <span class="fw-medium">{{ $coordinator->user->name ?? 'N/A' }}</span>
                                             <small

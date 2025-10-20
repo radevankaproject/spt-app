@@ -2,6 +2,10 @@
 
 @section('title', 'Manajemen Rekening BLUD')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-users-index')
+@endsection
+
 @push('styles')
     {{-- CSS untuk SweetAlert2 --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />

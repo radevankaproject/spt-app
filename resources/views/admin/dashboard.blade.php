@@ -52,44 +52,47 @@
                 <div class="col-md-6 col-xl-12">
                     <div class="card h-100">
                         <div class="card-body text-center">
-                            <div class="mb-6 pt-2">
-                                @if (
-                                    $currentLeader &&
-                                        $currentLeader->user &&
-                                        $currentLeader->user->img &&
-                                        file_exists(public_path($currentLeader->user->img)))
-                                    <img class="img-fluid w-px-150 rounded-3" src="{{ asset($currentLeader->user->img) }}"
-                                        alt="Leader" />
-                                @else
-                                    <img class="img-fluid w-px-150"
-                                        src="{{ asset('assets/img/illustrations/faq-illustration.png') }}" alt="Leader" />
-                                @endif
-
-                            </div>
-                            <h5 class="mb-1 text-center">{{ $currentLeader->user->name ?? 'Belum Ada' }}</h5>
-                            <p class="mb-1 text-center">
-                                NIP. {{ formatNip($currentLeader->employee_number) }}
-                            </p>
-                            <p class="mb-6 text-center">
-                                Pimpinan BLUD UPT Perparkiran
-                            </p>
-                            <div class="row mb-6 g-4">
-                                <div class="col-12">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar flex-shrink-0 me-4">
-                                            <span class="avatar-initial rounded-3 bg-label-primary"><i
-                                                    class="icon-base ri ri-calendar-line icon-24px"></i></span>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0 text-nowrap fw-normal text-center">
-                                                {{ $startDate->translatedFormat('d F Y') }}</h6>
-                                            <small>Mulai Menjabat</small>
+                            {{-- TAMBAHKAN KONDISI DI SINI --}}
+                            @if ($currentLeader)
+                                <div class="mb-6 pt-2">
+                                    <img src="{{ $currentLeader->user && $currentLeader->user->img ? asset('storage/' . $currentLeader->user->img) : strtoupper(substr($currentLeader->user->name ?? 'K', 0, 2)) }}"
+                                        alt="Avatar" class="img-fluid w-px-150 rounded-3">
+                                </div>
+                                <h5 class="mb-1 text-center">{{ $currentLeader->user->name ?? 'N/A' }}</h5>
+                                <p class="mb-1 text-center">
+                                    {{-- Gunakan optional() helper atau null safe operator (?) untuk keamanan ekstra --}}
+                                    NIP. {{ formatNip($currentLeader->employee_number ?? '-') }}
+                                </p>
+                                <p class="mb-6 text-center">
+                                    Pimpinan BLUD UPT Perparkiran
+                                </p>
+                                <div class="row mb-6 g-4">
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar flex-shrink-0 me-4">
+                                                <span class="avatar-initial rounded-3 bg-label-primary"><i
+                                                        class="icon-base ri ri-calendar-line icon-24px"></i></span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 text-nowrap fw-normal text-center">
+                                                    {{ $startDate->translatedFormat('d F Y') }}</h6>
+                                                <small>Mulai Menjabat</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
-                            </div>
-                            {{-- <a href="javascript:void(0);" class="btn btn-primary w-100">Join the event</a> --}}
+                            @else
+                                {{-- TAMPILKAN INI JIKA PIMPINAN KOSONG --}}
+                                <div class="mb-6 pt-2">
+                                    <img class="img-fluid w-px-150"
+                                        src="{{ asset('assets/img/illustrations/faq-illustration.png') }}" alt="Leader" />
+                                </div>
+                                <h5 class="mb-1 text-center">Pimpinan Belum Ditentukan</h5>
+                                <p class="mb-6 text-center text-muted">
+                                    Data pimpinan belum ditambahkan ke dalam sistem.
+                                </p>
+                            @endif
+                            {{-- Akhir dari kondisi --}}
                         </div>
                     </div>
                 </div>
@@ -234,7 +237,7 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar avatar-xs me-2"><img
-                                                            src="{{ $coordinator->user && $coordinator->user->img ? asset($coordinator->user->img) : asset('assets/img/avatars/1.png') }}"
+                                                            src="{{ $coordinator->user && $coordinator->user->img ? asset('storage/' . $coordinator->user->img) : strtoupper(substr($coordinator->user->name ?? 'K', 0, 2)) }}"
                                                             alt="Avatar" class="rounded-circle"></div>
                                                     <span>{{ Str::limit($coordinator->user->name, 15) }}</span>
                                                 </div>

@@ -2,6 +2,10 @@
 
 @section('title', 'Manajemen Versi Aplikasi')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-versions-manage')
+@endsection
+
 @section('content')
     {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">

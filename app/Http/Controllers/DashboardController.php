@@ -1,19 +1,17 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Agreement;
+use App\Models\BludBankAccount;
 use App\Models\DepositTransaction;
 use App\Models\FieldCoordinator;
+use App\Models\Leader;
 use App\Models\ParkingLocation;
 use App\Models\RoadSection;
-use App\Models\Leader;
-use App\Models\BludBankAccount;
-use App\Models\AppVersion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -23,9 +21,9 @@ class DashboardController extends Controller
     public function adminDashboard()
     {
         // --- 1. Data untuk Info Cards ---
-        $currentLeader = Leader::with('user')->latest()->first();
-        $startDate = Carbon::parse($currentLeader->start_date);
-        $activeBankAccount = BludBankAccount::where('is_active', true)->first();
+        $currentLeader               = Leader::with('user')->latest()->first();
+        $startDate                   = $currentLeader ? Carbon::parse($currentLeader->start_date) : now();
+        $activeBankAccount           = BludBankAccount::where('is_active', true)->first();
         $currentYearValidatedDeposit = DepositTransaction::where('is_validated', true)
             ->whereYear('deposit_date', now()->year)->sum('amount');
 
@@ -36,7 +34,7 @@ class DashboardController extends Controller
             ->latest('deposit_date')->limit(8)->get();
 
         $recentParkingLocations = ParkingLocation::with('roadSection')->latest()->limit(8)->get();
-        $recentCoordinators = FieldCoordinator::with('user')->latest()->limit(8)->get();
+        $recentCoordinators     = FieldCoordinator::with('user')->latest()->limit(8)->get();
 
         // --- 3. Data untuk Grafik ---
 
@@ -49,10 +47,10 @@ class DashboardController extends Controller
             ->groupBy('month')->orderBy('month')->pluck('total', 'month')->all();
 
         $mainChartLabels = [];
-        $mainChartData = [];
+        $mainChartData   = [];
         for ($m = 1; $m <= 12; $m++) {
             $mainChartLabels[] = \Carbon\Carbon::create()->month($m)->translatedFormat('F');
-            $mainChartData[] = $monthlyDeposits[$m] ?? 0;
+            $mainChartData[]   = $monthlyDeposits[$m] ?? 0;
         }
 
         // B. Grafik Zona (Polar Area Charts)
@@ -64,9 +62,9 @@ class DashboardController extends Controller
             ->groupBy('road_sections.zone')->pluck('total', 'zone')->all();
 
         $zoneChartData = [
-            'labels' => array_keys($roadSectionsByZone),
-            'roadSections' => array_values($roadSectionsByZone),
-            'parkingLocations' => array_values($locationsByZone)
+            'labels'           => array_keys($roadSectionsByZone),
+            'roadSections'     => array_values($roadSectionsByZone),
+            'parkingLocations' => array_values($locationsByZone),
         ];
 
         // C. Grafik Titik per Ruas Jalan (Bar Chart)
@@ -76,9 +74,8 @@ class DashboardController extends Controller
 
         $barChartData = [
             'labels' => $locationsPerRoadSection->pluck('name'),
-            'data' => $locationsPerRoadSection->pluck('parking_locations_count')
+            'data'   => $locationsPerRoadSection->pluck('parking_locations_count'),
         ];
-
 
         return view('admin.dashboard', compact(
             'currentLeader',
@@ -117,11 +114,11 @@ class DashboardController extends Controller
 
         // 10 Daftar Lokasi Terbaru
         $recentParkingLocations = ParkingLocation::with('roadSection')->latest()->limit(10)->get();
-        $totalParkingLocations = ParkingLocation::count();
+        $totalParkingLocations  = ParkingLocation::count();
 
         // 10 Daftar PKS Terbaru
         $recentAgreements = Agreement::with('fieldCoordinator.user')->latest()->limit(10)->get();
-        $totalAgreements = Agreement::count();
+        $totalAgreements  = Agreement::count();
 
         // Grafik Jumlah Lokasi per Ruas Jalan (Top 10)
         $locationsPerRoadSection = RoadSection::withCount('parkingLocations')
@@ -130,7 +127,7 @@ class DashboardController extends Controller
 
         $barChartData = [
             'labels' => $locationsPerRoadSection->pluck('name'),
-            'data' => $locationsPerRoadSection->pluck('parking_locations_count')
+            'data'   => $locationsPerRoadSection->pluck('parking_locations_count'),
         ];
 
         return view('staff.pks.dashboard', compact(
@@ -149,7 +146,7 @@ class DashboardController extends Controller
     public function staffKeuDashboard()
     {
         $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+        $currentYear  = Carbon::now()->year;
 
         // Grafik Setoran per Bulan
         $monthlyDeposits = DepositTransaction::select(
@@ -160,10 +157,10 @@ class DashboardController extends Controller
             ->groupBy('month')->orderBy('month')->pluck('total', 'month')->all();
 
         $depositChartLabels = [];
-        $depositChartData = [];
+        $depositChartData   = [];
         for ($m = 1; $m <= 12; $m++) {
             $depositChartLabels[] = Carbon::create()->month($m)->translatedFormat('F');
-            $depositChartData[] = $monthlyDeposits[$m] ?? 0;
+            $depositChartData[]   = $monthlyDeposits[$m] ?? 0;
         }
 
         // Daftar PKS yang sudah & belum bayar bulan ini
@@ -175,7 +172,7 @@ class DashboardController extends Controller
             ->whereMonth('deposit_date', $currentMonth)
             ->pluck('agreement_id')->unique();
 
-        $paidAgreements = $allActiveAgreements->whereIn('id', $paidAgreementIds);
+        $paidAgreements   = $allActiveAgreements->whereIn('id', $paidAgreementIds);
         $unpaidAgreements = $allActiveAgreements->whereNotIn('id', $paidAgreementIds);
 
         // Jumlah Setoran
@@ -236,7 +233,7 @@ class DashboardController extends Controller
     {
         $term = $request->input('q');
 
-        if (!$term) {
+        if (! $term) {
             return response()->json(['items' => []]);
         }
 
@@ -252,8 +249,8 @@ class DashboardController extends Controller
 
         $results = $agreements->map(function ($agreement) {
             return [
-                'id' => $agreement->id,
-                'text' => $agreement->agreement_number . ' (' . ($agreement->fieldCoordinator->user->name ?? 'N/A') . ')'
+                'id'   => $agreement->id,
+                'text' => $agreement->agreement_number . ' (' . ($agreement->fieldCoordinator->user->name ?? 'N/A') . ')',
             ];
         });
 
@@ -264,7 +261,7 @@ class DashboardController extends Controller
     {
         $term = $request->input('q');
 
-        if (!$term) {
+        if (! $term) {
             return response()->json(['items' => []]);
         }
 
@@ -275,8 +272,8 @@ class DashboardController extends Controller
 
         $results = $locations->map(function ($location) {
             return [
-                'id' => $location->id,
-                'text' => $location->name . ' (' . ($location->roadSection->name ?? 'Tanpa Ruas Jalan') . ')'
+                'id'   => $location->id,
+                'text' => $location->name . ' (' . ($location->roadSection->name ?? 'Tanpa Ruas Jalan') . ')',
             ];
         });
 
@@ -290,7 +287,7 @@ class DashboardController extends Controller
     {
         $term = $request->input('q');
 
-        if (!$term || strlen($term) < 3) { // Minimal 3 karakter untuk mulai mencari
+        if (! $term || strlen($term) < 3) { // Minimal 3 karakter untuk mulai mencari
             return response()->json(['items' => []]);
         }
 
@@ -303,8 +300,8 @@ class DashboardController extends Controller
 
         $results = $deposits->map(function ($deposit) {
             return [
-                'id' => $deposit->id,
-                'text' => 'Ref: ...' . substr($deposit->referral_code, -6) . ' | Rp ' . number_format($deposit->amount, 0, ',', '.') . ' (' . $deposit->agreement->agreement_number . ')'
+                'id'   => $deposit->id,
+                'text' => 'Ref: ...' . substr($deposit->referral_code, -6) . ' | Rp ' . number_format($deposit->amount, 0, ',', '.') . ' (' . $deposit->agreement->agreement_number . ')',
             ];
         });
 

@@ -2,6 +2,12 @@
 
 @section('title', 'Detail Koordinator: ' . $fieldCoordinator->user->name)
 
+@section('skeleton')
+    <div class="container-xxl flex-grow-1 container-p-y">
+        @include('layouts.partials._skeleton-field-coordinator-show')
+    </div>
+@endsection
+
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">

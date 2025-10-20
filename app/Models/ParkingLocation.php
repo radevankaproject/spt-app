@@ -1,25 +1,23 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ParkingLocation extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'road_section_id',
         'name',
         'status',
-        'daily_deposit', // ✅ Tambahkan ini
-        'latitude',      // ✅ Tambahkan ini
-        'longitude',     // ✅ Tambahkan ini
-        'image',         // ✅ Tambahkan ini
-        'proposal_document', // ✅ Tambahkan ini
-        'official_report_document', // ✅ Tambahkan ini
+        'daily_deposit',
+        'latitude',
+        'longitude',
+        'image',
+        'proposal_document',
+        'official_report_document',
     ];
 
     //Relaso RoadSection

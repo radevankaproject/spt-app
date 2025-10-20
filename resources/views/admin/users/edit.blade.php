@@ -2,6 +2,10 @@
 
 @section('title', 'Edit User: ' . $user->name)
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-users-form')
+@endsection
+
 @section('content')
     {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -95,25 +99,26 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-12">
+                            <div class="col-12">
                                 <label class="form-label">Role</label>
                                 <div class="d-flex pt-2">
-                                    <div class="form-check me-4">
-                                        <input name="role" class="form-check-input" type="radio" value="admin"
-                                            id="roleAdmin" {{ old('role', $user->role) == 'admin' ? 'checked' : '' }} />
-                                        <label class="form-check-label" for="roleAdmin"> Admin </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input name="role" class="form-check-input" type="radio" value="staff_pks"
-                                            id="roleStaffPks"
-                                            {{ old('role', $user->role) == 'staff_pks' ? 'checked' : '' }} />
-                                        <label class="form-check-label" for="roleStaffPks"> Staff PKS</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input name="role" class="form-check-input" type="radio" value="staff_keu"
-                                            id="roleStaffKeu"
-                                            {{ old('role', $user->role) == 'staff_ke' ? 'checked' : '' }} />
-                                        <label class="form-check-label" for="roleStaffKeu"> Staff Keuangan</label>
+                                    <div class="btn-group w-100" role="group" aria-label="Pilihan Role">
+
+                                        <input type="radio" class="btn-check" name="role" id="roleAdmin" value="admin"
+                                            {{ old('role', $user->role) == 'admin' ? 'checked' : '' }} autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="roleAdmin">Admin</label>
+
+                                        <input type="radio" class="btn-check" name="role" id="roleStaffPks"
+                                            value="staff_pks" {{ old('role', $user->role) == 'staff_pks' ? 'checked' : '' }}
+                                            autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="roleStaffPks">Staff PKS</label>
+
+                                        <input type="radio" class="btn-check" name="role" id="roleStaffKeu"
+                                            value="staff_keu" {{-- Logika ini disesuaikan untuk halaman edit dan typo diperbaiki --}}
+                                            {{ old('role', $user->role) == 'staff_keu' ? 'checked' : '' }}
+                                            autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="roleStaffKeu">Staff Keuangan</label>
+
                                     </div>
                                 </div>
                             </div>
@@ -129,6 +134,7 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-column align-items-center">
+                            {{-- Logika untuk menampilkan gambar yang ada sudah benar --}}
                             @if ($user->img)
                                 <img src="{{ asset('storage/' . $user->img) }}" alt="user-avatar"
                                     class="d-block w-px-120 h-px-120 rounded-circle mb-4" id="uploadedAvatar" />
@@ -137,8 +143,9 @@
                                     class="d-block w-px-120 h-px-120 rounded-circle mb-4" id="uploadedAvatar" />
                             @endif
 
-                            <div class="button-wrapper">
-                                <label for="img-upload" class="btn btn-primary me-3" tabindex="0">
+                            {{-- ✅ PERBAIKAN LAYOUT TOMBOL --}}
+                            <div class="d-flex justify-content-center gap-3 mb-3">
+                                <label for="img-upload" class="btn btn-primary" tabindex="0">
                                     <span class="d-none d-sm-block">Ubah Foto</span>
                                     <i class="icon-base ri-upload-2-line d-sm-none"></i>
                                     <input type="file" id="img-upload" name="img" class="account-file-input"
@@ -148,10 +155,11 @@
                                     <i class="icon-base ri-refresh-line d-block d-sm-none"></i>
                                     <span class="d-none d-sm-block">Reset</span>
                                 </button>
-                                <div id="file-error" class="mt-2 text-danger text-sm text-center"></div>
-                                <p class="text-muted mt-3 mb-0 text-center">Hanya JPG/PNG. Akan dikompres di bawah 300KB.
-                                </p>
                             </div>
+
+                            <div id="file-error" class="text-danger text-sm text-center"></div>
+                            <p class="text-muted mb-0 text-center">Hanya JPG/PNG. Akan dikompres di bawah 300KB.</p>
+
                         </div>
                     </div>
                 </div>

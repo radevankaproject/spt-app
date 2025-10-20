@@ -2,6 +2,10 @@
 
 @section('title', 'Detail Lokasi Parkir: ' . $parkingLocation->name)
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-parking-locations-show')
+@endsection
+
 @push('styles')
     {{-- CSS untuk Leaflet Map --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"

@@ -14,8 +14,10 @@
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap"
-            rel="stylesheet" />
+        {{-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap"
+            rel="stylesheet" /> --}}
+
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
 
         <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
@@ -23,9 +25,110 @@
         <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
         <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
 
+        <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
+
+        <style>
+            body,
+            .h1,
+            .h2,
+            .h3,
+            .h4,
+            .h5,
+            .h6,
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            .card-title,
+            .card-header,
+            .btn,
+            .form-label,
+            .form-control,
+            .menu-link,
+            .select2-container {
+                font-family: 'Outfit', sans-serif !important;
+            }
+        </style>
+
         @stack('styles')
 
+        <style>
+            /* Animasi berkedip pelan untuk efek loading */
+            @keyframes pulse {
+                50% {
+                    opacity: 0.6;
+                }
+            }
+
+            /* Gaya dasar untuk semua elemen skeleton */
+            .skeleton {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                background-color: #e5e7eb;
+                /* Warna abu-abu dasar yang terlihat */
+                border-radius: 6px;
+            }
+
+            /* Khusus untuk skeleton-card, kita tidak ingin card-nya ikut berkedip */
+            .card .skeleton {
+                background-color: #f3f4f6;
+                /* Abu-abu lebih terang di dalam card */
+            }
+
+            /* Gaya untuk teks (garis horizontal) */
+            .skeleton-text {
+                width: 100%;
+                height: 1rem;
+            }
+
+            .skeleton-text-sm {
+                height: 0.75rem;
+            }
+
+            /* Gaya untuk input form (ini yang kamu mau) */
+            .skeleton-input {
+                width: 100%;
+                height: 54px;
+                /* Sesuaikan dengan tinggi form-floating */
+            }
+
+            /* Gaya untuk elemen lainnya */
+            .skeleton-button {
+                height: 38px;
+            }
+
+            .skeleton-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+            }
+
+            .skeleton-avatar-lg {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+            }
+
+            .skeleton-badge {
+                width: 70px;
+                height: 24px;
+                border-radius: 12px;
+            }
+
+            .skeleton-icon {
+                width: 22px;
+                height: 22px;
+            }
+        </style>
+
         <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+
+        <script>
+            // Mendefinisikan path root untuk aset agar main.js tidak salah jalan
+            const assetsPath = document.documentElement.getAttribute('data-assets-path');
+        </script>
+
         {{-- <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script> --}}
         <script src="{{ asset('assets/js/config.js') }}"></script>
     </head>
@@ -46,38 +149,19 @@
 
                     <div class="content-wrapper">
                         <div class="container-xxl flex-grow-1 container-p-y">
-                            {{-- ✅ 1. SKELETON LOADER DIMULAI DI SINI --}}
+
                             <div id="skeleton-loader">
-                                {{-- Ini adalah contoh kerangka untuk halaman dashboard. --}}
-                                {{-- Anda bisa membuat kerangka yang berbeda untuk layout halaman lain. --}}
-                                <div class="row g-6">
-                                    {{-- Skeleton untuk Info Cards --}}
-                                    @for ($i = 0; $i < 4; $i++)
-                                        <div class="col-sm-6 col-lg-3">
-                                            <div class="skeleton skeleton-card" style="height: 100px;"></div>
-                                        </div>
-                                    @endfor
-
-                                    {{-- Skeleton untuk Grafik Utama --}}
-                                    <div class="col-lg-8">
-                                        <div class="skeleton skeleton-card" style="height: 400px;"></div>
-                                    </div>
-
-                                    {{-- Skeleton untuk Info Samping --}}
-                                    <div class="col-lg-4">
-                                        <div class="skeleton skeleton-card mb-6" style="height: 120px;"></div>
-                                        <div class="skeleton skeleton-card" style="height: 260px;"></div>
-                                    </div>
-                                </div>
+                                @section('skeleton')
+                                    @include('layouts.partials._skeleton-default')
+                                @show
                             </div>
 
-                            {{-- ✅ 2. KONTEN ASLI HALAMAN (SEMBUNYIKAN PADA AWALNYA) --}}
                             <div id="main-content" style="display: none;">
                                 @yield('content')
                             </div>
 
                         </div>
-                        {{-- 4. Footer --}}
+
                         @include('layouts.partials._footer')
 
                         <div class="content-backdrop fade"></div>
@@ -89,6 +173,7 @@
             <div class="drag-target"></div>
         </div>
         <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
+        <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
         <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
         <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
         <script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
@@ -98,8 +183,7 @@
         @stack('vendors-js')
 
         <script src="{{ asset('assets/js/main.js') }}"></script>
-
-        @stack('scripts')
+        <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
         <script>
             window.addEventListener('load', function() {
                 const skeleton = document.getElementById('skeleton-loader');
@@ -173,7 +257,38 @@
                         });
                 });
             });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const logoutButton = document.getElementById('logout-button');
+                const logoutForm = document.getElementById('logout-form');
+
+                if (logoutButton && logoutForm) {
+                    logoutButton.addEventListener('click', function(event) {
+                        event.preventDefault(); // Mencegah aksi default tombol
+
+                        Swal.fire({
+                            title: 'Anda yakin ingin logout?',
+                            text: "Sesi Anda akan diakhiri.",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Logout!',
+                            cancelButtonText: 'Batal',
+                            customClass: {
+                                confirmButton: 'btn btn-danger me-3',
+                                cancelButton: 'btn btn-label-secondary'
+                            },
+                            buttonsStyling: false
+                        }).then(function(result) {
+                            if (result.value) {
+                                // Jika user klik "Ya", submit form logout
+                                logoutForm.submit();
+                            }
+                        });
+                    });
+                }
+            });
         </script>
+        @stack('scripts')
     </body>
 
 </html>

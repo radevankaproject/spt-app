@@ -2,6 +2,10 @@
 
 @section('title', 'Manajemen User')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-users-index')
+@endsection
+
 {{-- 1. Tambahkan CSS SweetAlert2 --}}
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />

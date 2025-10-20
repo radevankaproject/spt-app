@@ -1,14 +1,12 @@
 <?php
-
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
-use App\Models\DepositTransaction;
-use App\Models\Agreement; // Pastikan ini diimpor
-use App\Models\FieldCoordinator; // Pastikan ini diimpor
-use Illuminate\Http\Request;
-use Carbon\Carbon;
+use App\Models\DepositTransaction; // Pastikan ini diimpor
+use App\Models\FieldCoordinator;   // Pastikan ini diimpor
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class DepositReportController extends Controller
 {
@@ -25,13 +23,13 @@ class DepositReportController extends Controller
             return $this->generatePdf($request);
         }
 
-        $reportType = $request->input('report_type', 'daily');
-        $specificDate = $request->input('specific_date');
-        $specificMonth = $request->input('specific_month');
-        $specificYear = $request->input('specific_year');
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        $search = $request->input('search'); // Filter pencarian umum
+        $reportType         = $request->input('report_type', 'daily');
+        $specificDate       = $request->input('specific_date');
+        $specificMonth      = $request->input('specific_month');
+        $specificYear       = $request->input('specific_year');
+        $startDate          = $request->input('start_date');
+        $endDate            = $request->input('end_date');
+        $search             = $request->input('search');               // Filter pencarian umum
         $fieldCoordinatorId = $request->input('field_coordinator_id'); // Filter Korlap dari dropdown
 
         $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
@@ -72,7 +70,7 @@ class DepositReportController extends Controller
                 break;
             case 'monthly':
                 $monthToFilter = $specificMonth ? $specificMonth : Carbon::now()->month;
-                $yearToFilter = $specificYear ? $specificYear : Carbon::now()->year;
+                $yearToFilter  = $specificYear ? $specificYear : Carbon::now()->year;
                 $query->whereMonth('deposit_date', $monthToFilter)
                     ->whereYear('deposit_date', $yearToFilter);
                 $reportTitle = 'Jumlah Setoran Bulan ' . Carbon::createFromDate($yearToFilter, $monthToFilter, 1)->translatedFormat('F Y');
@@ -109,12 +107,11 @@ class DepositReportController extends Controller
                 $filterDetails[] = ' - ' . $korlap->user->name;
             }
         }
-        if (!empty($filterDetails)) {
+        if (! empty($filterDetails)) {
             $reportTitle .= ' (' . implode($filterDetails) . ')';
         }
 
-
-        $reports = $query->latest('deposit_date')->get();
+        $reports     = $query->latest('deposit_date')->get();
         $totalAmount = $reports->sum('amount');
 
         // Ambil daftar Field Coordinator untuk dropdown filter
@@ -130,7 +127,6 @@ class DepositReportController extends Controller
             });
         }
         $fieldCoordinators = $fieldCoordinatorsQuery->orderBy('users.name', 'asc')->get();
-
 
         return view('masterdata.deposit_reports.index', compact(
             'reports',
@@ -157,13 +153,13 @@ class DepositReportController extends Controller
      */
     public function generatePdf(Request $request)
     {
-        $reportType = $request->input('report_type', 'daily');
-        $specificDate = $request->input('specific_date');
-        $specificMonth = $request->input('specific_month');
-        $specificYear = $request->input('specific_year');
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        $search = $request->input('search');
+        $reportType         = $request->input('report_type', 'daily');
+        $specificDate       = $request->input('specific_date');
+        $specificMonth      = $request->input('specific_month');
+        $specificYear       = $request->input('specific_year');
+        $startDate          = $request->input('start_date');
+        $endDate            = $request->input('end_date');
+        $search             = $request->input('search');
         $fieldCoordinatorId = $request->input('field_coordinator_id');
 
         $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
@@ -194,6 +190,19 @@ class DepositReportController extends Controller
             });
         }
 
+        $query->join('agreements', 'deposit_transactions.agreement_id', '=', 'agreements.id')
+            ->orderBy('agreements.agreement_number', 'asc')
+            ->orderBy('deposit_transactions.deposit_date', 'asc');
+
+        // Ambil data dari database
+        $reports = $query->select('deposit_transactions.*')->get();
+
+                                                                             // Hitung total dari semua data sebelum dikelompokkan
+        $totalAmount = $reports->where('is_validated', true)->sum('amount'); // Hitung hanya yg tervalidasi
+
+        // ✅ KELOMPOKKAN HASILNYA BERDASARKAN ID PERJANJIAN
+        $reportsByAgreement = $reports->groupBy('agreement_id');
+
         $reportTitle = 'Laporan Transaksi Setoran'; // Judul default untuk PDF
 
         switch ($reportType) {
@@ -204,7 +213,7 @@ class DepositReportController extends Controller
                 break;
             case 'monthly':
                 $monthToFilter = $specificMonth ? $specificMonth : Carbon::now()->month;
-                $yearToFilter = $specificYear ? $specificYear : Carbon::now()->year;
+                $yearToFilter  = $specificYear ? $specificYear : Carbon::now()->year;
                 $query->whereMonth('deposit_date', $monthToFilter)
                     ->whereYear('deposit_date', $yearToFilter);
                 $reportTitle = 'Jumlah Setoran Bulan ' . Carbon::createFromDate($yearToFilter, $monthToFilter, 1)->translatedFormat('F Y');
@@ -241,14 +250,15 @@ class DepositReportController extends Controller
                 $filterDetails[] = ' - ' . $korlap->user->name;
             }
         }
-        if (!empty($filterDetails)) {
+        if (! empty($filterDetails)) {
             $reportTitle .= ' ' . implode($filterDetails);
         }
 
-        $reports = $query->latest('deposit_date')->get();
+        $reports     = $query->latest('deposit_date')->get();
         $totalAmount = $reports->sum('amount');
 
-        $pdf = Pdf::loadView('pdf.deposit_report', compact('reports', 'totalAmount', 'reportTitle', 'search', 'fieldCoordinatorId'));
+        $pdf = Pdf::loadView('pdf.deposit_report', compact('reportsByAgreement', 'totalAmount', 'reportTitle', 'search', 'fieldCoordinatorId'))
+            ->setPaper('a4', 'landscape');
         return $pdf->stream('Laporan_Setoran_' . str_replace(' ', '_', $reportTitle) . '.pdf');
     }
 }

@@ -2,6 +2,10 @@
 
 @section('title', 'Tambah Lokasi Parkir Baru')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-parking-locations-form')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 @endpush
@@ -136,51 +140,57 @@
 @push('scripts')
     <script>
         $(function() {
-            // --- Logika Select2 Dinamis (tidak berubah) ---
+            // --- Logika Select2 Dinamis ---
             const roadSectionSelect = $('#road_section_id');
+
             if (roadSectionSelect.length) {
                 roadSectionSelect.wrap('<div class="position-relative"></div>').select2({
                     placeholder: 'Pilih Ruas Jalan',
                     dropdownParent: roadSectionSelect.parent()
                 });
             }
+
             $('input[name="zone_filter"]').on('change', function() {
                 const selectedZone = $(this).val();
-                roadSectionSelect.empty().append('<option value="">Memuat...</option>').prop('disabled',
-                    true).trigger('change');
+                roadSectionSelect.empty().append('<option value="">Memuat ruas jalan...</option>').prop('disabled', true).trigger('change');
+
                 if (selectedZone) {
-                    const url = `{{ route('masterdata.road-sections.getByZone', ':zone') }}`.replace(
-                        ':zone', selectedZone);
+                    // ✅ PERBAIKAN UTAMA: Menggunakan url() untuk URL yang lebih stabil
+                    const url = `{{ url('masterdata/get-road-sections-by-zone') }}/${selectedZone}`;
+
+                    // Untuk debugging, pastikan URL yang dihasilkan benar
+                    console.log('Requesting URL:', url);
+
                     $.ajax({
                         url: url,
                         type: 'GET',
                         dataType: 'json',
                         success: function(data) {
-                            roadSectionSelect.empty().append(
-                                '<option value="">Pilih Ruas Jalan</option>').prop(
-                                'disabled', false);
-                            if (data.length > 0) {
+                            roadSectionSelect.empty().append('<option value="">Pilih Ruas Jalan</option>').prop('disabled', false);
+
+                            if (data && data.length > 0) {
                                 $.each(data, (key, value) => {
                                     roadSectionSelect.append($('<option></option>')
                                         .attr('value', value.id).text(value.name));
                                 });
                             } else {
-                                roadSectionSelect.empty().append(
-                                    '<option value="">Tidak ada ruas jalan</option>').prop(
-                                    'disabled', true);
+                                roadSectionSelect.empty().append('<option value="">Tidak ada ruas jalan di zona ini</option>').prop('disabled', true);
                             }
                             roadSectionSelect.trigger('change');
                         },
-                        error: function() {
-                            roadSectionSelect.empty().append(
-                                '<option value="">Gagal memuat</option>').prop('disabled',
-                                true).trigger('change');
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            // Memberi pesan error yang lebih jelas
+                            console.error("AJAX Error:", textStatus, errorThrown);
+                            roadSectionSelect.empty().append('<option value="">Gagal memuat data</option>').prop('disabled', true).trigger('change');
                         }
                     });
+                } else {
+                    // Reset jika tidak ada zona yang dipilih
+                    roadSectionSelect.empty().append('<option value="">Pilih Zona terlebih dahulu</option>').prop('disabled', true).trigger('change');
                 }
             });
 
-            // --- Logika Upload & Kompresi Gambar ---
+            // --- Logika Upload & Kompresi Gambar (Tidak berubah) ---
             const fileInput = document.getElementById('image-upload');
             const imagePreview = document.getElementById('image-preview');
             const errorDiv = document.getElementById('image-error');
@@ -195,26 +205,25 @@
                     }
                     errorDiv.textContent = '';
                     if (!['image/jpeg', 'image/png'].includes(imageFile.type)) {
-                        errorDiv.textContent = 'Hanya JPG/PNG.';
+                        errorDiv.textContent = 'Hanya format JPG/PNG yang diizinkan.';
                         fileInput.value = '';
                         imagePreview.src = defaultSrc;
                         return;
                     }
                     const options = {
-                        maxSizeMB: 0.3,
+                        maxSizeMB: 0.3, // Kompres menjadi maksimal 300KB
                         maxWidthOrHeight: 1024,
                         useWebWorker: true
                     };
                     try {
                         const compressedFile = await imageCompression(imageFile, options);
                         const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(new File([compressedFile], imageFile.name, {
-                            type: compressedFile.type
-                        }));
+                        dataTransfer.items.add(new File([compressedFile], imageFile.name, { type: compressedFile.type }));
                         fileInput.files = dataTransfer.files;
                         imagePreview.src = URL.createObjectURL(compressedFile);
                     } catch (error) {
-                        errorDiv.textContent = "Gagal kompres.";
+                        console.error('Image compression error:', error);
+                        errorDiv.textContent = "Gagal melakukan kompresi gambar.";
                         fileInput.value = '';
                         imagePreview.src = defaultSrc;
                     }

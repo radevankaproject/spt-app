@@ -2,6 +2,10 @@
 
 @section('title', 'Manajemen Perjanjian Kerjasama')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-road-sections-index')
+@endsection
+
 @push('styles')
     {{-- CSS untuk SweetAlert2 --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
@@ -67,8 +71,8 @@
                                     <div class="d-flex justify-content-start align-items-center">
                                         <div class="avatar-wrapper me-3">
                                             <div class="avatar avatar-sm">
-                                                @if ($agreement->fieldCoordinator->user->img && file_exists(public_path($agreement->fieldCoordinator->user->img)))
-                                                    <img src="{{ asset($agreement->fieldCoordinator->user->img) }}"
+                                                @if ($agreement->fieldCoordinator->user->img)
+                                                    <img src="{{ asset('storage/' . $agreement->fieldCoordinator->user->img) }}"
                                                         alt="Avatar" class="rounded-circle">
                                                 @else
                                                     <span

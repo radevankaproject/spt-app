@@ -2,6 +2,10 @@
 
 @section('title', 'Edit Pimpinan: ' . $leader->user->name)
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-leaders-form')
+@endsection
+
 @section('content')
     {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -146,8 +150,10 @@
                                 <img src="{{ asset('assets/img/avatars/1.png') }}" alt="user-avatar"
                                     class="d-block w-px-120 h-px-120 rounded-circle mb-4" id="uploadedAvatar" />
                             @endif
-                            <div class="button-wrapper">
-                                <label for="img-upload" class="btn btn-primary me-3" tabindex="0">
+
+                            {{-- ✅ PERBAIKAN LAYOUT TOMBOL --}}
+                            <div class="d-flex justify-content-center gap-3 mb-3">
+                                <label for="img-upload" class="btn btn-primary" tabindex="0">
                                     <span class="d-none d-sm-block">Ubah Foto</span>
                                     <i class="icon-base ri-upload-2-line d-sm-none"></i>
                                     <input type="file" id="img-upload" name="img" class="account-file-input"
@@ -157,10 +163,11 @@
                                     <i class="icon-base ri-refresh-line d-block d-sm-none"></i>
                                     <span class="d-none d-sm-block">Reset</span>
                                 </button>
-                                <div id="file-error" class="mt-2 text-danger text-sm text-center"></div>
-                                <p class="text-muted mt-3 mb-0 text-center">Hanya JPG/PNG. Akan dikompres di bawah 300KB.
-                                </p>
                             </div>
+
+                            <div id="file-error" class="text-danger text-sm text-center"></div>
+                            <p class="text-muted mb-0 text-center">Hanya JPG/PNG. Akan dikompres di bawah 300KB.</p>
+
                         </div>
                     </div>
                 </div>

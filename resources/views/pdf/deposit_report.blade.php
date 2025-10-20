@@ -112,30 +112,44 @@
                         <th>No. Perjanjian</th>
                         <th>Korlap</th>
                         <th>Tanggal Setoran</th>
+                        <th>Kode Referensi</th>
                         <th>Status Deposit</th>
                         <th>Catatan Deposit</th>
                         <th class="text-right">Jumlah Setoran (Rp)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($reports as $report)
-                        <tr>
-                            <td>{{ $report->agreement->agreement_number ?? 'N/A' }}</td>
-                            <td>{{ $report->agreement->fieldCoordinator->user->name ?? 'N/A' }}</td>
-                            <td>{{ $report->deposit_date->format('d M Y') }}</td>
-                            <td>{{ $report->is_validated ? 'Divalidasi' : 'Belum Divalidasi' }}</td>
-                            <td>{{ $report->notes ?? '-' }}</td>
-                            <td class="text-right">Rp {{ number_format($report->amount, 0, ',', '.') }}</td>
-                        </tr>
+                    {{-- ✅ LOGIKA BARU MENGGUNAKAN LOOP BERTINGKAT --}}
+                    @forelse ($reportsByAgreement as $agreementId => $transactions)
+                        @foreach ($transactions as $report)
+                            <tr>
+                                {{-- Tampilkan No PKS & Korlap HANYA di baris pertama setiap grup --}}
+                                @if ($loop->first)
+                                    <td rowspan="{{ count($transactions) }}">
+                                        {{ $report->agreement->agreement_number ?? 'N/A' }}
+                                    </td>
+                                    <td rowspan="{{ count($transactions) }}">
+                                        {{ $report->agreement->fieldCoordinator->user->name ?? 'N/A' }}
+                                    </td>
+                                @endif
+
+                                {{-- Kolom ini akan selalu tampil untuk setiap transaksi --}}
+                                <td>{{ $report->deposit_date->format('d M Y') }}</td>
+                                <td>{{ $report->referral_code ?? '-' }}</td>
+                                <td class="text-center">{{ $report->is_validated ? 'Tervalidasi' : 'Pending' }}</td>
+                                <td>{{ $report->notes ?? '-' }}</td>
+                                <td class="text-right">Rp {{ number_format($report->amount, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center">Tidak ada data setoran untuk filter ini.</td>
+                            <td colspan="7" class="text-center">Tidak ada data setoran untuk filter ini.</td>
                         </tr>
                     @endforelse
                 </tbody>
                 <tfoot>
                     <tr class="total-row">
-                        <td colspan="5" class="text-right">Total Setoran:</td>
+                        <td colspan="6" class="text-right">Total Setoran Tervalidasi:</td>
                         <td class="text-right">Rp {{ number_format($totalAmount, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>

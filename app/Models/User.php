@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -45,7 +44,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
@@ -60,7 +59,6 @@ class User extends Authenticatable
     {
         return $this->hasOne(FieldCoordinator::class);
     }
-
 
     // --- Start: Metode Helper Role ---
 
@@ -87,6 +85,11 @@ class User extends Authenticatable
     public function isStaffPks(): bool
     {
         return $this->role === 'staff_pks';
+    }
+
+    public function hasRole(string $roleName): bool
+    {
+        return $this->role === $roleName;
     }
 
     // --- End: Metode Helper Role ---

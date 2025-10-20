@@ -2,6 +2,10 @@
 
 @section('title', 'Detail Perjanjian: ' . $agreement->agreement_number)
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-agreement-show')
+@endsection
+
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">
@@ -10,16 +14,17 @@
                     <div class="card-body pt-12">
                         <div class="user-avatar-section">
                             <div class="d-flex align-items-center flex-column">
-                                @if (
-                                    $agreement->fieldCoordinator->user &&
-                                        $agreement->fieldCoordinator->user->img &&
-                                        file_exists(public_path($agreement->fieldCoordinator->user->img)))
-                                    <img class="img-fluid rounded-3 mb-4"
-                                        src="{{ asset($agreement->fieldCoordinator->user->img) }}" height="120"
-                                        width="120" alt="Korlap Avatar" />
+                                @if ($agreement->fieldCoordinator->user->img)
+                                    {{-- ✅ FIX: Gambar dibuat bulat (rounded-circle) dan aspect ratio dijaga --}}
+                                    <img class="img-fluid rounded-circle mb-4"
+                                        src="{{ asset('storage/' . $agreement->fieldCoordinator->user->img) }}"
+                                        style="width: 120px; height: 120px; object-fit: cover;" alt="Korlap Avatar" />
                                 @else
-                                    <div class="avatar avatar-xl mb-4"><span
-                                            class="avatar-initial rounded-3 bg-label-warning">{{ strtoupper(substr($agreement->fieldCoordinator->user->name ?? 'K', 0, 2)) }}</span>
+                                    {{-- ✅ FIX: Avatar juga dibuat bulat (rounded-circle) --}}
+                                    <div class="avatar avatar-xl mb-4">
+                                        <span class="avatar-initial rounded-circle bg-label-warning">
+                                            {{ strtoupper(substr($agreement->fieldCoordinator->user->name ?? 'K', 0, 2)) }}
+                                        </span>
                                     </div>
                                 @endif
                                 <div class="user-info text-center">
@@ -32,53 +37,79 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-around flex-wrap my-6 gap-0 gap-md-3 gap-lg-4">
-                            <div class="d-flex align-items-center me-5 gap-4">
-                                <div class="avatar">
-                                    <div class="avatar-initial bg-label-primary rounded-3"><i
-                                            class="icon-base ri ri-map-pin-2-line ri-24px"></i></div>
-                                </div>
-                                <div>
-                                    <h5 class="mb-0">{{ $agreement->activeParkingLocations->count() }}</h5><span>Titik
-                                        Lokasi</span>
+
+                        {{-- ✅ FIX: Statistik dibuat sejajar menggunakan grid system --}}
+                        <div class="row text-center my-6">
+                            <div class="col-6 border-end">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="avatar mb-2">
+                                        <div class="avatar-initial bg-label-primary rounded-3">
+                                            <i class="icon-base ri ri-map-pin-2-line ri-24px"></i>
+                                        </div>
+                                    </div>
+                                    <h5 class="mb-0">{{ $agreement->activeParkingLocations->count() }}</h5>
+                                    <span>Titik Lokasi</span>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center gap-4">
-                                <div class="avatar">
-                                    <div class="avatar-initial bg-label-success rounded-3"><i
-                                            class="icon-base ri ri-wallet-3-line ri-24px"></i></div>
-                                </div>
-                                <div>
+                            <div class="col-6">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="avatar mb-2">
+                                        <div class="avatar-initial bg-label-success rounded-3">
+                                            <i class="icon-base ri ri-wallet-3-line ri-24px"></i>
+                                        </div>
+                                    </div>
                                     <h5 class="mb-0">Rp {{ number_format($totalDepositThisYear, 0, ',', '.') }}</h5>
                                     <span>Setoran Thn Ini</span>
                                 </div>
                             </div>
                         </div>
-                        <h5 class="pb-4 border-bottom mb-4">Details Perjanjian</h5>
+
+                        <h5 class="pb-4 border-bottom mb-4">Detail Perjanjian</h5>
                         <div class="info-container">
-                            <ul class="list-unstyled mb-6">
-                                <li class="mb-2"><span class="fw-medium text-heading me-2">No.
-                                        PKS:</span><span>{{ $agreement->agreement_number }}</span></li>
-                                <li class="mb-2"><span class="fw-medium text-heading me-2">Status:</span><span
-                                        class="badge rounded-pill bg-label-{{ $agreement->status == 'active' ? 'success' : 'danger' }}">{{ ucfirst(str_replace('_', ' ', $agreement->status)) }}</span>
-                                </li>
-                                <li class="mb-2"><span
-                                        class="fw-medium text-heading me-2">Pimpinan:</span><span>{{ $agreement->leader->user->name ?? 'N/A' }}</span>
-                                </li>
-                                <li class="mb-2"><span class="fw-medium text-heading me-2">Masa
-                                        Berlaku:</span><span>{{ $agreement->start_date->translatedFormat('d M y') }} -
-                                        {{ $agreement->end_date->translatedFormat('d M y') }}</span></li>
-                            </ul>
+                            {{-- ✅ FIX: Detail dirapikan dengan struktur tabel deskripsi --}}
+                            <dl class="row mb-6">
+                                <dt class="col-sm-5 fw-medium text-heading">No. PKS</dt>
+                                <dd class="col-sm-7">{{ $agreement->agreement_number }}</dd>
+
+                                <dt class="col-sm-5 fw-medium text-heading">Status</dt>
+                                <dd class="col-sm-7">
+                                    @php
+                                        $statusClass = 'secondary';
+                                        if ($agreement->status == 'active') {
+                                            $statusClass = 'success';
+                                        }
+                                        if (in_array($agreement->status, ['expired', 'terminated'])) {
+                                            $statusClass = 'danger';
+                                        }
+                                        if ($agreement->status == 'pending_renewal') {
+                                            $statusClass = 'warning';
+                                        }
+                                    @endphp
+                                    <span class="badge rounded-pill bg-label-{{ $statusClass }}">
+                                        {{ ucfirst(str_replace('_', ' ', $agreement->status)) }}
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-5 fw-medium text-heading">Pimpinan</dt>
+                                <dd class="col-sm-7">{{ $agreement->leader->user->name ?? 'N/A' }}</dd>
+
+                                <dt class="col-sm-5 fw-medium text-heading">Masa Berlaku</dt>
+                                <dd class="col-sm-7">{{ $agreement->start_date->translatedFormat('d M y') }} -
+                                    {{ $agreement->end_date->translatedFormat('d M y') }}</dd>
+                            </dl>
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}" class="btn btn-primary"
-                                    data-bs-toggle="tooltip" title="Edit Perjanjian"><i
-                                        class="icon-base ri ri-pencil-line me-2"></i></a>
+                                    data-bs-toggle="tooltip" title="Edit Perjanjian">
+                                    <i class="icon-base ri ri-pencil-line"></i><span
+                                        class="d-none d-sm-inline ms-1">Edit</span>
+                                </a>
                                 <a href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
-                                    class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Cetak PKS"><i
-                                        class="icon-base ri ri-printer-line me-2"></i></a>
+                                    class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Cetak PKS">
+                                    <i class="icon-base ri ri-printer-line"></i>
+                                </a>
                                 <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
-                                    class="btn btn-info" data-bs-toggle="tooltip" title="Histori Perjanjian"><i
-                                        class="icon-base ri ri-file-copy-2-line me-2"></i></a>
+                                    class="btn btn-info" data-bs-toggle="tooltip" title="Histori Perjanjian">
+                                    <i class="icon-base ri ri-file-copy-2-line"></i>
                                 </a>
                             </div>
                         </div>
@@ -89,46 +120,79 @@
                 <div class="nav-align-top">
                     {{-- ✅ Navigasi Tab --}}
                     <ul class="nav nav-pills flex-column flex-md-row flex-wrap mb-6 row-gap-2">
-                        <li class="nav-item"><a class="nav-link active" href="javascript:void(0);" data-bs-toggle="tab"
-                                data-bs-target="#locations"><i class="icon-base ri ri-map-pin-line icon-sm me-2"></i>Lokasi
-                                Parkir</a></li>
+                        <li class="nav-item">
+                            {{-- ✅ FIX 1: Menambahkan total count di judul tab --}}
+                            <a class="nav-link active" href="javascript:void(0);" data-bs-toggle="tab"
+                                data-bs-target="#locations">
+                                <i class="icon-base ri ri-map-pin-line icon-sm me-2"></i>Lokasi Parkir
+                                <span
+                                    class="badge rounded-pill bg-primary ms-2">{{ $agreement->activeParkingLocations->count() }}</span>
+                            </a>
+                        </li>
                         <li class="nav-item"><a class="nav-link" href="javascript:void(0);" data-bs-toggle="tab"
                                 data-bs-target="#deposits"><i
                                     class="icon-base ri ri-money-dollar-box-line icon-sm me-2"></i>Riwayat Setoran</a></li>
                         <li class="nav-item"><a class="nav-link" href="javascript:void(0);" data-bs-toggle="tab"
                                 data-bs-target="#pdf-preview"><i
-                                    class="icon-base ri ri-file-pdf-line icon-sm me-2"></i>Preview PKS</a></li>
+                                    class="icon-base ri ri-file-pdf-line icon-sm me-2"></i>Preview
+                                PKS</a></li>
                     </ul>
                     {{-- ✅ Konten Tab --}}
                     <div class="tab-content p-0">
                         <div class="tab-pane fade show active" id="locations" role="tabpanel">
-                            <div class="card">
-                                <div class="table-responsive text-nowrap" style="max-height: 400px; overflow-y: auto;">
-                                    <table class="table table-sm">
-                                        <tbody>
-                                            @forelse ($agreement->activeParkingLocations as $location)
-                                                <tr>
-                                                    <td><i
-                                                            class="icon-base ri ri-arrow-right-s-fill text-primary me-2"></i><a
-                                                            href="{{ route('masterdata.parking-locations.show', $location->id) }}">{{ $location->name }}</a>
-                                                    </td>
-                                                    <td><span
-                                                            class="text-muted">{{ $location->roadSection->name ?? 'N/A' }}
-                                                        </span>
-                                                    </td>
-                                                    <td><span
-                                                            class="badge bg-label-dark rounded-pill">{{ $location->roadSection->zone ?? 'N/A' }}</span>
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td class="text-center text-muted py-4">Tidak ada lokasi parkir aktif.
-                                                    </td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div class="accordion" id="accordionParkingLocations">
+                                @forelse ($locationsByRoadSection as $roadSectionName => $locations)
+                                    @php
+                                        // Membuat ID yang aman untuk accordion dari nama jalan
+                                        $accordionId = 'collapse-' . Str::slug($roadSectionName);
+                                    @endphp
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading-{{ $accordionId }}">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#{{ $accordionId }}">
+                                                <div class="d-flex w-100 align-items-center">
+                                                    <span
+                                                        class="flex-grow-1">{{ $roadSectionName ?? 'Tanpa Ruas Jalan' }}</span>
+                                                    <span
+                                                        class="badge bg-secondary rounded-pill me-2">{{ count($locations) }}
+                                                        Lokasi</span>
+                                                </div>
+                                            </button>
+                                        </h2>
+                                        <div id="{{ $accordionId }}" class="accordion-collapse collapse"
+                                            aria-labelledby="heading-{{ $accordionId }}"
+                                            data-bs-parent="#accordionParkingLocations">
+                                            <div class="accordion-body p-0">
+                                                <div class="table-responsive text-nowrap">
+                                                    <table class="table table-sm table-hover">
+                                                        <tbody>
+                                                            @foreach ($locations as $location)
+                                                                <tr>
+                                                                    <td>
+                                                                        <a href="{{ route('masterdata.parking-locations.show', $location->id) }}"
+                                                                            class="d-block text-body">
+                                                                            <i
+                                                                                class="icon-base ri ri-map-pin-line text-primary me-2"></i>
+                                                                            {{ $location->name }}
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="card">
+                                        <div class="card-body text-center text-muted py-5">
+                                            <i class="ri-map-pin-line ri-3x text-secondary mb-3"></i>
+                                            <p class="mb-0">Tidak ada lokasi parkir aktif yang terikat pada perjanjian
+                                                ini.</p>
+                                        </div>
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
                         <div class="tab-pane fade" id="deposits" role="tabpanel">
@@ -233,9 +297,9 @@
                                             <div class="card-body py-2">
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar avatar-xs me-2">
-                                                        @if ($history->changer && $history->changer->img && file_exists(public_path($history->changer->img)))
-                                                            <img src="{{ asset($history->changer->img) }}" alt="Avatar"
-                                                                class="rounded-circle" />
+                                                        @if ($history->changer && $history->changer->img)
+                                                            <img src="{{ asset('storage/' . $history->changer->img) }}"
+                                                                alt="Avatar" class="rounded-circle" />
                                                         @else
                                                             <span
                                                                 class="avatar-initial rounded-circle bg-label-secondary">{{ strtoupper(substr($history->changer->name ?? 'S', 0, 1)) }}</span>
@@ -246,7 +310,8 @@
                                                 </div>
                                             </div>
                                             <div class="timeline-event-time">
-                                                {{ $history->created_at->translatedFormat('d M y, H:i') }}</div>
+                                                {{ $history->created_at->translatedFormat('d M y, H:i') }}
+                                            </div>
                                         </div>
                                     </li>
                                 @empty

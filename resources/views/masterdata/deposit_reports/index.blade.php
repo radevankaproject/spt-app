@@ -2,8 +2,13 @@
 
 @section('title', 'Laporan Transaksi Setoran')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-deposit-report-index')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
 @endpush
 
 @section('content')
@@ -41,8 +46,9 @@
                     {{-- Filter Harian --}}
                     <div class="col-md-3 filter-group" id="daily-filter">
                         <label for="specific_date" class="form-label">Pilih Tanggal</label>
-                        <input type="date" name="specific_date" id="specific_date" class="form-control"
-                            value="{{ $specificDate ?? date('Y-m-d') }}">
+                        {{-- ✅ INPUT DIUBAH DARI type="date" MENJADI type="text" --}}
+                        <input type="text" name="specific_date" id="specific_date" class="form-control"
+                            placeholder="YYYY-MM-DD" value="{{ $specificDate ?? date('Y-m-d') }}">
                     </div>
 
                     {{-- Filter Bulanan --}}
@@ -67,16 +73,18 @@
                     <div class="col-md-4 filter-group" id="custom-range-filter">
                         <label class="form-label">Pilih Rentang Tanggal</label>
                         <div class="input-group">
-                            <input type="date" name="start_date" id="start_date" class="form-control"
-                                value="{{ $startDate ?? '' }}">
+                             {{-- ✅ INPUT DIUBAH DARI type="date" MENJADI type="text" --}}
+                            <input type="text" name="start_date" id="start_date" class="form-control"
+                                placeholder="YYYY-MM-DD" value="{{ $startDate ?? '' }}">
                             <span class="input-group-text">s/d</span>
-                            <input type="date" name="end_date" id="end_date" class="form-control"
-                                value="{{ $endDate ?? '' }}">
+                             {{-- ✅ INPUT DIUBAH DARI type="date" MENJADI type="text" --}}
+                            <input type="text" name="end_date" id="end_date" class="form-control"
+                                placeholder="YYYY-MM-DD" value="{{ $endDate ?? '' }}">
                         </div>
                     </div>
                 </div>
                 <div class="row g-4 mt-1">
-                    {{-- Filter Koordinator --}}
+                    {{-- Filter Koordinator & Pencarian Umum (Tidak berubah) --}}
                     <div class="col-md-6">
                         <label for="field_coordinator_id" class="form-label">Filter Koordinator</label>
                         <select name="field_coordinator_id" id="field_coordinator_id" class="form-select select2">
@@ -88,7 +96,6 @@
                             @endforeach
                         </select>
                     </div>
-                    {{-- Pencarian Umum --}}
                     <div class="col-md-6">
                         <label for="search" class="form-label">Cari No. PKS</label>
                         <input type="text" name="search" id="search" placeholder="Cari berdasarkan nomor PKS..."
@@ -96,11 +103,9 @@
                     </div>
                 </div>
                 <div class="pt-4 text-end">
-                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary">Reset
-                        Filter</a>
+                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary">Reset Filter</a>
                     <button type="submit" class="btn btn-primary me-2">Tampilkan Laporan</button>
-                    <button type="submit" name="print_pdf" value="true" formtarget="_blank"
-                        class="btn btn-outline-danger">
+                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-outline-danger">
                         <i class="icon-base ri ri-printer-line me-2"></i>Cetak PDF
                     </button>
                 </div>
@@ -163,6 +168,7 @@
 
 @push('vendors-js')
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
 @endpush
 
 @push('scripts')
@@ -176,6 +182,10 @@
                     dropdownParent: $(this).parent()
                 });
             });
+
+            flatpickr("#specific_date", { dateFormat: "Y-m-d" });
+            flatpickr("#start_date", { dateFormat: "Y-m-d" });
+            flatpickr("#end_date", { dateFormat: "Y-m-d" });
 
             // Logika untuk menampilkan/menyembunyikan filter
             const reportTypeSelect = document.getElementById('report_type');

@@ -2,6 +2,10 @@
 
 @section('title', 'Detail Transaksi Setoran')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-deposit-transaction-show')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
 @endpush
@@ -18,7 +22,7 @@
                             class="d-flex justify-content-between flex-xl-row flex-md-column flex-sm-row flex-column text-heading align-items-xl-center align-items-md-start align-items-sm-center flex-wrap gap-6">
                             <div>
                                 <div class="d-flex align-items-center mb-4">
-                                    <img src="{{ $uptProfile->logo ? asset($uptProfile->logo) : asset('assets/img/logo-spt.png') }}"
+                                    <img src="{{ $uptProfile->logo ? asset('storage/' . $uptProfile->logo) : asset('assets/img/logo-spt.png') }}"
                                         alt="Logo" height="40" class="me-3">
                                     <div>
                                         <h5 class="mb-0 fw-semibold">{{ $uptProfile->name }}</h5>

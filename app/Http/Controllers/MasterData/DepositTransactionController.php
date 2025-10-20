@@ -1,20 +1,19 @@
 <?php
-
 namespace App\Http\Controllers\MasterData; // Namespace yang sudah kita sepakati
 
 use App\Http\Controllers\Controller;
-use App\Models\DepositTransaction;
 use App\Models\Agreement;
+use App\Models\DepositTransaction;
 use App\Models\UptProfile;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use Illuminate\Support\Arr;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class DepositTransactionController extends Controller
 {
@@ -23,12 +22,12 @@ class DepositTransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $searchDate = $request->input('search_date');
-        $searchMonth = $request->input('search_month');
-        $searchYear = $request->input('search_year');
+        $search         = $request->input('search');
+        $searchDate     = $request->input('search_date');
+        $searchMonth    = $request->input('search_month');
+        $searchYear     = $request->input('search_year');
         $startDateRange = $request->input('start_date_range');
-        $endDateRange = $request->input('end_date_range');
+        $endDateRange   = $request->input('end_date_range');
 
         $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
 
@@ -104,8 +103,8 @@ class DepositTransactionController extends Controller
      */
     public function create()
     {
-        // Untuk Select2, kita tidak perlu mengirim semua perjanjian di awal
-        // Mereka akan dimuat via AJAX
+                                       // Untuk Select2, kita tidak perlu mengirim semua perjanjian di awal
+                                       // Mereka akan dimuat via AJAX
         $activeAgreements = collect(); // Kirim koleksi kosong atau null
 
         return view('masterdata.deposit_transactions.create', compact('activeAgreements'));
@@ -119,20 +118,20 @@ class DepositTransactionController extends Controller
         Log::info('DepositTransactionController@store: Request received.', $request->all());
 
         $validatedData = $request->validate([
-            'agreement_id' => 'required|exists:agreements,id',
+            'agreement_id'      => 'required|exists:agreements,id',
             // Validasi tanggal diubah agar hanya menerima hari ini atau sesudahnya
-            'deposit_date' => 'required|date|after_or_equal:today',
-            'amount' => 'required|numeric|min:0',
-            'notes' => 'nullable|string|max:255',
+            'deposit_date'      => 'required|date|after_or_equal:today',
+            'amount'            => 'required|numeric|min:0',
+            'notes'             => 'nullable|string|max:255',
             'proof_of_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:300', // Maks 300KB
         ]);
 
         Log::info('DepositTransactionController@store: Validation successful.', $validatedData);
 
         try {
-            $transactionData = Arr::except($validatedData, ['proof_of_transfer']);
+            $transactionData                       = Arr::except($validatedData, ['proof_of_transfer']);
             $transactionData['created_by_user_id'] = Auth::id();
-            $transactionData['is_validated'] = false;
+            $transactionData['is_validated']       = false;
 
             // ✅ Hasilkan kode referensi unik yang aman di sisi server
             $transactionData['referral_code'] = 'TRXPRK-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(6));
@@ -169,8 +168,8 @@ class DepositTransactionController extends Controller
         $depositDate = Carbon::parse($depositTransaction->deposit_date)->addMonth(); // Menggunakan Carbon karena sudah di-cast di model
 
         $daysInMonth = $depositDate->daysInMonth;
-        $monthName = $depositDate->translatedFormat('F');
-        $year = $depositDate->year;
+        $monthName   = $depositDate->translatedFormat('F');
+        $year        = $depositDate->year;
 
         return view('masterdata.deposit_transactions.show', compact(
             'depositTransaction',
@@ -181,13 +180,17 @@ class DepositTransactionController extends Controller
         ));
     }
 
-
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(DepositTransaction $depositTransaction)
     {
         // Kode edit() Anda sudah benar, tidak perlu diubah.
+        if ($depositTransaction->is_validated && Auth::user()->hasRole('staff_keu')) {
+            return redirect()->route('masterdata.deposit-transactions.index')
+                ->with('error', 'Aksi ditolak. Transaksi yang sudah divalidasi tidak dapat diedit.');
+        }
+
         return view('masterdata.deposit_transactions.edit', compact('depositTransaction'));
     }
 
@@ -196,12 +199,16 @@ class DepositTransactionController extends Controller
      */
     public function update(Request $request, DepositTransaction $depositTransaction)
     {
+        if ($depositTransaction->is_validated && Auth::user()->hasRole('staff_keu')) {
+            return redirect()->route('masterdata.deposit-transactions.index')
+                ->with('error', 'Aksi ditolak. Transaksi yang sudah divalidasi tidak dapat diedit.');
+        }
         // 1. Validasi, termasuk untuk file gambar baru
         $validatedData = $request->validate([
-            'agreement_id' => ['required', 'exists:agreements,id'],
-            'deposit_date' => ['required', 'date', Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id)->ignore($depositTransaction->id)],
-            'amount' => 'required|numeric|min:0',
-            'notes' => 'nullable|string|max:255',
+            'agreement_id'      => ['required', 'exists:agreements,id'],
+            'deposit_date'      => ['required', 'date', Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id)->ignore($depositTransaction->id)],
+            'amount'            => 'required|numeric|min:0',
+            'notes'             => 'nullable|string|max:255',
             'proof_of_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:1024', // Maks 1MB
         ]);
 
@@ -233,6 +240,11 @@ class DepositTransactionController extends Controller
      */
     public function destroy(DepositTransaction $depositTransaction)
     {
+        if (! Auth::user()->hasRole('admin')) {
+            return redirect()->route('masterdata.deposit-transactions.index')
+                ->with('error', 'Aksi ditolak. Anda tidak memiliki izin untuk menghapus data.');
+        }
+
         try {
             Storage::disk('public')->delete($depositTransaction->proof_of_transfer);
             $depositTransaction->delete();
@@ -249,12 +261,12 @@ class DepositTransactionController extends Controller
      */
     public function validateDeposit(DepositTransaction $depositTransaction)
     {
-        if (!Auth::user()->isAdmin() && !Auth::user()->isLeader()) {
-            abort(403, 'Unauthorized action.');
+        if (! Auth::user()->hasRole('admin') && ! Auth::user()->hasRole('staff_keu')) {
+            abort(403, 'Tindakan tidak diizinkan.');
         }
 
         $depositTransaction->update([
-            'is_validated' => true,
+            'is_validated'    => true,
             'validation_date' => now(),
         ]);
 
@@ -291,9 +303,9 @@ class DepositTransactionController extends Controller
                 $text .= ' - Lokasi: ' . $agreement->parkingLocations->pluck('name')->join(', ');
             }
             $results[] = [
-                'id' => $agreement->id,
-                'text' => $text,
-                'daily_deposit_amount' => $agreement->daily_deposit_amount // <-- Data ini sudah diambil
+                'id'                   => $agreement->id,
+                'text'                 => $text,
+                'daily_deposit_amount' => $agreement->daily_deposit_amount, // <-- Data ini sudah diambil
             ];
         }
 
@@ -312,9 +324,8 @@ class DepositTransactionController extends Controller
         $depositDate = Carbon::parse($depositTransaction->deposit_date)->addMonth();
 
         $daysInMonth = $depositDate->daysInMonth;
-        $monthName = $depositDate->translatedFormat('F');
-        $year = $depositDate->year;
-
+        $monthName   = $depositDate->translatedFormat('F');
+        $year        = $depositDate->year;
 
         // Generate PDF
         $pdf = Pdf::loadView('pdf.deposit_receipt', compact(
@@ -340,12 +351,12 @@ class DepositTransactionController extends Controller
 
         if ($existingTransaction) {
             return response()->json([
-                'exists' => true,
+                'exists'      => true,
                 'transaction' => [
                     'agreement_number' => $agreement->agreement_number,
-                    'referral_code' => $existingTransaction->referral_code,
-                    'show_url' => route('masterdata.deposit-transactions.show', $existingTransaction->id)
-                ]
+                    'referral_code'    => $existingTransaction->referral_code,
+                    'show_url'         => route('masterdata.deposit-transactions.show', $existingTransaction->id),
+                ],
             ]);
         }
 

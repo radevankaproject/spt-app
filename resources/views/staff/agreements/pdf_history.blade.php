@@ -2,6 +2,10 @@
 
 @section('title', 'Histori PDF: ' . $agreement->agreement_number)
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-pdf-history')
+@endsection
+
 @section('content')
     {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">

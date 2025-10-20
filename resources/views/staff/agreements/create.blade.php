@@ -2,6 +2,10 @@
 
 @section('title', 'Tambah Perjanjian Baru')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-agreements-form')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
@@ -126,15 +130,21 @@
                     <div class="card-body d-flex flex-column">
                         <div class="col-md-12">
                             <label class="form-label">Zona Pengelolaan</label>
-                            <div class="d-flex pt-2">
-                                <div class="form-check me-4"><input name="zone_filter" class="form-check-input"
-                                        type="radio" value="Zona 2" id="zone2" /><label class="form-check-label"
-                                        for="zone2">
-                                        Zona 2 </label></div>
-                                <div class="form-check"><input name="zone_filter" class="form-check-input"
-                                        type="radio" value="Zona 3" id="zone3" /><label class="form-check-label"
-                                        for="zone3">
-                                        Zona 3 </label></div>
+                            <div class="d-flex align-items-center pt-2">
+                                <div class="form-check me-4">
+                                    <input name="zone_filter" class="form-check-input" type="radio" value="Zona 2"
+                                        id="zone2" />
+                                    <label class="form-check-label" for="zone2"> Zona 2 </label>
+                                </div>
+                                <div class="form-check">
+                                    <input name="zone_filter" class="form-check-input" type="radio" value="Zona 3"
+                                        id="zone3" />
+                                    <label class="form-check-label" for="zone3"> Zona 3 </label>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ms-4" id="reset-zone-btn"
+                                    style="display: none;">
+                                    Ganti Zona
+                                </button>
                             </div>
                         </div>
                         <div class="col-md-12 mb-3">
@@ -144,26 +154,31 @@
                                 <option value="">Pilih Zona terlebih dahulu</option>
                             </select>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label">Pilih Lokasi Parkir (Minimal 1)</label>
-                            <div class="flex-grow-1 border rounded-3 p-4" style="overflow-y: auto;">
-                                <div id="parking-location-container" class="class="form-check mb-3"
-                                    style="min-height: 150px;">
-                                    <p class="text-muted text-center" id="parking-location-placeholder">Pilih
-                                        Ruas Jalan
-                                        terlebih dahulu.</p>
-                                </div>
+
+                        <label class="form-label">Pilih Lokasi Parkir dari Ruas Jalan</label>
+                        <div class="border rounded-3 p-4 mb-4" style="overflow-y: auto; min-height: 150px;">
+                            <div id="parking-location-container">
+                                <p class="text-muted text-center" id="parking-location-placeholder">Pilih Ruas Jalan
+                                    terlebih dahulu.</p>
                             </div>
-                            @error('parking_location_ids')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
                         </div>
+
+                        <hr class="mx-n4">
+                        <h6 class="mb-3">Total Lokasi Terpilih: <span id="selected-count" class="fw-bold">0</span></h6>
+                        <div id="selected-locations-summary" class="flex-grow-1" style="overflow-y: auto;">
+                            <p class="text-muted text-center">Belum ada lokasi yang dipilih.</p>
+                        </div>
+
+                        @error('parking_location_ids')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
             </div>
-            <div class="col-12 text-end"><a href="{{ route('masterdata.agreements.index') }}"
-                    class="btn btn-outline-secondary">Batal</a><button type="submit" class="btn btn-primary">Simpan
-                    Perjanjian</button></div>
+            <div class="col-12 text-end">
+                <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-outline-secondary me-2">Batal</a>
+                <button type="submit" class="btn btn-primary">Simpan Perjanjian</button>
+            </div>
         </div>
     </form>
 @endsection
@@ -177,15 +192,16 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ... (inisialisasi Select2 dan Flatpickr) ...
             $('.select2').select2({
                 placeholder: "Pilih atau cari...",
                 allowClear: true
             });
             const startDatePicker = flatpickr("#start_date", {
                 dateFormat: 'Y-m-d',
-                onChange: (selected, dateStr) => {
-                    endDatePicker.set('minDate', dateStr);
+                onChange: (selectedDates, dateStr) => {
+                    if (dateStr) {
+                        endDatePicker.set('minDate', dateStr);
+                    }
                     calculateTotals();
                 }
             });
@@ -202,7 +218,47 @@
             const totalDepositInput = document.getElementById('total_deposit');
             const roadSectionSelect = $('#road_section_id');
             const parkingContainer = $('#parking-location-container');
-            const parkingPlaceholder = $('#parking-location-placeholder');
+            const summaryContainer = $('#selected-locations-summary');
+            const selectedCountEl = $('#selected-count');
+            const resetZoneBtn = $('#reset-zone-btn');
+
+            let selectedLocations = {};
+
+            function renderSummary() {
+                summaryContainer.empty();
+                const locations = Object.values(selectedLocations);
+                selectedCountEl.text(locations.length);
+
+                if (locations.length === 0) {
+                    summaryContainer.html('<p class="text-muted text-center">Belum ada lokasi yang dipilih.</p>');
+                    return;
+                }
+
+                locations.forEach(loc => {
+                    const itemHtml = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <p class="mb-0 fw-semibold">${loc.name}</p>
+                        <small class="text-muted">${loc.road_section_name}</small>
+                        <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
+                    </div>
+                    <button type="button" class="btn btn-icon btn-sm btn-danger remove-location-btn" data-id="${loc.id}">
+                        <i class="ri ri-close-line"></i>
+                    </button>
+                </div>
+            `;
+                    summaryContainer.append(itemHtml);
+                });
+            }
+
+            function updateDailyDepositTotal() {
+                let total = 0;
+                for (const id in selectedLocations) {
+                    total += parseFloat(selectedLocations[id].daily_deposit) || 0;
+                }
+                dailyDepositInput.value = total;
+                calculateTotals();
+            }
 
             function calculateTotals() {
                 const dailyAmount = parseFloat(dailyDepositInput.value) || 0;
@@ -214,35 +270,25 @@
                     minimumFractionDigits: 0
                 }).format(number);
                 monthlyDepositInput.value = dailyAmount > 0 ? formatRupiah(dailyAmount * 30) : '';
-                if (dailyAmount > 0 && startDate && endDate && endDate >= startDate) {
-                    const durationInDays = moment(endDate).diff(moment(startDate), 'days') + 1;
-                    totalDepositInput.value = durationInDays > 0 ? formatRupiah(dailyAmount * durationInDays) : '';
-                } else {
+                if (!startDate || !endDate || endDate < startDate) {
                     totalDepositInput.value = '';
+                    return;
                 }
-            }
-
-            // ✅ FUNGSI BARU untuk menghitung total setoran dari checkbox
-            function updateDailyDepositTotal() {
-                let total = 0;
-                // Cari semua checkbox lokasi yang tercentang di dalam kontainer
-                $('input[name="parking_location_ids[]"]:checked', parkingContainer).each(function() {
-                    total += parseFloat($(this).data('daily-deposit')) || 0;
-                });
-                dailyDepositInput.value = total;
-                // Panggil kembali fungsi kalkulasi utama
-                calculateTotals();
+                const durationInDays = moment(endDate).diff(moment(startDate), 'days') + 1;
+                totalDepositInput.value = (dailyAmount > 0 && durationInDays > 0) ? formatRupiah(dailyAmount *
+                    durationInDays) : '';
             }
 
             $('input[name="zone_filter"]').on('change', function() {
                 const selectedZone = $(this).val();
-                roadSectionSelect.empty().append('<option value="">Memuat...</option>').prop('disabled',
-                    true);
-                parkingContainer.html(parkingPlaceholder.text('Pilih Ruas Jalan terlebih dahulu.'));
-                updateDailyDepositTotal(); // Reset total saat zona berubah
+                $('input[name="zone_filter"]').not(this).prop('disabled', true);
+                resetZoneBtn.show();
+                roadSectionSelect.empty().append('<option value="">Memuat ruas jalan...</option>').prop(
+                    'disabled', true).trigger('change');
+                parkingContainer.html(
+                    '<p class="text-muted text-center">Pilih Ruas Jalan terlebih dahulu.</p>');
 
-                const url = `{{ route('masterdata.road-sections.getByZone', ':zone') }}`.replace(
-                    ':zone', selectedZone);
+                const url = `{{ url('masterdata/get-road-sections-by-zone') }}/${selectedZone}`;
                 $.ajax({
                     url: url,
                     type: 'GET',
@@ -250,7 +296,7 @@
                         roadSectionSelect.empty().append(
                             '<option value="">Pilih Ruas Jalan</option>').prop('disabled',
                             false);
-                        if (data.length > 0) {
+                        if (data && data.length > 0) {
                             $.each(data, function(key, value) {
                                 roadSectionSelect.append($('<option></option>').attr(
                                     'value', value.id).text(value.name));
@@ -260,57 +306,102 @@
                                 '<option value="">Tidak ada ruas jalan</option>').prop(
                                 'disabled', true);
                         }
+                        roadSectionSelect.trigger('change');
                     },
                     error: function() {
                         roadSectionSelect.empty().append(
-                            '<option value="">Gagal memuat</option>').prop('disabled', true);
+                                '<option value="">Gagal memuat</option>').prop('disabled', true)
+                            .trigger('change');
                     }
                 });
             });
 
-            roadSectionSelect.on('change', function() {
-                const selectedRoadSectionId = $(this).val();
-                parkingContainer.html(parkingPlaceholder.text('Memuat...'));
-                updateDailyDepositTotal(); // Reset total saat ruas jalan berubah
-
-                if (selectedRoadSectionId) {
-                    const url =
-                        `{{ route('masterdata.get-parking-locations-by-road-section', ':roadSectionId') }}`
-                        .replace(':roadSectionId', selectedRoadSectionId);
-                    $.ajax({
-                        url: url,
-                        type: 'GET',
-                        success: function(data) {
-                            // console.log(data);
-                            parkingContainer.empty();
-                            if (data.length > 0) {
-                                let html = '<div class="row">';
-                                data.forEach(location => {
-                                    // ✅ Tambahkan data-daily-deposit pada checkbox
-                                    html +=
-                                        `<div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="parking_location_ids[]" value="${location.id}" id="loc-${location.id}" data-daily-deposit="${location.daily_deposit}"><label class="form-check-label" for="loc-${location.id}">${location.name}</label></div></div>`;
-                                });
-                                html += '</div>';
-                                parkingContainer.html(html);
-                            } else {
-                                parkingContainer.html(parkingPlaceholder.text(
-                                    'Tidak ada lokasi parkir tersedia di ruas jalan ini.'
-                                ));
-                            }
-                        },
-                        error: function() {
-                            parkingContainer.html(parkingPlaceholder.text(
-                                'Gagal memuat lokasi parkir.'));
-                        }
-                    });
-                } else {
-                    parkingContainer.html(parkingPlaceholder.text('Pilih Ruas Jalan terlebih dahulu.'));
-                }
+            resetZoneBtn.on('click', function() {
+                $('input[name="zone_filter"]').prop('checked', false).prop('disabled', false);
+                $(this).hide();
+                roadSectionSelect.empty().append('<option value="">Pilih Zona terlebih dahulu</option>')
+                    .prop('disabled', true).trigger('change');
+                parkingContainer.html(
+                    '<p class="text-muted text-center">Pilih Ruas Jalan terlebih dahulu.</p>');
+                selectedLocations = {};
+                renderSummary();
+                updateDailyDepositTotal();
             });
 
-            // ✅ Tambahkan event listener baru untuk checkbox di dalam kontainer
+            roadSectionSelect.on('change', function() {
+                const selectedRoadSectionId = $(this).val();
+                const roadSectionName = $(this).find('option:selected').text();
+                parkingContainer.html('<p class="text-muted text-center">Memuat lokasi...</p>');
+
+                if (!selectedRoadSectionId) {
+                    parkingContainer.html(
+                        '<p class="text-muted text-center">Pilih Ruas Jalan terlebih dahulu.</p>');
+                    return;
+                }
+
+                const url =
+                    `{{ url('masterdata/get-parking-locations-by-road-section') }}/${selectedRoadSectionId}`;
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(data) {
+                        parkingContainer.empty();
+                        if (data && data.length > 0) {
+                            let html = '<div class="row">';
+                            data.forEach(location => {
+                                const isChecked = selectedLocations.hasOwnProperty(
+                                    location.id) ? 'checked' : '';
+                                html += `
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="parking_location_ids_filter[]" value="${location.id}" id="loc-${location.id}"
+                                        data-daily-deposit="${location.daily_deposit}"
+                                        data-name="${location.name}"
+                                        data-road-section-name="${roadSectionName}" ${isChecked}>
+                                    <label class="form-check-label" for="loc-${location.id}">${location.name}</label>
+                                </div>
+                            </div>`;
+                            });
+                            html += '</div>';
+                            parkingContainer.html(html);
+                        } else {
+                            parkingContainer.html(
+                                '<p class="text-muted text-center">Tidak ada lokasi parkir tersedia.</p>'
+                            );
+                        }
+                    },
+                    error: function() {
+                        parkingContainer.html(
+                            '<p class="text-danger text-center">Gagal memuat lokasi.</p>');
+                    }
+                });
+            });
+
             parkingContainer.on('change', 'input[type="checkbox"]', function() {
+                const checkbox = $(this);
+                const locationId = checkbox.val();
+
+                if (checkbox.is(':checked')) {
+                    selectedLocations[locationId] = {
+                        id: locationId,
+                        name: checkbox.data('name'),
+                        daily_deposit: checkbox.data('daily-deposit'),
+                        road_section_name: checkbox.data('road-section-name')
+                    };
+                } else {
+                    delete selectedLocations[locationId];
+                }
+
                 updateDailyDepositTotal();
+                renderSummary();
+            });
+
+            summaryContainer.on('click', '.remove-location-btn', function() {
+                const locationId = $(this).data('id');
+                delete selectedLocations[locationId];
+                $('#loc-' + locationId).prop('checked', false);
+                updateDailyDepositTotal();
+                renderSummary();
             });
         });
     </script>
