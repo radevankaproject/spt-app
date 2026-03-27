@@ -33,4 +33,10 @@ class ParkingLocation extends Model
             ->withPivot('assigned_date', 'removed_date', 'status')
             ->withTimestamps();
     }
+
+    public function histories()
+    {
+        // Urutkan dari yang terbaru
+        return $this->hasMany(ParkingLocationHistory::class)->latest();
+    }
 }

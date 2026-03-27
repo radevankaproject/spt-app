@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\YearlyDepositTarget;
 
 class DashboardController extends Controller
 {
@@ -38,19 +39,36 @@ class DashboardController extends Controller
 
         // --- 3. Data untuk Grafik ---
 
-        // A. Grafik Setoran per Bulan (Mixed Chart)
+        // A. Grafik Setoran per Bulan (Mixed Chart) & TARGET TAHUN BERJALAN
+        $currentYear = now()->year;
+
         $monthlyDeposits = DepositTransaction::select(
             DB::raw('MONTH(deposit_date) as month'),
             DB::raw('SUM(amount) as total')
         )
-            ->where('is_validated', true)->whereYear('deposit_date', now()->year)
+            ->where('is_validated', true)->whereYear('deposit_date', $currentYear)
             ->groupBy('month')->orderBy('month')->pluck('total', 'month')->all();
+
+        // Ambil data Target Tahun ini dari database
+        $yearlyTarget = YearlyDepositTarget::with('monthlyTargets')->where('year', $currentYear)->first();
 
         $mainChartLabels = [];
         $mainChartData   = [];
+        $targetChartData = []; // Array baru untuk menyimpan target asli
+
         for ($m = 1; $m <= 12; $m++) {
             $mainChartLabels[] = \Carbon\Carbon::create()->month($m)->translatedFormat('F');
-            $mainChartData[]   = $monthlyDeposits[$m] ?? 0;
+            // ✅ TAMBAHKAN (float) DI SINI
+            $mainChartData[]   = isset($monthlyDeposits[$m]) ? (float) $monthlyDeposits[$m] : 0;
+
+            // Cek apakah ada target di bulan tersebut
+            if ($yearlyTarget) {
+                $monthTarget = $yearlyTarget->monthlyTargets->firstWhere('month', $m);
+                // ✅ TAMBAHKAN (float) DI SINI JUGA
+                $targetChartData[] = $monthTarget ? (float) $monthTarget->target_amount : 0;
+            } else {
+                $targetChartData[] = 0;
+            }
         }
 
         // B. Grafik Zona (Polar Area Charts)
@@ -70,7 +88,7 @@ class DashboardController extends Controller
         // C. Grafik Titik per Ruas Jalan (Bar Chart)
         $locationsPerRoadSection = RoadSection::withCount('parkingLocations')
             ->orderBy('parking_locations_count', 'desc')
-            ->limit(20)->get(); // Ambil 10 teratas
+            ->limit(20)->get();
 
         $barChartData = [
             'labels' => $locationsPerRoadSection->pluck('name'),
@@ -87,6 +105,7 @@ class DashboardController extends Controller
             'recentCoordinators',
             'mainChartLabels',
             'mainChartData',
+            'targetChartData', // ✅ JANGAN LUPA DIPASSING WAK
             'zoneChartData',
             'barChartData',
         ));

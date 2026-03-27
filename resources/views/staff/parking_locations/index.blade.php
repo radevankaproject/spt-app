@@ -26,100 +26,115 @@
 
     {{-- Daftar Lokasi Parkir --}}
     <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between gap-4">
+        <div class="card-header d-flex flex-wrap justify-content-between gap-4 border-bottom pb-3">
             <div class="card-title mb-0">
                 <h5 class="mb-1">Daftar Semua Lokasi Parkir</h5>
                 <p class="text-muted mb-0">Total {{ $parkingLocations->total() }} lokasi terdaftar.</p>
             </div>
-            <div class="d-flex justify-content-md-end align-items-center gap-4">
-                <form action="{{ route('masterdata.parking-locations.index') }}" method="GET"
-                    class="d-flex align-items-center">
+            <div class="d-flex justify-content-md-end align-items-center gap-3">
+                <form action="{{ route('masterdata.parking-locations.index') }}" method="GET" class="d-flex align-items-center">
                     <div class="input-group">
-                        <input type="search" name="search" class="form-control" placeholder="Cari nama lokasi..."
-                            value="{{ request('search') }}">
-                        <button class="btn btn-primary" type="submit"><i class="icon-base ri ri-search-line"></i></button>
+                        <input type="search" name="search" class="form-control" placeholder="Cari nama lokasi..." value="{{ request('search') }}">
+                        <button class="btn btn-outline-primary" type="submit"><i class="ri icon-base ri-search-line"></i></button>
                     </div>
                 </form>
-                <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary me-2">
-                    <i class="icon-base ri ri-upload-cloud-line me-2"></i> Impor Data
+                <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary">
+                    <i class="ri icon-base ri-upload-cloud-line me-1"></i> Impor Data
                 </a>
                 <a href="{{ route('masterdata.parking-locations.create') }}" class="btn btn-primary">
-                    <i class="icon-base ri ri-add-line me-2"></i>Tambah Lokasi
+                    <i class="ri icon-base ri-add-line me-1"></i> Tambah
                 </a>
             </div>
         </div>
-        <div class="card-body">
+
+        <div class="card-body pt-3">
             @if (session('error'))
-                <div class="alert alert-danger alert-dismissible" role="alert">
-                    {{ session('error') }}
+                <div class="alert alert-danger alert-dismissible fw-bold" role="alert">
+                    <i class="ri-error-warning-line me-1"></i> {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
+
             <div class="table-responsive text-nowrap">
                 <table class="table table-hover">
-                    <thead>
+                    <thead class="table-light">
                         <tr>
-                            <th>Nama Lokasi</th>
-                            <th>Ruas Jalan</th>
-                            <th>Zona</th>
-                            <th>Status</th>
-                            <th>Info Perjanjian</th>
-                            <th class="text-center">Aksi</th>
+                            <th width="30%">Nama Lokasi</th>
+                            <th width="20%">Ruas Jalan</th>
+                            <th width="10%">Zona</th>
+                            <th width="15%">Status</th>
+                            <th width="15%">Info Perjanjian</th>
+                            <th width="10%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
                         @forelse ($parkingLocations as $location)
                             <tr>
-                                <td><span class="fw-medium">{{ $location->name }}</span></td>
+                                <td><span class="fw-medium text-dark">{{ $location->name }}</span></td>
                                 <td>{{ $location->roadSection->name ?? 'N/A' }}</td>
-                                {{-- ✅ Kolom Zona Ditambahkan --}}
                                 <td>
-                                    <span
-                                        class="badge rounded-pill bg-label-dark">{{ $location->roadSection->zone ?? 'N/A' }}</span>
+                                    <span class="badge rounded-pill bg-label-dark">{{ $location->roadSection->zone ?? 'N/A' }}</span>
                                 </td>
                                 <td>
                                     @php
-                                        $statusClass =
-                                            $location->status == 'tersedia' ? 'bg-label-success' : 'bg-label-danger';
+                                        $statusClass = $location->status == 'tersedia' ? 'bg-label-success' : 'bg-label-secondary';
                                     @endphp
-                                    <span
-                                        class="badge rounded-pill {{ $statusClass }}">{{ ucfirst(str_replace('_', ' ', $location->status)) }}</span>
+                                    <span class="badge rounded-pill {{ $statusClass }} fw-bold">
+                                        {{ strtoupper(str_replace('_', ' ', $location->status)) }}
+                                    </span>
                                 </td>
                                 <td>
-                                    {{-- ✅ Info PKS jika status 'tidak tersedia' --}}
                                     @if ($location->status == 'tidak_tersedia' && $location->agreements->isNotEmpty())
-                                        @php $activeAgreement = $location->agreements->first(); @endphp
+                                        @php
+                                            $activeAgreement = $location->agreements->first();
+                                            $cName = $activeAgreement->fieldCoordinator->user->name ?? 'N/A';
+
+                                            // Cek apakah punya foto profil, jika tidak gunakan UI Avatar
+                                            $cAvatar = ($activeAgreement->fieldCoordinator->user && $activeAgreement->fieldCoordinator->user->img)
+                                                ? asset($activeAgreement->fieldCoordinator->user->img)
+                                                : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=24&rounded=true&bold=true";
+                                        @endphp
                                         <div>
-                                            <span class="fw-medium d-block">{{ $activeAgreement->agreement_number }}</span>
-                                            <small
-                                                class="text-muted">{{ $activeAgreement->fieldCoordinator->user->name ?? 'N/A' }}</small>
+                                            <a href="{{ route('masterdata.agreements.show', $activeAgreement->id) }}" class="fw-medium d-block text-primary">
+                                                {{ $activeAgreement->agreement_number }}
+                                            </a>
+                                            <small class="text-muted d-flex align-items-center mt-1">
+                                                <img src="{{ $cAvatar }}" alt="Avatar" class="rounded-circle me-2 shadow-sm" width="20" height="20" style="object-fit: cover;">
+                                                {{ Str::limit($cName, 15) }}
+                                            </small>
                                         </div>
                                     @else
-                                        -
+                                        <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        {{-- ✅ Tombol Hapus hanya muncul jika status 'tersedia' --}}
-                                        <a class="btn btn-sm btn-icon"
+                                    <div class="d-flex align-items-center justify-content-center gap-1">
+                                        {{-- ✅ Tombol Detail Selalu Muncul --}}
+                                        <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
                                             href="{{ route('masterdata.parking-locations.show', $location->id) }}"
-                                            data-bs-toggle="tooltip" title="Details Lokasi">
-                                            <i class="icon-base ri ri-eye-line icon-22px"></i>
+                                            data-bs-toggle="tooltip" title="Detail Lokasi">
+                                            <i class="ri icon-base ri-eye-line ri-20px"></i>
                                         </a>
-                                        @if ($location->status == 'tersedia')
-                                            <a class="btn btn-sm btn-icon"
-                                                href="{{ route('masterdata.parking-locations.edit', $location->id) }}"
-                                                data-bs-toggle="tooltip" title="Edit Lokasi">
-                                                <i class="icon-base ri ri-pencil-line icon-22px"></i>
-                                            </a>
-                                            <form
-                                                action="{{ route('masterdata.parking-locations.destroy', $location->id) }}"
-                                                method="POST" class="form-delete">
+
+                                        {{-- ✅ Tombol Edit Selalu Muncul --}}
+                                        <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
+                                            href="{{ route('masterdata.parking-locations.edit', $location->id) }}"
+                                            data-bs-toggle="tooltip" title="Edit Lokasi">
+                                            <i class="ri icon-base ri-pencil-line ri-20px"></i>
+                                        </a>
+
+                                        {{-- ✅ Tombol Delete: Disabled jika Tidak Tersedia --}}
+                                        @if ($location->status == 'tidak_tersedia')
+                                            <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
+                                                data-bs-toggle="tooltip" title="Tidak dapat dihapus, sedang terikat PKS!">
+                                                <i class="ri icon-base ri-delete-bin-7-line ri-20px opacity-50"></i>
+                                            </button>
+                                        @else
+                                            <form action="{{ route('masterdata.parking-locations.destroy', $location->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-icon" data-bs-toggle="tooltip"
-                                                    title="Hapus Lokasi">
-                                                    <i class="icon-base ri ri-delete-bin-line icon-22px"></i>
+                                                <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Lokasi">
+                                                    <i class="ri icon-base ri-delete-bin-7-line ri-20px"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -128,13 +143,16 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">Tidak ada data lokasi parkir ditemukan.</td>
+                                <td colspan="6" class="text-center py-4">
+                                    <img src="{{ asset('assets/img/illustrations/misc-coming-soon-object.png') }}" width="120" class="mb-3 opacity-50" alt="No Data">
+                                    <p class="text-muted">Tidak ada data lokasi parkir ditemukan.</p>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="mt-4">
+            <div class="mt-4 px-3">
                 {{ $parkingLocations->appends(['search' => request('search')])->links() }}
             </div>
         </div>
@@ -145,26 +163,26 @@
     <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            @if (session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: '{{ session('success') }}',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-            @endif
+            // Aktifkan Tooltips Bootstrap
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
 
+            // SweetAlert HANYA untuk konfirmasi Delete
             document.querySelectorAll('.form-delete').forEach(form => {
                 form.addEventListener('submit', function(event) {
                     event.preventDefault();
                     Swal.fire({
-                        title: 'Anda Yakin?',
-                        text: "Data lokasi parkir yang dihapus tidak dapat dikembalikan!",
+                        title: 'Apakah Anda yakin?',
+                        text: "Data lokasi parkir beserta file dokumen akan dihapus permanen!",
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6f6b7d',
+                        customClass: {
+                            confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
+                            cancelButton: 'btn btn-outline-secondary waves-effect'
+                        },
+                        buttonsStyling: false,
                         confirmButtonText: 'Ya, Hapus!',
                         cancelButtonText: 'Batal'
                     }).then((result) => {

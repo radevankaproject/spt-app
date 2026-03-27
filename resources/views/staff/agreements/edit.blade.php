@@ -77,49 +77,46 @@
                                     value="{{ $agreement->field_coordinator_id }}">
                                 <div class="form-text">Koordinator tidak dapat diubah.</div>
                             </div>
+                            {{-- ✅ FIX: Semua tanggal dikunci (readonly & pointer-events: none) --}}
                             <div class="col-md-6">
-                                <div class="form-floating form-floating-outline"><input type="text" class="form-control"
-                                        id="start_date" name="start_date" placeholder="YYYY-MM-DD"
-                                        value="{{ old('start_date', $agreement->start_date->format('Y-m-d')) }}"
-                                        required /><label for="start_date">Tanggal Mulai Berlaku</label></div>
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control bg-lighter text-muted" id="start_date" name="start_date"
+                                        value="{{ old('start_date', $agreement->start_date->format('Y-m-d')) }}" readonly style="pointer-events: none;" />
+                                    <label for="start_date">Tanggal Mulai Berlaku <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating form-floating-outline"><input type="text" class="form-control"
-                                        id="end_date" name="end_date" placeholder="YYYY-MM-DD"
-                                        value="{{ old('end_date', $agreement->end_date->format('Y-m-d')) }}"
-                                        required /><label for="end_date">Tanggal Selesai Berlaku</label></div>
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control bg-lighter text-muted" id="end_date" name="end_date"
+                                        value="{{ old('end_date', $agreement->end_date->format('Y-m-d')) }}" readonly style="pointer-events: none;" />
+                                    <label for="end_date">Tanggal Selesai Berlaku <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating form-floating-outline"><input type="text" class="form-control"
-                                        id="signed_date" name="signed_date"
-                                        value="{{ old('signed_date', $agreement->signed_date->format('Y-m-d')) }}"
-                                        required /><label for="signed_date">Tanggal TTD</label></div>
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control bg-lighter text-muted" id="signed_date" name="signed_date"
+                                        value="{{ old('signed_date', $agreement->signed_date->format('Y-m-d')) }}" readonly style="pointer-events: none;" />
+                                    <label for="signed_date">Tanggal TTD <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                </div>
                             </div>
-                            @php
-                                $endDate = \Carbon\Carbon::parse($agreement->end_date);
-                                $canChangeStatus = $endDate->isPast() || now()->diffInDays($endDate, false) <= 10;
-                            @endphp
+
+                            {{-- ✅ FIX: Status hanya memunculkan status saat ini dan opsi Diakhiri --}}
                             <div class="col-md-6">
-                                <div class="form-floating form-floating-outline"><select name="status" id="status"
-                                        class="form-select" required {{ !$canChangeStatus ? 'disabled' : '' }}>
-                                        <option value="active"
-                                            {{ old('status', $agreement->status) == 'active' ? 'selected' : '' }}>Aktif
+                                <div class="form-floating form-floating-outline">
+                                    <select name="status" id="status" class="form-select" required>
+                                        {{-- Tampilkan status saat ini sebagai opsi pertama --}}
+                                        <option value="{{ $agreement->status }}" selected>
+                                            {{ ucwords(str_replace('_', ' ', $agreement->status)) }}
                                         </option>
-                                        <option value="pending_renewal"
-                                            {{ old('status', $agreement->status) == 'pending_renewal' ? 'selected' : '' }}>
-                                            Menunggu Perpanjangan</option>
-                                        <option value="expired"
-                                            {{ old('status', $agreement->status) == 'expired' ? 'selected' : '' }}>
-                                            Kadaluarsa</option>
-                                        <option value="terminated"
-                                            {{ old('status', $agreement->status) == 'terminated' ? 'selected' : '' }}>
-                                            Diakhiri</option>
-                                    </select><label for="status">Status Perjanjian</label></div>
-                                @if (!$canChangeStatus)
-                                    <input type="hidden" name="status" value="{{ $agreement->status }}">
-                                    <div class="form-text text-warning">Status hanya bisa diubah jika PKS akan berakhir
-                                        dalam 10 hari atau sudah kadaluarsa.</div>
-                                @endif
+
+                                        {{-- Jika status belum terminated, berikan opsi untuk memutus kontrak --}}
+                                        @if($agreement->status !== 'terminated')
+                                            <option value="terminated">Diakhiri (Terminated)</option>
+                                        @endif
+                                    </select>
+                                    <label for="status">Status Perjanjian</label>
+                                </div>
+                                <div class="form-text text-warning"><i class="ri ri-error-warning-line"></i> Status hanya bisa diubah ke diakhiri (terminated).</div>
                             </div>
 
                             {{-- Kalkulasi Setoran --}}
@@ -158,16 +155,21 @@
                             <div class="d-flex pt-2">
                                 <div class="form-check me-4">
                                     <input name="zone_filter" class="form-check-input" type="radio" value="Zona 2"
-                                        id="zone2" {{ $initialZone == 'Zona 2' ? 'checked' : '' }} disabled />
+                                        id="zone2" {{ $initialZone == 'Zona 2' ? 'checked' : '' }} {{ $initialZone ? 'disabled' : '' }} />
                                     <label class="form-check-label" for="zone2"> Zona 2</label>
                                 </div>
                                 <div class="form-check">
                                     <input name="zone_filter" class="form-check-input" type="radio" value="Zona 3"
-                                        id="zone3" {{ $initialZone == 'Zona 3' ? 'checked' : '' }} disabled />
+                                        id="zone3" {{ $initialZone == 'Zona 3' ? 'checked' : '' }} {{ $initialZone ? 'disabled' : '' }} />
                                     <label class="form-check-label" for="zone3"> Zona 3</label>
                                 </div>
                             </div>
-                            <div class="form-text">Zona tidak dapat diubah untuk PKS yang sudah ada.</div>
+                            {{-- ✅ FIX: Keterangan dinamis berdasarkan ketersediaan lokasi --}}
+                            @if($initialZone)
+                                <div class="form-text text-danger"><i class="ri ri-lock-line"></i> Zona terkunci berdasarkan lokasi yang sedang terikat.</div>
+                            @else
+                                <div class="form-text text-success fw-bold"><i class="ri ri-lock-unlock-line"></i> Silakan pilih zona baru untuk PKS ini.</div>
+                            @endif
                         </div>
                         <div class="mb-3">
                             <label for="road_section_filter" class="form-label">Filter Ruas Jalan</label>
@@ -236,20 +238,8 @@
                 placeholder: "Pilih atau cari...",
                 allowClear: true
             });
-            const startDatePicker = flatpickr("#start_date", {
-                dateFormat: 'Y-m-d',
-                onChange: (selected, dateStr) => {
-                    endDatePicker.set('minDate', dateStr);
-                    calculateTotals();
-                }
-            });
-            const endDatePicker = flatpickr("#end_date", {
-                dateFormat: 'Y-m-d',
-                onChange: () => calculateTotals()
-            });
-            flatpickr("#signed_date", {
-                dateFormat: 'Y-m-d'
-            });
+
+            // ✅ FIX: Flatpickr dihapus karena tanggal sudah dikunci permanen.
 
             // --- Elemen Penting ---
             const dailyDepositInput = document.getElementById('daily_deposit_amount');
@@ -262,6 +252,7 @@
 
             // --- State Management ---
             let selectedLocations = {};
+            const isZoneLocked = {{ $initialZone ? 'true' : 'false' }};
 
             // --- Definisi Fungsi ---
             function initializeSelectedLocations() {
@@ -287,16 +278,16 @@
                 }
                 locations.forEach(loc => {
                     const itemHtml = `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <p class="mb-0 fw-semibold">${loc.name}</p>
-                        <small class="text-muted">${loc.road_section_name}</small>
-                        <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
-                    </div>
-                    <button type="button" class="btn btn-icon btn-sm btn-danger remove-location-btn" data-id="${loc.id}">
-                        <i class="ri ri-close-line"></i>
-                    </button>
-                </div>`;
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <p class="mb-0 fw-semibold">${loc.name}</p>
+                            <small class="text-muted">${loc.road_section_name}</small>
+                            <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
+                        </div>
+                        <button type="button" class="btn btn-icon btn-sm btn-danger remove-location-btn" data-id="${loc.id}">
+                            <i class="ri ri-close-line"></i>
+                        </button>
+                    </div>`;
                     summaryContainer.append(itemHtml);
                 });
             }
@@ -312,41 +303,111 @@
 
             function calculateTotals() {
                 const dailyAmount = parseFloat(dailyDepositInput.value) || 0;
-                const startDate = startDatePicker.selectedDates[0];
-                const endDate = endDatePicker.selectedDates[0];
+
+                // Karena flatpickr dihapus, kita ambil nilai langsung dari input hidden/readonly
+                const startDateStr = document.getElementById('start_date').value;
+                const endDateStr = document.getElementById('end_date').value;
+
                 const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0
+                    style: 'currency', currency: 'IDR', minimumFractionDigits: 0
                 }).format(number);
+
                 monthlyDepositInput.value = dailyAmount > 0 ? formatRupiah(dailyAmount * 30) : '';
-                if (dailyAmount > 0 && startDate && endDate && endDate >= startDate) {
-                    const durationInDays = moment(endDate).diff(moment(startDate), 'days') + 1;
-                    totalDepositInput.value = durationInDays > 0 ? formatRupiah(dailyAmount * durationInDays) : '';
+
+                if (dailyAmount > 0 && startDateStr && endDateStr) {
+                    const startDate = new Date(startDateStr);
+                    const endDate = new Date(endDateStr);
+                    if (endDate >= startDate) {
+                        // Hitung selisih hari
+                        const diffTime = Math.abs(endDate - startDate);
+                        const durationInDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                        totalDepositInput.value = durationInDays > 0 ? formatRupiah(dailyAmount * durationInDays) : '';
+                    } else {
+                        totalDepositInput.value = '';
+                    }
                 } else {
                     totalDepositInput.value = '';
                 }
             }
 
-            // --- Event Listeners ---
-            roadSectionFilter.on('change', function() {
-                const selectedSectionId = $(this).val();
-                $('#location-placeholder').remove(); // Hapus placeholder setiap kali filter berubah
-                parkingContainer.find('.location-item').each(function() {
-                    const show = !selectedSectionId || $(this).data('road-section') ==
-                        selectedSectionId;
-                    $(this).toggle(show);
+            // ========================================================
+            // ✅ LOGIKA PERCABANGAN (ZONA TERBUKA vs ZONA TERKUNCI)
+            // ========================================================
+
+            if (!isZoneLocked) {
+                // 1. ZONA TERBUKA: Gunakan AJAX Fetch (Sama seperti halaman Create)
+                $('input[name="zone_filter"]').on('change', function() {
+                    const zone = $(this).val();
+                    roadSectionFilter.html('<option value="">Memuat Ruas Jalan...</option>');
+                    parkingContainer.html('<p class="text-muted text-center">Silakan pilih ruas jalan terlebih dahulu.</p>');
+
+                    fetch(`/masterdata/agreements/get-road-sections/${zone}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            roadSectionFilter.empty().append('<option value="">Tampilkan Semua Lokasi</option>');
+                            data.forEach(section => {
+                                roadSectionFilter.append(`<option value="${section.id}">${section.name}</option>`);
+                            });
+                        });
                 });
 
-                // Tambahkan kembali placeholder jika tidak ada item yang cocok
-                if (parkingContainer.find('.location-item:visible').length === 0) {
-                    const message = selectedSectionId ? 'Tidak ada lokasi pada ruas jalan ini.' :
-                        'Silakan pilih ruas jalan untuk menampilkan lokasi.';
-                    parkingContainer.append(
-                        `<p id="location-placeholder" class="text-muted text-center">${message}</p>`);
-                }
-            });
+                roadSectionFilter.on('change', function() {
+                    const roadSectionId = $(this).val();
+                    parkingContainer.html('<p class="text-muted text-center">Memuat data lokasi...</p>');
 
+                    if (!roadSectionId) {
+                        parkingContainer.html('<p class="text-muted text-center">Silakan pilih ruas jalan untuk menampilkan lokasi.</p>');
+                        return;
+                    }
+
+                    fetch(`/masterdata/agreements/get-parking-locations/${roadSectionId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            parkingContainer.empty();
+                            if (data.length === 0) {
+                                parkingContainer.append('<p class="text-muted text-center">Tidak ada lokasi tersedia di ruas jalan ini.</p>');
+                                return;
+                            }
+
+                            const roadName = roadSectionFilter.find('option:selected').text();
+                            data.forEach(location => {
+                                const isChecked = selectedLocations[location.id] ? 'checked' : '';
+                                parkingContainer.append(`
+                                    <div class="form-check mb-3 location-item" data-road-section="${location.road_section_id}">
+                                        <input class="form-check-input" type="checkbox" value="${location.id}"
+                                            id="loc-${location.id}" data-daily-deposit="${location.daily_deposit}"
+                                            data-name="${location.name}" data-road-section-name="${roadName}" ${isChecked}>
+                                        <label class="form-check-label" for="loc-${location.id}">
+                                            ${location.name} <span class="text-success fw-bold">(Rp ${new Intl.NumberFormat('id-ID').format(location.daily_deposit)})</span>
+                                        </label>
+                                    </div>
+                                `);
+                            });
+                        });
+                });
+
+            } else {
+                // 2. ZONA TERKUNCI: Gunakan DOM Filter Element yang sudah ada di HTML
+                roadSectionFilter.on('change', function() {
+                    const selectedSectionId = $(this).val();
+                    $('#location-placeholder').remove();
+                    parkingContainer.find('.location-item').each(function() {
+                        const show = !selectedSectionId || $(this).data('road-section') == selectedSectionId;
+                        $(this).toggle(show);
+                    });
+
+                    if (parkingContainer.find('.location-item:visible').length === 0) {
+                        const message = selectedSectionId ? 'Tidak ada lokasi pada ruas jalan ini.' : 'Silakan pilih ruas jalan untuk menampilkan lokasi.';
+                        parkingContainer.append(`<p id="location-placeholder" class="text-muted text-center">${message}</p>`);
+                    }
+                });
+
+                // Sembunyikan semua item lokasi di awal saat halaman dimuat
+                parkingContainer.find('.location-item').hide();
+                parkingContainer.append('<p id="location-placeholder" class="text-muted text-center">Silakan pilih ruas jalan untuk menampilkan lokasi.</p>');
+            }
+
+            // --- Event Listeners Global ---
             parkingContainer.on('change', 'input[type="checkbox"]', function() {
                 const checkbox = $(this);
                 const locationId = checkbox.val();
@@ -372,16 +433,10 @@
                 renderSummary();
             });
 
-            // --- Inisialisasi Halaman ---
+            // --- Trigger Awal ---
             initializeSelectedLocations();
             renderSummary();
             updateDailyDepositTotal();
-
-            // ✅ PERBAIKAN: Sembunyikan semua item lokasi di awal dan tampilkan placeholder
-            parkingContainer.find('.location-item').hide();
-            parkingContainer.append(
-                '<p id="location-placeholder" class="text-muted text-center">Silakan pilih ruas jalan untuk menampilkan lokasi.</p>'
-            );
         });
     </script>
 @endpush

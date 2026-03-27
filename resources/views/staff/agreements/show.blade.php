@@ -6,329 +6,614 @@
     @include('layouts.partials._skeleton-agreement-show')
 @endsection
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <style>
+        .timeline-scrollable {
+            max-height: 600px;
+            position: relative;
+            overflow: hidden;
+            padding-right: 15px;
+            padding-left: 15px;
+            padding-bottom: 2rem;
+        }
+
+        .pdf-viewer-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            border: 1px solid #e7e7e8;
+        }
+
+        .pdf-viewer-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Nav Pills Custom Premium */
+        .nav-pills .nav-link {
+            border-radius: 50rem;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            color: #697a8d;
+            transition: all 0.2s;
+        }
+
+        .nav-pills .nav-link.active {
+            box-shadow: 0 0.125rem 0.25rem 0 rgba(105, 108, 255, 0.4);
+        }
+
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: rgba(105, 108, 255, 0.05);
+            color: #696cff;
+        }
+    </style>
+@endpush
+
+@php
+    // LOGIKA STATUS & MASA TENGGANG
+    $isGracePeriod = false;
+    $daysRemaining = null;
+    if ($agreement->status === 'active') {
+        $daysRemaining = (int) now()->diffInDays($agreement->end_date, false);
+        if ($daysRemaining >= 0 && $daysRemaining <= 10) {
+            $isGracePeriod = true;
+        }
+    }
+
+    $statusClass = 'secondary';
+    $statusText = 'Tidak Diketahui';
+    if ($agreement->status == 'active') {
+        $statusClass = 'success';
+        $statusText = 'Aktif';
+    }
+    if ($agreement->status == 'expired') {
+        $statusClass = 'danger';
+        $statusText = 'Kedaluwarsa';
+    }
+    if ($agreement->status == 'terminated') {
+        $statusClass = 'dark';
+        $statusText = 'Diputus';
+    }
+    if ($agreement->status == 'pending_renewal') {
+        $statusClass = 'warning';
+        $statusText = 'Menunggu Perpanjangan';
+    }
+
+    // AVATAR KORLAP
+    $cName = $agreement->fieldCoordinator->user->name ?? 'N/A';
+    $cAvatar =
+        $agreement->fieldCoordinator->user && $agreement->fieldCoordinator->user->img
+            ? asset($agreement->fieldCoordinator->user->img)
+            : 'https://ui-avatars.com/api/?name=' .
+                urlencode($cName) .
+                '&background=random&color=fff&size=120&rounded=true&bold=true';
+
+    // Logika Format Angka Dinamis
+    $formattedDeposit = '0';
+    $depositSuffix = '';
+    if ($totalDepositThisYear >= 1000000) {
+        $formattedDeposit = number_format($totalDepositThisYear / 1000000, 1, ',', '.');
+        $depositSuffix = 'Jt';
+    } elseif ($totalDepositThisYear >= 1000) {
+        $formattedDeposit = number_format($totalDepositThisYear / 1000, 1, ',', '.');
+        $depositSuffix = 'Rb';
+    } else {
+        $formattedDeposit = number_format($totalDepositThisYear, 0, ',', '.');
+    }
+@endphp
+
 @section('content')
-    <div class="container-xxl flex-grow-1 container-p-y">
-        <div class="row">
-            <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
-                <div class="card mb-6">
-                    <div class="card-body pt-12">
-                        <div class="user-avatar-section">
-                            <div class="d-flex align-items-center flex-column">
-                                @if ($agreement->fieldCoordinator->user->img)
-                                    {{-- ✅ FIX: Gambar dibuat bulat (rounded-circle) dan aspect ratio dijaga --}}
-                                    <img class="img-fluid rounded-circle mb-4"
-                                        src="{{ asset('storage/' . $agreement->fieldCoordinator->user->img) }}"
-                                        style="width: 120px; height: 120px; object-fit: cover;" alt="Korlap Avatar" />
-                                @else
-                                    {{-- ✅ FIX: Avatar juga dibuat bulat (rounded-circle) --}}
-                                    <div class="avatar avatar-xl mb-4">
-                                        <span class="avatar-initial rounded-circle bg-label-warning">
-                                            {{ strtoupper(substr($agreement->fieldCoordinator->user->name ?? 'K', 0, 2)) }}
-                                        </span>
-                                    </div>
-                                @endif
-                                <div class="user-info text-center">
-                                    <h5 class="mb-2">{{ $agreement->fieldCoordinator->user->name ?? 'N/A' }}</h5>
-                                    @php $zone = $agreement->activeParkingLocations->first()->roadSection->zone ?? null; @endphp
-                                    <span class="badge bg-label-warning rounded-pill">Koordinator Lapangan @if ($zone)
-                                            {{ $zone }}
-                                        @endif
-                                    </span>
-                                </div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">Detail Perjanjian Kerja Sama</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-style1 mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('masterdata.agreements.index') }}">PKS</a></li>
+                    <li class="breadcrumb-item active">{{ $agreement->agreement_number }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-outline-secondary">
+                <i class="ri ri-arrow-left-line me-1"></i> Kembali
+            </a>
+            <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}" class="btn btn-primary shadow-sm">
+                <i class="ri ri-pencil-line me-1"></i> Edit PKS
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {{-- ✅ KOLOM KIRI (Profil & Info PKS) - 4 Kolom (Dibuat Sticky) --}}
+        <div class="col-xl-4 col-lg-5">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-body pt-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ $cAvatar }}" alt="Korlap Avatar" class="rounded-circle shadow-sm mb-3"
+                            style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #fff;" />
+                        <h5 class="mb-1 fw-bold text-dark">{{ $cName }}</h5>
+                        <span class="badge bg-label-primary rounded-pill px-3 py-2">Koordinator Lapangan</span>
+                    </div>
+
+                    <div class="row text-center mb-4 g-2">
+                        <div class="col-6">
+                            <div class="p-3 rounded-3 h-100">
+                                <div class="avatar mx-auto mb-2"><span
+                                        class="avatar-initial rounded bg-primary bg-opacity-10 text-primary"><i
+                                            class="ri icon-base ri-map-pin-2-line ri-24px"></i></span></div>
+                                <h5 class="mb-0 fw-bold">{{ $agreement->activeParkingLocations->count() }}</h5>
+                                <small class="text-muted">Titik Lokasi</small>
                             </div>
                         </div>
-
-                        {{-- ✅ FIX: Statistik dibuat sejajar menggunakan grid system --}}
-                        <div class="row text-center my-6">
-                            <div class="col-6 border-end">
-                                <div class="d-flex flex-column align-items-center">
-                                    <div class="avatar mb-2">
-                                        <div class="avatar-initial bg-label-primary rounded-3">
-                                            <i class="icon-base ri ri-map-pin-2-line ri-24px"></i>
-                                        </div>
-                                    </div>
-                                    <h5 class="mb-0">{{ $agreement->activeParkingLocations->count() }}</h5>
-                                    <span>Titik Lokasi</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-flex flex-column align-items-center">
-                                    <div class="avatar mb-2">
-                                        <div class="avatar-initial bg-label-success rounded-3">
-                                            <i class="icon-base ri ri-wallet-3-line ri-24px"></i>
-                                        </div>
-                                    </div>
-                                    <h5 class="mb-0">Rp {{ number_format($totalDepositThisYear, 0, ',', '.') }}</h5>
-                                    <span>Setoran Thn Ini</span>
-                                </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-3 h-100">
+                                {{-- ✅ FIX: Diubah ke warna Info agar tidak silau, dan angka jadi dinamis --}}
+                                <div class="avatar mx-auto mb-2"><span
+                                        class="avatar-initial rounded bg-info bg-opacity-10 text-info"><i
+                                            class="ri icon-base ri-wallet-3-line ri-24px"></i></span></div>
+                                <h5 class="mb-0 fw-bold text-info">Rp {{ $formattedDeposit }} {{ $depositSuffix }}</h5>
+                                <small class="text-muted">Setoran {{ now()->year }}</small>
                             </div>
                         </div>
+                    </div>
 
-                        <h5 class="pb-4 border-bottom mb-4">Detail Perjanjian</h5>
-                        <div class="info-container">
-                            {{-- ✅ FIX: Detail dirapikan dengan struktur tabel deskripsi --}}
-                            <dl class="row mb-6">
-                                <dt class="col-sm-5 fw-medium text-heading">No. PKS</dt>
-                                <dd class="col-sm-7">{{ $agreement->agreement_number }}</dd>
+                    <h6 class="pb-2 border-bottom fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Detail
+                        Kontrak</h6>
+                    <ul class="list-unstyled mb-4 mt-3">
+                        <li class="d-flex align-items-center mb-3">
+                            <i class="ri ri-file-list-3-line text-primary me-2 ri-20px"></i>
+                            <div class="w-100 d-flex justify-content-between">
+                                <span class="fw-medium text-heading">No. PKS</span>
+                                <span class="fw-bold text-dark">{{ $agreement->agreement_number }}</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <i class="ri ri-checkbox-circle-line text-primary me-2 ri-20px"></i>
+                            <div class="w-100 d-flex justify-content-between align-items-center">
+                                <span class="fw-medium text-heading">Status</span>
+                                <span class="badge bg-{{ $statusClass }} rounded-pill">{{ $statusText }}</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <i class="ri ri-user-star-line text-primary me-2 ri-20px"></i>
+                            <div class="w-100 d-flex justify-content-between">
+                                <span class="fw-medium text-heading">Pimpinan</span>
+                                <span class="text-end">{{ Str::limit($agreement->leader->user->name ?? 'N/A', 15) }}</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start mb-2">
+                            <i class="ri ri-calendar-event-line text-primary me-2 ri-20px mt-1"></i>
+                            <div class="w-100 d-flex justify-content-between">
+                                <span class="fw-medium text-heading">Masa Berlaku</span>
+                                <div class="text-end">
+                                    <span class="d-block">{{ $agreement->start_date->translatedFormat('d M Y') }}</span>
+                                    <span class="text-muted small">s/d <span
+                                            class="{{ $isGracePeriod ? 'text-danger fw-bold' : '' }}">{{ $agreement->end_date->translatedFormat('d M Y') }}</span></span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
 
-                                <dt class="col-sm-5 fw-medium text-heading">Status</dt>
-                                <dd class="col-sm-7">
-                                    @php
-                                        $statusClass = 'secondary';
-                                        if ($agreement->status == 'active') {
-                                            $statusClass = 'success';
-                                        }
-                                        if (in_array($agreement->status, ['expired', 'terminated'])) {
-                                            $statusClass = 'danger';
-                                        }
-                                        if ($agreement->status == 'pending_renewal') {
-                                            $statusClass = 'warning';
-                                        }
-                                    @endphp
-                                    <span class="badge rounded-pill bg-label-{{ $statusClass }}">
-                                        {{ ucfirst(str_replace('_', ' ', $agreement->status)) }}
-                                    </span>
-                                </dd>
-
-                                <dt class="col-sm-5 fw-medium text-heading">Pimpinan</dt>
-                                <dd class="col-sm-7">{{ $agreement->leader->user->name ?? 'N/A' }}</dd>
-
-                                <dt class="col-sm-5 fw-medium text-heading">Masa Berlaku</dt>
-                                <dd class="col-sm-7">{{ $agreement->start_date->translatedFormat('d M y') }} -
-                                    {{ $agreement->end_date->translatedFormat('d M y') }}</dd>
-                            </dl>
-                            <div class="d-flex justify-content-center gap-2">
-                                <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}" class="btn btn-primary"
-                                    data-bs-toggle="tooltip" title="Edit Perjanjian">
-                                    <i class="icon-base ri ri-pencil-line"></i><span
-                                        class="d-none d-sm-inline ms-1">Edit</span>
-                                </a>
-                                <a href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
-                                    class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Cetak PKS">
-                                    <i class="icon-base ri ri-printer-line"></i>
-                                </a>
-                                <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
-                                    class="btn btn-info" data-bs-toggle="tooltip" title="Histori Perjanjian">
-                                    <i class="icon-base ri ri-file-copy-2-line"></i>
-                                </a>
+                    @if ($isGracePeriod)
+                        <div class="alert alert-warning d-flex align-items-center mb-4 shadow-sm" role="alert">
+                            <i class="ri ri-alert-line ri-24px me-3"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1 fw-bold">Perhatian!</h6>
+                                <p class="mb-0" style="font-size: 0.85rem;">PKS ini akan kedaluwarsa dalam
+                                    <strong>{{ $daysRemaining }} hari</strong>. Segera siapkan perpanjangan.</p>
                             </div>
                         </div>
+                    @endif
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
+                            class="btn btn-outline-danger">
+                            <i class="ri ri-printer-line me-1"></i> Cetak Dokumen PDF
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
-                <div class="nav-align-top">
-                    {{-- ✅ Navigasi Tab --}}
-                    <ul class="nav nav-pills flex-column flex-md-row flex-wrap mb-6 row-gap-2">
-                        <li class="nav-item">
-                            {{-- ✅ FIX 1: Menambahkan total count di judul tab --}}
-                            <a class="nav-link active" href="javascript:void(0);" data-bs-toggle="tab"
-                                data-bs-target="#locations">
-                                <i class="icon-base ri ri-map-pin-line icon-sm me-2"></i>Lokasi Parkir
-                                <span
-                                    class="badge rounded-pill bg-primary ms-2">{{ $agreement->activeParkingLocations->count() }}</span>
-                            </a>
-                        </li>
-                        <li class="nav-item"><a class="nav-link" href="javascript:void(0);" data-bs-toggle="tab"
-                                data-bs-target="#deposits"><i
-                                    class="icon-base ri ri-money-dollar-box-line icon-sm me-2"></i>Riwayat Setoran</a></li>
-                        <li class="nav-item"><a class="nav-link" href="javascript:void(0);" data-bs-toggle="tab"
-                                data-bs-target="#pdf-preview"><i
-                                    class="icon-base ri ri-file-pdf-line icon-sm me-2"></i>Preview
-                                PKS</a></li>
-                    </ul>
-                    {{-- ✅ Konten Tab --}}
-                    <div class="tab-content p-0">
-                        <div class="tab-pane fade show active" id="locations" role="tabpanel">
-                            <div class="accordion" id="accordionParkingLocations">
-                                @forelse ($locationsByRoadSection as $roadSectionName => $locations)
-                                    @php
-                                        // Membuat ID yang aman untuk accordion dari nama jalan
-                                        $accordionId = 'collapse-' . Str::slug($roadSectionName);
-                                    @endphp
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header" id="heading-{{ $accordionId }}">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#{{ $accordionId }}">
-                                                <div class="d-flex w-100 align-items-center">
-                                                    <span
-                                                        class="flex-grow-1">{{ $roadSectionName ?? 'Tanpa Ruas Jalan' }}</span>
-                                                    <span
-                                                        class="badge bg-secondary rounded-pill me-2">{{ count($locations) }}
-                                                        Lokasi</span>
-                                                </div>
-                                            </button>
-                                        </h2>
-                                        <div id="{{ $accordionId }}" class="accordion-collapse collapse"
-                                            aria-labelledby="heading-{{ $accordionId }}"
-                                            data-bs-parent="#accordionParkingLocations">
-                                            <div class="accordion-body p-0">
-                                                <div class="table-responsive text-nowrap">
-                                                    <table class="table table-sm table-hover">
-                                                        <tbody>
-                                                            @foreach ($locations as $location)
-                                                                <tr>
-                                                                    <td>
-                                                                        <a href="{{ route('masterdata.parking-locations.show', $location->id) }}"
-                                                                            class="d-block text-body">
-                                                                            <i
-                                                                                class="icon-base ri ri-map-pin-line text-primary me-2"></i>
-                                                                            {{ $location->name }}
-                                                                        </a>
-                                                                    </td>
-                                                                </tr>
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <div class="card">
-                                        <div class="card-body text-center text-muted py-5">
-                                            <i class="ri-map-pin-line ri-3x text-secondary mb-3"></i>
-                                            <p class="mb-0">Tidak ada lokasi parkir aktif yang terikat pada perjanjian
-                                                ini.</p>
-                                        </div>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="deposits" role="tabpanel">
-                            <div class="card">
-                                <div class="table-responsive text-nowrap" style="max-height: 400px; overflow-y: auto;">
-                                    <table class="table table-sm table-hover">
-                                        <tbody>
-                                            @forelse ($agreement->depositTransactions as $transaction)
-                                                <tr>
-                                                    <td>{{ $transaction->deposit_date->translatedFormat('d F Y') }}</td>
-                                                    <td class="fw-medium">Rp
-                                                        {{ number_format($transaction->amount, 0, ',', '.') }}</td>
-                                                    <td>
-                                                        @if ($transaction->is_validated)
-                                                            <span class="badge bg-label-success">Tervalidasi</span>
-                                                        @else
-                                                            <span class="badge bg-label-warning">Pending</span>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr>
-                                                    <td colspan="3" class="text-center text-muted py-4">Belum ada
-                                                        riwayat
-                                                        setoran.</td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="card-footer text-center">
-                                    <small class="text-muted">Total Setoran Tervalidasi ({{ now()->year }}):</small>
-                                    <h6 class="mb-0 fw-bold">Rp {{ number_format($totalDepositThisYear, 0, ',', '.') }}
-                                    </h6>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="pdf-preview" role="tabpanel">
-                            <div class="card">
-                                <div class="card-body">
-                                    <iframe src="{{ route('masterdata.agreements.pdf', $agreement->id) }}" width="100%"
-                                        height="800px" style="border:none;"></iframe>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 order-2 mt-6">
-                    <div class="card">
-                        <h5 class="card-header pb-4 border-bottom mb-12">Timeline Riwayat Perjanjian</h5>
-                        <div class="card-body">
-                            <ul class="timeline timeline-center">
-                                {{-- Urutkan data dari yang terbaru ke terlama --}}
-                                @forelse ($agreement->histories->sortByDesc('created_at') as $history)
-                                    @php
-                                        // Menentukan posisi event (kiri/kanan) secara bergantian
-                                        $positionClass = $loop->odd ? 'timeline-item-left' : 'timeline-item-right';
+        </div>
 
-                                        // Menentukan ikon dan warna berdasarkan tipe event
-                                        $icon = 'ri-file-text-line';
-                                        $color = 'secondary';
-                                        switch ($history->event_type) {
-                                            case 'agreement_created':
-                                                $icon = 'ri-file-add-line';
-                                                $color = 'primary';
-                                                break;
-                                            case 'location_added':
-                                                $icon = 'ri-map-pin-add-line';
-                                                $color = 'success';
-                                                break;
-                                            case 'location_removed':
-                                                $icon = 'ri-map-pin-5-line';
-                                                $color = 'danger';
-                                                break;
-                                            case 'deposit_changed':
-                                                $icon = 'ri-money-dollar-circle-line';
-                                                $color = 'info';
-                                                break;
-                                            case 'status_changed':
-                                            case 'agreement_renewed':
-                                                $icon = 'ri-refresh-line';
-                                                $color = 'success';
-                                                break;
-                                            case 'agreement_terminated':
-                                                $icon = 'ri-shield-x-line';
-                                                $color = 'danger';
-                                                break;
-                                        }
-                                    @endphp
-                                    <li class="timeline-item {{ $positionClass }}">
-                                        <span class="timeline-indicator timeline-indicator-{{ $color }}">
-                                            <i class="icon-base ri {{ $icon }}"></i>
-                                        </span>
-                                        <div class="timeline-event card p-0">
-                                            <div
-                                                class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                                                <h6 class="card-title mb-0">{{ $history->notes }}</h6>
-                                                <div class="meta"><small
-                                                        class="text-muted">{{ $history->created_at->diffForHumans() }}</small>
-                                                </div>
-                                            </div>
-                                            <div class="card-body py-2">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar avatar-xs me-2">
-                                                        @if ($history->changer && $history->changer->img)
-                                                            <img src="{{ asset('storage/' . $history->changer->img) }}"
-                                                                alt="Avatar" class="rounded-circle" />
-                                                        @else
-                                                            <span
-                                                                class="avatar-initial rounded-circle bg-label-secondary">{{ strtoupper(substr($history->changer->name ?? 'S', 0, 1)) }}</span>
-                                                        @endif
-                                                    </div>
-                                                    <span>Oleh: <span
-                                                            class="fw-medium">{{ $history->changer->name ?? 'Sistem' }}</span></span>
-                                                </div>
-                                            </div>
-                                            <div class="timeline-event-time">
-                                                {{ $history->created_at->translatedFormat('d M y, H:i') }}
-                                            </div>
-                                        </div>
-                                    </li>
-                                @empty
-                                    <li class="timeline-item timeline-item-transparent">
-                                        <span class="timeline-indicator timeline-indicator-secondary"><i
-                                                class="icon-base ri-information-line"></i></span>
-                                        <div class="timeline-event">
-                                            <p class="text-center text-muted">Belum ada riwayat tercatat untuk perjanjian
-                                                ini.</p>
-                                        </div>
-                                    </li>
-                                @endforelse
-                            </ul>
+        {{-- ✅ KOLOM KANAN (Tabs: Grafik, Lokasi, Riwayat, Dokumen) - 8 Kolom --}}
+        <div class="col-xl-8 col-lg-7">
+            <div class="nav-align-top mb-4">
+                <ul class="nav nav-pills mb-3 gap-2" role="tablist">
+                    <li class="nav-item">
+                        <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
+                            data-bs-target="#tab-overview">
+                            <i class="ri ri-bar-chart-box-line me-1"></i> Setoran & Grafik
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                            data-bs-target="#tab-locations">
+                            <i class="ri ri-map-pin-line me-1"></i> Lokasi <span
+                                class="badge rounded-pill bg-danger ms-1">{{ $agreement->activeParkingLocations->count() }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                            data-bs-target="#tab-history">
+                            <i class="ri ri-history-line me-1"></i> Riwayat Aktivitas
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                            data-bs-target="#tab-pdf">
+                            <i class="ri ri-file-pdf-2-line me-1"></i> Arsip PKS
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content bg-transparent p-0 shadow-none border-0">
+
+                    {{-- TAB 1: OVERVIEW SETORAN & GRAFIK --}}
+                    <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-transparent border-bottom">
+                                <h6 class="card-title fw-bold mb-0">Grafik Setoran Tahun {{ now()->year }}</h6>
+                            </div>
+                            <div class="card-body pt-4">
+                                @if (count($chartData) > 0)
+                                    <div id="depositChart" style="min-height: 300px;"></div>
+                                @else
+                                    <div class="text-center py-5">
+                                        <i class="ri icon-base ri-bar-chart-2-line text-muted mb-2"
+                                            style="font-size: 3rem;"></i>
+                                        <p class="text-muted">Belum ada data setoran yang tervalidasi di tahun ini.</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm">
+                            <div
+                                class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                                <h6 class="card-title fw-bold mb-0">Riwayat Setoran Terbaru</h6>
+                                <span class="badge bg-label-primary rounded-pill">Total: Rp
+                                    {{ number_format($totalDepositThisYear, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="table-responsive text-nowrap" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Nominal</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="table-border-bottom-0">
+                                        @forelse ($agreement->depositTransactions->sortByDesc('deposit_date') as $transaction)
+                                            <tr>
+                                                <td><i class="ri icon-base ri-calendar-event-line text-primary me-2"></i>
+                                                    {{ $transaction->deposit_date->translatedFormat('d F Y') }}</td>
+                                                <td class="fw-bold text-primary">Rp
+                                                    {{ number_format($transaction->amount, 0, ',', '.') }}</td>
+                                                <td>
+                                                    @if ($transaction->is_validated)
+                                                        <span class="badge bg-label-primary"><i
+                                                                class="ri icon-base ri-check-line me-1"></i> Valid</span>
+                                                    @else
+                                                        <span class="badge bg-label-warning"><i
+                                                                class="ri icon-base ri-time-line me-1"></i> Pending</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted py-4"><i
+                                                        class="ri icon-base ri-wallet-3-fill me-1"></i> Belum ada riwayat setoran sama
+                                                    sekali.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
+
+                    {{-- TAB 2: LOKASI PARKIR --}}
+                    <div class="tab-pane fade" id="tab-locations" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="accordion accordion-header-primary" id="accordionParkingLocations">
+                                    @forelse ($locationsByRoadSection as $roadSectionName => $locations)
+                                        @php $accordionId = 'collapse-' . Str::slug($roadSectionName); @endphp
+                                        <div class="accordion-item shadow-none border mb-2 rounded">
+                                            <h2 class="accordion-header" id="heading-{{ $accordionId }}">
+                                                <button class="accordion-button collapsed fw-bold text-dark bg-light"
+                                                    type="button" data-bs-toggle="collapse"
+                                                    data-bs-target="#{{ $accordionId }}">
+                                                    <i class="ri ri-route-line text-primary me-2"></i>
+                                                    {{ $roadSectionName ?? 'Tanpa Ruas Jalan' }}
+                                                    <span
+                                                        class="badge bg-primary rounded-pill ms-auto me-3">{{ count($locations) }}
+                                                        Titik</span>
+                                                </button>
+                                            </h2>
+                                            <div id="{{ $accordionId }}" class="accordion-collapse collapse"
+                                                data-bs-parent="#accordionParkingLocations">
+                                                <div class="accordion-body p-0 border-top">
+                                                    <ul class="list-group list-group-flush">
+                                                        @foreach ($locations as $location)
+                                                            <li
+                                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="avatar avatar-sm me-3"><span
+                                                                            class="avatar-initial rounded-circle bg-label-primary"><i
+                                                                                class="ri ri-map-pin-line"></i></span></div>
+                                                                    <a href="{{ route('masterdata.parking-locations.show', $location->id) }}"
+                                                                        class="fw-medium text-dark text-decoration-none">{{ $location->name }}</a>
+                                                                </div>
+                                                                <span class="text-primary fw-bold small">Rp
+                                                                    {{ number_format($location->daily_deposit, 0, ',', '.') }}/hr</span>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="text-center py-5">
+                                            <i class="ri icon-base ri-map-pin-line text-muted mb-3"
+                                                style="font-size: 3rem;"></i>
+                                            <p class="text-muted mb-0">Tidak ada lokasi parkir aktif yang terikat.</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- TAB 3: TIMELINE HISTORY --}}
+                    <div class="tab-pane fade" id="tab-history" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div
+                                class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                                <h6 class="card-title fw-bold mb-0">Riwayat Perjalanan PKS</h6>
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="timeline-scrollable" id="historyTimeline">
+                                    <ul class="timeline timeline-dashed mt-3 pb-4">
+                                        @forelse ($agreement->histories->sortByDesc('created_at') as $history)
+                                            @php
+                                                $icon = 'ri-file-text-line';
+                                                $color = 'secondary';
+                                                switch ($history->event_type) {
+                                                    case 'agreement_created':
+                                                        $icon = 'ri-file-add-line';
+                                                        $color = 'primary';
+                                                        break;
+                                                    case 'location_added':
+                                                        $icon = 'ri-map-pin-add-line';
+                                                        $color = 'success';
+                                                        break;
+                                                    case 'location_removed':
+                                                        $icon = 'ri-map-pin-5-line';
+                                                        $color = 'danger';
+                                                        break;
+                                                    case 'deposit_changed':
+                                                        $icon = 'ri-money-dollar-circle-line';
+                                                        $color = 'info';
+                                                        break;
+                                                    case 'status_changed':
+                                                    case 'agreement_renewed':
+                                                        $icon = 'ri-refresh-line';
+                                                        $color = 'warning';
+                                                        break;
+                                                    case 'agreement_terminated':
+                                                        $icon = 'ri-shield-x-line';
+                                                        $color = 'dark';
+                                                        break;
+                                                }
+
+                                                $uName = $history->changer->name ?? 'Sistem Server';
+                                                $uAvatar =
+                                                    $history->changer && $history->changer->img
+                                                        ? asset('storage/' . $history->changer->img)
+                                                        : 'https://ui-avatars.com/api/?name=' .
+                                                            urlencode($uName) .
+                                                            '&background=random&color=fff&size=24&rounded=true&bold=true';
+                                            @endphp
+                                            <li class="timeline-item timeline-item-{{ $color }} mb-4">
+                                                <span
+                                                    class="timeline-indicator timeline-indicator-{{ $color }} bg-white">
+                                                    <i class="ri icon-base {{ $icon }}"></i>
+                                                </span>
+                                                <div class="timeline-event">
+                                                    <div
+                                                        class="timeline-header mb-1 d-flex justify-content-between align-items-center">
+                                                        <h6 class="mb-0 fw-bold text-{{ $color }}">
+                                                            {{ ucwords(str_replace('_', ' ', $history->event_type ?? 'Update Sistem')) }}
+                                                        </h6>
+                                                        <small
+                                                            class="text-muted">{{ $history->created_at->diffForHumans() }}</small>
+                                                    </div>
+                                                    <p class="mb-2 text-dark" style="font-size: 0.9rem;">
+                                                        {{ $history->notes }}</p>
+
+                                                    <div
+                                                        class="d-flex align-items-center mt-2 bg-light rounded-pill px-2 py-1 d-inline-flex">
+                                                        <img src="{{ $uAvatar }}" alt="Avatar"
+                                                            class="rounded-circle me-2" width="20" height="20">
+                                                        <small class="fw-medium text-muted">{{ $uName }}</small>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @empty
+                                            <div class="text-center py-5">
+                                                <i class="ri ri-history-line text-muted" style="font-size: 2rem;"></i>
+                                                <p class="text-muted mt-2">Belum ada riwayat tercatat untuk perjanjian ini.
+                                                </p>
+                                            </div>
+                                        @endforelse
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- TAB 4: DOKUMEN PKS --}}
+                    <div class="tab-pane fade" id="tab-pdf" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div
+                                class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                                <h6 class="card-title fw-bold mb-0">Preview Dokumen Perjanjian</h6>
+                                <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
+                                    class="btn btn-sm btn-outline-primary rounded-pill"><i
+                                        class="ri ri-file-copy-2-line me-1"></i> Versi Sebelumnya</a>
+                            </div>
+                            <div class="card-body pt-4">
+                                <div class="pdf-viewer-wrapper shadow-sm">
+                                    <iframe src="{{ route('masterdata.agreements.pdf', $agreement->id) }}#toolbar=0"
+                                        frameborder="0"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('vendors-js')
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Inisialisasi Perfect Scrollbar untuk Timeline
+            const timelineEl = document.getElementById('historyTimeline');
+            if (timelineEl) {
+                new PerfectScrollbar(timelineEl, {
+                    wheelPropagation: false,
+                    suppressScrollX: true
+                });
+            }
+
+            // 2. Inisialisasi Grafik ApexCharts (Gaya Line/Area Premium)
+            @if (count($chartData) > 0)
+                const chartLabels = {!! json_encode($chartLabels) !!};
+                const chartData = {!! json_encode($chartData) !!};
+
+                const options = {
+                    series: [{
+                        name: 'Total Setoran',
+                        data: chartData
+                    }],
+                    chart: {
+                        type: 'area', // ✅ Diubah jadi Area (Line dengan gradien bawah)
+                        height: 350,
+                        toolbar: {
+                            show: false
+                        },
+                        fontFamily: 'inherit',
+                        parentHeightOffset: 0,
+                        zoom: {
+                            enabled: false
+                        }
+                    },
+                    colors: ['#696cff'], // Warna Primary
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        curve: 'smooth', // ✅ Garis dibuat melengkung halus (bukan kaku)
+                        width: 3
+                    },
+                    markers: {
+                        size: 5,
+                        colors: ['#fff'],
+                        strokeColors: '#696cff',
+                        strokeWidth: 3,
+                        hover: {
+                            size: 7
+                        }
+                    },
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.4,
+                            opacityTo: 0.05,
+                            stops: [0, 90, 100]
+                        }
+                    },
+                    xaxis: {
+                        categories: chartLabels,
+                        axisBorder: {
+                            show: false
+                        },
+                        axisTicks: {
+                            show: false
+                        },
+                        labels: {
+                            style: {
+                                colors: '#a1acb8',
+                                fontSize: '13px'
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                colors: '#a1acb8',
+                                fontSize: '13px'
+                            },
+                            formatter: function(val) {
+                                return "Rp " + (val / 1000000).toFixed(1) + " Jt"; // Disingkat jadi Juta
+                            }
+                        }
+                    },
+                    tooltip: {
+                        theme: 'light',
+                        y: {
+                            formatter: function(val) {
+                                return "Rp " + new Intl.NumberFormat('id-ID').format(val);
+                            }
+                        }
+                    },
+                    legend: {
+                        show: false
+                    },
+                    grid: {
+                        borderColor: '#f0f2f8',
+                        strokeDashArray: 4,
+                        padding: {
+                            top: -20,
+                            bottom: -8,
+                            left: 20,
+                            right: 20
+                        },
+                        xaxis: {
+                            lines: {
+                                show: true
+                            }
+                        },
+                        yaxis: {
+                            lines: {
+                                show: true
+                            }
+                        }
+                    }
+                };
+
+                const chart = new ApexCharts(document.querySelector("#depositChart"), options);
+                chart.render();
+            @endif
+        });
+    </script>
+@endpush

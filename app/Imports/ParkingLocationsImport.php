@@ -2,8 +2,9 @@
 namespace App\Imports;
 
 use App\Models\ParkingLocation;
-// use Illuminate\Contracts\Queue\ShouldQueue; // Untuk impor di background
+use App\Models\ParkingLocationHistory; // ✅ Tambahkan model History
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;   // ✅ Tambahkan Auth untuk mengambil ID User
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
@@ -36,14 +37,31 @@ WithChunkReading  // Baca file per bagian (chunks)
      */
     public function collection(Collection $rows)
     {
+        // Ambil ID user yang sedang melakukan import sebelum masuk ke looping
+        // untuk menghemat query ke database
+        $userId = Auth::id();
+
         foreach ($rows as $row) {
-            ParkingLocation::create([
+            // 1. Siapkan datanya
+            $dataToStore = [
                 'road_section_id' => $this->roadSectionId, // Diambil dari constructor
                 'name'            => $row['name'],
                 'daily_deposit'   => $row['daily_deposit'],
                 'latitude'        => $row['latitude'] ?? null,
                 'longitude'       => $row['longitude'] ?? null,
                 'status'          => 'tersedia', // Status default saat impor
+            ];
+
+            // 2. Simpan Lokasi Parkir dan tangkap hasilnya ke variabel $parkingLocation
+            $parkingLocation = ParkingLocation::create($dataToStore);
+
+            // ✅ 3. CATAT SEJARAH: CREATED (VIA IMPORT)
+            ParkingLocationHistory::create([
+                'parking_location_id' => $parkingLocation->id,
+                'user_id'             => $userId,
+                'action'              => 'created',
+                'description'         => 'Lokasi parkir ditambahkan melalui Impor Data Massal (Excel/CSV).',
+                'new_values'          => $dataToStore,
             ]);
         }
     }

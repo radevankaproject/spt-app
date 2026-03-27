@@ -3,12 +3,12 @@
         <a href="{{ route('dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
                 {{-- ✅ LOGO DIAMBIL DARI PROFIL UPT --}}
-                <img src="{{ $uptProfile->logo ? asset('storage/' . $uptProfile->logo) : asset('logo.png') }}"
+                <img src="{{ asset('logo.png') }}"
                     alt="Logo" height="35">
             </span>
             <span class="app-brand-text demo menu-text fw-bold">
                 {{-- ✅ NAMA APLIKASI DIAMBIL DARI PROFIL UPT --}}
-                {{ '        ' . $uptProfile->app_name ?? config('app.name') }}
+                {{ '        ' . (isset($uptProfile) ? $uptProfile->app_name : config('app.name')) }}
             </span>
         </a>
 
@@ -101,6 +101,7 @@
                 </a>
             </li>
         @endif
+
         @if (Auth::user()->isAdmin() || Auth::user()->isStaffPks())
             <li class="menu-header small"><span class="menu-header-text">Lokasi Parkir & Perjanjian PKS</span></li>
             <li
@@ -124,7 +125,7 @@
             </li>
             <li class="menu-item {{ request()->routeIs('masterdata.agreements.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.agreements.index') }}" class="menu-link">
-                    <i class="icon-base ri  menu-icon tf-icons ri-file-text-line"></i>
+                    <i class="icon-base ri menu-icon tf-icons ri-file-text-line"></i>
                     <div data-i18n="Perjanjian Kerjasama">Perjanjian Kerjasama</div>
                 </a>
             </li>
@@ -136,38 +137,40 @@
                 </a>
             </li>
         @endif
+
+        {{-- ✅ BLOK KEUANGAN DENGAN TAMBAHAN MENU TARGET SETORAN --}}
         @if (Auth::user()->isAdmin() || Auth::user()->isStaffKeu())
             <li class="menu-header small"><span class="menu-header-text">Keuangan</span></li>
+
+            {{-- Menu Target Setoran (Baru ditambahkan) --}}
+            <li class="menu-item {{ request()->routeIs('admin.deposit-targets.*') ? 'active' : '' }}">
+                <a href="{{ route('masterdata.deposit-targets.index') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-line-chart-line"></i>
+                    <div data-i18n="Target Setoran">Target Setoran</div>
+                </a>
+            </li>
+
             <li class="menu-item {{ request()->routeIs('masterdata.deposit-transactions.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.deposit-transactions.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-money-dollar-circle-line"></i>
-                    <div data-i18n="Histori Perjanjian">Deposit</div>
+                    <div data-i18n="Deposit">Deposit</div>
                 </a>
             </li>
             <li class="menu-item {{ request()->routeIs('masterdata.deposit-reports.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.deposit-reports.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-exchange-dollar-fill"></i>
-                    <div data-i18n="Histori Perjanjian">Histori Deposit</div>
+                    <div data-i18n="Histori Deposit">Histori Deposit</div>
                 </a>
             </li>
         @endif
+
         <li class="menu-header small"><span class="menu-header-text">System</span></li>
         <li class="menu-item {{ request()->routeIs('profile.settings') ? 'active' : '' }}">
             <a href="{{ route('profile.settings') }}" class="menu-link">
                 <i class="icon-base ri menu-icon tf-icons ri-settings-2-line"></i>
-                <div data-i18n="Histori Perjanjian">Setting Profil</div>
+                <div data-i18n="Setting Profil">Setting Profil</div>
             </a>
         </li>
-        {{-- <li class="menu-item">
-            <form method="POST" action="{{ route('logout') }}" id="logout-form">
-                @csrf
-            </form>
-            <a class="menu-link">
-                <i class="icon-base ri menu-icon tf-icons ri-logout-circle-line"></i>
-                <div data-i18n="Dashboard">Logout</div>
-            </a>
-            </form>
-        </li> --}}
     </ul>
 </aside>
 

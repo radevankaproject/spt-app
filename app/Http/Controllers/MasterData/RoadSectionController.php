@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\MasterData; // <--- Ubah dari App\Http\Controllers\Admin
+namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
 use App\Models\RoadSection;
@@ -10,16 +10,17 @@ use Illuminate\Support\Facades\Log;
 
 class RoadSectionController extends Controller
 {
-    // ... semua method (index, create, store, edit, update, destroy) tetap sama ...
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $zoneFilter = $request->input('zone'); // ✅ Ambil filter zona dari request
+        $zoneFilter = $request->input('zone');
 
-        $query = RoadSection::query();
+        // ✅ Tambahkan withCount untuk menghitung relasi ParkingLocation
+        $query = RoadSection::withCount('parkingLocations');
+
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
         }
@@ -29,15 +30,7 @@ class RoadSectionController extends Controller
         }
 
         $roadSections = $query->latest()->paginate(10);
-        return view('admin.road-sections.index', compact('roadSections', 'search', 'zoneFilter')); // <-- Tetap mengarah ke view admin karena ini master data
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.road-sections.create'); // <-- Tetap mengarah ke view admin
+        return view('admin.road-sections.index', compact('roadSections', 'search', 'zoneFilter'));
     }
 
     /**
@@ -45,7 +38,6 @@ class RoadSectionController extends Controller
      */
     public function store(Request $request)
     {
-        // ✅ Tambahkan validasi untuk 'zone'
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:road_sections,name',
             'zone' => 'required|string|in:Zona 2,Zona 3',
@@ -53,16 +45,8 @@ class RoadSectionController extends Controller
 
         RoadSection::create($validatedData);
 
-        return redirect()->route('masterdata.road-sections.index') // <--- Ubah nama route
+        return redirect()->route('masterdata.road-sections.index')
             ->with('success', 'Ruas jalan ' . $validatedData['name'] . ' berhasil ditambahkan!');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(RoadSection $roadSection)
-    {
-        return view('admin.road-sections.edit', compact('roadSection')); // <-- Tetap mengarah ke view admin
     }
 
     /**
@@ -70,12 +54,19 @@ class RoadSectionController extends Controller
      */
     public function update(Request $request, RoadSection $roadSection)
     {
-        // ✅ Validasi disesuaikan untuk update
-        $validatedData = $request->validate([
-            // Pastikan nama unik, kecuali untuk data itu sendiri
+        // Cek apakah sedang digunakan
+        $inUse = $roadSection->parkingLocations()->count() > 0;
+
+        $rules = [
             'name' => ['required', 'string', 'max:255', Rule::unique('road_sections')->ignore($roadSection->id)],
-            'zone' => 'required|string|in:Zona 2,Zona 3',
-        ]);
+        ];
+
+        // ✅ Logika Keamanan Backend: Hanya izinkan ubah zona jika belum ada titik parkir
+        if (!$inUse) {
+            $rules['zone'] = 'required|string|in:Zona 2,Zona 3';
+        }
+
+        $validatedData = $request->validate($rules);
 
         $roadSection->update($validatedData);
 
@@ -88,12 +79,18 @@ class RoadSectionController extends Controller
      */
     public function destroy(RoadSection $roadSection)
     {
+        // ✅ Logika Keamanan Backend: Tolak hapus jika ada titik parkir
+        if ($roadSection->parkingLocations()->count() > 0) {
+            return redirect()->back()->with('error', 'Gagal: Ruas jalan ini sedang digunakan oleh Titik Lokasi Parkir!');
+        }
+
         try {
+            $name = $roadSection->name;
             $roadSection->delete();
+            return redirect()->route('masterdata.road-sections.index')->with('success', "Ruas jalan '$name' berhasil dihapus!");
         } catch (\Exception $e) {
             Log::error('RoadSectionController@destroy: Error deleting road section: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal menghapus ruas jalan: ' . $e->getMessage());
         }
-        return redirect()->route('masterdata.road-sections.index')->with('success', 'Ruas jalan berhasil dihapus!'); // <--- Ubah nama route
     }
 }

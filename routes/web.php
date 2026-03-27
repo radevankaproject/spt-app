@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BackupController;
+use App\Http\Controllers\Admin\DepositTargetController;
 use App\Http\Controllers\Admin\FieldCoordinatorController;
 use App\Http\Controllers\Admin\LeaderController;
 use App\Http\Controllers\Admin\SettingController;
@@ -78,6 +79,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::get('deposit-reports', [DepositReportController::class, 'index'])->name('deposit-reports.index');
             Route::get('deposit-reports/pdf', [DepositReportController::class, 'generatePdf'])->name('deposit-reports.pdf');
+
+            Route::get('/deposit-targets', [DepositTargetController::class, 'index'])->name('deposit-targets.index');
+            Route::post('/deposit-targets', [DepositTargetController::class, 'store'])->name('deposit-targets.store');
+
         });
 
         // --- Rute untuk Tiga Role (Admin, Staff Keu, Staff PKS) ---

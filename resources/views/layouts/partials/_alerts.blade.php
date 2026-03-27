@@ -106,7 +106,7 @@
 @if (session('success'))
     <div class="dynamic-island-wrapper">
         <div id="dynamic-island" class="dynamic-island">
-            <i class="ri-checkbox-circle-fill"></i>
+            <i class="ri icon-base ri-checkbox-circle-fill ri-22px"></i>
             <span>{{ session('success') }}</span>
         </div>
     </div>
@@ -136,7 +136,7 @@
         <div class="custom-toastr">
             <div class="toastr-header">
                 <div class="toastr-title">
-                    <i class="ri-error-warning-fill fs-5"></i>
+                    <i class="ri icon-base ri-error-warning-fill ri-22px"></i>
                     Peringatan Sistem
                 </div>
                 {{-- Tombol Close: Menghapus div toastr ini saat diklik --}}
