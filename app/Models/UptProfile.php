@@ -17,5 +17,9 @@ class UptProfile extends Model
         'phone',
         'email',
         'website',
+        'login_greetings',
+        'api_token_fonnte',
+        'about_us',
+        'privacy_policy',
     ];
 }

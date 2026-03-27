@@ -112,7 +112,7 @@
                         <label for="idcard-upload" class="btn btn-primary">
                             <i class="icon-base ri-upload-2-line me-2"></i>Pilih Foto KTP
                             <input type="file" id="idcard-upload" name="id_card_img" class="account-file-input" hidden
-                                accept="image/png, image/jpeg" required />
+                                accept="image/png, image/jpeg"/>
                         </label>
                         <div id="idcard-error" class="mt-2 text-danger text-sm"></div>
                     </div>

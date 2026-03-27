@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
+use App\Imports\ParkingLocationsImport;
 use App\Models\Agreement;
 use App\Models\ParkingLocation;
 use App\Models\RoadSection;
@@ -9,8 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class ParkingLocationController extends Controller
 {
@@ -275,5 +279,86 @@ class ParkingLocationController extends Controller
             ->get(['id', 'name', 'status', 'road_section_id', 'daily_deposit']); // Hanya ambil kolom yang dibutuhkan
 
         return response()->json($parkingLocations);
+    }
+
+    /**
+     * Menampilkan halaman/form untuk impor.
+     */
+    public function importCreate()
+    {
+        // PERUBAHAN: Hanya ambil ruas jalan dari Zona 2 dan 3
+        $roadSections = RoadSection::whereIn('zone', ['Zona 2', 'Zona 3'])
+            ->orderBy('zone')
+            ->orderBy('name')
+            ->get();
+
+        // Grouping untuk dikirim ke JS: {'Zona 2': [...], 'Zona 3': [...]}
+        $roadSectionsByZone = $roadSections->groupBy('zone')->map(function ($items) {
+            return $items->map(function ($item) {
+                return ['id' => $item->id, 'name' => $item->name];
+            });
+        });
+
+        // Pastikan kita selalu punya key untuk kedua zona, walau datanya kosong
+        if (! isset($roadSectionsByZone['Zona 2'])) {
+            $roadSectionsByZone['Zona 2'] = [];
+        }
+        if (! isset($roadSectionsByZone['Zona 3'])) {
+            $roadSectionsByZone['Zona 3'] = [];
+        }
+
+        return view('staff.parking_locations.import', compact('roadSectionsByZone'));
+    }
+
+    /**
+     * Memproses file yang di-upload.
+     */
+    public function importStore(Request $request)
+    {
+        // Validasi Request (tambahkan .txt untuk handle isu CSV MS-DOS)
+        $validator = Validator::make($request->all(), [
+            'road_section_id' => 'required|integer|exists:road_sections,id',
+            'import_file'     => 'required|file|mimes:csv,txt,xlsx,xls',
+        ], [
+            'road_section_id.required' => 'Anda harus memilih Ruas Jalan.',
+            'import_file.required'     => 'Anda harus mengupload file.',
+            'import_file.mimes'        => 'File harus berformat CSV, TXT, XLSX, atau XLS.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi Gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            // Proses Import
+            // Menggunakan class import yang sudah kita perbaiki sebelumnya (tanpa Queue agar bisa ditangkap errornya langsung)
+            Excel::import(new ParkingLocationsImport((int) $request->road_section_id), $request->file('import_file'));
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Data berhasil diimpor ke database!',
+            ]);
+
+        } catch (ValidationException $e) {
+            // Tangkap error validasi baris per baris dari Excel
+            $failures      = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()) . ' (Nilai: ' . json_encode($failure->values()) . ')';
+            }
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Terdapat data yang tidak valid dalam file.',
+                'errors'  => ['file' => $errorMessages],
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Import Error: ' . $e->getMessage());
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Terjadi kesalahan sistem saat memproses file: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

@@ -39,44 +39,105 @@ class UptProfileController extends Controller
         $profile = UptProfile::firstOrCreate(['id' => 1]);
 
         $validatedData = $request->validate([
-            'name'     => 'required|string|max:255',
-            'app_name' => 'required|string|max:255',
-            'address'  => 'nullable|string',
-            'logo'     => 'nullable|image|mimes:png,jpg,jpeg|max:512',
-            'phone'    => 'nullable|string|max:20',
-            'email'    => 'nullable|email|max:255',
-            'website'  => 'nullable|url|max:255',
-        ], [
-            'name.required'     => 'Nama Instansi (UPT) wajib diisi.',
-            'name.max'          => 'Nama Instansi tidak boleh lebih dari 255 karakter.',
-            'app_name.required' => 'Nama Aplikasi wajib diisi.',
-            'app_name.max'      => 'Nama Aplikasi tidak boleh lebih dari 255 karakter.',
-            'logo.image'        => 'File yang diupload harus berupa gambar.',
-            'logo.mimes'        => 'Logo harus berformat PNG, JPG, atau JPEG.',
-            'logo.max'          => 'Ukuran logo tidak boleh lebih dari 512 KB.',
-            'phone.max'         => 'Nomor Telepon tidak boleh lebih dari 20 karakter.',
-            'email.email'       => 'Format alamat email yang Anda masukkan tidak valid.',
-            'website.url'       => 'Format URL website tidak valid (contoh: https://website.com).',
+            'name'             => 'required|string|max:255',
+            'app_name'         => 'required|string|max:255',
+            'address'          => 'nullable|string',
+            'phone'            => 'nullable|string|max:20',
+            'email'            => 'nullable|email|max:255',
+            'website'          => 'nullable|url|max:255',
+            'login_greetings'  => 'nullable|string',
+            'api_token_fonnte' => 'nullable|string',
+            'about_us'         => 'nullable|string',
+            'privacy_policy'   => 'nullable|string',
+            'logo'             => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
         try {
+            // ✅ CEK LOGO SECARA AGRESIF
             if ($request->hasFile('logo')) {
-                // Hapus logo lama dari storage jika ada
-                if ($profile->logo) {
-                    Storage::disk('public')->delete($profile->logo);
+                $file = $request->file('logo');
+
+                // Cek apakah file valid (tidak korup / putus di jalan)
+                if (!$file->isValid()) {
+                    throw new \Exception('File upload gagal. Kode Error PHP: ' . $file->getError());
                 }
-                // Simpan logo baru ke storage/app/public/logos
-                $path                  = $request->file('logo')->storeAs('logos', 'upt_logo.png', 'public');
-                $validatedData['logo'] = $path;
+
+                $fileName = 'logo.png';
+                $publicPath = public_path();
+
+                // 🚨 CEK PERMISSION FOLDER PUBLIC
+                if (!is_writable($publicPath)) {
+                    throw new \Exception("Folder public/ TIDAK BISA DITULIS (Permission Denied). Silakan jalankan perintah 'chmod 775 public' atau 'chmod 777 public' di terminal server Anda.");
+                }
+
+                // Pindahkan file logo.png menimpa yang lama
+                $file->move($publicPath, $fileName);
+                $validatedData['logo'] = $fileName;
+
+                // Otomatis update favicon
+                $this->generateFavicon($publicPath . '/' . $fileName);
             }
 
             $profile->update($validatedData);
 
             return redirect()->route('admin.upt-profile.index')
                 ->with('success', 'Profil UPT berhasil diperbarui.');
+
         } catch (\Exception $e) {
-            Log::error('Error updating UPT profile: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui profil.');
+            Log::error('Error update profil: ' . $e->getMessage());
+
+            // 🚨 TAMPILKAN ERROR EKSTREM KE LAYAR
+            return redirect()->back()
+                ->withInput()
+                ->with('error', '🛑 GAGAL MENYIMPAN: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Helper untuk generate dan replace favicon.ico
+     * Membutuhkan ekstensi PHP GD.
+     */
+    private function generateFavicon($sourcePath)
+    {
+        if (!extension_loaded('gd')) {
+            Log::warning('Ekstensi PHP GD tidak aktif. Favicon tidak diperbarui.');
+            return;
+        }
+
+        // Path tujuan (Di root public)
+        $faviconPath = public_path('favicon.ico');
+
+        list($width, $height, $type) = getimagesize($sourcePath);
+
+        // Ukuran standar favicon adalah 32x32
+        $thumb = imagecreatetruecolor(32, 32);
+
+        // Pertahankan transparansi (untuk PNG)
+        imagealphablending($thumb, false);
+        imagesavealpha($thumb, true);
+        $transparent = imagecolorallocatealpha($thumb, 255, 255, 255, 127);
+        imagefilledrectangle($thumb, 0, 0, 32, 32, $transparent);
+
+        $source = null;
+        if ($type == IMAGETYPE_JPEG) {
+            $source = imagecreatefromjpeg($sourcePath);
+        } elseif ($type == IMAGETYPE_PNG) {
+            $source = imagecreatefrompng($sourcePath);
+        }
+
+        if ($source) {
+            imagecopyresampled($thumb, $source, 0, 0, 0, 0, 32, 32, $width, $height);
+            // Simpan gambar dengan ektensi .ico (browser modern membaca stream PNG dalam file .ico dengan baik)
+            imagepng($thumb, $faviconPath);
+
+            // Opsional: Jika template antum menyimpan favicon di path lain, timpah juga
+            $templateFavicon = public_path('assets/img/favicon/favicon.ico');
+            if(file_exists($templateFavicon)){
+                copy($faviconPath, $templateFavicon);
+            }
+
+            imagedestroy($thumb);
+            imagedestroy($source);
         }
     }
 }

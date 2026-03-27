@@ -60,6 +60,7 @@
 
     <body>
         {{-- ✅ Layout Sederhana untuk Menengahkan Form --}}
+        @include('layouts.partials._alerts')
         <div class="authentication-wrapper authentication-basic container-p-y">
             <div class="authentication-inner py-6">
 

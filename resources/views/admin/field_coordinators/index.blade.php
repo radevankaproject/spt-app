@@ -73,8 +73,18 @@
                                         <div class="avatar-wrapper me-4">
                                             <div class="avatar avatar-sm">
 
-                                                    <img src="{{ $coordinator->user && $coordinator->user->img ? asset('storage/' . $coordinator->user->img) : strtoupper(substr($coordinator->user->name ?? 'K', 0, 2)) }}"
-                                                        alt="Avatar" class="rounded-circle">
+                                                @if ($coordinator->user && $coordinator->user->img)
+                                                    {{-- JIKA GAMBAR ADA: Tampilkan gambar dari storage --}}
+                                                    <img src="{{ asset('storage/' . $coordinator->user->img) }}"
+                                                        alt="{{ $coordinator->user->name ?? 'Avatar' }}"
+                                                        class="rounded-circle">
+                                                @else
+                                                    {{-- JIKA GAMBAR TIDAK ADA: Gunakan ui-avatar.com --}}
+                                                    {{-- Dia akan otomatis membuat inisial dari nama, misal "Andi Kaswara" jadi "AK" --}}
+                                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($coordinator->user->name ?? 'NA') }}&background=auto&color=fff&rounded=true&size=38"
+                                                        alt="{{ $coordinator->user->name ?? 'Avatar' }}"
+                                                        class="rounded-circle">
+                                                @endif
 
                                             </div>
                                         </div>

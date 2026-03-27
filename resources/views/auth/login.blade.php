@@ -21,14 +21,6 @@
 
 
             {{-- Menampilkan status (misal: setelah reset password) --}}
-            <x-auth-session-status class="mb-4 alert alert-success" :status="session('status')" />
-
-            {{-- Menampilkan error validasi --}}
-            @if($errors->any())
-            <div class="alert alert-danger mb-4 py-2" role="alert">
-                <i class="ri-error-warning-line me-2"></i>Username atau Password yang Anda masukkan salah.
-            </div>
-            @endif
 
             <form id="formAuthentication" action="{{ route('login') }}" method="POST">
                 @csrf

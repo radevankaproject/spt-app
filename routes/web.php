@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\FieldCoordinatorController;
 use App\Http\Controllers\Admin\LeaderController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UptProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AppVersionController;
@@ -83,6 +84,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Role-role ini bisa mengelola data dasar seperti ruas jalan, lokasi, dan perjanjian.
         Route::middleware('role:admin,staff_keu,staff_pks')->group(function () {
             Route::resource('road-sections', RoadSectionController::class)->except(['show']);
+            Route::get('parking-locations/import', [ParkingLocationController::class, 'importCreate'])
+                ->name('parking-locations.importCreate');
+            Route::post('parking-locations/import', [ParkingLocationController::class, 'importStore'])
+                ->name('parking-locations.importStore');
             Route::resource('parking-locations', ParkingLocationController::class)->except(['show']);
             Route::resource('agreements', AgreementController::class)->except(['show']);
             Route::get('agreement-histories', [AgreementHistoryController::class, 'index'])->name('agreement-histories.index');
@@ -139,6 +144,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::get('app-versions/manage', [AppVersionController::class, 'manage'])->name('app-versions.manage');
             Route::post('app-versions/manage', [AppVersionController::class, 'store'])->name('app-versions.store');
+
+            Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+            Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
         });
 
     // --- RUTE-ROUTE AJAX (Bisa diakses oleh beberapa role) ---

@@ -40,6 +40,9 @@
                         <button class="btn btn-primary" type="submit"><i class="icon-base ri ri-search-line"></i></button>
                     </div>
                 </form>
+                <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary me-2">
+                    <i class="icon-base ri ri-upload-cloud-line me-2"></i> Impor Data
+                </a>
                 <a href="{{ route('masterdata.parking-locations.create') }}" class="btn btn-primary">
                     <i class="icon-base ri ri-add-line me-2"></i>Tambah Lokasi
                 </a>
