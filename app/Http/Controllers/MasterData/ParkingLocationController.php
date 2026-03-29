@@ -166,6 +166,32 @@ class ParkingLocationController extends Controller
      */
     public function edit(ParkingLocation $parkingLocation)
     {
+        // ✅ 1. CEGAH FORCED BROWSING VIA URL (Keamanan Lapis Baja)
+        if ($parkingLocation->status == 'tidak_tersedia') {
+
+            // ✅ Ambil nama lokasi parkir
+            $namaLokasi = $parkingLocation->name;
+
+            // Cari tahu PKS siapa yang sedang mengikat lokasi ini
+            $activeAgreement = \App\Models\Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
+                $query->where('parking_location_id', $parkingLocation->id)
+                      ->where('agreement_parking_locations.status', 'active');
+            })
+            ->whereIn('status', ['active', 'pending_renewal'])
+            ->with('fieldCoordinator.user')
+            ->first();
+
+            $noPks = $activeAgreement ? $activeAgreement->agreement_number : 'yang aktif';
+            $namaKoord = $activeAgreement ? ($activeAgreement->fieldCoordinator->user->name ?? 'N/A') : 'Seseorang';
+
+            // ✅ Pesan dinamis dengan tag HTML <strong> untuk huruf tebal
+            $message = "Lokasi Parkir <strong>{$namaLokasi}</strong> tidak bisa diubah karena sudah terikat dengan PKS <strong>{$noPks}</strong> Milik <strong>{$namaKoord}</strong>.";
+
+            // Lempar kembali ke index dengan session flash khusus
+            return redirect()->route('masterdata.parking-locations.index')->with('locked_error', $message);
+        }
+
+        // ✅ 2. LOGIKA ASLI ANTUM (Aman dari error tampilan)
         $parkingLocation->load('roadSection');
         $roadSectionsInZone = RoadSection::where('zone', $parkingLocation->roadSection->zone)
             ->orderBy('name', 'asc')

@@ -9,15 +9,17 @@ class DepositTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'referral_code', // <-- TAMBAHKAN INI
         'agreement_id',
+        'treasurer_id',
+        'created_by_user_id',
+        'validated_by_user_id', // ✅ TAMBAHKAN INI
+        'referral_code',
         'deposit_date',
         'amount',
-        'is_validated',
-        'validation_date', // <-- UBAH INI
-        'notes',
-        'created_by_user_id',
         'proof_of_transfer',
+        'notes',
+        'is_validated',
+        'validation_date',
     ];
 
     protected $casts = [
@@ -37,5 +39,16 @@ class DepositTransaction extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    // ✅ TAMBAHKAN RELASI INI DI BAWAH
+    public function validator()
+    {
+        return $this->belongsTo(User::class, 'validated_by_user_id');
+    }
+
+    public function treasurer()
+    {
+        return $this->belongsTo(Treasurer::class);
     }
 }

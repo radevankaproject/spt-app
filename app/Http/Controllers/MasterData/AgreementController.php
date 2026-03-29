@@ -33,15 +33,30 @@ class AgreementController extends Controller
         $search = $request->input('search');
         $tab    = $request->input('tab', 'all'); // Default 'all'
 
+        // ✅ 1. TANGKAP INPUT TAHUN DARI URL (Default: kosong/semua)
+        $year   = $request->input('year');
+
+        // ✅ 2. AMBIL DAFTAR TAHUN UNTUK DROPDOWN FILTER
+        $availableYears = Agreement::selectRaw('YEAR(start_date) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
         $query  = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations']);
 
-        // ✅ LOGIKA FILTER TAB
+        // LOGIKA FILTER TAB
         if ($tab === 'active') {
-            $query->where('status', ['active', 'pending_renewal']);
+            $query->whereIn('status', ['active', 'pending_renewal']);
         } elseif ($tab === 'inactive') {
             $query->whereIn('status', ['expired', 'terminated']);
         }
 
+        // ✅ 3. LOGIKA FILTER TAHUN
+        if ($year) {
+            $query->whereYear('start_date', $year);
+        }
+
+        // LOGIKA SEARCH
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('agreement_number', 'like', '%' . $search . '%')
@@ -51,15 +66,19 @@ class AgreementController extends Controller
             });
         }
 
+        // PAGINASI
         $agreements = $query->latest()->paginate(10);
 
-        // ✅ MENGHITUNG TOTAL UNTUK BADGE DI TAB
-        $countAll      = Agreement::count();
-        $countActive   = Agreement::where('status', ['active', 'pending_renewal'])->count();
-        $countInactive = Agreement::whereIn('status', ['expired', 'terminated'])->count();
+        // MENGHITUNG TOTAL UNTUK BADGE DI TAB (Disesuaikan dengan Tahun jika difilter)
+        $baseCountQuery = Agreement::query();
+        if ($year) { $baseCountQuery->whereYear('start_date', $year); } // Badge menyesuaikan tahun
+
+        $countAll      = (clone $baseCountQuery)->count();
+        $countActive   = (clone $baseCountQuery)->whereIn('status', ['active', 'pending_renewal'])->count();
+        $countInactive = (clone $baseCountQuery)->whereIn('status', ['expired', 'terminated'])->count();
 
         return view('staff.agreements.index', compact(
-            'agreements', 'search', 'tab', 'countAll', 'countActive', 'countInactive'
+            'agreements', 'search', 'tab', 'year', 'availableYears', 'countAll', 'countActive', 'countInactive'
         ));
     }
 
@@ -68,8 +87,17 @@ class AgreementController extends Controller
      */
     public function create()
     {
-        $leaders = Leader::with('user')->get();
+        // ✅ 1. HANYA AMBIL PIMPINAN YANG AKTIF
+        $leaders = Leader::with('user')
+            ->whereHas('user', function ($q) {
+                $q->where('is_active', true);
+            })->get();
+
+        // ✅ 2. HANYA AMBIL KORLAP YANG AKTIF & TIDAK SEDANG MEMILIKI PKS AKTIF
         $fieldCoordinators = FieldCoordinator::with('user')
+            ->whereHas('user', function ($q) {
+                $q->where('is_active', true);
+            })
             ->whereDoesntHave('agreements', function ($query) {
                 $query->where('status', 'active');
             })
@@ -112,7 +140,7 @@ class AgreementController extends Controller
             'start_date'             => 'required|date',
             'end_date'               => 'required|date|after_or_equal:start_date',
             'daily_deposit_amount'   => 'required|numeric|min:1',
-            'status'                 => 'required|string|in:active,expired,terminated,pending_renewal',
+            // ✅ Validasi 'status' KITA HAPUS! Kita tidak menerima input status dari form saat Create
             'signed_date'            => 'required|date',
             'parking_location_ids'   => 'required|array|min:1',
             'parking_location_ids.*' => 'exists:parking_locations,id',
@@ -127,6 +155,9 @@ class AgreementController extends Controller
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
         $agreementData['total_deposit_target']   = $dailyAmount * $durationInDays;
         $agreementData['verification_code']      = Str::uuid()->toString();
+
+        // ✅ KUNCI PERMANEN: Setiap PKS baru WAJIB berstatus 'pending' (Menunggu Setoran Pertama)
+        $agreementData['status']                 = 'pending';
 
         DB::beginTransaction();
         try {
@@ -148,16 +179,16 @@ class AgreementController extends Controller
                     'parking_location_id' => $locationId,
                     'user_id'             => Auth::id(),
                     'action'              => 'owner_changed',
-                    'description'         => "Lokasi diserahkan ke Koordinator: {$korlapName} (PKS: {$freshAgreement->agreement_number}).",
+                    'description'         => "Lokasi diserahkan ke Koordinator: {$korlapName} (PKS: {$freshAgreement->agreement_number}). Menunggu setoran pertama.",
                 ]);
             }
 
-            $this->generateAndStorePdfHistory($freshAgreement, 'Perjanjian awal dibuat');
+            $this->generateAndStorePdfHistory($freshAgreement, 'Perjanjian awal dibuat (Status: Pending Setoran)');
 
             DB::commit();
 
             return redirect()->route('masterdata.agreements.index')
-                ->with('success', 'Perjanjian "' . $agreement->agreement_number . '" berhasil ditambahkan!');
+                ->with('success', 'Perjanjian "' . $agreement->agreement_number . '" berhasil ditambahkan! Status saat ini PENDING hingga setoran pertama divalidasi.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('AgreementController@store: ' . $e->getMessage(), ['exception' => $e]);
@@ -205,7 +236,18 @@ class AgreementController extends Controller
     public function edit(Agreement $agreement)
     {
         $agreement->load('leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection');
-        $leaders = Leader::with('user')->get();
+
+        // ✅ 1. HANYA AMBIL PIMPINAN YANG AKTIF UNTUK PILIHAN DROPDOWN
+        $leaders = Leader::with('user')
+            ->whereHas('user', function ($q) {
+                $q->where('is_active', true);
+            })->get();
+
+        // ✅ 2. SISTEM ANTI-BUG: Jika pimpinan lama (yang teken PKS ini) sudah nonaktif,
+        // tetap sisipkan dia ke dalam list agar dropdown tidak blank/error!
+        if (!$leaders->contains($agreement->leader_id)) {
+            $leaders->push($agreement->leader);
+        }
 
         $currentParkingLocationIds = $agreement->activeParkingLocations->pluck('id')->toArray();
         $firstLocation = $agreement->activeParkingLocations->first();

@@ -103,7 +103,7 @@
             <div class="card sticky-form-card shadow-sm border-0" id="formContainer">
                 <div class="card-header bg-primary text-white d-flex align-items-center rounded-top">
                     {{-- ✅ ICON DIPERBAIKI --}}
-                    <i class="ri icon-base ri-target-line me-2 ri-24px text-white"></i>
+                    <i class="ri ri-arrow-right-up-box-line me-2 icon-20spx"></i>
                     <h5 class="card-title text-white mb-0">Set / Update Target</h5>
                 </div>
 
@@ -253,10 +253,10 @@
                                                         <td class="text-center">
                                                             {{-- ✅ ICON DIPERBAIKI (icon-base ri-edit-box-line ri-18px) --}}
                                                             <button type="button"
-                                                                class="btn btn-sm btn-primary btn-icon rounded-pill shadow-sm"
+                                                                class="btn btn-sm btn-label-primary btn-icon rounded-pill shadow-sm"
                                                                 onclick="editTarget({{ $yearly->year }}, {{ $monthly->month }}, {{ $monthly->target_amount }})"
                                                                 data-bs-toggle="tooltip" title="Edit Target Ini">
-                                                                <i class="ri icon-base ri-edit-box-line ri-18px"></i>
+                                                                <i class="ri icon-base ri-edit-box-line icon-18px"></i>
                                                             </button>
                                                         </td>
                                                     </tr>

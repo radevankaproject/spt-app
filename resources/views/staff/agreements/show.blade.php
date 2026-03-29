@@ -8,6 +8,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/timeline.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <style>
         .timeline-scrollable {
@@ -53,6 +54,8 @@
             background-color: rgba(105, 108, 255, 0.05);
             color: #696cff;
         }
+
+        .cursor-pointer { cursor: pointer; }
     </style>
 @endpush
 
@@ -90,7 +93,7 @@
     $cName = $agreement->fieldCoordinator->user->name ?? 'N/A';
     $cAvatar =
         $agreement->fieldCoordinator->user && $agreement->fieldCoordinator->user->img
-            ? asset($agreement->fieldCoordinator->user->img)
+            ? asset('storage/'.$agreement->fieldCoordinator->user->img)
             : 'https://ui-avatars.com/api/?name=' .
                 urlencode($cName) .
                 '&background=random&color=fff&size=120&rounded=true&bold=true';
@@ -377,83 +380,99 @@
                     {{-- TAB 3: TIMELINE HISTORY --}}
                     <div class="tab-pane fade" id="tab-history" role="tabpanel">
                         <div class="card border-0 shadow-sm">
-                            <div
-                                class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+                            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                                 <h6 class="card-title fw-bold mb-0">Riwayat Perjalanan PKS</h6>
                             </div>
                             <div class="card-body pt-4">
                                 <div class="timeline-scrollable" id="historyTimeline">
-                                    <ul class="timeline timeline-dashed mt-3 pb-4">
+                                    <ul class="timeline timeline-center mt-3 pb-4">
                                         @forelse ($agreement->histories->sortByDesc('created_at') as $history)
                                             @php
-                                                $icon = 'ri-file-text-line';
-                                                $color = 'secondary';
+                                            $positionClass = $loop->odd ? 'timeline-item-left' : 'timeline-item-right';
+                                                // Styling Event (Mengikuti icon yang sudah antum fix)
+                                                $icon = 'ri-file-text-line'; $color = 'secondary'; $eventName = 'Aktivitas Sistem';
                                                 switch ($history->event_type) {
-                                                    case 'agreement_created':
-                                                        $icon = 'ri-file-add-line';
-                                                        $color = 'primary';
-                                                        break;
-                                                    case 'location_added':
-                                                        $icon = 'ri-map-pin-add-line';
-                                                        $color = 'success';
-                                                        break;
-                                                    case 'location_removed':
-                                                        $icon = 'ri-map-pin-5-line';
-                                                        $color = 'danger';
-                                                        break;
-                                                    case 'deposit_changed':
-                                                        $icon = 'ri-money-dollar-circle-line';
-                                                        $color = 'info';
-                                                        break;
-                                                    case 'status_changed':
-                                                    case 'agreement_renewed':
-                                                        $icon = 'ri-refresh-line';
-                                                        $color = 'warning';
-                                                        break;
+                                                    case 'agreement_created': $icon = 'ri-file-add-line'; $color = 'primary'; $eventName = 'PKS Diterbitkan'; break;
+                                                    case 'location_added': $icon = 'ri-map-pin-add-line'; $color = 'success'; $eventName = 'Lokasi Ditambahkan'; break;
+                                                    case 'location_removed': $icon = 'ri-map-pin-5-line'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
+                                                    case 'deposit_changed': $icon = 'ri-money-dollar-circle-line'; $color = 'info'; $eventName = 'Perubahan Setoran'; break;
+                                                    case 'status_changed': $icon = 'ri-refresh-line'; $color = 'warning'; $eventName = 'Status Berubah'; break;
+                                                    case 'agreement_renewed': $icon = 'ri-loop-right-line'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
                                                     case 'agreement_terminated':
-                                                        $icon = 'ri-shield-x-line';
-                                                        $color = 'dark';
-                                                        break;
+                                                    case 'agreement_expired': $icon = 'ri-pass-expired-line'; $color = 'dark'; $eventName = 'PKS Berakhir/Diputus'; break;
                                                 }
 
-                                                $uName = $history->changer->name ?? 'Sistem Server';
-                                                $uAvatar =
-                                                    $history->changer && $history->changer->img
-                                                        ? asset('storage/' . $history->changer->img)
-                                                        : 'https://ui-avatars.com/api/?name=' .
-                                                            urlencode($uName) .
-                                                            '&background=random&color=fff&size=24&rounded=true&bold=true';
+                                                // Avatar Pembuat (Ditambahkan path storage/ agar aman)
+                                                $uName = $history->changer->name ?? 'Sistem Otomatis';
+                                                $uAvatar = ($history->changer && $history->changer->img)
+                                                    ? asset('storage/' . $history->changer->img)
+                                                    : "https://ui-avatars.com/api/?name=" . urlencode($uName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
+
+                                                // Logika Teks Panjang
+                                                $notesList = array_filter(array_map('trim', explode(';', $history->notes)));
+                                                $hasMultiple = count($notesList) > 1;
+                                                $previewText = Str::limit($notesList[0] ?? $history->notes, 60);
+                                                $collapseId = 'collapseHistoryShow_' . $history->id; // ID unik untuk accordion
                                             @endphp
-                                            <li class="timeline-item timeline-item-{{ $color }} mb-4">
-                                                <span
-                                                    class="timeline-indicator timeline-indicator-{{ $color }} bg-white">
+
+                                            <li class="timeline-item {{ $positionClass }} mb-4">
+                                                <span class="timeline-indicator timeline-indicator-{{ $color }} bg-white shadow-sm">
                                                     <i class="ri icon-base {{ $icon }}"></i>
                                                 </span>
-                                                <div class="timeline-event">
-                                                    <div
-                                                        class="timeline-header mb-1 d-flex justify-content-between align-items-center">
-                                                        <h6 class="mb-0 fw-bold text-{{ $color }}">
-                                                            {{ ucwords(str_replace('_', ' ', $history->event_type ?? 'Update Sistem')) }}
-                                                        </h6>
-                                                        <small
-                                                            class="text-muted">{{ $history->created_at->diffForHumans() }}</small>
+                                                <div class="timeline-event card p-0 border border-{{ $color }} border-opacity-25">
+                                                    <div class="card-header border-bottom bg-{{ $color }} bg-opacity-10 d-flex justify-content-between align-items-center flex-wrap py-2 px-3">
+                                                        <h6 class="card-title mb-0 fw-bold text-{{ $color }}">{{ $eventName }}</h6>
+                                                        <div class="meta"><span class="badge bg-white text-dark shadow-sm">{{ $history->created_at->diffForHumans() }}</span></div>
                                                     </div>
-                                                    <p class="mb-2 text-dark" style="font-size: 0.9rem;">
-                                                        {{ $history->notes }}</p>
+                                                    <div class="card-body py-3 px-3">
 
-                                                    <div
-                                                        class="d-flex align-items-center mt-2 bg-light rounded-pill px-2 py-1 d-inline-flex">
-                                                        <img src="{{ $uAvatar }}" alt="Avatar"
-                                                            class="rounded-circle me-2" width="20" height="20">
-                                                        <small class="fw-medium text-muted">{{ $uName }}</small>
+                                                        {{-- ✅ LOGIKA TEKS INTERAKTIF --}}
+                                                        <div class="mb-3">
+                                                            @if($hasMultiple || strlen($history->notes) > 60)
+                                                                <div class="d-flex flex-column align-items-start">
+                                                                    <div class="d-flex justify-content-between align-items-center w-100 cursor-pointer"
+                                                                         data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">
+                                                                        <span class="text-dark fw-medium">{{ $previewText }}</span>
+                                                                        <span class="badge bg-label-secondary rounded-pill ms-2"><i class="ri ri-arrow-down-wide-line"></i></span>
+                                                                    </div>
+                                                                    <div class="collapse w-100 mt-2" id="{{ $collapseId }}">
+                                                                        <div class="p-2 bg-lighter rounded-3">
+                                                                            @if($hasMultiple)
+                                                                                <ul class="list-unstyled mb-0 ps-1">
+                                                                                    @foreach($notesList as $note)
+                                                                                        <li class="d-flex align-items-start mb-1 text-muted small">
+                                                                                            <i class="ri ri-arrow-right-s-fill text-primary me-1 mt-1"></i>
+                                                                                            <span class="text-wrap" style="white-space: normal;">{{ $note }}</span>
+                                                                                        </li>
+                                                                                    @endforeach
+                                                                                </ul>
+                                                                            @else
+                                                                                <p class="mb-0 text-muted small text-wrap" style="white-space: normal;">{{ $history->notes }}</p>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            @else
+                                                                <span class="text-dark fw-medium text-wrap" style="white-space: normal;">{{ $history->notes }}</span>
+                                                            @endif
+                                                        </div>
+
+                                                        <div class="d-flex align-items-center border-top pt-2">
+                                                            <div class="avatar avatar-xs me-2">
+                                                                <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle shadow-sm" style="object-fit:cover;" />
+                                                            </div>
+                                                            <small class="text-muted">Aktor: <span class="fw-bold text-dark">{{ $uName }}</span></small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="timeline-event-time fw-bold text-muted" style="font-size:0.75rem;">
+                                                        {{ $history->created_at->translatedFormat('d M Y, H:i') }}
                                                     </div>
                                                 </div>
                                             </li>
                                         @empty
                                             <div class="text-center py-5">
                                                 <i class="ri ri-history-line text-muted" style="font-size: 2rem;"></i>
-                                                <p class="text-muted mt-2">Belum ada riwayat tercatat untuk perjanjian ini.
-                                                </p>
+                                                <p class="text-muted mt-2">Belum ada riwayat tercatat untuk perjanjian ini.</p>
                                             </div>
                                         @endforelse
                                     </ul>

@@ -1,6 +1,6 @@
 {
     "bookman old style": {
-        "normal": "bookman_old_style_normal_4ae37554b595a297e51e8bf5c8cd74ae",
-        "bold": "D:\\laragon\\www\\spt-app\\storage\\fonts\/bookman_old_style_bold_66e775f860e3435527c99c8026ee22a1"
+        "normal": "\/www\/spt-app\/storage\/fonts\/bookman_old_style_normal_4ae37554b595a297e51e8bf5c8cd74ae",
+        "bold": "bookman_old_style_bold_a49bdc075fa3e3270141d8ff111e3141"
     }
 }

@@ -39,19 +39,19 @@
     <ul class="nav nav-tabs mb-4 border-bottom-0" role="tablist">
         <li class="nav-item">
             <a class="nav-link px-3 py-2 {{ $tab == 'all' ? 'active' : '' }}"
-               href="{{ route('masterdata.agreements.index', ['tab' => 'all', 'search' => request('search')]) }}">
+               href="{{ route('masterdata.agreements.index', ['tab' => 'all', 'search' => request('search'), 'year' => request('year')]) }}">
                Semua PKS <span class="badge bg-{{ $tab == 'all' ? 'primary' : 'label-secondary' }} ms-1 rounded-pill">{{ $countAll }}</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link px-3 py-2 {{ $tab == 'active' ? 'active' : '' }}"
-               href="{{ route('masterdata.agreements.index', ['tab' => 'active', 'search' => request('search')]) }}">
+               href="{{ route('masterdata.agreements.index', ['tab' => 'active', 'search' => request('search'), 'year' => request('year')]) }}">
                Aktif <span class="badge bg-{{ $tab == 'active' ? 'success' : 'label-secondary' }} ms-1 rounded-pill">{{ $countActive }}</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link px-3 py-2 {{ $tab == 'inactive' ? 'active' : '' }}"
-               href="{{ route('masterdata.agreements.index', ['tab' => 'inactive', 'search' => request('search')]) }}">
+               href="{{ route('masterdata.agreements.index', ['tab' => 'inactive', 'search' => request('search'), 'year' => request('year')]) }}">
                Tidak Aktif <span class="badge bg-{{ $tab == 'inactive' ? 'danger' : 'label-secondary' }} ms-1 rounded-pill">{{ $countInactive }}</span>
             </a>
         </li>
@@ -70,12 +70,21 @@
                 <p class="text-muted mb-0">Total {{ $agreements->total() }} data ditampilkan.</p>
             </div>
             <div class="d-flex justify-content-md-end align-items-center gap-3">
-                {{-- Form Pencarian --}}
-                <form action="{{ route('masterdata.agreements.index') }}" method="GET" class="d-flex align-items-center">
+                {{-- Form Pencarian & Filter Tahun --}}
+                <form action="{{ route('masterdata.agreements.index') }}" method="GET" class="d-flex align-items-center gap-2">
                     <input type="hidden" name="tab" value="{{ $tab }}">
+
+                    {{-- Dropdown Filter Tahun --}}
+                    <select name="year" class="form-select form-select-sm" style="width: auto; height: 38px;" onchange="this.form.submit()">
+                        <option value="">Semua Tahun</option>
+                        @foreach($availableYears as $y)
+                            <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>Tahun {{ $y }}</option>
+                        @endforeach
+                    </select>
+
                     <div class="input-group">
                         <input type="search" name="search" class="form-control" placeholder="Cari No PKS/Korlap..." value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="icon-base ri ri-search-line"></i></button>
+                        <button class="btn btn-outline-primary" type="submit"><i class="icon-base ri ri-search-line icon-20px"></i></button>
                     </div>
                 </form>
                 {{-- Tombol Tambah --}}
@@ -87,7 +96,7 @@
         <div class="card-body pt-3">
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fw-bold" role="alert">
-                    <i class="ri-error-warning-line me-1"></i> {{ session('error') }}
+                    <i class="ri ri-error-warning-line me-1"></i> {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -119,7 +128,7 @@
                                 // Setup Avatar
                                 $cName = $agreement->fieldCoordinator->user->name ?? 'N/A';
                                 $cAvatar = ($agreement->fieldCoordinator->user && $agreement->fieldCoordinator->user->img)
-                                    ? asset($agreement->fieldCoordinator->user->img)
+                                    ? asset('storage/'.$agreement->fieldCoordinator->user->img)
                                     : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
                             @endphp
 
@@ -145,7 +154,7 @@
                                         {{-- ✅ INDIKATOR MASA TENGGANG --}}
                                         @if($isGracePeriod)
                                             <span class="badge bg-label-warning bg-opacity-20 text-warning ms-3 rounded-pill" data-bs-toggle="tooltip" title="Tersisa {{ $daysRemaining }} hari lagi!">
-                                                <i class="ri ri-alert-line me-1"></i> Tenggang
+                                                <i class="ri ri-alert-line icon-20px"></i> PKS dalam masa Tenggang
                                             </span>
                                         @endif
                                     </div>
@@ -167,17 +176,17 @@
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
                                             href="{{ route('masterdata.agreements.show', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Lihat Detail">
-                                            <i class="icon-base ri ri-eye-line ri-20px"></i>
+                                            <i class="icon-base ri ri-eye-line icon-20px"></i>
                                         </a>
                                         <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                             href="{{ route('masterdata.agreements.edit', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Edit PKS">
-                                            <i class="icon-base ri ri-pencil-line ri-20px"></i>
+                                            <i class="icon-base ri ri-pencil-line icon-20px"></i>
                                         </a>
                                         <a class="btn btn-sm btn-icon btn-text-secondary rounded-pill"
                                             href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
                                             data-bs-toggle="tooltip" title="Cetak Dokumen PKS">
-                                            <i class="icon-base ri ri-printer-line ri-20px"></i>
+                                            <i class="icon-base ri ri-printer-line icon-20px"></i>
                                         </a>
                                         <form action="{{ route('masterdata.agreements.destroy', $agreement->id) }}"
                                             method="POST" class="form-delete d-inline">
@@ -185,7 +194,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip"
                                                 title="Hapus PKS">
-                                                <i class="icon-base ri ri-delete-bin-line ri-20px"></i>
+                                                <i class="icon-base ri ri-delete-bin-line icon-20px"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -204,7 +213,7 @@
             </div>
             <div class="mt-4 px-3">
                 {{-- Memastikan query search dan tab dibawa saat pindah halaman --}}
-                {{ $agreements->appends(['search' => request('search'), 'tab' => $tab])->links() }}
+                {{ $agreements->appends(['search' => request('search'), 'tab' => $tab, 'year' => request('year')])->links() }}
             </div>
         </div>
     </div>

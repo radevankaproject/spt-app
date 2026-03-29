@@ -91,7 +91,7 @@
 
                                             // Cek apakah punya foto profil, jika tidak gunakan UI Avatar
                                             $cAvatar = ($activeAgreement->fieldCoordinator->user && $activeAgreement->fieldCoordinator->user->img)
-                                                ? asset($activeAgreement->fieldCoordinator->user->img)
+                                                ? asset('storage/'.$activeAgreement->fieldCoordinator->user->img)
                                                 : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=24&rounded=true&bold=true";
                                         @endphp
                                         <div>
@@ -113,28 +113,35 @@
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
                                             href="{{ route('masterdata.parking-locations.show', $location->id) }}"
                                             data-bs-toggle="tooltip" title="Detail Lokasi">
-                                            <i class="ri icon-base ri-eye-line ri-20px"></i>
+                                            <i class="ri icon-base ri-eye-line ri-22px"></i>
                                         </a>
 
-                                        {{-- ✅ Tombol Edit Selalu Muncul --}}
-                                        <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
-                                            href="{{ route('masterdata.parking-locations.edit', $location->id) }}"
-                                            data-bs-toggle="tooltip" title="Edit Lokasi">
-                                            <i class="ri icon-base ri-pencil-line ri-20px"></i>
-                                        </a>
+                                       {{-- ✅ Tombol Edit: Disabled jika Tidak Tersedia --}}
+                                        @if ($location->status == 'tidak_tersedia')
+                                            <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
+                                                data-bs-toggle="tooltip" title="Tidak dapat diedit, sedang terikat PKS!">
+                                                <i class="ri icon-base ri-pencil-line ri-22px opacity-50"></i>
+                                            </button>
+                                        @else
+                                            <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
+                                                href="{{ route('masterdata.parking-locations.edit', $location->id) }}"
+                                                data-bs-toggle="tooltip" title="Edit Lokasi">
+                                                <i class="ri icon-base ri-pencil-line ri-22px"></i>
+                                            </a>
+                                        @endif
 
                                         {{-- ✅ Tombol Delete: Disabled jika Tidak Tersedia --}}
                                         @if ($location->status == 'tidak_tersedia')
                                             <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
                                                 data-bs-toggle="tooltip" title="Tidak dapat dihapus, sedang terikat PKS!">
-                                                <i class="ri icon-base ri-delete-bin-7-line ri-20px opacity-50"></i>
+                                                <i class="ri icon-base ri-delete-bin-7-line ri-22px opacity-50"></i>
                                             </button>
                                         @else
                                             <form action="{{ route('masterdata.parking-locations.destroy', $location->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Lokasi">
-                                                    <i class="ri icon-base ri-delete-bin-7-line ri-20px"></i>
+                                                    <i class="ri icon-base ri-delete-bin-7-line ri-22px"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -192,6 +199,26 @@
                     })
                 });
             });
+
+            // ✅ POP-UP PREMIUM JIKA ADA YANG ISENG MENGAKSES URL EDIT LOKASI TERIKAT
+            @if (session('locked_error'))
+                // Kita amankan string PHP ke dalam variabel Javascript dulu
+                let errorMessage = {!! json_encode(session('locked_error')) !!};
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Akses Ditolak!',
+                    // Gabungkan variabel Javascript ke dalam HTML
+                    html: '<p class="text-muted fs-6 mt-2">' + errorMessage + '</p>',
+                    showConfirmButton: true,
+                    confirmButtonText: '<i class="ri-check-line me-1"></i> Mengerti',
+                    customClass: {
+                        confirmButton: 'btn btn-primary waves-effect waves-light rounded-pill px-4'
+                    },
+                    buttonsStyling: false,
+                    backdrop: `rgba(0,0,0,0.4)`
+                });
+            @endif
         });
     </script>
 @endpush

@@ -81,16 +81,6 @@
                                         id="signed_date" name="signed_date" value="{{ old('signed_date', date('Y-m-d')) }}"
                                         required /><label for="signed_date">Tanggal TTD</label></div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline"><select name="status" id="status"
-                                        class="form-select" required>
-                                        <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>
-                                            Aktif</option>
-                                        <option value="pending_renewal"
-                                            {{ old('status') == 'pending_renewal' ? 'selected' : '' }}>Menunggu
-                                            Perpanjangan</option>
-                                    </select><label for="status">Status Perjanjian</label></div>
-                            </div>
 
                             {{-- ✅ PERUBAHAN DI SINI: Input Setoran --}}
                             <div class="col-md-4">

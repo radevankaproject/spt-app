@@ -12,26 +12,28 @@ class AgreementHistoryController extends Controller
      */
     public function index(Request $request)
     {
-        // Ambil ID perjanjian yang dipilih dari form filter
         $selectedAgreementId = $request->input('agreement_id');
 
-        // Ambil semua perjanjian yang memiliki koordinator untuk ditampilkan di dropdown filter
+        // Ambil data untuk filter (Dioptimasi dengan Select untuk menghemat memory)
         $agreementsForFilter = Agreement::has('fieldCoordinator.user')
-            ->with('fieldCoordinator.user')
+            ->with('fieldCoordinator.user:id,name') // Hanya ambil ID dan Nama
+            ->select('id', 'agreement_number', 'field_coordinator_id')
             ->orderBy('agreement_number', 'desc')
             ->get();
 
         $agreement = null;
         if ($selectedAgreementId) {
-            // Jika ada perjanjian yang dipilih, ambil datanya beserta seluruh historinya
-            $agreement = Agreement::with(['histories' => function ($query) {
-                // Urutkan histori dari yang terbaru ke terlama
-                $query->latest();
-            }, 'fieldCoordinator.user'])
-                ->find($selectedAgreementId);
+            // ✅ FIX N+1: Tambahkan 'histories.changer' dan 'leader.user'
+            $agreement = Agreement::with([
+                'histories' => function ($query) {
+                    $query->latest(); // Urutkan terbaru di atas
+                },
+                'histories.changer', // <-- Obat N+1
+                'fieldCoordinator.user',
+                'leader.user' // Tambahan untuk Info Ringkasan
+            ])->find($selectedAgreementId);
         }
 
-        // Kirim data ke view
         return view('masterdata.agreement_histories.index', compact(
             'agreementsForFilter',
             'agreement',

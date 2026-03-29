@@ -2,36 +2,30 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
-use App\Models\DepositTransaction; // Pastikan ini diimpor
-use App\Models\FieldCoordinator;   // Pastikan ini diimpor
+use App\Models\DepositTransaction;
+use App\Models\FieldCoordinator;
+use App\Models\Agreement;
+use App\Models\YearlyDepositTarget;
+use App\Models\MonthlyDepositTarget;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class DepositReportController extends Controller
 {
-    /**
-     * Display the deposit report.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View|\Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
-        // Jika tombol 'Cetak PDF' diklik, panggil method generatePdf
         if ($request->has('print_pdf')) {
             return $this->generatePdf($request);
         }
 
-        $reportType         = $request->input('report_type', 'daily');
-        $specificDate       = $request->input('specific_date');
-        $specificMonth      = $request->input('specific_month');
-        $specificYear       = $request->input('specific_year');
-        $startDate          = $request->input('start_date');
-        $endDate            = $request->input('end_date');
-        $search             = $request->input('search');               // Filter pencarian umum
-        $fieldCoordinatorId = $request->input('field_coordinator_id'); // Filter Korlap dari dropdown
+        $reportType         = $request->input('report_type', 'monthly');
+        $specificMonth      = $request->input('specific_month', date('m'));
+        $specificYear       = $request->input('specific_year', date('Y'));
+        $search             = $request->input('search');
+        $fieldCoordinatorId = $request->input('field_coordinator_id');
 
+        // 1. INIT QUERY (Eager Load)
         $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
 
         $currentYearFilter = Carbon::now()->year;
@@ -41,224 +35,176 @@ class DepositReportController extends Controller
                 ->whereYear('end_date', '>=', $currentYearFilter);
         });
 
-        // Terapkan filter berdasarkan Field Coordinator yang dipilih dari dropdown
         if ($fieldCoordinatorId) {
-            $query->whereHas('agreement', function ($agreementQuery) use ($fieldCoordinatorId) {
-                $agreementQuery->where('field_coordinator_id', $fieldCoordinatorId);
-            });
+            $query->whereHas('agreement', function ($q) use ($fieldCoordinatorId) { $q->where('field_coordinator_id', $fieldCoordinatorId); });
         }
 
-        // Terapkan filter pencarian umum (nomor perjanjian atau nama korlap)
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->whereHas('agreement', function ($agreementQuery) use ($search) {
-                    $agreementQuery->where('agreement_number', 'like', '%' . $search . '%')
-                        ->orWhereHas('fieldCoordinator.user', function ($fcUserQuery) use ($search) {
-                            $fcUserQuery->where('name', 'like', '%' . $search . '%');
-                        });
+                $q->whereHas('agreement', function ($aq) use ($search) {
+                    $aq->where('agreement_number', 'like', '%' . $search . '%')
+                        ->orWhereHas('fieldCoordinator.user', function ($uq) use ($search) { $uq->where('name', 'like', '%' . $search . '%'); });
                 });
             });
         }
 
-        $reportTitle = 'Laporan Transaksi Setoran'; // Judul default
-
-        switch ($reportType) {
-            case 'daily':
-                $dateToFilter = $specificDate ? Carbon::parse($specificDate) : Carbon::today();
-                $query->whereDate('deposit_date', $dateToFilter);
-                $reportTitle = 'Jumlah Setoran Tanggal ' . $dateToFilter->translatedFormat('d F Y');
-                break;
-            case 'monthly':
-                $monthToFilter = $specificMonth ? $specificMonth : Carbon::now()->month;
-                $yearToFilter  = $specificYear ? $specificYear : Carbon::now()->year;
-                $query->whereMonth('deposit_date', $monthToFilter)
-                    ->whereYear('deposit_date', $yearToFilter);
-                $reportTitle = 'Jumlah Setoran Bulan ' . Carbon::createFromDate($yearToFilter, $monthToFilter, 1)->translatedFormat('F Y');
-                break;
-            case 'yearly':
-                $yearToFilter = $specificYear ? $specificYear : Carbon::now()->year;
-                $query->whereYear('deposit_date', $yearToFilter);
-                $reportTitle = 'Jumlah Setoran Tahun ' . $yearToFilter;
-                break;
-            case 'custom_range':
-                if ($startDate && $endDate) {
-                    $query->whereBetween('deposit_date', [$startDate, $endDate]);
-                    $reportTitle = 'Jumlah Setoran Dari ' . Carbon::parse($startDate)->translatedFormat('d F Y') . ' Sampai ' . Carbon::parse($endDate)->translatedFormat('d F Y');
-                } elseif ($startDate) {
-                    $query->whereDate('deposit_date', '>=', $startDate);
-                    $reportTitle = 'Jumlah Setoran Mulai ' . Carbon::parse($startDate)->translatedFormat('d F Y');
-                } elseif ($endDate) {
-                    $query->whereDate('deposit_date', '<=', $endDate);
-                    $reportTitle = 'Jumlah Setoran Sampai ' . Carbon::parse($endDate)->translatedFormat('d F Y');
-                } else {
-                    $reportTitle = 'Jumlah Setoran Rentang Waktu Kustom (Tidak Ada Tanggal Dipilih)';
-                }
-                break;
+        // ✅ 2. FILTER WAKTU (TAHUNAN / BULANAN) HARUS DIEKSEKUSI SEBELUM ->GET()
+        if ($reportType === 'yearly') {
+            $query->whereYear('deposit_date', $specificYear);
+        } else {
+            $query->whereYear('deposit_date', $specificYear)
+                  ->whereMonth('deposit_date', $specificMonth);
         }
 
-        // NEW: Tambahkan informasi filter ke reportTitle
+        // ✅ 3. AMBIL DATA REPORTS (Sekarang sudah tersaring rapi!)
+        $reports = $query->latest('deposit_date')->get();
+        $totalAmount = $reports->where('is_validated', true)->sum('amount');
+
+        // ✅ 4. AMBIL DATA TARGET DARI DATABASE
+        $yearlyTargetData = YearlyDepositTarget::with('monthlyTargets')->where('year', $specificYear)->first();
+
+        $reportTitle = 'Laporan Transaksi Setoran';
+        $chartLabels = []; $chartValues = []; $chartTargets = [];
+        $totalTargetAmount = 0;
+
+        // ✅ 5. LOGIKA GRAFIK & TARGET
+        if ($reportType === 'yearly') {
+            $months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            $chartLabels = $months;
+            $totalTargetAmount = $yearlyTargetData ? $yearlyTargetData->total_target : 0;
+
+            for ($i = 1; $i <= 12; $i++) {
+                // Actual Setoran per bulan
+                $actual = $reports->where('is_validated', true)->filter(function($item) use ($i, $specificYear) {
+                    $date = Carbon::parse($item->deposit_date);
+                    return $date->month == $i && $date->year == $specificYear;
+                })->sum('amount');
+                $chartValues[] = $actual;
+
+                // Target Proyeksi per bulan (dari database target)
+                $monthTarget = $yearlyTargetData ? $yearlyTargetData->monthlyTargets->where('month', $i)->first() : null;
+                $chartTargets[] = $monthTarget ? $monthTarget->target_amount : 0;
+            }
+            $reportTitle = 'Laporan Setoran Tahun ' . $specificYear;
+            $chartTitle = 'Grafik Tren Setoran vs Target Proyeksi Tahun ' . $specificYear;
+
+        } else { // monthly
+            $monthTarget = $yearlyTargetData ? $yearlyTargetData->monthlyTargets->where('month', (int)$specificMonth)->first() : null;
+            $totalTargetAmount = $monthTarget ? $monthTarget->target_amount : 0;
+
+            $startOfMonth = Carbon::createFromDate($specificYear, $specificMonth, 1)->startOfMonth();
+            $coordinators = collect();
+
+            foreach ($reports->where('is_validated', true) as $rep) {
+                $name = $rep->agreement->fieldCoordinator->user->name ?? 'Lainnya';
+                if (!$coordinators->has($name)) $coordinators->put($name, 0);
+                $coordinators->put($name, $coordinators->get($name) + $rep->amount);
+            }
+
+            $chartLabels = $coordinators->keys()->toArray();
+            $chartValues = $coordinators->values()->toArray();
+            $chartTargets = [];
+
+            $reportTitle = 'Laporan Setoran Bulan ' . $startOfMonth->translatedFormat('F Y');
+            $chartTitle = 'Grafik Validasi Setoran per Koordinator Lapangan';
+        }
+
+        // Kumpulkan Detail Filter untuk Judul
         $filterDetails = [];
-        if ($search) {
-            $filterDetails[] = $search;
-        }
+        if ($search) $filterDetails[] = "Pencarian: '{$search}'";
         if ($fieldCoordinatorId) {
             $korlap = FieldCoordinator::with('user')->find($fieldCoordinatorId);
-            if ($korlap && $korlap->user) {
-                $filterDetails[] = ' - ' . $korlap->user->name;
-            }
+            if ($korlap && $korlap->user) $filterDetails[] = "Korlap: " . $korlap->user->name;
         }
-        if (! empty($filterDetails)) {
-            $reportTitle .= ' (' . implode($filterDetails) . ')';
-        }
+        if (!empty($filterDetails)) $reportTitle .= ' (' . implode(' | ', $filterDetails) . ')';
 
-        $reports     = $query->latest('deposit_date')->get();
-        $totalAmount = $reports->sum('amount');
+        $fieldCoordinators = FieldCoordinator::with('user')->whereHas('user', function($q) use ($search) {
+            if($search) $q->where('name', 'like', "%{$search}%");
+        })->get()->sortBy(function($fc) { return $fc->user->name ?? ''; });
 
-        // Ambil daftar Field Coordinator untuk dropdown filter
-        $fieldCoordinatorsQuery = FieldCoordinator::select('field_coordinators.*')
-            ->join('users', 'field_coordinators.user_id', '=', 'users.id');
+        $chartLabels = json_encode($chartLabels);
+        $chartValues = json_encode($chartValues);
+        $chartTargets = json_encode($chartTargets);
 
-        if ($search) { // Terapkan filter pencarian umum ke opsi dropdown Korlap
-            $fieldCoordinatorsQuery->where(function ($q) use ($search) {
-                $q->where('users.name', 'like', '%' . $search . '%')
-                    ->orWhereHas('agreements', function ($agreementQuery) use ($search) {
-                        $agreementQuery->where('agreement_number', 'like', '%' . $search . '%');
-                    });
-            });
-        }
-        $fieldCoordinators = $fieldCoordinatorsQuery->orderBy('users.name', 'asc')->get();
+        $percentage = $totalTargetAmount > 0 ? round(($totalAmount / $totalTargetAmount) * 100, 2) : 0;
 
         return view('masterdata.deposit_reports.index', compact(
-            'reports',
-            'totalAmount',
-            'reportType',
-            'specificDate',
-            'specificMonth',
-            'specificYear',
-            'startDate',
-            'endDate',
-            'reportTitle',
-            'search',
-            'fieldCoordinators',
-            'fieldCoordinatorId'
+            'reports', 'totalAmount', 'totalTargetAmount', 'percentage', 'reportType', 'specificMonth', 'specificYear',
+            'reportTitle', 'chartTitle', 'chartLabels', 'chartValues', 'chartTargets', 'search', 'fieldCoordinators', 'fieldCoordinatorId'
         ));
     }
 
-    /**
-     * Generate PDF for the deposit report.
-     * This method will receive the same filters as the index method.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function generatePdf(Request $request)
     {
-        $reportType         = $request->input('report_type', 'daily');
-        $specificDate       = $request->input('specific_date');
-        $specificMonth      = $request->input('specific_month');
-        $specificYear       = $request->input('specific_year');
-        $startDate          = $request->input('start_date');
-        $endDate            = $request->input('end_date');
+        $reportType         = $request->input('report_type', 'monthly');
+        $specificMonth      = $request->input('specific_month', date('m'));
+        $specificYear       = $request->input('specific_year', date('Y'));
         $search             = $request->input('search');
         $fieldCoordinatorId = $request->input('field_coordinator_id');
 
         $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
 
         $currentYearFilter = Carbon::now()->year;
-        $query->whereHas('agreement', function ($agreementQuery) use ($currentYearFilter) {
-            $agreementQuery->where('status', 'active')
-                ->whereYear('start_date', '<=', $currentYearFilter)
-                ->whereYear('end_date', '>=', $currentYearFilter);
+        $query->whereHas('agreement', function ($q) use ($currentYearFilter) {
+            $q->where('status', 'active')->whereYear('start_date', '<=', $currentYearFilter)->whereYear('end_date', '>=', $currentYearFilter);
         });
 
-        // Terapkan filter berdasarkan Field Coordinator yang dipilih dari dropdown
         if ($fieldCoordinatorId) {
-            $query->whereHas('agreement', function ($agreementQuery) use ($fieldCoordinatorId) {
-                $agreementQuery->where('field_coordinator_id', $fieldCoordinatorId);
-            });
+            $query->whereHas('agreement', function ($q) use ($fieldCoordinatorId) { $q->where('field_coordinator_id', $fieldCoordinatorId); });
         }
 
-        // Terapkan filter pencarian umum
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->whereHas('agreement', function ($agreementQuery) use ($search) {
-                    $agreementQuery->where('agreement_number', 'like', '%' . $search . '%')
-                        ->orWhereHas('fieldCoordinator.user', function ($fcUserQuery) use ($search) {
-                            $fcUserQuery->where('name', 'like', '%' . $search . '%');
-                        });
+                $q->whereHas('agreement', function ($aq) use ($search) {
+                    $aq->where('agreement_number', 'like', '%' . $search . '%')->orWhereHas('fieldCoordinator.user', function ($uq) use ($search) { $uq->where('name', 'like', '%' . $search . '%'); });
                 });
             });
         }
 
         $query->join('agreements', 'deposit_transactions.agreement_id', '=', 'agreements.id')
-            ->orderBy('agreements.agreement_number', 'asc')
-            ->orderBy('deposit_transactions.deposit_date', 'asc');
+            ->orderBy('agreements.agreement_number', 'asc')->orderBy('deposit_transactions.deposit_date', 'asc');
 
-        // Ambil data dari database
+        // ✅ FILTER TAHUNAN / BULANAN UNTUK PDF
+        if ($reportType === 'yearly') {
+            $query->whereYear('deposit_transactions.deposit_date', $specificYear);
+        } else {
+            $query->whereYear('deposit_transactions.deposit_date', $specificYear)
+                  ->whereMonth('deposit_transactions.deposit_date', $specificMonth);
+        }
+
+        // AMBIL DATA
         $reports = $query->select('deposit_transactions.*')->get();
-
-                                                                             // Hitung total dari semua data sebelum dikelompokkan
-        $totalAmount = $reports->where('is_validated', true)->sum('amount'); // Hitung hanya yg tervalidasi
-
-        // ✅ KELOMPOKKAN HASILNYA BERDASARKAN ID PERJANJIAN
+        $totalAmount = $reports->where('is_validated', true)->sum('amount');
         $reportsByAgreement = $reports->groupBy('agreement_id');
 
-        $reportTitle = 'Laporan Transaksi Setoran'; // Judul default untuk PDF
+        // AMBIL TARGET
+        $yearlyTargetData = YearlyDepositTarget::with('monthlyTargets')->where('year', $specificYear)->first();
+        $totalTargetAmount = 0;
+        $reportTitle = 'Laporan Transaksi Setoran';
 
-        switch ($reportType) {
-            case 'daily':
-                $dateToFilter = $specificDate ? Carbon::parse($specificDate) : Carbon::today();
-                $query->whereDate('deposit_date', $dateToFilter);
-                $reportTitle = 'Jumlah Setoran Tanggal ' . $dateToFilter->translatedFormat('d F Y');
-                break;
-            case 'monthly':
-                $monthToFilter = $specificMonth ? $specificMonth : Carbon::now()->month;
-                $yearToFilter  = $specificYear ? $specificYear : Carbon::now()->year;
-                $query->whereMonth('deposit_date', $monthToFilter)
-                    ->whereYear('deposit_date', $yearToFilter);
-                $reportTitle = 'Jumlah Setoran Bulan ' . Carbon::createFromDate($yearToFilter, $monthToFilter, 1)->translatedFormat('F Y');
-                break;
-            case 'yearly':
-                $yearToFilter = $specificYear ? $specificYear : Carbon::now()->year;
-                $query->whereYear('deposit_date', $yearToFilter);
-                $reportTitle = 'Jumlah Setoran Tahun ' . $yearToFilter;
-                break;
-            case 'custom_range':
-                if ($startDate && $endDate) {
-                    $query->whereBetween('deposit_date', [$startDate, $endDate]);
-                    $reportTitle = 'Jumlah Setoran Dari ' . Carbon::parse($startDate)->translatedFormat('d F Y') . ' Sampai ' . Carbon::parse($endDate)->translatedFormat('d F Y');
-                } elseif ($startDate) {
-                    $query->whereDate('deposit_date', '>=', $startDate);
-                    $reportTitle = 'Jumlah Setoran Mulai ' . Carbon::parse($startDate)->translatedFormat('d F Y');
-                } elseif ($endDate) {
-                    $query->whereDate('deposit_date', '<=', $endDate);
-                    $reportTitle = 'Jumlah Setoran Sampai ' . Carbon::parse($endDate)->translatedFormat('d F Y');
-                } else {
-                    $reportTitle = 'Jumlah Setoran Rentang Waktu Kustom (Tidak Ada Tanggal Dipilih)';
-                }
-                break;
+        if ($reportType === 'yearly') {
+            $reportTitle = 'Laporan Setoran Tahun ' . $specificYear;
+            $totalTargetAmount = $yearlyTargetData ? $yearlyTargetData->total_target : 0;
+        } else {
+            $startOfMonth = Carbon::createFromDate($specificYear, $specificMonth, 1)->startOfMonth();
+            $reportTitle = 'Laporan Setoran Bulan ' . $startOfMonth->translatedFormat('F Y');
+            $monthTarget = $yearlyTargetData ? $yearlyTargetData->monthlyTargets->where('month', (int)$specificMonth)->first() : null;
+            $totalTargetAmount = $monthTarget ? $monthTarget->target_amount : 0;
         }
 
-        // NEW: Tambahkan informasi filter ke reportTitle untuk PDF
         $filterDetails = [];
-        if ($search) {
-            $filterDetails[] = $search;
-        }
+        if ($search) $filterDetails[] = "Pencarian: '{$search}'";
         if ($fieldCoordinatorId) {
             $korlap = FieldCoordinator::with('user')->find($fieldCoordinatorId);
-            if ($korlap && $korlap->user) {
-                $filterDetails[] = ' - ' . $korlap->user->name;
-            }
+            if ($korlap && $korlap->user) $filterDetails[] = "Korlap: " . $korlap->user->name;
         }
-        if (! empty($filterDetails)) {
-            $reportTitle .= ' ' . implode($filterDetails);
-        }
+        if (!empty($filterDetails)) $reportTitle .= ' (' . implode(' | ', $filterDetails) . ')';
 
-        $reports     = $query->latest('deposit_date')->get();
-        $totalAmount = $reports->sum('amount');
+        $percentage = $totalTargetAmount > 0 ? round(($totalAmount / $totalTargetAmount) * 100, 2) : 0;
 
-        $pdf = Pdf::loadView('pdf.deposit_report', compact('reportsByAgreement', 'totalAmount', 'reportTitle', 'search', 'fieldCoordinatorId'))
+        $pdf = Pdf::loadView('pdf.deposit_report', compact('reportsByAgreement', 'totalAmount', 'totalTargetAmount', 'percentage', 'reportTitle', 'search', 'fieldCoordinatorId'))
             ->setPaper('a4', 'landscape');
+
         return $pdf->stream('Laporan_Setoran_' . str_replace(' ', '_', $reportTitle) . '.pdf');
     }
 }

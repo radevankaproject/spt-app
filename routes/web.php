@@ -20,6 +20,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingController;
 use App\Http\Controllers\PublicVerificationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\TreasurerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -130,11 +131,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('leaders/trashed', [LeaderController::class, 'trashed'])->name('leaders.trashed');
             Route::patch('leaders/{id}/restore', [LeaderController::class, 'restore'])->name('leaders.restore');
             Route::resource('leaders', LeaderController::class);
+            Route::patch('leader/{leader}/toggle-status', [LeaderController::class, 'toggleStatus'])->name('leaders.toggle-status');
 
-            // --- Field Coordinators ---
+            // --- Treasurers (Bendahara) ---
+            Route::resource('treasurers', TreasurerController::class);
+            Route::patch('treasurers/{treasurer}/toggle-status', [TreasurerController::class, 'toggleStatus'])->name('treasurers.toggle-status');
+
+            // --- Field Coordinators ---   
             Route::get('field-coordinators/trashed', [FieldCoordinatorController::class, 'trashed'])->name('field-coordinators.trashed');
             Route::patch('field-coordinators/{id}/restore', [FieldCoordinatorController::class, 'restore'])->name('field-coordinators.restore');
             Route::resource('field-coordinators', FieldCoordinatorController::class);
+            Route::patch('field-coordinators/{field_coordinator}/toggle-status', [FieldCoordinatorController::class, 'toggleStatus'])->name('field-coordinators.toggle-status');
 
             // --- Rute lainnya ---
             Route::resource('blud-bank-accounts', BludBankAccountController::class);

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,16 +8,11 @@ class Leader extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'employee_number',
-        'start_date',
-        'end_date',
-    ];
+    protected $fillable = ['user_id', 'employee_number', 'status_jabatan', 'start_date', 'end_date'];
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date' => 'date',
+        'end_date'   => 'date',
     ];
 
     //relasi ke User
@@ -31,5 +25,10 @@ class Leader extends Model
     public function agreements()
     {
         return $this->hasMany(Agreement::class);
+    }
+
+    public function histories()
+    {
+        return $this->hasMany(LeaderHistory::class);
     }
 }

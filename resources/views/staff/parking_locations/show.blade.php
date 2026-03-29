@@ -78,7 +78,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div class="d-flex align-items-center">
             <div class="avatar avatar-lg bg-label-primary rounded-3 me-3 d-flex align-items-center justify-content-center shadow-sm">
-                <i class="ri icon-base ri-map-pin-user-line ri-30px"></i>
+                <i class="ri icon-base ri ri-map-pin-user-line ri-30px"></i>
             </div>
             <div>
                 <h4 class="fw-bold mb-1">{{ $parkingLocation->name }}</h4>
@@ -167,7 +167,7 @@
                         @php
                             $cName = $activeAgreement->fieldCoordinator->user->name ?? 'N/A';
                             $cAvatar = ($activeAgreement->fieldCoordinator->user && $activeAgreement->fieldCoordinator->user->img)
-                                ? asset($activeAgreement->fieldCoordinator->user->img)
+                                ? asset('storage/'.$activeAgreement->fieldCoordinator->user->img)
                                 : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=48&rounded=true&bold=true";
                         @endphp
 

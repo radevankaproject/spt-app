@@ -59,23 +59,25 @@
                                         value="{{ old('agreement_number', $agreement->agreement_number) }}"
                                         readonly /><label for="agreement_number">Nomor Perjanjian</label></div>
                             </div>
-                            <div class="col-md-6"><label for="leader_id" class="form-label">Pimpinan (Pihak
-                                    Pertama)</label><select class="form-select select2" id="leader_id" name="leader_id"
-                                    required>
-                                    <option value="">Pilih Pimpinan</option>
-                                    @foreach ($leaders as $leader)
-                                        <option value="{{ $leader->id }}"
-                                            {{ old('leader_id', $agreement->leader_id) == $leader->id ? 'selected' : '' }}>
-                                            {{ $leader->user->name ?? 'N/A' }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control bg-lighter text-muted"
+                                        value="{{ $agreement->leader->user->name ?? 'N/A' }}"
+                                        readonly style="pointer-events: none;" />
+                                    {{-- ✅ Input hidden untuk mengirimkan data leader_id saat form disubmit --}}
+                                    <input type="hidden" name="leader_id" value="{{ $agreement->leader_id }}">
+                                    <label>Pimpinan (Pihak Pertama) <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                </div>
                             </div>
-                            <div class="col-md-6"><label class="form-label">Koordinator Lapangan (Pihak Kedua)</label><input
-                                    type="text" class="form-control"
-                                    value="{{ $agreement->fieldCoordinator->user->name ?? 'N/A' }}" disabled /><input
-                                    type="hidden" name="field_coordinator_id"
-                                    value="{{ $agreement->field_coordinator_id }}">
-                                <div class="form-text">Koordinator tidak dapat diubah.</div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control bg-lighter text-muted"
+                                        value="{{ $agreement->fieldCoordinator->user->name ?? 'N/A' }}"
+                                        readonly style="pointer-events: none;" />
+                                    <input type="hidden" name="field_coordinator_id" value="{{ $agreement->field_coordinator_id }}">
+                                    <label>Koordinator Lapangan <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                </div>
                             </div>
                             {{-- ✅ FIX: Semua tanggal dikunci (readonly & pointer-events: none) --}}
                             <div class="col-md-6">
@@ -149,36 +151,37 @@
                         <h5 class="card-title mb-0">Lokasi Parkir Terkait</h5>
                     </div>
                     <div class="card-body d-flex flex-column">
-                        {{-- Filter Zona & Ruas Jalan --}}
+                        @php
+                            // ✅ LOGIKA KUNCI ZONA
+                            // Terkunci JIKA: Ada lokasi yg terikat ATAU status PKS bukan 'active'
+                            $isZoneLocked = !is_null($initialZone) || $agreement->status !== 'active';
+                        @endphp
+
                         <div class="mb-3">
                             <label class="form-label">Zona Pengelolaan</label>
                             <div class="d-flex pt-2">
                                 <div class="form-check me-4">
                                     <input name="zone_filter" class="form-check-input" type="radio" value="Zona 2"
-                                        id="zone2" {{ $initialZone == 'Zona 2' ? 'checked' : '' }} {{ $initialZone ? 'disabled' : '' }} />
+                                        id="zone2" {{ $initialZone == 'Zona 2' ? 'checked' : '' }} {{ $isZoneLocked ? 'disabled' : '' }} />
                                     <label class="form-check-label" for="zone2"> Zona 2</label>
                                 </div>
                                 <div class="form-check">
                                     <input name="zone_filter" class="form-check-input" type="radio" value="Zona 3"
-                                        id="zone3" {{ $initialZone == 'Zona 3' ? 'checked' : '' }} {{ $initialZone ? 'disabled' : '' }} />
+                                        id="zone3" {{ $initialZone == 'Zona 3' ? 'checked' : '' }} {{ $isZoneLocked ? 'disabled' : '' }} />
                                     <label class="form-check-label" for="zone3"> Zona 3</label>
                                 </div>
                             </div>
-                            {{-- ✅ FIX: Keterangan dinamis berdasarkan ketersediaan lokasi --}}
-                            @if($initialZone)
-                                <div class="form-text text-danger"><i class="ri ri-lock-line"></i> Zona terkunci berdasarkan lokasi yang sedang terikat.</div>
+
+                            {{-- Keterangan dinamis di bawah radio button --}}
+                            @if($isZoneLocked)
+                                @if($agreement->status !== 'active')
+                                    <div class="form-text text-danger"><i class="ri-lock-line"></i> Zona terkunci karena status PKS sudah tidak aktif.</div>
+                                @else
+                                    <div class="form-text text-danger"><i class="ri-lock-line"></i> Zona terkunci berdasarkan lokasi yang sedang terikat.</div>
+                                @endif
                             @else
-                                <div class="form-text text-success fw-bold"><i class="ri ri-lock-unlock-line"></i> Silakan pilih zona baru untuk PKS ini.</div>
+                                <div class="form-text text-success fw-bold"><i class="ri-lock-unlock-line"></i> Silakan pilih zona baru untuk PKS ini.</div>
                             @endif
-                        </div>
-                        <div class="mb-3">
-                            <label for="road_section_filter" class="form-label">Filter Ruas Jalan</label>
-                            <select id="road_section_filter" class="form-select select2">
-                                <option value="">Tampilkan Semua Lokasi</option>
-                                @foreach ($allRoadSections as $section)
-                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
-                                @endforeach
-                            </select>
                         </div>
 
                         {{-- Container untuk Hasil Filter (Tempat Memilih) --}}
@@ -252,7 +255,7 @@
 
             // --- State Management ---
             let selectedLocations = {};
-            const isZoneLocked = {{ $initialZone ? 'true' : 'false' }};
+            const isZoneLocked = {{ $isZoneLocked ? 'true' : 'false' }};
 
             // --- Definisi Fungsi ---
             function initializeSelectedLocations() {

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Histori Perjanjian Kerjasama')
+@section('title', 'Histori Perjalanan PKS')
 
 @section('skeleton')
     @include('layouts.partials._skeleton-agreement-history-index')
@@ -8,47 +8,47 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
-    {{-- CSS untuk timeline bawaan template --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/timeline.css') }}" />
+    <style>
+        .timeline-event.card { border: none; box-shadow: 0 0.125rem 0.25rem 0 rgba(161, 172, 184, 0.15); transition: all 0.3s ease; }
+        .timeline-event.card:hover { box-shadow: 0 0.25rem 0.75rem 0 rgba(105, 108, 255, 0.15); transform: translateY(-2px); }
+        .cursor-pointer { cursor: pointer; }
+    </style>
 @endpush
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Histori Perjanjian Kerjasama</h4>
-        <div class="d-flex align-items-center">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">Histori Perjalanan PKS</h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Master Data</a></li>
-                    <li class="breadcrumb-item active">Histori PKS</li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('masterdata.agreements.index') }}">PKS</a></li>
+                    <li class="breadcrumb-item active">Jejak Histori</li>
                 </ol>
             </nav>
         </div>
     </div>
 
-    {{-- Form Filter --}}
-    <div class="card mb-6">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Filter Histori</h5>
-        </div>
+    {{-- Form Filter Premium --}}
+    <div class="card mb-5 border-0 shadow-sm">
         <div class="card-body">
             <form action="{{ route('masterdata.agreement-histories.index') }}" method="GET">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-10">
-                        <label for="agreement_id" class="form-label">Pilih Perjanjian (No. PKS atau Nama Korlap)</label>
-                        <select name="agreement_id" id="agreement_id" class="form-select select2" data-allow-clear="true"
-                            required>
-                            <option value="">Cari dan Pilih Perjanjian...</option>
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-9 col-lg-10">
+                        <label for="agreement_id" class="form-label fw-bold text-primary"><i class="ri ri-search-line me-1"></i> Cari & Pilih Perjanjian</label>
+                        <select name="agreement_id" id="agreement_id" class="form-select select2" data-allow-clear="true" required>
+                            <option value="">Ketik No. PKS atau Nama Koordinator...</option>
                             @foreach ($agreementsForFilter as $item)
-                                <option value="{{ $item->id }}"
-                                    {{ $selectedAgreementId == $item->id ? 'selected' : '' }}>
-                                    {{ $item->agreement_number }} - {{ $item->fieldCoordinator->user->name ?? 'N/A' }}
+                                <option value="{{ $item->id }}" {{ $selectedAgreementId == $item->id ? 'selected' : '' }}>
+                                    {{ $item->agreement_number }} — {{ $item->fieldCoordinator->user->name ?? 'N/A' }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Tampilkan</button>
+                    <div class="col-md-3 col-lg-2 mt-4 mt-md-0 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm mt-4"><i class="ri ri-history-line me-1"></i> Lacak Jejak</button>
                     </div>
                 </div>
             </form>
@@ -57,81 +57,121 @@
 
     {{-- Hasil Timeline --}}
     @if ($agreement)
+        {{-- Kartu Ringkasan PKS (Tampil jika PKS terpilih) --}}
+        <div class="card bg-primary bg-opacity-10 border-0 mb-5 rounded-3 shadow-none">
+            <div class="card-body py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar avatar-md">
+                        @php
+                            $cName = $agreement->fieldCoordinator->user->name ?? 'N/A';
+                            $cAvatar = ($agreement->fieldCoordinator->user && $agreement->fieldCoordinator->user->img)
+                                ? asset('storage/'.$agreement->fieldCoordinator->user->img)
+                                : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=40&rounded=true&bold=true";
+                        @endphp
+                        <img src="{{ $cAvatar }}" alt="Korlap" class="rounded-circle shadow-sm" style="object-fit:cover;">
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-dark">{{ $agreement->agreement_number }}</h6>
+                        <small class="text-muted">Korlap: <span class="fw-medium">{{ $cName }}</span></small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary rounded-pill mb-1">{{ $agreement->histories->count() }} Total Aktivitas</span><br>
+                    <a href="{{ route('masterdata.agreements.show', $agreement->id) }}" class="small fw-bold text-primary text-decoration-underline">Lihat Detail PKS <i class="ri ri-arrow-right-line"></i></a>
+                </div>
+            </div>
+        </div>
+
         <div class="row overflow-hidden">
             <div class="col-12">
-                <h5 class="text-center mb-6">Timeline untuk: <span class="fw-bold">{{ $agreement->agreement_number }}</span>
-                </h5>
-                <ul class="timeline timeline-center">
-                    @forelse ($agreement->histories as $key => $history)
+                <ul class="timeline timeline-center mt-3">
+                    @forelse ($agreement->histories as $history)
                         @php
-                            // Menentukan posisi event (kiri/kanan) secara bergantian
                             $positionClass = $loop->odd ? 'timeline-item-left' : 'timeline-item-right';
 
-                            // Menentukan ikon dan warna berdasarkan tipe event
-                            $icon = 'ri-file-text-line';
-                            $color = 'secondary';
+                            // Styling Event
+                            $icon = 'ri ri-file-text-line'; $color = 'secondary'; $eventName = 'Aktivitas Sistem';
                             switch ($history->event_type) {
-                                case 'agreement_created':
-                                    $icon = 'ri-file-add-line';
-                                    $color = 'primary';
-                                    break;
-                                case 'location_added':
-                                    $icon = 'ri-map-pin-add-line';
-                                    $color = 'success';
-                                    break;
-                                case 'location_removed':
-                                    $icon = 'ri-map-pin-user-line';
-                                    $color = 'warning';
-                                    break;
-                                case 'deposit_changed':
-                                    $icon = 'ri-money-dollar-circle-line';
-                                    $color = 'info';
-                                    break;
-                                case 'status_changed':
-                                case 'agreement_renewed':
-                                    $icon = 'ri-refresh-line';
-                                    $color = 'success';
-                                    break;
+                                case 'agreement_created': $icon = 'ri ri-file-add-line'; $color = 'primary'; $eventName = 'PKS Diterbitkan'; break;
+                                case 'location_added': $icon = 'ri ri-map-pin-add-line'; $color = 'success'; $eventName = 'Lokasi Ditambahkan'; break;
+                                case 'location_removed': $icon = 'ri ri-map-pin-5-line'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
+                                case 'deposit_changed': $icon = 'ri ri-money-dollar-circle-line'; $color = 'info'; $eventName = 'Perubahan Setoran'; break;
+                                case 'status_changed': $icon = 'ri ri-refresh-line'; $color = 'warning'; $eventName = 'Status Berubah'; break;
+                                case 'agreement_renewed': $icon = 'ri ri-loop-right-line'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
                                 case 'agreement_terminated':
-                                case 'agreement_expired':
-                                    $icon = 'ri-shield-x-line';
-                                    $color = 'danger';
-                                    break;
+                                case 'agreement_expired': $icon = 'ri ri-pass-expired-line'; $color = 'dark'; $eventName = 'PKS Berakhir/Diputus'; break;
                             }
+
+                            // Avatar Pembuat
+                            $uName = $history->changer->name ?? 'Sistem Otomatis';
+                            $uAvatar = ($history->changer && $history->changer->img)
+                                ? asset('storage/' . $history->changer->img)
+                                : "https://ui-avatars.com/api/?name=" . urlencode($uName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
+
+                            // Logika Teks Panjang (Sama seperti PDF History)
+                            $notesList = array_filter(array_map('trim', explode(';', $history->notes)));
+                            $hasMultiple = count($notesList) > 1;
+                            $previewText = Str::limit($notesList[0] ?? $history->notes, 60);
+                            $collapseId = 'collapseHistory_' . $history->id;
                         @endphp
+
                         <li class="timeline-item {{ $positionClass }}">
-                            <span class="timeline-indicator timeline-indicator-{{ $color }}">
+                            <span class="timeline-indicator timeline-indicator-{{ $color }} bg-white shadow-sm">
                                 <i class="icon-base {{ $icon }}"></i>
                             </span>
-                            <div class="timeline-event card p-0">
-                                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                                    <h6 class="card-title mb-0">{{ $history->notes }}</h6>
-                                    <div class="meta"><small
-                                            class="text-muted">{{ $history->created_at->diffForHumans() }}</small></div>
+                            <div class="timeline-event card p-0 border border-{{ $color }} border-opacity-25">
+                                <div class="card-header border-bottom bg-{{ $color }} bg-opacity-10 d-flex justify-content-between align-items-center flex-wrap py-2 px-3">
+                                    <h6 class="card-title mb-0 fw-bold text-{{ $color }}">{{ $eventName }}</h6>
+                                    <div class="meta"><span class="badge bg-white text-dark shadow-sm">{{ $history->created_at->diffForHumans() }}</span></div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
+                                <div class="card-body py-3 px-3">
+
+                                    {{-- ✅ LOGIKA TEKS INTERAKTIF --}}
+                                    <div class="mb-3">
+                                        @if($hasMultiple || strlen($history->notes) > 60)
+                                            <div class="d-flex flex-column align-items-start">
+                                                <div class="d-flex justify-content-between align-items-center w-100 cursor-pointer"
+                                                     data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">
+                                                    <span class="text-dark fw-medium">{{ $previewText }}</span>
+                                                    <span class="badge bg-label-secondary rounded-pill ms-2"><i class="ri ri-arrow-down-wide-line"></i></span>
+                                                </div>
+                                                <div class="collapse w-100 mt-2" id="{{ $collapseId }}">
+                                                    <div class="p-2 bg-lighter rounded-3">
+                                                        @if($hasMultiple)
+                                                            <ul class="list-unstyled mb-0 ps-1">
+                                                                @foreach($notesList as $note)
+                                                                    <li class="d-flex align-items-start mb-1 text-muted small">
+                                                                        <i class="ri ri-arrow-right-s-fill text-primary me-1"></i>
+                                                                        <span class="text-wrap" style="white-space: normal;">{{ $note }}</span>
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        @else
+                                                            <p class="mb-0 text-muted small text-wrap" style="white-space: normal;">{{ $history->notes }}</p>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <span class="text-dark fw-medium text-wrap" style="white-space: normal;">{{ $history->notes }}</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="d-flex align-items-center border-top pt-2">
                                         <div class="avatar avatar-xs me-2">
-                                            <img src="{{ $history->changer && $history->changer->img ? asset('storage/' . $history->changer->img) : strtoupper(substr($history->changer->name ?? 'S', 0, 1)) }}"
-                                                alt="Avatar" class="rounded-circle" />
-                                            {{-- @else
-                                                <span
-                                                    class="avatar-initial rounded-circle bg-label-secondary">{{ strtoupper(substr($history->creator->name ?? 'S', 0, 1)) }}</span>
-                                            @endif --}}
+                                            <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle shadow-sm" style="object-fit:cover;" />
                                         </div>
-                                        <span>Oleh: <span
-                                                class="fw-medium">{{ $history->changer->name ?? 'Sistem' }}</span></span>
+                                        <small class="text-muted">Aktor: <span class="fw-bold text-dark">{{ $uName }}</span></small>
                                     </div>
                                 </div>
-                                <div class="timeline-event-time">
-                                    {{ $history->created_at->translatedFormat('d M y, H:i') }}
+                                <div class="timeline-event-time fw-bold text-muted" style="font-size:0.75rem;">
+                                    {{ $history->created_at->translatedFormat('d M Y, H:i') }}
                                 </div>
                             </div>
                         </li>
                     @empty
                         <li class="timeline-item timeline-item-transparent">
-                            <span class="timeline-indicator timeline-indicator-secondary"><i
-                                    class="icon-base ri-information-line"></i></span>
+                            <span class="timeline-indicator timeline-indicator-secondary"><i class="ri icon-base ri-information-line"></i></span>
                             <div class="timeline-event">
                                 <p class="text-center text-muted">Belum ada riwayat tercatat untuk perjanjian ini.</p>
                             </div>
@@ -141,14 +181,16 @@
             </div>
         </div>
     @else
-        <div class="card">
+        <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-6">
-                <i class="ri-history-line ri-48px text-muted"></i>
-                <p class="mt-4 text-muted">Silakan pilih sebuah perjanjian untuk melihat timeline historinya.</p>
+                <div class="avatar avatar-xl mx-auto mb-3">
+                    <span class="avatar-initial rounded-circle bg-label-primary"><i class="ri ri-history-line ri-2x"></i></span>
+                </div>
+                <h5 class="fw-bold text-dark">Ruang Rekam Jejak</h5>
+                <p class="mb-0 text-muted">Silakan cari dan pilih Nomor PKS pada filter di atas untuk melihat seluruh perjalanan sejarah kontrak.</p>
             </div>
         </div>
     @endif
-    </div>
 @endsection
 
 @push('vendors-js')
@@ -164,11 +206,18 @@
                 select2.each(function() {
                     var $this = $(this);
                     $this.wrap('<div class="position-relative"></div>').select2({
-                        placeholder: 'Cari berdasarkan No. PKS atau Nama Korlap...',
-                        dropdownParent: $this.parent()
+                        placeholder: 'Ketik No PKS atau Nama Korlap...',
+                        dropdownParent: $this.parent(),
+                        language: { noResults: () => "Perjanjian tidak ditemukan" }
                     });
                 });
             }
+
+            // Aktifkan Tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
         });
     </script>
 @endpush

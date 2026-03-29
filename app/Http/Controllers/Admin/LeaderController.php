@@ -8,47 +8,46 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\LeaderHistory;
 
 class LeaderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request) // Tambahkan Request $request
+    public function index(Request $request)
     {
-        // Ambil query pencarian dari request
         $search = $request->input('search');
+        $tab    = $request->input('tab', 'active'); // Default tab aktif
 
-        // Mulai query Leader dengan eager loading user
         $query = Leader::with('user');
 
-        // Terapkan filter pencarian jika ada
+        // ✅ LOGIKA TAB IS_ACTIVE
+        if ($tab === 'active') {
+            $query->whereHas('user', function ($q) { $q->where('is_active', true); });
+        } elseif ($tab === 'inactive') {
+            $query->whereHas('user', function ($q) { $q->where('is_active', false); });
+        }
+
         if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
                     ->orWhere('username', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
-            })->orWhere('employee_number', 'like', '%' . $search . '%')
-                ->orWhere('position', 'like', '%' . $search . '%'); // Jika ada kolom position di Leader
+            })->orWhere('employee_number', 'like', '%' . $search . '%');
         }
 
-        // Ambil data leader dengan paginasi (misal 10 per halaman)
-        // Pastikan untuk mengurutkan data agar konsisten
         $leaders = $query->latest()->paginate(10);
 
-        // Kirimkan query pencarian ke view agar input search tetap terisi
-        return view('admin.leaders.index', compact('leaders', 'search'));
-    }
+        // ✅ HITUNG TOTAL UNTUK BADGE
+        $countAll = Leader::count();
+        $countActive = Leader::whereHas('user', function ($q) { $q->where('is_active', true); })->count();
+        $countInactive = Leader::whereHas('user', function ($q) { $q->where('is_active', false); })->count();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.leaders.create');
+        return view('admin.leaders.index', compact('leaders', 'search', 'tab', 'countAll', 'countActive', 'countInactive'));
     }
 
     /**
@@ -56,65 +55,52 @@ class LeaderController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info('LeaderController@store: Request received.', $request->all());
-
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|regex:/^[a-z0-9_-]+$/',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed|not_regex:/\s/',
-            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:300',
+            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'employee_number' => 'required|string|max:18|unique:leaders,employee_number',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        Log::info('LeaderController@store: Validation successful.', $validatedData);
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'username' => $validatedData['username'],
+                'email' => $validatedData['email'],
+                'password' => Hash::make($validatedData['password']),
+                'role' => 'leader',
+                'is_active' => true // Default aktif
+            ]);
 
-        $user = User::create([
-            'name' => $validatedData['name'],
-            'username' => $validatedData['username'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']),
-            'role' => 'leader',
-        ]);
+            // ✅ LOGIKA EKSKLUSIF: Otomatis nonaktifkan semua Pimpinan lama karena ada Pimpinan baru
+            User::where('role', 'leader')->where('id', '!=', $user->id)->update(['is_active' => false]);
 
-        Log::info('LeaderController@store: User created with ID ' . $user->id);
+            if ($request->hasFile('img')) {
+                $imgaName = time() . '_userLeader.' . $request->img->extension();
+                $path = $request->file('img')->storeAs('uploads/users', $imgaName, 'public');
+                $user->img = $path;
+                $user->save();
+            }
 
-        if ($request->hasFile('img')) {
-            $imgaName = time() . '_userLeader.' . $request->img->extension();
-            $path = $request->file('img')->storeAs('uploads/users', $imgaName, 'public');
-            $user->img = $path;
-            $user->save();
+            Leader::create([
+                'user_id' => $user->id,
+                'employee_number' => $validatedData['employee_number'],
+                'start_date' => $validatedData['start_date'],
+                'end_date' => $validatedData['end_date'],
+            ]);
+
+            DB::commit();
+            return redirect()->route('admin.leaders.index')->with('success', 'Pimpinan baru berhasil ditambahkan dan otomatis menjadi Pimpinan Aktif!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('LeaderController@store Error: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal menambahkan pimpinan. Terjadi kesalahan sistem.');
         }
-        $leader = Leader::create([
-            'user_id' => $user->id,
-            'employee_number' => $validatedData['employee_number'],
-            'start_date' => $validatedData['start_date'],
-            'end_date' => $validatedData['end_date'],
-        ]);
-
-        Log::info('LeaderController@store: Leader created with ID ' . $leader->id);
-
-        return redirect()->route('admin.leaders.index')
-            ->with('success', 'Pimpinan baru berhasil ditambahkan!')
-            ->with('leader_name', $user->name);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Leader $leader)
-    {
-        return view('admin.leaders.show', compact('leader'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Leader $leader)
-    {
-        return view('admin.leaders.edit', compact('leader'));
     }
 
     /**
@@ -122,71 +108,100 @@ class LeaderController extends Controller
      */
     public function update(Request $request, Leader $leader)
     {
-        Log::info('LeaderController@update: Request received for leader ID ' . $leader->id);
-
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('users', 'username')->ignore($leader->user_id),
-                'regex:/^[a-z0-9_-]+$/',
-            ],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($leader->user_id),
-            ],
+            'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($leader->user_id), 'regex:/^[a-z0-9_-]+$/'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($leader->user_id)],
             'password' => 'nullable|string|min:8|confirmed|not_regex:/\s/',
-            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:300',
-            'employee_number' => [
-                'required',
-                'string',
-                'max:18',
-                Rule::unique('leaders', 'employee_number')->ignore($leader->id),
-            ],
+            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'employee_number' => ['required', 'string', 'max:18', Rule::unique('leaders', 'employee_number')->ignore($leader->id)],
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        Log::info('LeaderController@update: Validation successful for leader ID ' . $leader->id);
+        DB::beginTransaction();
+        try {
+            $leader->user->name = $validatedData['name'];
+            $leader->user->username = $validatedData['username'];
+            $leader->user->email = $validatedData['email'];
 
-        $leader->user->name = $validatedData['name'];
-        $leader->user->username = $validatedData['username'];
-        $leader->user->email = $validatedData['email'];
-        if ($request->filled('password')) {
-            $leader->user->password = Hash::make($validatedData['password']);
-        }
+            if ($request->filled('password')) {
+                $leader->user->password = Hash::make($validatedData['password']);
+            }
 
-        if ($request->hasFile('img')) {
-            try {
-                if ($leader->user->img) {
+            if ($request->hasFile('img')) {
+                if ($leader->user->img && Storage::disk('public')->exists($leader->user->img)) {
                     Storage::disk('public')->delete($leader->user->img);
                 }
                 $imageName = time() . '_userLeader.' . $request->img->extension();
                 $path = $request->file('img')->storeAs('uploads/users', $imageName, 'public');
                 $leader->user->img = $path;
-            } catch (\Exception $e) {
-                Log::error('LeaderController@update: Error moving new image: ' . $e->getMessage());
-                return redirect()->back()->withInput()->with('error', 'Gagal mengunggah gambar: ' . $e->getMessage());
             }
+
+            $leader->user->save();
+
+            $leader->employee_number = $validatedData['employee_number'];
+            $leader->start_date = $validatedData['start_date'];
+            $leader->end_date = $validatedData['end_date'];
+            $leader->save();
+
+            DB::commit();
+            return redirect()->route('admin.leaders.index')->with('success', 'Data pimpinan berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('LeaderController@update Error: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data pimpinan.');
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Request $request, Leader $leader)
+    {
+        // 1. Dapatkan daftar tahun...
+        $availableYears = $leader->agreements()
+            ->selectRaw('YEAR(start_date) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        if ($availableYears->isEmpty()) {
+            $availableYears = collect([now()->year]);
         }
 
-        $leader->user->save();
+        // 2. Tangkap tahun yang dipilih...
+        $selectedYear = $request->input('year', $availableYears->first());
 
-        $leader->employee_number = $validatedData['employee_number'];
-        $leader->start_date = $validatedData['start_date'];
-        $leader->end_date = $validatedData['end_date'];
-        $leader->save();
+        // 3. Ambil data PKS HANYA untuk tahun yang dipilih...
+        $agreementsInYear = $leader->agreements()
+            ->whereYear('start_date', $selectedYear)
+            ->with(['fieldCoordinator.user'])
+            ->orderBy('start_date', 'desc')
+            ->get();
 
-        Log::info('LeaderController@update: Leader data updated for ID ' . $leader->id);
+        // 4. Pisahkan Aktif dan Riwayat
+        $activeAgreements = $agreementsInYear->whereIn('status', ['active', 'pending_renewal']);
+        $historyAgreements = $agreementsInYear->whereNotIn('status', ['active', 'pending_renewal']);
 
-        return redirect()->route('admin.leaders.index')
-            ->with('success', 'Data pimpinan berhasil diperbarui!')
-            ->with('leader_name', $leader->user->name);
+        // 5. Kalkulasi Statistik
+        $totalAgreementsCount = $agreementsInYear->count();
+        $activeAgreementsCount = $activeAgreements->count();
+
+        // ✅ TAMBAHKAN RELASI 'histories' DI SINI
+        $leader->load(['user', 'histories' => function($q) {
+            $q->orderBy('start_date', 'desc'); // Urutkan riwayat dari yang paling baru
+        }]);
+
+        return view('admin.leaders.show', compact(
+            'leader',
+            'availableYears',
+            'selectedYear',
+            'activeAgreements',
+            'historyAgreements',
+            'totalAgreementsCount',
+            'activeAgreementsCount'
+        ));
     }
 
     /**
@@ -194,21 +209,84 @@ class LeaderController extends Controller
      */
     public function destroy(Leader $leader)
     {
-        Log::info('LeaderController@destroy: Attempting to delete leader ID ' . $leader->id);
-
-        try {
-            if ($leader->user->img) {
-                Storage::disk('public')->delete($leader->user->image);
-                Log::info('LeaderController@destroy: User image deleted: ' . $leader->user->img);
-            }
-            $leader->user->delete();
-            $leader->delete();
-            Log::info('LeaderController@destroy: Leader and associated user soft deleted for ID ' . $leader->id);
-        } catch (\Exception $e) {
-            Log::error('LeaderController@destroy: Error deleting leader or user: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menghapus pimpinan: ' . $e->getMessage());
+        // ✅ GERBANG AUDIT (SMART DELETE)
+        if ($leader->agreements()->count() > 0) {
+            return redirect()->back()->with('error', 'TIDAK BISA DIHAPUS! Pimpinan ini memiliki riwayat menandatangani PKS. Demi audit, data harus dipertahankan.');
         }
 
-        return redirect()->route('admin.leaders.index')->with('success', 'Pimpinan berhasil dihapus!');
+        try {
+            if ($leader->user && $leader->user->img) {
+                if(Storage::disk('public')->exists($leader->user->img)){
+                    Storage::disk('public')->delete($leader->user->img);
+                }
+            }
+            $user = $leader->user;
+            $leader->delete();
+            if($user) $user->delete();
+
+        } catch (\Exception $e) {
+            Log::error('LeaderController@destroy Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus pimpinan.');
+        }
+
+        return redirect()->route('admin.leaders.index')->with('success', 'Data pimpinan berhasil dihapus permanen.');
+    }
+
+    /**
+     * Mengubah status is_active Pimpinan.
+     * Jika diaktifkan, SEMUA pimpinan lain akan otomatis dinonaktifkan.
+     */
+    public function toggleStatus(Request $request, Leader $leader)
+    {
+        $user = $leader->user;
+        $isDeactivating = $user->is_active;
+
+        DB::beginTransaction();
+        try {
+            if ($isDeactivating) {
+                // ✅ 1. PROSES PURNA TUGAS (NONAKTIF)
+                $request->validate(['end_date' => 'required|date']);
+
+                // Tutup masa jabatannya saat ini
+                $leader->update(['end_date' => $request->end_date]);
+                $user->update(['is_active' => false]);
+
+                $msg = "Pimpinan berhasil dipurna-tugaskan (Nonaktif).";
+            } else {
+                // ✅ 2. PROSES MENJABAT KEMBALI (AKTIF)
+                $request->validate([
+                    'start_date' => 'required|date',
+                    'status_jabatan' => 'required|in:tetap,plt,plh'
+                ]);
+
+                // A. Arsipkan masa jabatan lama ke tabel history (Mesin Waktu)
+                LeaderHistory::create([
+                    'leader_id' => $leader->id,
+                    'status_jabatan' => $leader->status_jabatan ?? 'tetap',
+                    'start_date' => $leader->start_date,
+                    'end_date' => $leader->end_date ?? now()->toDateString(),
+                ]);
+
+                // B. Timpa data di tabel leader dengan masa jabatan BARU
+                $leader->update([
+                    'status_jabatan' => $request->status_jabatan,
+                    'start_date' => $request->start_date,
+                    'end_date' => null // Buka kembali masa jabatan
+                ]);
+
+                // C. Lengserkan pimpinan lain yang sedang aktif
+                User::where('role', 'leader')->where('id', '!=', $user->id)->update(['is_active' => false]);
+
+                $user->update(['is_active' => true]);
+                $msg = "Pimpinan berhasil menjabat kembali sebagai " . strtoupper($request->status_jabatan) . " !";
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', $msg);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Toggle Status Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses status jabatan.');
+        }
     }
 }

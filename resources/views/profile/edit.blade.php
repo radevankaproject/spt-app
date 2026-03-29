@@ -62,7 +62,7 @@
                         @method('patch')
 
                         <div class="d-flex align-items-start align-items-sm-center gap-6">
-                            <img src="{{ Auth::user()->img ? asset('storage/' . Auth::user()->img) : asset('assets/img/avatars/default.png') }}"
+                            <img src="{{ Auth::user()->img ? asset('storage/' . Auth::user()->img) : asset('assets/img/avatars/1.png') }}"
                                 alt="Foto Profil" class="d-block w-px-100 h-px-100 rounded-circle"
                                 style="object-fit: cover;" id="uploadedAvatar" />
                             <div class="button-wrapper">

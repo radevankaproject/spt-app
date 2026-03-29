@@ -8,7 +8,6 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
 @endpush
 
 @section('content')
@@ -25,139 +24,129 @@
     </div>
 
     {{-- Filter Card --}}
-    <div class="card mb-6">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Filter Laporan</h5>
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header border-bottom pb-3">
+            <h5 class="card-title mb-0"><i class="ri ri-filter-3-line me-1"></i> Filter Laporan Keuangan</h5>
         </div>
-        <div class="card-body">
-            <form action="{{ route('masterdata.deposit-reports.index') }}" method="GET" id="report-filter-form">
+        <div class="card-body pt-4">
+            <form action="{{ route('masterdata.deposit-reports.index') }}" method="GET">
                 <div class="row g-4">
-                    {{-- Tipe Laporan --}}
                     <div class="col-md-3">
-                        <label for="report_type" class="form-label">Tipe Laporan</label>
+                        <label for="report_type" class="form-label fw-medium">Tipe Laporan</label>
                         <select name="report_type" id="report_type" class="form-select">
-                            <option value="daily" @selected(($reportType ?? 'daily') == 'daily')>Harian</option>
-                            <option value="monthly" @selected(($reportType ?? '') == 'monthly')>Bulanan</option>
-                            <option value="yearly" @selected(($reportType ?? '') == 'yearly')>Tahunan</option>
-                            <option value="custom_range" @selected(($reportType ?? '') == 'custom_range')>Rentang Waktu</option>
+                            <option value="monthly" @selected(($reportType ?? 'monthly') == 'monthly')>Rekap Bulanan</option>
+                            <option value="yearly" @selected(($reportType ?? '') == 'yearly')>Rekap Tahunan</option>
                         </select>
                     </div>
 
-                    {{-- Filter Harian --}}
-                    <div class="col-md-3 filter-group" id="daily-filter">
-                        <label for="specific_date" class="form-label">Pilih Tanggal</label>
-                        {{-- ✅ INPUT DIUBAH DARI type="date" MENJADI type="text" --}}
-                        <input type="text" name="specific_date" id="specific_date" class="form-control"
-                            placeholder="YYYY-MM-DD" value="{{ $specificDate ?? date('Y-m-d') }}">
-                    </div>
-
-                    {{-- Filter Bulanan --}}
                     <div class="col-md-3 filter-group" id="monthly-filter">
-                        <label for="specific_month" class="form-label">Pilih Bulan</label>
+                        <label for="specific_month" class="form-label fw-medium">Pilih Bulan</label>
                         <select name="specific_month" id="specific_month" class="form-select">
                             @for ($m = 1; $m <= 12; $m++)
                                 <option value="{{ sprintf('%02d', $m) }}" @selected(($specificMonth ?? date('m')) == sprintf('%02d', $m))>
-                                    {{ Carbon\Carbon::createFromDate(null, $m, 1)->translatedFormat('F') }}</option>
+                                    {{ \Carbon\Carbon::createFromDate(null, $m, 1)->translatedFormat('F') }}
+                                </option>
                             @endfor
                         </select>
                     </div>
 
-                    {{-- Filter Tahunan --}}
-                    <div class="col-md-2 filter-group" id="yearly-filter">
-                        <label for="specific_year" class="form-label">Pilih Tahun</label>
-                        <input type="number" name="specific_year" id="specific_year" min="2020"
-                            max="{{ date('Y') + 5 }}" class="form-control" value="{{ $specificYear ?? date('Y') }}">
+                    <div class="col-md-3 filter-group" id="yearly-filter">
+                        <label for="specific_year" class="form-label fw-medium">Pilih Tahun</label>
+                        <input type="number" name="specific_year" id="specific_year" min="2020" max="{{ date('Y') + 5 }}" class="form-control" value="{{ $specificYear ?? date('Y') }}">
                     </div>
 
-                    {{-- Filter Rentang Waktu --}}
-                    <div class="col-md-4 filter-group" id="custom-range-filter">
-                        <label class="form-label">Pilih Rentang Tanggal</label>
-                        <div class="input-group">
-                             {{-- ✅ INPUT DIUBAH DARI type="date" MENJADI type="text" --}}
-                            <input type="text" name="start_date" id="start_date" class="form-control"
-                                placeholder="YYYY-MM-DD" value="{{ $startDate ?? '' }}">
-                            <span class="input-group-text">s/d</span>
-                             {{-- ✅ INPUT DIUBAH DARI type="date" MENJADI type="text" --}}
-                            <input type="text" name="end_date" id="end_date" class="form-control"
-                                placeholder="YYYY-MM-DD" value="{{ $endDate ?? '' }}">
+                    <div class="col-md-3">
+                        <label for="search" class="form-label fw-medium">Cari No. PKS</label>
+                        <div class="input-group input-group-merge">
+                            <span class="input-group-text"><i class="ri ri-search-line"></i></span>
+                            <input type="text" name="search" placeholder="Contoh: PKS/01..." class="form-control" value="{{ $search ?? '' }}">
                         </div>
                     </div>
-                </div>
-                <div class="row g-4 mt-1">
-                    {{-- Filter Koordinator & Pencarian Umum (Tidak berubah) --}}
-                    <div class="col-md-6">
-                        <label for="field_coordinator_id" class="form-label">Filter Koordinator</label>
+
+                    <div class="col-md-12 mt-3">
+                        <label for="field_coordinator_id" class="form-label fw-medium">Filter Koordinator Lapangan</label>
                         <select name="field_coordinator_id" id="field_coordinator_id" class="form-select select2">
-                            <option value="">Semua Koordinator</option>
+                            <option value="">-- Semua Koordinator Lapangan --</option>
                             @foreach ($fieldCoordinators as $fc)
-                                <option value="{{ $fc->id }}" @selected(($fieldCoordinatorId ?? '') == $fc->id)>
-                                    {{ $fc->user->name ?? 'N/A' }}
-                                </option>
+                                <option value="{{ $fc->id }}" @selected(($fieldCoordinatorId ?? '') == $fc->id)>{{ $fc->user->name ?? 'N/A' }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label for="search" class="form-label">Cari No. PKS</label>
-                        <input type="text" name="search" id="search" placeholder="Cari berdasarkan nomor PKS..."
-                            class="form-control" value="{{ $search ?? '' }}">
-                    </div>
                 </div>
-                <div class="pt-4 text-end">
-                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary">Reset Filter</a>
-                    <button type="submit" class="btn btn-primary me-2">Tampilkan Laporan</button>
-                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-outline-danger">
-                        <i class="icon-base ri ri-printer-line me-2"></i>Cetak PDF
-                    </button>
+
+                <div class="pt-4 text-end border-top mt-4">
+                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary me-2"><i class="ri ri-refresh-line me-1"></i> Reset</a>
+                    <button type="submit" class="btn btn-primary me-2"><i class="ri ri-search-eye-line me-1"></i> Tampilkan</button>
+                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-danger"><i class="ri ri-file-pdf-2-line me-1"></i> Cetak PDF</button>
                 </div>
             </form>
         </div>
     </div>
 
     {{-- Hasil Laporan --}}
-    <div class="card mt-6">
-        <div class="card-header">
-            <h5 class="card-title mb-0">{{ $reportTitle }}</h5>
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header border-bottom pb-3">
+            <h5 class="card-title mb-0 text-primary">{{ $reportTitle }}</h5>
         </div>
-        <div class="card-body">
+
+        <div class="card-body border-bottom pt-4 pb-4 bg-lighter">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0"><i class="ri ri-line-chart-line me-1"></i> {{ $chartTitle }}</h6>
+                <span class="badge bg-label-primary px-3 py-2"><i class="ri ri-calendar-todo-line me-1"></i> Periode: {{ $reportType == 'yearly' ? 'Tahunan' : 'Bulanan' }}</span>
+            </div>
+            <div style="height: 350px; width: 100%;">
+                <canvas id="reportChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card-body pt-3">
             <div class="table-responsive text-nowrap">
-                <table class="table table-hover">
-                    <thead class="table-light">
+                <table class="table table-hover table-striped">
+                    <thead class="table-primary">
                         <tr>
-                            <th>No. PKS</th>
-                            <th>Koordinator</th>
-                            <th>Tgl Setor</th>
-                            <th class="text-end">Jumlah (Rp)</th>
-                            <th class="text-center">Status</th>
+                            <th class="fw-bold">No. Dokumen PKS</th>
+                            <th class="fw-bold">Koordinator</th>
+                            <th class="fw-bold">Tgl Pembayaran</th>
+                            <th class="text-end fw-bold">Nilai Setoran (Rp)</th>
+                            <th class="text-center fw-bold">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($reports as $report)
                             <tr>
-                                <td><span class="fw-medium">{{ $report->agreement->agreement_number ?? 'N/A' }}</span>
-                                </td>
+                                <td><span class="fw-medium text-primary">{{ $report->agreement->agreement_number ?? 'N/A' }}</span></td>
                                 <td>{{ $report->agreement->fieldCoordinator->user->name ?? 'N/A' }}</td>
                                 <td>{{ $report->deposit_date->format('d M Y') }}</td>
-                                <td class="text-end">{{ number_format($report->amount, 0, ',', '.') }}</td>
+                                <td class="text-end fw-medium text-success">{{ number_format($report->amount, 0, ',', '.') }}</td>
                                 <td class="text-center">
                                     @if ($report->is_validated)
-                                        <span class="badge rounded-pill bg-label-success">Tervalidasi</span>
+                                        <span class="badge rounded-pill bg-label-success px-3"><i class="ri ri-check-double-line me-1"></i> Sah</span>
                                     @else
-                                        <span class="badge rounded-pill bg-label-warning">Pending</span>
+                                        <span class="badge rounded-pill bg-label-warning px-3"><i class="ri ri-time-line me-1"></i> Pending</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4">Tidak ada data setoran untuk filter yang
-                                    dipilih.</td>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="ri ri-inbox-2-line ri-3x mb-2 d-block"></i> Tidak ada data setoran.
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
-                    <tfoot class="table-light">
-                        <tr>
-                            <td colspan="3" class="text-end fw-medium">Total Setoran Tervalidasi</td>
-                            <td class="text-end fw-medium">Rp {{ number_format($totalAmount, 0, ',', '.') }}</td>
+                    <tfoot class="border-top">
+                        <tr class="bg-lighter">
+                            <td colspan="3" class="text-end fw-bold fs-6">TARGET PROYEKSI PENDAPATAN:</td>
+                            <td class="text-end fw-bold fs-6 text-warning">Rp {{ number_format($totalTargetAmount, 0, ',', '.') }}</td>
                             <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold fs-5">TOTAL SETORAN (SAH):</td>
+                            <td class="text-end fw-bold fs-4 text-primary">Rp {{ number_format($totalAmount, 0, ',', '.') }}</td>
+                            <td class="text-center fw-bold fs-5 {{ $percentage >= 100 ? 'text-success' : 'text-danger' }}">
+                                {{ $percentage }}%
+                                <i class="ri {{ $percentage >= 100 ? 'ri-arrow-up-line text-success' : 'ri-arrow-down-line text-danger' }}"></i>
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
@@ -168,46 +157,98 @@
 
 @push('vendors-js')
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endpush
 
 @push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Inisialisasi Select2
             $('.select2').each(function() {
-                $(this).wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Pilih Koordinator',
-                    allowClear: true,
-                    dropdownParent: $(this).parent()
-                });
+                $(this).wrap('<div class="position-relative"></div>').select2({ placeholder: '-- Cari atau Pilih Korlap --', allowClear: true, dropdownParent: $(this).parent() });
             });
 
-            flatpickr("#specific_date", { dateFormat: "Y-m-d" });
-            flatpickr("#start_date", { dateFormat: "Y-m-d" });
-            flatpickr("#end_date", { dateFormat: "Y-m-d" });
-
-            // Logika untuk menampilkan/menyembunyikan filter
             const reportTypeSelect = document.getElementById('report_type');
-            const filters = {
-                daily: ['daily-filter'],
-                monthly: ['monthly-filter', 'yearly-filter'],
-                yearly: ['yearly-filter'],
-                custom_range: ['custom-range-filter']
-            };
-
             function toggleFilterVisibility() {
-                const selectedType = reportTypeSelect.value;
-                // Sembunyikan semua filter group
-                document.querySelectorAll('.filter-group').forEach(el => el.style.display = 'none');
-                // Tampilkan filter yang relevan
-                if (filters[selectedType]) {
-                    filters[selectedType].forEach(id => document.getElementById(id).style.display = 'block');
+                document.getElementById('monthly-filter').style.display = (reportTypeSelect.value === 'yearly') ? 'none' : 'block';
+            }
+            reportTypeSelect.addEventListener('change', toggleFilterVisibility);
+            toggleFilterVisibility();
+
+            // ✅ MIXED CHART.JS (BAR + DYNAMIC LINE)
+            const ctx = document.getElementById('reportChart');
+            if (ctx) {
+                const labels = {!! $chartLabels !!};
+                const actualData = {!! $chartValues !!};
+                const targetData = {!! $chartTargets !!}; // Ini kosong kalau bulanan
+                const hasData = actualData.some(val => val > 0) || (targetData.length > 0 && targetData.some(val => val > 0));
+
+                if (labels.length > 0 && hasData) {
+
+                    // Kita build dataset secara dinamis
+                    let datasets = [];
+
+                    // Jika ada data target (Mode Tahunan), tambahkan dataset garis!
+                    if (targetData.length > 0) {
+                        datasets.push({
+                            type: 'line',
+                            label: 'Target (Rp)',
+                            data: targetData,
+                            borderColor: 'rgba(255, 171, 0, 1)', // Warna Kuning/Oranye
+                            backgroundColor: 'rgba(255, 171, 0, 0.15)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(255, 171, 0, 1)',
+                            pointRadius: 4,
+                            tension: 0.3,
+                            fill: true,
+                            order: 1 // Muncul di atas Bar
+                        });
+                    }
+
+                    // Dataset Bar Actual selalu ada (Tahunan maupun Bulanan)
+                    datasets.push({
+                        type: 'bar',
+                        label: 'Total Setoran Sah (Rp)',
+                        data: actualData,
+                        backgroundColor: 'rgba(105, 108, 255, 0.85)', // Warna Primary Biru
+                        hoverBackgroundColor: 'rgba(105, 108, 255, 1)',
+                        borderRadius: 6,
+                        barPercentage: 0.5,
+                        order: 2
+                    });
+
+                    new Chart(ctx.getContext('2d'), {
+                        data: {
+                            labels: labels,
+                            datasets: datasets
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'top', align: 'start' },
+                                tooltip: {
+                                    callbacks: { label: function(context) { return ' Rp ' + new Intl.NumberFormat('id-ID').format(context.raw); } }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            if (value === 0) return 'Rp 0';
+                                            if (value >= 1000000) return 'Rp ' + (value / 1000000) + ' Jt';
+                                            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                                        }
+                                    },
+                                    grid: { borderDash: [4, 4], color: '#ebebeb' }
+                                },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                } else {
+                    ctx.parentElement.innerHTML = '<div class="d-flex h-100 align-items-center justify-content-center text-muted"><div class="text-center"><i class="ri ri-bar-chart-2-line ri-3x mb-2"></i><br>Belum ada data setoran yang tervalidasi atau Target belum diatur</div></div>';
                 }
             }
-
-            reportTypeSelect.addEventListener('change', toggleFilterVisibility);
-            toggleFilterVisibility(); // Panggil saat halaman dimuat
         });
     </script>
 @endpush

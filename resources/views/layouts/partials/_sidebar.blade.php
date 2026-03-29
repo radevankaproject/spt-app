@@ -3,8 +3,7 @@
         <a href="{{ route('dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
                 {{-- ✅ LOGO DIAMBIL DARI PROFIL UPT --}}
-                <img src="{{ asset('logo.png') }}"
-                    alt="Logo" height="35">
+                <img src="{{ asset('logo.png') }}" alt="Logo" height="35">
             </span>
             <span class="app-brand-text demo menu-text fw-bold">
                 {{-- ✅ NAMA APLIKASI DIAMBIL DARI PROFIL UPT --}}
@@ -69,6 +68,10 @@
                     <li class="menu-item {{ request()->routeIs('admin.leaders.*') ? 'active' : '' }}"><a
                             href="{{ route('admin.leaders.index') }}" class="menu-link">
                             <div>Leader</div>
+                        </a></li>
+                    <li class="menu-item {{ request()->routeIs('admin.treasurers.*') ? 'active' : '' }}"><a
+                            href="{{ route('admin.treasurers.index') }}" class="menu-link">
+                            <div>Bendahara</div>
                         </a></li>
                     <li class="menu-item {{ request()->routeIs('admin.field-coordinators.*') ? 'active' : '' }}"><a
                             href="{{ route('admin.field-coordinators.index') }}" class="menu-link">

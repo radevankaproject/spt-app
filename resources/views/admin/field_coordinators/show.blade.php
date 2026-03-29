@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Koordinator: ' . $fieldCoordinator->user->name)
+@section('title', 'Portofolio Koordinator: ' . $fieldCoordinator->user->name)
 
 @section('skeleton')
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -10,159 +10,188 @@
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
+
+        {{-- ✅ FILTER TAHUN (Nav Pills Premium) --}}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">Rapor & Portofolio Koordinator</h4>
+                <p class="text-muted mb-0">Memantau kinerja kontrak berdasarkan tahun anggaran.</p>
+            </div>
+            <div>
+                <ul class="nav nav-pills flex-nowrap overflow-auto hide-scrollbar" style="white-space: nowrap;">
+                    @foreach($availableYears as $year)
+                        <li class="nav-item me-2">
+                            <a class="nav-link {{ $year == $selectedYear ? 'active shadow-sm' : 'bg-white border' }}"
+                               href="{{ route('admin.field-coordinators.show', ['field_coordinator' => $fieldCoordinator->id, 'year' => $year]) }}">
+                               <i class="ri ri-calendar-line me-1"></i> Tahun {{ $year }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+
         <div class="row">
+            {{-- KOLOM KIRI: PROFIL & STATISTIK --}}
             <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
-                <div class="card mb-6">
-                    <div class="card-body pt-12">
-                        <div class="user-avatar-section">
-                            <div class="d-flex align-items-center flex-column">
-                                @if ($fieldCoordinator->user && $fieldCoordinator->user->img)
-                                    <img class="img-fluid rounded-3 mb-4"
-                                        src="{{ asset('storage/' . $fieldCoordinator->user->img) }}" height="120"
-                                        width="120" alt="User avatar" />
-                                @else
-                                    <div class="avatar avatar-xl mb-4">
-                                        <span
-                                            class="avatar-initial rounded-3 bg-label-warning">{{ strtoupper(substr($fieldCoordinator->user->name ?? 'K', 0, 2)) }}</span>
-                                    </div>
-                                @endif
-                                <div class="user-info text-center">
-                                    <h5 class="mb-2">{{ $fieldCoordinator->user->name }}</h5>
-                                    <span class="badge bg-label-warning rounded-pill">Koordinator Lapangan</span>
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-body pt-5 text-center">
+                        <div class="user-avatar-section mb-4">
+                            @if ($fieldCoordinator->user && $fieldCoordinator->user->img)
+                                <img class="img-fluid rounded-circle shadow-sm" style="object-fit: cover;"
+                                    src="{{ asset('storage/'.$fieldCoordinator->user->img) }}" height="120"
+                                    width="120" alt="Avatar" />
+                            @else
+                                <div class="avatar avatar-xl mx-auto mb-3">
+                                    <span class="avatar-initial rounded-circle bg-label-warning" style="font-size: 2rem;">
+                                        {{ strtoupper(substr($fieldCoordinator->user->name ?? 'K', 0, 2)) }}
+                                    </span>
                                 </div>
+                            @endif
+                            <h5 class="mt-3 mb-1 fw-bold">{{ $fieldCoordinator->user->name }}</h5>
+                            <span class="badge bg-label-warning rounded-pill">Koordinator Lapangan</span>
+                        </div>
+
+                        {{-- ✅ STATISTIK BERDASARKAN TAHUN --}}
+                        <div class="bg-lighter rounded-3 p-3 mb-4 text-start">
+                            <h6 class="fw-bold text-primary mb-3"><i class="ri ri-bar-chart-box-line me-1"></i> Statistik Tahun {{ $selectedYear }}</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Total Kontrak (PKS)</span>
+                                <span class="fw-bold text-dark">{{ $totalAgreementsCount }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Titik Lokasi Dikelola</span>
+                                <span class="fw-bold text-dark">{{ $activeParkingLocationsCount }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between pt-2 border-top">
+                                <span class="text-muted">Total Setoran Masuk</span>
+                                <span class="fw-bold text-success">Rp {{ number_format($totalValidatedDeposit, 0, ',', '.') }}</span>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-around flex-wrap my-6 gap-0 gap-md-3 gap-lg-4">
-                            <div class="d-flex align-items-center me-5 gap-4">
-                                <div class="avatar">
-                                    <div class="avatar-initial bg-label-primary rounded-3">
-                                        <i class="icon-base ri ri-file-text-line ri-24px"></i>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h5 class="mb-0">{{ $activeAgreementsCount }}</h5>
-                                    <span>PKS Aktif</span>
-                                </div>
-                            </div>
-                            {{-- ✅ TAMBAHAN: Jumlah Titik Lokasi --}}
-                            <div class="d-flex align-items-center gap-4">
-                                <div class="avatar">
-                                    <div class="avatar-initial bg-label-primary rounded-3">
-                                        <i class="icon-base ri ri-map-pin-2-line ri-24px"></i>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h5 class="mb-0">{{ $totalParkingLocationsCount }}</h5>
-                                    <span>Titik Lokasi</span>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 class="pb-4 border-bottom mb-4">Details</h5>
-                        <div class="info-container">
-                            <ul class="list-unstyled mb-6">
-                                <li class="mb-2"><span
-                                        class="fw-medium text-heading me-2">Username:</span><span>{{ $fieldCoordinator->user->username }}</span>
-                                </li>
-                                <li class="mb-2"><span
-                                        class="fw-medium text-heading me-2">Email:</span><span>{{ $fieldCoordinator->user->email }}</span>
-                                </li>
-                                <li class="mb-2"><span
-                                        class="fw-medium text-heading me-2">Kontak:</span><span>{{ $fieldCoordinator->phone_number }}</span>
-                                </li>
-                                <li class="mb-2"><span class="fw-medium text-heading me-2">No.
-                                        KTP:</span><span>{{ $fieldCoordinator->id_card_number }}</span></li>
-                                <li class="mb-2"><span
-                                        class="fw-medium text-heading me-2">Alamat:</span><span>{{ $fieldCoordinator->address }}</span>
-                                </li>
-                            </ul>
-                            <div class="d-flex justify-content-center">
-                                <a href="{{ route('admin.field-coordinators.edit', $fieldCoordinator->id) }}"
-                                    class="btn btn-primary me-4">Edit Profil</a>
-                            </div>
+
+                        <h6 class="pb-2 border-bottom text-start mb-3">Informasi Personal</h6>
+                        <ul class="list-unstyled mb-4 text-start small">
+                            <li class="mb-2 d-flex align-items-center"><i class="ri ri-mail-line text-muted me-2"></i> <span>{{ $fieldCoordinator->user->email }}</span></li>
+                            <li class="mb-2 d-flex align-items-center"><i class="ri ri-phone-line text-muted me-2"></i> <span>{{ $fieldCoordinator->phone_number }}</span></li>
+                            <li class="mb-2 d-flex align-items-center"><i class="ri ri-id-card-line text-muted me-2"></i> <span>{{ $fieldCoordinator->id_card_number }}</span></li>
+                            <li class="d-flex align-items-start"><i class="ri ri-map-pin-line text-muted me-2 mt-1"></i> <span>{{ $fieldCoordinator->address }}</span></li>
+                        </ul>
+                        <div class="d-grid gap-2">
+                            <a href="{{ route('admin.field-coordinators.edit', $fieldCoordinator->id) }}" class="btn btn-outline-primary"><i class="ri ri-edit-box-line me-1"></i> Edit Profil</a>
                         </div>
                     </div>
                 </div>
-                {{-- ✅ TAMBAHAN: Kartu Foto KTP --}}
-                <div class="card">
+
+                {{-- KARTU KTP --}}
+                <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h5 class="pb-4 border-bottom mb-4">Foto KTP</h5>
+                        <h6 class="pb-2 border-bottom mb-3"><i class="ri ri-pass-valid-line me-1"></i> Dokumen KTP</h6>
                         @if ($fieldCoordinator->id_card_img)
                             <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#ktpModal">
-                                <img src="{{ asset('storage/' . $fieldCoordinator->id_card_img) }}" alt="Foto KTP"
-                                    class="img-fluid rounded-3">
+                                <img src="{{ asset('storage/'.$fieldCoordinator->id_card_img) }}" alt="Foto KTP"
+                                    class="img-fluid rounded-3 shadow-sm" style="cursor: zoom-in;">
                             </a>
                         @else
-                            <p class="text-muted text-center">Foto KTP tidak tersedia.</p>
+                            <div class="text-center py-4 bg-lighter rounded-3">
+                                <i class="icon-base ri ri-image-line icon-22px"></i>
+                                <small class="text-muted">Belum ada KTP</small>
+                            </div>
                         @endif
                     </div>
                 </div>
             </div>
+
+            {{-- KOLOM KANAN: PORTOFOLIO KONTRAK --}}
             <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
-                <div class="card mb-6">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Daftar Lokasi Parkir Aktif</h5>
+
+                {{-- 1. PKS SEDANG BERJALAN (AKTIF) --}}
+                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ri ri-play-circle-line text-primary me-2"></i> Kontrak Berjalan (Tahun {{ $selectedYear }})</h5>
+                @forelse ($activeAgreements as $pks)
+                    <div class="card mb-4 border-primary border-opacity-25 shadow-sm">
+                        <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <h5 class="mb-0 fw-bold text-primary">{{ $pks->agreement_number }}</h5>
+                                <small class="text-muted">{{ $pks->start_date->translatedFormat('d M Y') }} - {{ $pks->end_date->translatedFormat('d M Y') }}</small>
+                            </div>
+                            <span class="badge bg-{{ $pks->status == 'active' ? 'success' : 'warning' }} rounded-pill px-3">
+                                {{ ucwords(str_replace('_', ' ', $pks->status)) }}
+                            </span>
+                        </div>
+                        <div class="card-body pt-3">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-info"><i class="ri ri-map-pin-user-line"></i></span></div>
+                                        <div>
+                                            <p class="mb-0 fw-medium text-dark">{{ $pks->activeParkingLocations->count() }} Lokasi</p>
+                                            <small class="text-muted">Dikelola saat ini</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-success"><i class="ri ri-money-dollar-circle-line"></i></span></div>
+                                        <div>
+                                            <p class="mb-0 fw-medium text-dark">Rp {{ number_format($pks->total_deposit ?? 0, 0, ',', '.') }}</p>
+                                            <small class="text-muted">Setoran Masuk</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-3 border-top text-end">
+                                <a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="btn btn-sm btn-primary shadow-sm"><i class="ri ri-eye-line me-1"></i> Buka Detail PKS</a>
+                            </div>
+                        </div>
                     </div>
+                @empty
+                    <div class="card mb-5 border-0 shadow-sm bg-lighter">
+                        <div class="card-body text-center py-5">
+                            <i class="ri ri-folder-forbid-line" style="font-size: 3rem;"></i>
+                            <h6 class="fw-bold text-dark">Tidak ada Kontrak Aktif</h6>
+                            <p class="text-muted mb-0">Koordinator ini tidak memiliki PKS yang sedang berjalan di tahun {{ $selectedYear }}.</p>
+                        </div>
+                    </div>
+                @endforelse
+
+                {{-- 2. ARSIP PKS (KEDALUWARSA/DIPUTUS) --}}
+                <h5 class="fw-bold mb-3 mt-5 d-flex align-items-center"><i class="ri ri-archive-drawer-line text-secondary me-2"></i> Riwayat Kontrak Selesai</h5>
+                <div class="card border-0 shadow-sm">
                     <div class="table-responsive text-nowrap">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Nama Lokasi</th>
-                                    <th>Ruas Jalan</th>
-                                    <th>No. PKS Terkait</th>
+                                    <th>No. Dokumen PKS</th>
+                                    <th>Masa Berlaku</th>
+                                    <th>Total Setoran</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @forelse ($activeParkingLocations as $location)
+                            <tbody class="table-border-bottom-0">
+                                @forelse ($historyAgreements as $history)
                                     <tr>
-                                        <td><span class="fw-medium">{{ $location->name }}</span></td>
-                                        <td>{{ $location->roadSection->name ?? 'N/A' }}</td>
-                                        {{-- Cari PKS aktif mana yang memiliki lokasi ini --}}
-                                        @php
-                                            $relatedPKS = $fieldCoordinator->agreements->first(function (
-                                                $agreement,
-                                            ) use ($location) {
-                                                return $agreement->status == 'active' &&
-                                                    $agreement->activeParkingLocations->contains('id', $location->id);
-                                            });
-                                        @endphp
-                                        <td><span
-                                                class="badge bg-label-info">{{ $relatedPKS->agreement_number ?? 'N/A' }}</span>
+                                        <td><span class="fw-bold text-dark">{{ $history->agreement_number }}</span></td>
+                                        <td>
+                                            <small class="d-block text-muted">Mulai: {{ $history->start_date->format('d/m/Y') }}</small>
+                                            <small class="d-block text-danger">Akhir: {{ $history->end_date->format('d/m/Y') }}</small>
+                                        </td>
+                                        <td><span class="fw-medium text-success">Rp {{ number_format($history->total_deposit ?? 0, 0, ',', '.') }}</span></td>
+                                        <td class="text-center">
+                                            <span class="badge bg-label-{{ $history->status == 'expired' ? 'danger' : 'dark' }} rounded-pill">
+                                                {{ ucwords(str_replace('_', ' ', $history->status)) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('masterdata.agreements.show', $history->id) }}" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Lihat Histori">
+                                                <i class="ri ri-arrow-right-circle-line icon-22px"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center">Tidak ada lokasi parkir aktif yang dikelola.
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            Belum ada riwayat kontrak yang selesai di tahun ini.
                                         </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Riwayat Setoran Tervalidasi</h5>
-                    </div>
-                    <div class="table-responsive text-nowrap">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>No. PKS</th>
-                                    <th>Tanggal Setor</th>
-                                    <th>Jumlah</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($allTransactions as $transaction)
-                                    <tr>
-                                        <td><span class="fw-medium">{{ $transaction->agreement->agreement_number }}</span>
-                                        </td>
-                                        <td>{{ $transaction->deposit_date->translatedFormat('d M Y') }}</td>
-                                        <td>Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="text-center">Tidak ada riwayat setoran.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -172,18 +201,40 @@
             </div>
         </div>
 
+        {{-- Modal KTP --}}
         <div class="modal fade" id="ktpModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-dark">
+                        <h5 class="modal-title text-white">Dokumen KTP</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body text-center">
-                        <img src="{{ $fieldCoordinator->id_card_img ? asset('storage/' . $fieldCoordinator->id_card_img) : '' }}"
-                            class="img-fluid" alt="Foto KTP">
+                    <div class="modal-body text-center p-0">
+                        <img src="{{ $fieldCoordinator->id_card_img ? asset('storage/'.$fieldCoordinator->id_card_img) : '' }}"
+                            class="img-fluid w-100" alt="Foto KTP">
                     </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hide scrollbar class untuk nav-pills tahun agar rapi di mobile
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .hide-scrollbar::-webkit-scrollbar { display: none; }
+            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        `;
+        document.head.appendChild(style);
+
+        // Aktifkan Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+@endpush
