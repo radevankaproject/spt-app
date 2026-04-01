@@ -60,14 +60,14 @@
                                 @enderror
                             </div>
                             <div class="col-12">
-                                <div class="form-floating form-floating-outline">
-                                    <textarea class="form-control" id="changelog" name="changelog" placeholder="Masukkan catatan perubahan di sini..."
-                                        style="height: 200px;" required>{{ old('changelog') }}</textarea>
-                                    <label for="changelog">Catatan Perubahan (Changelog)</label>
+                                <div class="mb-2 d-flex justify-content-between align-items-center">
+                                    <label class="fw-bold text-dark">Catatan Perubahan (Changelog)</label>
                                 </div>
-                                <div class="form-text">
-                                    Gunakan format Markdown sederhana. Awali setiap poin dengan tanda hubung (`- `).
+                                <div class="border rounded">
+                                    <div id="editor-container" style="height: 200px;">{!! old('changelog') !!}</div>
                                 </div>
+                                <input type="hidden" id="changelog" name="changelog" required>
+                                <div class="form-text">Sebutkan penambahan fitur atau perbaikan *bug*.</div>
                                 @error('changelog')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
@@ -103,13 +103,9 @@
                                 <h6 class="mb-1"><strong>Versi {{ $version->version }}</strong></h6>
                                 <small class="text-muted">{{ $version->release_date->translatedFormat('d F Y') }}</small>
                             </div>
-                            <ul class="list-unstyled mt-2 mb-0 ps-3">
-                                @foreach (explode("\n", $version->changelog) as $item)
-                                    @if (trim($item))
-                                        <li>{{ trim(str_replace('- ', '', $item)) }}</li>
-                                    @endif
-                                @endforeach
-                            </ul>
+                            <div class="mt-3 text-dark" style="font-size: 0.95rem;">
+                                {!! $version->changelog !!}
+                            </div>
                         </div>
                     @empty
                         <p class="text-center text-muted">Belum ada data versi yang ditambahkan.</p>
@@ -123,3 +119,46 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-editor { min-height: 200px; }
+    .ql-editor ul {
+       padding-left: 1.5rem !important;
+       list-style-type: disc !important;
+    }
+    .ql-editor ol {
+       padding-left: 1.5rem !important;
+       list-style-type: decimal !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
+
+        var form = document.querySelector('form');
+        if (form) {
+            form.onsubmit = function() {
+                var changelogInput = document.querySelector('input[name=changelog]');
+                changelogInput.value = quill.root.innerHTML;
+            };
+        }
+    });
+</script>
+@endpush

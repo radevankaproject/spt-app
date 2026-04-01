@@ -42,7 +42,7 @@ class AppVersionController extends Controller
 
         AppVersion::create($request->all());
         // Membersihkan cache view agar footer yang baru langsung tampil
-        Cache::forget('latest_app_version');
+        Cache::forget('version');
         Artisan::call('view:clear');
 
         return redirect()->route('admin.app-versions.manage')->with('success', 'Versi baru berhasil ditambahkan!');

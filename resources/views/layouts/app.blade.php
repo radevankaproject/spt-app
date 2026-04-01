@@ -60,6 +60,10 @@
         .skeleton-button { height: 38px; width: 120px; }
         .skeleton-avatar { width: 45px; height: 45px; border-radius: 50%; }
         .skeleton-avatar-lg { width: 120px; height: 120px; border-radius: 50%; }
+
+        /* Quill Content Reset */
+        .ql-editor-content ul { padding-left: 1.5rem !important; list-style-type: disc !important; margin-bottom: 1rem; }
+        .ql-editor-content ol { padding-left: 1.5rem !important; list-style-type: decimal !important; margin-bottom: 1rem; }
     </style>
 
     @stack('styles')
@@ -170,23 +174,31 @@
                         .then(data => {
                             let html = '';
                             if (data.length > 0) {
-                                data.forEach(version => {
+                                html += '<div class="accordion" id="changelogAccordion">';
+                                data.forEach((version, index) => {
                                     const releaseDate = new Date(version.release_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                                    const changelogItems = version.changelog.split('\n').map(item => {
-                                        return item.trim().startsWith('- ') ? `<li>${item.trim().substring(2)}</li>` : '';
-                                    }).join('');
+                                    const showClass = index === 0 ? 'show' : '';
+                                    const collapsedClass = index === 0 ? '' : 'collapsed';
+                                    const expanded = index === 0 ? 'true' : 'false';
 
                                     html += `
-                                    <div class="mb-4 pb-4 border-bottom">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h5 class="mb-0 fw-bold text-primary">Versi ${version.version}</h5>
-                                            <small class="badge bg-label-secondary rounded-pill">${releaseDate}</small>
+                                    <div class="accordion-item card mb-2 border shadow-none">
+                                        <h2 class="accordion-header" id="heading-${version.id}">
+                                            <button type="button" class="accordion-button ${collapsedClass}" data-bs-toggle="collapse" data-bs-target="#collapse-${version.id}" aria-expanded="${expanded}" aria-controls="collapse-${version.id}">
+                                                <div class="d-flex justify-content-between align-items-center w-100 pe-3">
+                                                    <span class="fw-bold text-primary fs-6">Versi ${version.version}</span>
+                                                    <small class="badge bg-label-secondary rounded-pill">${releaseDate}</small>
+                                                </div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-${version.id}" class="accordion-collapse collapse ${showClass}" aria-labelledby="heading-${version.id}" data-bs-parent="#changelogAccordion">
+                                            <div class="accordion-body pt-3 text-dark ql-editor-content" style="font-size: 0.95rem;">
+                                                ${version.changelog}
+                                            </div>
                                         </div>
-                                        <ul class="list-unstyled mt-2 mb-0 ps-3 text-muted" style="list-style-type: disc;">
-                                            ${changelogItems}
-                                        </ul>
                                     </div>`;
                                 });
+                                html += '</div>';
                             } else {
                                 html = '<div class="text-center py-4"><i class="ri-file-info-line ri-3x text-muted opacity-50 mb-2"></i><p class="text-muted">Belum ada catatan versi.</p></div>';
                             }
