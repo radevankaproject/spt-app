@@ -55,6 +55,8 @@ class LeaderController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|regex:/^[a-z0-9_-]+$/',
@@ -108,6 +110,8 @@ class LeaderController extends Controller
      */
     public function update(Request $request, Leader $leader)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($leader->user_id), 'regex:/^[a-z0-9_-]+$/'],

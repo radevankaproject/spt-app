@@ -17,6 +17,8 @@ class DepositTargetController extends Controller
 
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $request->validate([
             'year'          => 'required|digits:4|integer',
             'month'         => 'required|integer|min:1|max:12',

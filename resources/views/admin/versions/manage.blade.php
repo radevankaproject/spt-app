@@ -30,6 +30,7 @@
     <div class="row g-6">
         <!-- Kolom Kiri: Form Input -->
         <div class="col-lg-5">
+            @if(Auth::user()->role !== 'leader')
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Tambah Versi Baru</h5>
@@ -78,6 +79,15 @@
                     </form>
                 </div>
             </div>
+            @else
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-5">
+                     <i class="ri ri-lock-line ri-3x text-muted mb-3"></i>
+                     <h6>Akses Dibatasi</h6>
+                     <p class="text-muted mb-0">Anda hanya dapat melihat riwayat versi aplikasi.</p>
+                </div>
+            </div>
+            @endif
         </div>
 
         <!-- Kolom Kanan: Daftar Versi -->

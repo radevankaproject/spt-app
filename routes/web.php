@@ -4,11 +4,14 @@ use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\DepositTargetController;
 use App\Http\Controllers\Admin\FieldCoordinatorController;
 use App\Http\Controllers\Admin\LeaderController;
+use App\Http\Controllers\Admin\LocationRequestController as AdminLocationRequestController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\TreasurerController;
 use App\Http\Controllers\Admin\UptProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AppVersionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FieldCoordinator\LocationRequestController;
 use App\Http\Controllers\MasterData\AgreementController;
 use App\Http\Controllers\MasterData\AgreementHistoryController;
 use App\Http\Controllers\MasterData\BludBankAccountController;
@@ -20,7 +23,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileSettingController;
 use App\Http\Controllers\PublicVerificationController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\TreasurerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +67,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::middleware('role:field_coordinator')->prefix('field-coordinator')->name('field_coordinator.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'fieldCoordinatorDashboard'])->name('dashboard');
+        Route::resource('location-requests', LocationRequestController::class);
+    });
+    // ✅ PERBAIKAN: Middleware-nya pakai role 'bendahara' sesuai isi tabel Users
+    Route::middleware('role:treasurer')->prefix('treasurer')->name('treasurer.')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'treasurerDashboard'])->name('dashboard');
     });
 
     // --- MANAJEMEN DATA (CRUD) - HANYA UNTUK ADMIN & STAFF ---
@@ -72,7 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // --- Rute khusus Admin & Staff Keuangan ---
         // Hanya admin dan staff_keu yang bisa mengelola transaksi dan laporan.
-        Route::middleware('role:admin,staff_keu')->group(function () {
+        Route::middleware('role:admin,leader,staff_keu,treasurer')->group(function () {
             Route::resource('deposit-transactions', DepositTransactionController::class); // Semua aksi CRUD + show
             Route::post('deposit-transactions/{depositTransaction}/validate', [DepositTransactionController::class, 'validateDeposit'])->name('deposit-transactions.validate');
             Route::get('deposit-transactions/{depositTransaction}/pdf', [DepositTransactionController::class, 'generatePdf'])->name('deposit-transactions.pdf');
@@ -88,7 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // --- Rute untuk Tiga Role (Admin, Staff Keu, Staff PKS) ---
         // Role-role ini bisa mengelola data dasar seperti ruas jalan, lokasi, dan perjanjian.
-        Route::middleware('role:admin,staff_keu,staff_pks')->group(function () {
+        Route::middleware('role:admin,leader,staff_keu,staff_pks')->group(function () {
             Route::resource('road-sections', RoadSectionController::class)->except(['show']);
             Route::get('parking-locations/import', [ParkingLocationController::class, 'importCreate'])
                 ->name('parking-locations.importCreate');
@@ -100,9 +107,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('agreements/{agreement}/detach-parking-location/{parkingLocation}', [AgreementController::class, 'detachParkingLocation'])->name('agreements.detach-parking-location');
         });
 
+        Route::middleware('role:admin,staff_pks')->group(function () {
+            Route::get('location-requests', [AdminLocationRequestController::class, 'index'])->name('location-requests.index');
+            Route::get('location-requests/{locationRequest}', [AdminLocationRequestController::class, 'show'])->name('location-requests.show');
+
+            // Aksi Eksekusi
+            Route::post('location-requests/{locationRequest}/review', [AdminLocationRequestController::class, 'storeReview'])->name('location-requests.review');
+            Route::post('location-requests/{locationRequest}/approve', [AdminLocationRequestController::class, 'approve'])->name('location-requests.approve');
+            Route::post('location-requests/{locationRequest}/reject', [AdminLocationRequestController::class, 'reject'])->name('location-requests.reject');
+        });
+
         // --- Rute yang bisa diakses SEMUA role (termasuk Leader untuk view & AJAX) ---
         // Ini untuk aksi lihat-saja (view-only) dan kebutuhan AJAX.
-        Route::middleware('role:admin,staff_keu,staff_pks,leader')->group(function () {
+        Route::middleware('role:admin,staff_keu,staff_pks,leader,field_coordinator')->group(function () {
             Route::get('parking-locations/{parking_location}', [ParkingLocationController::class, 'show'])->name('parking-locations.show');
             Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
             Route::get('agreements/{agreement}/pdf-history', [AgreementController::class, 'showPdfHistory'])->name('agreements.pdf-history');
@@ -137,7 +154,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('treasurers', TreasurerController::class);
             Route::patch('treasurers/{treasurer}/toggle-status', [TreasurerController::class, 'toggleStatus'])->name('treasurers.toggle-status');
 
-            // --- Field Coordinators ---   
+            // --- Field Coordinators ---
             Route::get('field-coordinators/trashed', [FieldCoordinatorController::class, 'trashed'])->name('field-coordinators.trashed');
             Route::patch('field-coordinators/{id}/restore', [FieldCoordinatorController::class, 'restore'])->name('field-coordinators.restore');
             Route::resource('field-coordinators', FieldCoordinatorController::class);
@@ -172,9 +189,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('search-agreements-ajax', [DashboardController::class, 'searchAgreementsAjax'])->name('search-agreements-ajax');
         Route::get('search-locations-ajax', [DashboardController::class, 'searchParkingLocationsAjax'])->name('search-locations-ajax');
         Route::get('search-deposits-ajax', [DashboardController::class, 'searchDepositsAjax'])->name('search-deposits-ajax');
+        Route::get('global-search', [DashboardController::class, 'globalSearch'])->name('global-search');
     });
 
     Route::get('/app-versions', [AppVersionController::class, 'index'])->name('app.versions');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

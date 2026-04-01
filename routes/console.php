@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 // routes/console.php
 Schedule::command('agreements:check-status')->dailyAt('00:01');
+Schedule::command('cleanup:location-requests')->dailyAt('00:01');

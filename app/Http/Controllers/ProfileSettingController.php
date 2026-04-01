@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdatePasswordRequest;
@@ -10,19 +11,31 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-
-// Pastikan FormRequest ini sudah di-import
 use Illuminate\View\View;
 
 class ProfileSettingController extends Controller
 {
     /**
-     * Menampilkan halaman pengaturan profil.
+     * Menampilkan halaman pengaturan profil disesuaikan dengan Role.
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
+        // ✅ LOGIKA LOAD RELASI BERDASARKAN ROLE (Eager Loading)
+        if ($user->role === 'field_coordinator') {
+            $user->load('fieldCoordinator');
+        } elseif ($user->role === 'leader') {
+            $user->load('leader');
+        } elseif ($user->role === 'bendahara' || $user->role === 'staff_keu') {
+            // Asumsi model bendahara berelasi dengan user
+            if (method_exists($user, 'treasurer')) {
+                $user->load('treasurer');
+            }
+        }
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
@@ -33,41 +46,31 @@ class ProfileSettingController extends Controller
     {
         $user = $request->user();
 
-        // Validasi data profil dasar
         $validatedData = $request->validateWithBag('updateProfile', [
-            'name'     => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'username' => [
-                'required',
-                'string',
-                'max:255',
-                'alpha_dash',                             // Hanya boleh huruf, angka, strip (-), dan underscore (_)
-                Rule::unique('users')->ignore($user->id), // Cek unik, tapi abaikan user saat ini
+                'required', 'string', 'max:255', 'alpha_dash',
+                Rule::unique('users')->ignore($user->id),
             ],
-            'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'img'      => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
-        ],
-            // ✅ Tambahkan pesan error custom
-            [
-                'username.unique'     => 'Username ini sudah digunakan oleh pengguna lain.',
-                'username.alpha_dash' => 'Username hanya boleh mengandung huruf, angka, strip, dan underscore.',
-            ]);
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'img' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
+        ], [
+            'username.unique' => 'Username ini sudah digunakan oleh pengguna lain.',
+            'username.alpha_dash' => 'Username hanya boleh mengandung huruf, angka, strip, dan underscore.',
+            'img.max' => 'Ukuran foto maksimal 1 MB.',
+        ]);
 
-        // Update nama dan email
         $user->fill($request->except('img'));
 
-        // Cek jika email diganti, reset verifikasi email
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
-        // Handle upload foto profil baru
         if ($request->hasFile('img')) {
-            // Hapus foto lama jika ada
             if ($user->img) {
                 Storage::disk('public')->delete($user->img);
             }
-            // Simpan foto baru dan update path di database
-            $path      = $request->file('img')->store('avatars', 'public');
+            $path = $request->file('img')->store('avatars', 'public');
             $user->img = $path;
         }
 
@@ -78,11 +81,9 @@ class ProfileSettingController extends Controller
 
     /**
      * Memperbarui kata sandi pengguna.
-     * Menggunakan FormRequest untuk validasi.
      */
     public function updatePassword(UpdatePasswordRequest $request): RedirectResponse
     {
-        // Validasi sudah otomatis dijalankan oleh UpdatePasswordRequest.
         $validated = $request->validated();
 
         $request->user()->update([
@@ -103,6 +104,7 @@ class ProfileSettingController extends Controller
             Storage::disk('public')->delete($user->img);
             $user->img = null;
             $user->save();
+
             return response()->json(['success' => true]);
         }
 

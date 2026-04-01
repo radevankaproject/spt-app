@@ -39,9 +39,11 @@
                 <a href="{{ route('admin.users.trashed') }}" class="btn btn-outline-secondary">
                     <i class="icon-base ri ri-archive-line me-2"></i>Lihat Arsip
                 </a>
+                @if(Auth::user()->role !== 'leader')
                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
                     <i class="icon-base ri ri-add-line me-2"></i>Tambah User
                 </a>
+                @endif
             </div>
         </div>
         <div class="card-body">
@@ -89,6 +91,7 @@
                                 <td><span class="badge bg-label-success">Aktif</span></td>
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center">
+                                        @if(Auth::user()->role !== 'leader')
                                         <a class="btn btn-sm btn-icon" href="{{ route('admin.users.edit', $user->id) }}"
                                             data-bs-toggle="tooltip" title="Edit User">
                                             <i class="icon-base ri ri-pencil-line icon-22px"></i>
@@ -103,6 +106,7 @@
                                                 <i class="icon-base ri ri-delete-bin-line icon-22px"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

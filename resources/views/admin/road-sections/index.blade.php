@@ -41,11 +41,13 @@
                                 class="ri icon-base ri-search-line"></i></button>
                     </div>
                 </form>
+                @if(Auth::user()->role !== 'leader')
                 {{-- Tombol Panggil Modal Create --}}
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                     data-bs-target="#createRoadSectionModal">
                     <i class="ri icon-base ri-add-line me-1"></i> Tambah
                 </button>
+                @endif
             </div>
         </div>
 
@@ -103,6 +105,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-2">
+                                        @if(Auth::user()->role !== 'leader')
                                         {{-- Tombol Edit Panggil Modal --}}
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                             data-bs-toggle="modal" data-bs-target="#editModal{{ $roadSection->id }}"
@@ -130,6 +133,7 @@
                                                     <i class="ri icon-base ri-delete-bin-7-line ri-20px"></i>
                                                 </button>
                                             </form>
+                                        @endif
                                         @endif
                                     </div>
                                 </td>

@@ -9,6 +9,7 @@
         .perfect-scrollbar-table {
             position: relative;
             max-height: 380px;
+            overflow: hidden;
         }
         /* Hero Search Card styling */
         .hero-search-card {
@@ -36,6 +37,12 @@
             background-color: rgba(105, 108, 255, 0.05);
             transform: scale(1.01);
         }
+        /* Menjaga Avatar Tetap Bulat Sempurna */
+        .avatar-fit {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+        }
     </style>
 @endpush
 
@@ -44,6 +51,34 @@
 @endsection
 
 @section('content')
+
+    {{-- ✅ LOGIKA DATA PIMPINAN & BENDAHARA --}}
+    @php
+        // 1. Data Pimpinan
+        $leaderName = $currentLeader->user->name ?? 'Belum Ada';
+        $leaderAvatar = ($currentLeader && $currentLeader->user && $currentLeader->user->img)
+            ? asset('storage/' . $currentLeader->user->img)
+            : "https://ui-avatars.com/api/?name=" . urlencode($leaderName) . "&background=696cff&color=fff&bold=true";
+
+        $leaderJabatan = 'Kepala UPT Perparkiran';
+        if($currentLeader && $currentLeader->status_jabatan == 'plt') $leaderJabatan = 'Plt. Kepala UPT';
+        if($currentLeader && $currentLeader->status_jabatan == 'plh') $leaderJabatan = 'Plh. Kepala UPT';
+
+        $leaderNip = $currentLeader ? formatNip($currentLeader->employee_number) : '-';
+        $leaderStart = $currentLeader ? \Carbon\Carbon::parse($currentLeader->start_date)->translatedFormat('d M Y') : '-';
+
+        // 2. Data Bendahara Aktif
+        $currentTreasurer = \App\Models\Treasurer::with('user')->whereHas('user', function ($q) {
+            $q->where('is_active', true);
+        })->first();
+
+        $treasurerName = $currentTreasurer->user->name ?? 'Belum Ada';
+        $treasurerAvatar = ($currentTreasurer && $currentTreasurer->user && $currentTreasurer->user->img)
+            ? asset('storage/' . $currentTreasurer->user->img)
+            : "https://ui-avatars.com/api/?name=" . urlencode($treasurerName) . "&background=ffab00&color=fff&bold=true";
+
+        $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number) : '-';
+    @endphp
 
     {{-- ✅ 1. HERO SEARCH SECTION --}}
     <div class="card mb-4 hero-search-card shadow-lg">
@@ -57,7 +92,6 @@
                         @csrf
                         <div class="input-group input-group-lg rounded-pill overflow-hidden bg-white">
                             <span class="input-group-text bg-white border-0 text-primary ps-4">
-                                {{-- ✅ ICON FIXED (tambah class ri) --}}
                                 <i class="ri icon-base ri-search-line ri-22px"></i>
                             </span>
                             <input type="search" name="agreement_number" class="form-control border-0 fs-6 shadow-none"
@@ -66,7 +100,6 @@
                         </div>
                         @if (session('error'))
                             <div class="text-danger bg-white rounded-pill d-inline-block px-3 py-1 fw-bold small mt-3 shadow-sm">
-                                {{-- ✅ ICON FIXED --}}
                                 <i class="ri ri-error-warning-line me-1"></i> {{ session('error') }}
                             </div>
                         @endif
@@ -79,58 +112,69 @@
     {{-- ✅ 2. TOP METRICS CARDS --}}
     <div class="row g-4 mb-4">
         {{-- Card 1: Pimpinan --}}
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0">
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 shadow-sm border-0 border-start border-4 border-primary">
                 <div class="card-body d-flex align-items-center">
-                    @php
-                        $leaderName = $currentLeader->user->name ?? 'Belum Ada';
-                        $leaderAvatar = ($currentLeader && $currentLeader->user && $currentLeader->user->img && file_exists(public_path($currentLeader->user->img)))
-                            ? asset($currentLeader->user->img)
-                            : "https://ui-avatars.com/api/?name=" . urlencode($leaderName) . "&background=random&color=fff&bold=true";
-                    @endphp
-                    <img src="{{ $leaderAvatar }}" alt="Avatar" class="rounded-circle shadow-sm me-3" width="56" height="56" style="object-fit: cover;">
+                    <img src="{{ $leaderAvatar }}" alt="Avatar" class="rounded-circle shadow-sm me-3 avatar-fit">
                     <div>
-                        <p class="text-muted mb-0 text-sm fw-medium">Pihak Pertama (Pimpinan)</p>
-                        <h5 class="mb-0 fw-bold text-dark">{{ $leaderName }}</h5>
+                        {{-- Nama ditampilkan utuh (wrap text jika panjang) --}}
+                        <h6 class="mb-0 fw-bold text-dark text-wrap">{{ $leaderName }}</h6>
+                        <p class="text-muted mb-0" style="font-size: 0.75rem;">{{ $leaderJabatan }}</p>
+                        <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">NIP. {{ $leaderNip }}</p>
+                        <p class="text-primary fw-bold mb-0 mt-1" style="font-size: 0.70rem;"><i class="ri ri-calendar-check-line me-1"></i>Mulai: {{ $leaderStart }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Card 2: Rekening --}}
-        <div class="col-md-4">
-            <div class="card h-100 shadow-sm border-0">
+        {{-- Card 2: Bendahara --}}
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 shadow-sm border-0 border-start border-4 border-warning">
+                <div class="card-body d-flex align-items-center">
+                    <img src="{{ $treasurerAvatar }}" alt="Avatar" class="rounded-circle shadow-sm me-3 avatar-fit">
+                    <div>
+                        {{-- Nama ditampilkan utuh --}}
+                        <h6 class="mb-0 fw-bold text-dark text-wrap">{{ $treasurerName }}</h6>
+                        <p class="text-muted mb-0" style="font-size: 0.75rem;">Bendahara Penerimaan</p>
+                        <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">NIP. {{ $treasurerNip }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Card 3: Rekening --}}
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 shadow-sm border-0 border-start border-4 border-info">
                 <div class="card-body d-flex align-items-center">
                     <div class="stat-card-icon bg-label-info me-3">
-                        {{-- ✅ ICON FIXED --}}
                         <i class="ri icon-base ri-bank-card-line ri-24px"></i>
                     </div>
                     @if ($activeBankAccount)
                         <div>
-                            <p class="text-muted mb-0 text-sm fw-medium">Rekening BLUD Aktif ({{ $activeBankAccount->bank_name }})</p>
-                            <h5 class="mb-0 fw-bold text-info">{{ $activeBankAccount->account_number }}</h5>
+                            <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">BANK ({{ $activeBankAccount->bank_name }})</p>
+                            <h6 class="mb-0 fw-bold text-primary">{{ $activeBankAccount->account_name}}</h6>
+                            <h6 class="mb-0 fw-bold text-info"><small>{{ $activeBankAccount->account_number }}</small></h6>
                         </div>
                     @else
                         <div>
                             <p class="text-muted mb-0 text-sm fw-medium">Rekening BLUD</p>
-                            <h5 class="mb-0 fw-bold text-danger">Belum disetting</h5>
+                            <h6 class="mb-0 fw-bold text-danger">Belum disetting</h6>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- Card 3: Total Setoran --}}
-        <div class="col-md-4">
+        {{-- Card 4: Total Setoran --}}
+        <div class="col-xl-3 col-md-6">
             <div class="card h-100 shadow-sm border-0 bg-label-success">
                 <div class="card-body d-flex align-items-center">
                     <div class="stat-card-icon bg-success text-white me-3 shadow-sm">
-                        {{-- ✅ ICON FIXED --}}
                         <i class="ri icon-base ri-money-dollar-circle-line ri-24px"></i>
                     </div>
                     <div>
-                        <p class="mb-0 text-sm fw-bold text-success">TOTAL SETORAN (TAHUN INI)</p>
-                        <h4 class="mb-0 fw-bold text-success">Rp {{ number_format($currentYearValidatedDeposit, 0, ',', '.') }}</h4>
+                        <p class="mb-0 fw-bold text-success" style="font-size: 0.75rem;">TOTAL SETORAN (SAH)</p>
+                        <h5 class="mb-0 fw-bold text-success">Rp {{ number_format($currentYearValidatedDeposit, 0, ',', '.') }}</h5>
                     </div>
                 </div>
             </div>
@@ -139,13 +183,11 @@
 
     {{-- ✅ 3. MAIN CHARTS ROW --}}
     <div class="row g-4 mb-4">
-        {{-- Mixed Chart --}}
         <div class="col-xl-8">
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center pb-3">
                     <h5 class="card-title fw-bold mb-0">
-                        {{-- ✅ ICON FIXED --}}
-                        <i class="ri icon-base ri-bar-chart-grouped-line text-primary me-2 ri-20px"></i> Grafik Validasi Setoran
+                        <i class="ri icon-base ri-bar-chart-grouped-line text-primary me-2 ri-20px"></i> Grafik Validasi Setoran vs Target
                     </h5>
                     <span class="badge bg-primary bg-opacity-10 text-primary fw-bold">Tahun {{ now()->year }}</span>
                 </div>
@@ -155,12 +197,10 @@
             </div>
         </div>
 
-        {{-- Bar Chart (Top 10 Lokasi) --}}
         <div class="col-xl-4">
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-header border-bottom bg-transparent pb-3">
                     <h5 class="card-title fw-bold mb-0">
-                        {{-- ✅ ICON FIXED --}}
                         <i class="ri icon-base ri-road-map-line text-warning me-2 ri-20px"></i> Top 10 Ruas Jalan
                     </h5>
                     <small class="text-muted">Berdasarkan kepadatan titik lokasi</small>
@@ -212,17 +252,19 @@
                             @forelse ($recentDeposits as $deposit)
                                 @php
                                     $coordName = $deposit->agreement->fieldCoordinator->user->name ?? 'N/A';
-                                    $coordAvatar = "https://ui-avatars.com/api/?name=" . urlencode($coordName) . "&background=random&color=fff&size=40&rounded=true&bold=true";
+                                    $coordAvatar = ($deposit->agreement->fieldCoordinator->user && $deposit->agreement->fieldCoordinator->user->img)
+                                        ? asset('storage/' . $deposit->agreement->fieldCoordinator->user->img)
+                                        : "https://ui-avatars.com/api/?name=" . urlencode($coordName) . "&background=random&color=fff&size=40&rounded=true&bold=true";
                                 @endphp
                                 <tr>
                                     <td class="ps-0 pe-2 py-2" width="40px">
-                                        <img src="{{ $coordAvatar }}" alt="Avatar" class="rounded-circle shadow-sm">
+                                        <img src="{{ $coordAvatar }}" alt="Avatar" class="rounded-circle shadow-sm avatar-fit">
                                     </td>
-                                    <td class="py-2">
-                                        <h6 class="mb-0 text-sm fw-bold">{{ Str::limit($coordName, 15) }}</h6>
-                                        <small class="text-muted">{{ $deposit->deposit_date->format('d M Y') }}</small>
+                                    <td class="py-2 text-wrap"> {{-- Tambah text-wrap agar nama tidak kepotong horizontal --}}
+                                        <h6 class="mb-0 text-sm fw-bold">{{ $coordName }}</h6>
+                                        <small class="text-muted">{{ $deposit->deposit_date->translatedFormat('d M Y') }}</small>
                                     </td>
-                                    <td class="text-end py-2 pe-0">
+                                    <td class="text-end py-2 pe-0 align-middle">
                                         <span class="badge bg-label-success fw-bold">Rp {{ number_format($deposit->amount, 0, ',', '.') }}</span>
                                     </td>
                                 </tr>
@@ -250,11 +292,11 @@
                                     <td class="ps-0 py-2">
                                         <div class="d-flex align-items-center">
                                             <div class="avatar avatar-sm me-3">
-                                                {{-- ✅ ICON FIXED --}}
                                                 <span class="avatar-initial rounded-circle bg-label-info"><i class="ri icon-base ri-map-pin-line"></i></span>
                                             </div>
-                                            <div>
-                                                <h6 class="mb-0 text-sm fw-bold">{{ Str::limit($location->name, 20) }}</h6>
+                                            <div class="text-wrap">
+                                                {{-- Lokasi kadang panjang, text-wrap memastikan turun ke bawah rapi --}}
+                                                <h6 class="mb-0 text-sm fw-bold">{{ $location->name }}</h6>
                                                 <small class="text-muted">{{ $location->roadSection->name ?? 'Tanpa Ruas' }}</small>
                                             </div>
                                         </div>
@@ -273,7 +315,7 @@
         <div class="col-lg-4 col-md-12">
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center">
-                    <h6 class="card-title fw-bold mb-0">Korlap Lapangan</h6>
+                    <h6 class="card-title fw-bold mb-0">Koordinator Lapangan</h6>
                     <a href="{{ route('admin.field-coordinators.index') }}" class="btn btn-xs btn-outline-primary rounded-pill">Detail</a>
                 </div>
                 <div class="table-responsive text-nowrap perfect-scrollbar-table p-2">
@@ -282,17 +324,16 @@
                             @forelse ($recentCoordinators as $coordinator)
                                 @php
                                     $cName = $coordinator->user->name ?? 'N/A';
-                                    $cAvatar = ($coordinator->user && $coordinator->user->img && file_exists(public_path($coordinator->user->img)))
-                                        ? asset($coordinator->user->img)
+                                    $cAvatar = ($coordinator->user && $coordinator->user->img)
+                                        ? asset('storage/' . $coordinator->user->img)
                                         : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=40&rounded=true&bold=true";
                                 @endphp
                                 <tr>
                                     <td class="ps-0 pe-2 py-2" width="40px">
-                                        <img src="{{ $cAvatar }}" alt="Avatar" class="rounded-circle shadow-sm" width="40" height="40" style="object-fit: cover;">
+                                        <img src="{{ $cAvatar }}" alt="Avatar" class="rounded-circle shadow-sm avatar-fit">
                                     </td>
-                                    <td class="py-2">
-                                        <h6 class="mb-0 text-sm fw-bold">{{ Str::limit($cName, 15) }}</h6>
-                                        {{-- ✅ ICON FIXED --}}
+                                    <td class="py-2 text-wrap">
+                                        <h6 class="mb-0 text-sm fw-bold">{{ $cName }}</h6>
                                         <small class="text-muted"><i class="ri ri-phone-line align-bottom"></i> {{ $coordinator->phone_number ?? '-' }}</small>
                                     </td>
                                 </tr>
@@ -309,6 +350,7 @@
 
 @push('vendors-js')
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
 @endpush
 
 @push('scripts')
@@ -352,14 +394,7 @@
                         }
                     },
                     dataLabels: {
-                        enabled: true,
-                        enabledOnSeries: [0, 1],
-                        formatter: function (val) {
-                            if(!val || val === 0) return '';
-                            return `${(val / 1000000).toFixed(1)} Jt`;
-                        },
-                        style: { fontSize: '11px', fontWeight: 600 },
-                        background: { enabled: true, foreColor: '#fff', padding: 4, borderRadius: 2, borderWidth: 0 }
+                        enabled: false
                     },
                     grid: { borderColor: borderColor, strokeDashArray: 4, padding: { top: 20 } },
                     tooltip: {
@@ -386,7 +421,7 @@
                     plotOptions: {
                         bar: { horizontal: true, barHeight: '50%', borderRadius: 4 }
                     },
-                    dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#fff'] }, formatter: function (val, opt) { return val + " Titik"; }, offsetX: 0 },
+                    dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#fff'] }, formatter: function (val) { return val + " Titik"; }, offsetX: 0 },
                     series: [{ name: 'Jumlah Titik', data: @json($barChartData['data']) }],
                     xaxis: { categories: @json($barChartData['labels']), labels: {show: false}, axisBorder: {show: false}, axisTicks: {show: false} },
                     grid: { xaxis: { lines: { show: false } }, yaxis: { lines: { show: false } } },

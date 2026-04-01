@@ -26,57 +26,86 @@
 
     <div class="menu-inner-shadow"></div>
 
-    {{-- ...user Admin --}}
-
     <ul class="menu-inner py-1">
-        <li class="menu-header small"><span class="menu-header-text">Dashboard</span></li>
-        @if (Auth::user()->isStaffPks())
-            <li class="menu-item {{ request()->routeIs('staff-pks.dashboard') ? 'active' : '' }}">
-                <a href="{{ route('staff-pks.dashboard') }}" class="menu-link">
-                    <i class="icon-base ri menu-icon tf-icons ri-home-smile-line"></i>
-                    <div data-i18n="Dashboard">Dashboard</div>
-                </a>
-            </li>
-        @endif
-        @if (Auth::user()->isStaffKeu())
-            <li class="menu-item {{ request()->routeIs('staff-keuangan.dashboard') ? 'active' : '' }}">
-                <a href="{{ route('staff-keuangan.dashboard') }}" class="menu-link">
-                    <i class="icon-base ri menu-icon tf-icons ri-home-smile-line"></i>
-                    <div data-i18n="Dashboard">Dashboard</div>
-                </a>
-            </li>
-        @endif
-        @if (Auth::user()->isAdmin())
+        <li class="menu-header small"><span class="menu-header-text">Beranda Utama</span></li>
+
+        {{-- ✅ MENU DASHBOARD BERDASARKAN ROLE --}}
+        @if (Auth::user()->role === 'admin')
             <li class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <a href="{{ route('admin.dashboard') }}" class="menu-link">
-                    <i class="icon-base ri menu-icon tf-icons ri-home-smile-line"></i>
-                    <div data-i18n="Dashboard">Dashboard</div>
+                    <i class="icon-base ri menu-icon tf-icons ri-dashboard-line"></i>
+                    <div data-i18n="Dashboard">Dashboard Admin</div>
                 </a>
             </li>
+        @elseif (Auth::user()->role === 'staff_pks')
+            <li class="menu-item {{ request()->routeIs('staff-pks.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('staff-pks.dashboard') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-dashboard-line"></i>
+                    <div data-i18n="Dashboard PKS">Dashboard PKS</div>
+                </a>
+            </li>
+        @elseif (Auth::user()->role === 'staff_keu')
+            <li class="menu-item {{ request()->routeIs('staff-keuangan.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('staff-keuangan.dashboard') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-dashboard-line"></i>
+                    <div data-i18n="Dashboard Keuangan">Dashboard Keuangan</div>
+                </a>
+            </li>
+        @elseif (Auth::user()->role === 'leader')
+            <li class="menu-item {{ request()->routeIs('leader.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('leader.dashboard') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-dashboard-line"></i>
+                    <div data-i18n="Dashboard Pimpinan">Dashboard Pimpinan</div>
+                </a>
+            </li>
+        @elseif (Auth::user()->role === 'treasurer')
+            <li class="menu-item {{ request()->routeIs('treasurer.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('treasurer.dashboard') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-dashboard-line"></i>
+                    <div data-i18n="Dashboard Bendahara">Dashboard Bendahara</div>
+                </a>
+            </li>
+        @elseif (Auth::user()->role === 'field_coordinator')
+            <li class="menu-item {{ request()->routeIs('field_coordinator.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('field_coordinator.dashboard') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-home-smile-line"></i>
+                    <div data-i18n="Dashboard Mitra">Dashboard Mitra</div>
+                </a>
+            </li>
+        @endif
+
+        {{-- ✅ MENU KHUSUS KOORDINATOR LAPANGAN (MITRA PKS) --}}
+        @if (Auth::user()->role === 'field_coordinator')
+            <li class="menu-header small"><span class="menu-header-text">Operasional</span></li>
+            <li class="menu-item {{ request()->routeIs('field_coordinator.location-requests.*') ? 'active' : '' }}">
+                <a href="{{ route('field_coordinator.location-requests.index') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-map-pin-add-line"></i>
+                    <div data-i18n="Pengajuan Titik">Pengajuan Titik</div>
+                </a>
+            </li>
+        @endif
+
+        {{-- MENU ADMINISTRASI --}}
+        @if (Auth::user()->role === 'admin')
             <li class="menu-header small"><span class="menu-header-text">Administrasi</span></li>
-            <li
-                class="menu-item {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.leaders.*') || request()->routeIs('admin.field-coordinators.*') ? 'active open' : '' }}">
+            <li class="menu-item {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.leaders.*') || request()->routeIs('admin.treasurers.*') || request()->routeIs('admin.field-coordinators.*') ? 'active open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                     <i class="icon-base ri menu-icon tf-icons ri-user-settings-line"></i>
                     <div data-i18n="Manage Users">Manage Users</div>
                 </a>
                 <ul class="menu-sub">
-                    <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"><a
-                            href="{{ route('admin.users.index') }}" class="menu-link">
-                            <div>All Users</div>
-                        </a></li>
-                    <li class="menu-item {{ request()->routeIs('admin.leaders.*') ? 'active' : '' }}"><a
-                            href="{{ route('admin.leaders.index') }}" class="menu-link">
-                            <div>Leader</div>
-                        </a></li>
-                    <li class="menu-item {{ request()->routeIs('admin.treasurers.*') ? 'active' : '' }}"><a
-                            href="{{ route('admin.treasurers.index') }}" class="menu-link">
-                            <div>Bendahara</div>
-                        </a></li>
-                    <li class="menu-item {{ request()->routeIs('admin.field-coordinators.*') ? 'active' : '' }}"><a
-                            href="{{ route('admin.field-coordinators.index') }}" class="menu-link">
-                            <div>Coordinator</div>
-                        </a></li>
+                    <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.users.index') }}" class="menu-link"><div>All Users</div></a>
+                    </li>
+                    <li class="menu-item {{ request()->routeIs('admin.leaders.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.leaders.index') }}" class="menu-link"><div>Pimpinan UPT</div></a>
+                    </li>
+                    <li class="menu-item {{ request()->routeIs('admin.treasurers.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.treasurers.index') }}" class="menu-link"><div>Bendahara</div></a>
+                    </li>
+                    <li class="menu-item {{ request()->routeIs('admin.field-coordinators.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.field-coordinators.index') }}" class="menu-link"><div>Koordinator Lapangan</div></a>
+                    </li>
                 </ul>
             </li>
             <li class="menu-item {{ request()->routeIs('admin.upt-profile.index') ? 'active' : '' }}">
@@ -105,73 +134,86 @@
             </li>
         @endif
 
-        @if (Auth::user()->isAdmin() || Auth::user()->isStaffPks())
-            <li class="menu-header small"><span class="menu-header-text">Lokasi Parkir & Perjanjian PKS</span></li>
-            <li
-                class="menu-item {{ request()->routeIs('masterdata.road-sections.*') || request()->routeIs('masterdata.parking-locations.*') ? 'active open' : '' }}">
+        {{-- ✅ LOKASI PARKIR & PKS (DIBUKA UNTUK LEADER JUGA) --}}
+        @if (in_array(Auth::user()->role, ['admin', 'staff_pks', 'leader']))
+            <li class="menu-header small"><span class="menu-header-text">Data Wilayah & PKS</span></li>
+            <li class="menu-item {{ request()->routeIs('masterdata.road-sections.*') || request()->routeIs('masterdata.parking-locations.*') ? 'active open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                     <i class="icon-base ri menu-icon tf-icons ri-map-pin-line"></i>
-                    <div data-i18n="Manage Lokasi">Manage Lokasi</div>
+                    <div data-i18n="Master Lokasi">Master Lokasi</div>
                 </a>
                 <ul class="menu-sub">
                     <li class="menu-item {{ request()->routeIs('masterdata.road-sections.*') ? 'active' : '' }}">
-                        <a href="{{ route('masterdata.road-sections.index') }}" class="menu-link">
-                            <div data-i18n="Ruas Jalan">Ruas Jalan</div>
-                        </a>
+                        <a href="{{ route('masterdata.road-sections.index') }}" class="menu-link"><div data-i18n="Ruas Jalan">Ruas Jalan</div></a>
                     </li>
                     <li class="menu-item {{ request()->routeIs('masterdata.parking-locations.*') ? 'active' : '' }}">
-                        <a href="{{ route('masterdata.parking-locations.index') }}" class="menu-link">
-                            <div data-i18n="Lokasi Parkir">Lokasi Parkir</div>
-                        </a>
+                        <a href="{{ route('masterdata.parking-locations.index') }}" class="menu-link"><div data-i18n="Titik Parkir">Titik Parkir</div></a>
                     </li>
                 </ul>
             </li>
+
+            {{-- Leader biasanya cukup pantau, staff/admin yang eksekusi persetujuan titik --}}
+            @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
+            <li class="menu-item {{ request()->routeIs('masterdata.location-requests.*') ? 'active' : '' }}">
+                <a href="{{ route('masterdata.location-requests.index') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-survey-line"></i>
+                    <div data-i18n="Persetujuan Titik">Persetujuan Titik</div>
+                </a>
+            </li>
+            @endif
+
             <li class="menu-item {{ request()->routeIs('masterdata.agreements.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.agreements.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-file-text-line"></i>
-                    <div data-i18n="Perjanjian Kerjasama">Perjanjian Kerjasama</div>
+                    <div data-i18n="Perjanjian Kerjasama">Perjanjian PKS</div>
                 </a>
             </li>
-
+            
             <li class="menu-item {{ request()->routeIs('masterdata.agreement-histories.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.agreement-histories.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-history-line"></i>
-                    <div data-i18n="Histori Perjanjian">Histori Perjanjian</div>
+                    <div data-i18n="Histori Perjanjian">Riwayat PKS</div>
                 </a>
             </li>
         @endif
 
-        {{-- ✅ BLOK KEUANGAN DENGAN TAMBAHAN MENU TARGET SETORAN --}}
-        @if (Auth::user()->isAdmin() || Auth::user()->isStaffKeu())
-            <li class="menu-header small"><span class="menu-header-text">Keuangan</span></li>
-
-            {{-- Menu Target Setoran (Baru ditambahkan) --}}
-            <li class="menu-item {{ request()->routeIs('admin.deposit-targets.*') ? 'active' : '' }}">
+        {{-- ✅ BLOK KEUANGAN (DIBUKA UNTUK LEADER JUGA) --}}
+        @if (in_array(Auth::user()->role, ['admin', 'staff_keu', 'treasurer', 'leader']))
+            <li class="menu-header small"><span class="menu-header-text">Keuangan & Setoran</span></li>
+            
+            @if (in_array(Auth::user()->role, ['admin', 'staff_keu', 'leader']))
+            <li class="menu-item {{ request()->routeIs('masterdata.deposit-targets.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.deposit-targets.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-line-chart-line"></i>
-                    <div data-i18n="Target Setoran">Target Setoran</div>
+                    <div data-i18n="Target Setoran">Target Pendapatan</div>
                 </a>
             </li>
+            @endif
 
+            {{-- Validasi Setoran: Admin, Keuangan, Bendahara (Leader mungkin cuma mantau dari laporan) --}}
+            @if (in_array(Auth::user()->role, ['admin', 'staff_keu', 'treasurer']))
             <li class="menu-item {{ request()->routeIs('masterdata.deposit-transactions.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.deposit-transactions.index') }}" class="menu-link">
-                    <i class="icon-base ri menu-icon tf-icons ri-money-dollar-circle-line"></i>
-                    <div data-i18n="Deposit">Deposit</div>
+                    <i class="icon-base ri menu-icon tf-icons ri-safe-2-line"></i>
+                    <div data-i18n="Validasi Setoran">Validasi Setoran</div>
                 </a>
             </li>
+            @endif
+
+            {{-- Laporan Setoran: Dibuka untuk Pimpinan (Leader) agar bisa cek data masuk --}}
             <li class="menu-item {{ request()->routeIs('masterdata.deposit-reports.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.deposit-reports.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-exchange-dollar-fill"></i>
-                    <div data-i18n="Histori Deposit">Histori Deposit</div>
+                    <div data-i18n="Laporan Setoran">Laporan Setoran</div>
                 </a>
             </li>
         @endif
 
-        <li class="menu-header small"><span class="menu-header-text">System</span></li>
+        <li class="menu-header small"><span class="menu-header-text">Sistem</span></li>
         <li class="menu-item {{ request()->routeIs('profile.settings') ? 'active' : '' }}">
             <a href="{{ route('profile.settings') }}" class="menu-link">
                 <i class="icon-base ri menu-icon tf-icons ri-settings-2-line"></i>
-                <div data-i18n="Setting Profil">Setting Profil</div>
+                <div data-i18n="Setting Profil">Pengaturan Akun</div>
             </a>
         </li>
     </ul>

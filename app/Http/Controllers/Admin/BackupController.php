@@ -20,6 +20,8 @@ class BackupController extends Controller
 
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         DB::beginTransaction();
         try {
             Artisan::call('backup:run', ['--only-db' => true, '--disable-notifications' => true]);

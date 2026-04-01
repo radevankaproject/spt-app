@@ -1,295 +1,205 @@
 <!doctype html>
-<html lang="en" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-skin="default"
-    data-bs-theme="light">
+<html lang="id" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-skin="default" data-bs-theme="light">
 
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport"
-            content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-        <title>@yield('title', 'Sistem Informasi Perparkiran')</title>
-        <meta name="description" content="Sistem Informasi Perparkiran" />
-        <meta name="robots" content="noindex, nofollow" />
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>@yield('title', 'Sistem Informasi Perparkiran') - SPKP</title>
+    <meta name="description" content="Sistem Informasi Perparkiran Kota Pekanbaru" />
+    <meta name="robots" content="noindex, nofollow" />
 
-        <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        {{-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&ampdisplay=swap"
-            rel="stylesheet" /> --}}
+    {{-- ✅ FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/remixicon/remixicon.css') }}" />
 
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
+    {{-- ✅ CORE CSS --}}
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/theme-default.css') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/node-waves/node-waves.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
 
-        <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/vendor/libs/node-waves/node-waves.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
-        <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    {{-- ✅ GLOBAL CUSTOM STYLES --}}
+    <style>
+        /* Paksa Font Outfit ke Seluruh Elemen */
+        body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, 
+        .card-title, .card-header, .btn, .form-label, .form-control, 
+        .menu-link, .select2-container {
+            font-family: 'Outfit', sans-serif !important;
+        }
 
-        <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
+        /* Smooth Fade-in Content */
+        #main-content {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #main-content.show-content {
+            opacity: 1;
+        }
 
-        <style>
-            body,
-            .h1,
-            .h2,
-            .h3,
-            .h4,
-            .h5,
-            .h6,
-            h1,
-            h2,
-            h3,
-            h4,
-            h5,
-            h6,
-            .card-title,
-            .card-header,
-            .btn,
-            .form-label,
-            .form-control,
-            .menu-link,
-            .select2-container {
-                font-family: 'Outfit', sans-serif !important;
-            }
-        </style>
+        /* Animasi Skeleton Premium */
+        @keyframes pulse { 50% { opacity: 0.5; } }
+        .skeleton {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            background-color: var(--bs-gray-300);
+            border-radius: 8px;
+        }
+        .card .skeleton { background-color: var(--bs-gray-200); }
+        [data-bs-theme="dark"] .skeleton { background-color: rgba(255, 255, 255, 0.1); }
+        [data-bs-theme="dark"] .card .skeleton { background-color: rgba(255, 255, 255, 0.05); }
 
-        @stack('styles')
+        .skeleton-text { width: 100%; height: 1rem; margin-bottom: 0.5rem; }
+        .skeleton-text-sm { height: 0.75rem; }
+        .skeleton-input { width: 100%; height: 54px; }
+        .skeleton-button { height: 38px; width: 120px; }
+        .skeleton-avatar { width: 45px; height: 45px; border-radius: 50%; }
+        .skeleton-avatar-lg { width: 120px; height: 120px; border-radius: 50%; }
+    </style>
 
-        <style>
-            /* Animasi berkedip pelan untuk efek loading */
-            @keyframes pulse {
-                50% {
-                    opacity: 0.6;
-                }
-            }
+    @stack('styles')
 
-            /* Gaya dasar untuk semua elemen skeleton */
-            .skeleton {
-                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-                background-color: #e5e7eb;
-                /* Warna abu-abu dasar yang terlihat */
-                border-radius: 6px;
-            }
+    {{-- ✅ SCRIPT ANTI FOUC (Mencegah Layar Putih Berkedip Saat Dark Mode) --}}
+    <script>
+        try {
+            const storedTheme = localStorage.getItem('spkp-theme') || 'light';
+            const activeTheme = storedTheme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : storedTheme;
+            document.documentElement.setAttribute('data-bs-theme', activeTheme);
+            document.documentElement.classList.add(activeTheme + '-style');
+        } catch (e) {}
+    </script>
 
-            /* Khusus untuk skeleton-card, kita tidak ingin card-nya ikut berkedip */
-            .card .skeleton {
-                background-color: #f3f4f6;
-                /* Abu-abu lebih terang di dalam card */
-            }
+    <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
+    <script>const assetsPath = document.documentElement.getAttribute('data-assets-path');</script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
+</head>
 
-            /* Gaya untuk teks (garis horizontal) */
-            .skeleton-text {
-                width: 100%;
-                height: 1rem;
-            }
+<body>
+    @include('layouts.partials._alerts')
+    
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
 
-            .skeleton-text-sm {
-                height: 0.75rem;
-            }
+            {{-- 1. Sidebar --}}
+            @if (!isset($hideSidebar) || !$hideSidebar)
+                @include('layouts.partials._sidebar')
+            @endif
 
-            /* Gaya untuk input form (ini yang kamu mau) */
-            .skeleton-input {
-                width: 100%;
-                height: 54px;
-                /* Sesuaikan dengan tinggi form-floating */
-            }
+            <div class="layout-page">
 
-            /* Gaya untuk elemen lainnya */
-            .skeleton-button {
-                height: 38px;
-            }
+                {{-- 2. Navbar --}}
+                @include('layouts.partials._navbar')
 
-            .skeleton-avatar {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-            }
+                {{-- 3. Main Content --}}
+                <div class="content-wrapper">
+                    <div class="container-xxl flex-grow-1 container-p-y">
 
-            .skeleton-avatar-lg {
-                width: 120px;
-                height: 120px;
-                border-radius: 50%;
-            }
-
-            .skeleton-badge {
-                width: 70px;
-                height: 24px;
-                border-radius: 12px;
-            }
-
-            .skeleton-icon {
-                width: 22px;
-                height: 22px;
-            }
-        </style>
-
-        <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
-
-        <script>
-            // Mendefinisikan path root untuk aset agar main.js tidak salah jalan
-            const assetsPath = document.documentElement.getAttribute('data-assets-path');
-        </script>
-
-        {{-- <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script> --}}
-        <script src="{{ asset('assets/js/config.js') }}"></script>
-    </head>
-
-    <body>
-        @include('layouts.partials._alerts')
-        <div class="layout-wrapper layout-content-navbar">
-            <div class="layout-container">
-
-                {{-- 1. Sidebar --}}
-                @if (!isset($hideSidebar) || !$hideSidebar)
-                    @include('layouts.partials._sidebar')
-                @endif
-
-                <div class="layout-page">
-
-                    {{-- 2. Navbar --}}
-                    @include('layouts.partials._navbar')
-
-                    <div class="content-wrapper">
-                        <div class="container-xxl flex-grow-1 container-p-y">
-
-                            <div id="skeleton-loader">
-                                @section('skeleton')
-                                    @include('layouts.partials._skeleton-default')
-                                @show
-                            </div>
-
-                            <div id="main-content" style="display: none;">
-                                @yield('content')
-                            </div>
-
+                        {{-- Skeleton Loader --}}
+                        <div id="skeleton-loader">
+                            @section('skeleton')
+                                @include('layouts.partials._skeleton-default')
+                            @show
                         </div>
 
-                        @include('layouts.partials._footer')
+                        {{-- Konten Asli --}}
+                        <div id="main-content" style="display: none;">
+                            @yield('content')
+                        </div>
 
-                        <div class="content-backdrop fade"></div>
                     </div>
+
+                    {{-- 4. Footer --}}
+                    @include('layouts.partials._footer')
+
+                    <div class="content-backdrop fade"></div>
                 </div>
             </div>
-
-            <div class="layout-overlay layout-menu-toggle"></div>
-            <div class="drag-target"></div>
         </div>
-        <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
-        <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
-        <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
-        <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
-        <script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
-        <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
-        <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
-        @stack('vendors-js')
+        <div class="layout-overlay layout-menu-toggle"></div>
+        <div class="drag-target"></div>
+    </div>
 
-        <script src="{{ asset('assets/js/main.js') }}"></script>
-        <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-        <script>
-            window.addEventListener('load', function() {
-                const skeleton = document.getElementById('skeleton-loader');
-                const content = document.getElementById('main-content');
+    {{-- ✅ CORE JS SCRIPTS (Duplicate jQuery Dihapus) --}}
+    <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
 
-                if (skeleton && content) {
-                    // Beri sedikit jeda agar tidak terasa terlalu cepat
-                    setTimeout(() => {
-                        skeleton.style.display = 'none';
-                        content.style.display = 'block';
-                    }, 250); // Jeda 250 milidetik
-                }
-            });
+    @stack('vendors-js')
+    
+    <script src="{{ asset('assets/js/main.js') }}"></script>
 
-            document.addEventListener('DOMContentLoaded', function() {
-                const changelogLink = document.getElementById('changelog-link');
-                const changelogContent = document.getElementById('changelog-content');
-                const changelogModal = new bootstrap.Modal(document.getElementById('changelogModal'));
+    {{-- ✅ CUSTOM GLOBAL SCRIPTS --}}
+    <script>
+        // 1. Logika Smooth Skeleton Loader
+        window.addEventListener('load', function() {
+            const skeleton = document.getElementById('skeleton-loader');
+            const content = document.getElementById('main-content');
 
+            if (skeleton && content) {
+                setTimeout(() => {
+                    skeleton.style.display = 'none';
+                    content.style.display = 'block';
+                    // Paksa browser render ulang sebelum kasih class animasi
+                    void content.offsetWidth; 
+                    content.classList.add('show-content');
+                }, 300); // 300ms jeda elegan
+            }
+        });
+
+        // 2. Modal Changelog Global
+        document.addEventListener('DOMContentLoaded', function() {
+            const changelogLink = document.getElementById('changelog-link');
+            const changelogContent = document.getElementById('changelog-content');
+
+            if(changelogLink && changelogContent) {
                 changelogLink.addEventListener('click', function() {
-                    // Tampilkan loading spinner
-                    changelogContent.innerHTML =
-                        `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+                    changelogContent.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted small">Memuat data versi...</p></div>`;
 
-                    // Ambil data dari server
-                    fetch('{{ route('app.versions') }}')
+                    fetch('{{ route("app.versions") }}')
                         .then(response => response.json())
                         .then(data => {
                             let html = '';
                             if (data.length > 0) {
                                 data.forEach(version => {
-                                    // Format tanggal
-                                    const releaseDate = new Date(version.release_date)
-                                        .toLocaleDateString('id-ID', {
-                                            day: 'numeric',
-                                            month: 'long',
-                                            year: 'numeric'
-                                        });
-
-                                    // Ubah changelog (asumsi Markdown sederhana) menjadi list HTML
-                                    const changelogItems = version.changelog.split('\\n').map(
-                                        item => {
-                                            if (item.trim().startsWith('- ')) {
-                                                return `<li>${item.trim().substring(2)}</li>`;
-                                            }
-                                            return '';
-                                        }).join('');
+                                    const releaseDate = new Date(version.release_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                                    const changelogItems = version.changelog.split('\n').map(item => {
+                                        return item.trim().startsWith('- ') ? `<li>${item.trim().substring(2)}</li>` : '';
+                                    }).join('');
 
                                     html += `
                                     <div class="mb-4 pb-4 border-bottom">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-1"><strong>Versi ${version.version}</strong></h5>
-                                            <small class="text-muted">${releaseDate}</small>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h5 class="mb-0 fw-bold text-primary">Versi ${version.version}</h5>
+                                            <small class="badge bg-label-secondary rounded-pill">${releaseDate}</small>
                                         </div>
-                                        <ul class="list-unstyled mt-2 mb-0 ps-3">
+                                        <ul class="list-unstyled mt-2 mb-0 ps-3 text-muted" style="list-style-type: disc;">
                                             ${changelogItems}
                                         </ul>
-                                    </div>
-                                `;
+                                    </div>`;
                                 });
                             } else {
-                                html =
-                                    '<p class="text-center">Belum ada catatan versi yang ditambahkan.</p>';
+                                html = '<div class="text-center py-4"><i class="ri-file-info-line ri-3x text-muted opacity-50 mb-2"></i><p class="text-muted">Belum ada catatan versi.</p></div>';
                             }
                             changelogContent.innerHTML = html;
                         })
-                        .catch(error => {
-                            console.error('Error fetching changelog:', error);
-                            changelogContent.innerHTML =
-                                '<p class="text-center text-danger">Gagal memuat histori. Silakan coba lagi.</p>';
+                        .catch(() => {
+                            changelogContent.innerHTML = '<div class="text-center py-4"><i class="ri-error-warning-line ri-3x text-danger opacity-50 mb-2"></i><p class="text-danger">Gagal memuat histori versi.</p></div>';
                         });
                 });
-            });
-
-            document.addEventListener('DOMContentLoaded', function() {
-                const logoutButton = document.getElementById('logout-button');
-                const logoutForm = document.getElementById('logout-form');
-
-                if (logoutButton && logoutForm) {
-                    logoutButton.addEventListener('click', function(event) {
-                        event.preventDefault(); // Mencegah aksi default tombol
-
-                        Swal.fire({
-                            title: 'Anda yakin ingin logout?',
-                            text: "Sesi Anda akan diakhiri.",
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'Ya, Logout!',
-                            cancelButtonText: 'Batal',
-                            customClass: {
-                                confirmButton: 'btn btn-danger me-3',
-                                cancelButton: 'btn btn-label-secondary'
-                            },
-                            buttonsStyling: false
-                        }).then(function(result) {
-                            if (result.value) {
-                                // Jika user klik "Ya", submit form logout
-                                logoutForm.submit();
-                            }
-                        });
-                    });
-                }
-            });
-        </script>
-        @stack('scripts')
-    </body>
-
+            }
+        });
+    </script>
+    
+    @stack('scripts')
+</body>
 </html>

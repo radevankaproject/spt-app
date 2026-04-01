@@ -56,6 +56,7 @@ class UserController extends Controller
      */
     public function create()
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
         return view('admin.users.create');
     }
 
@@ -64,6 +65,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|regex:/^[a-z0-9_-]+$/',
@@ -113,6 +116,7 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
         return view('admin.users.edit', compact('user'));
     }
 
@@ -121,6 +125,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'username' => [

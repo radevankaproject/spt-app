@@ -191,6 +191,7 @@
                              <img src="{{ $avatarSrc }}" alt="logo-upt"
                                 class="d-block w-px-150 h-px-150 rounded-circle mb-4 object-fit-contain shadow-sm border border-5 border-light bg-white" id="uploadedLogo" />
 
+                             @if(Auth::user()->role !== 'leader')
                              <div class="d-flex justify-content-center gap-3 mb-3">
                                 <label for="logo-upload" class="btn btn-primary btn-sm" tabindex="0">
                                     <span class="d-none d-sm-block">Pilih Logo</span>
@@ -203,6 +204,7 @@
                                      <i class="icon-base ri-refresh-line d-sm-none"></i>
                                 </button>
                             </div>
+                            @endif
 
                             <div class="w-100 px-3 mb-2">
                                 <div class="progress" id="compressionProgress">
@@ -215,11 +217,13 @@
                             <p class="text-muted mb-0 mt-2">Hanya JPG/PNG.<br><small>Otomatis dikompres &lt; 50Kb dan menimpa Favicon.</small></p>
                          </div>
                     </div>
+                    @if(Auth::user()->role !== 'leader')
                     <div class="card-footer text-center border-top">
                         <button type="submit" class="btn btn-success w-100">
                             <i class="ri-save-line me-1"></i> Simpan Perubahan
                         </button>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

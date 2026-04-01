@@ -33,9 +33,11 @@
                 <p class="text-muted mb-0">Total {{ $accounts->total() }} rekening terdaftar.</p>
             </div>
             <div class="d-flex justify-content-md-end align-items-center">
+                @if(Auth::user()->role !== 'leader')
                 <a href="{{ route('admin.blud-bank-accounts.create') }}" class="btn btn-primary">
                     <i class="icon-base ri-add-line me-2"></i>Tambah Rekening
                 </a>
+                @endif
             </div>
         </div>
         <div class="card-body">
@@ -70,6 +72,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center">
+                                        @if(Auth::user()->role !== 'leader')
                                         <a class="btn btn-sm btn-icon"
                                             href="{{ route('admin.blud-bank-accounts.edit', $account->id) }}"
                                             data-bs-toggle="tooltip" title="Edit Rekening">
@@ -86,6 +89,7 @@
                                                     <i class="icon-base ri ri-delete-bin-line icon-22px"></i>
                                                 </button>
                                             </form>
+                                        @endif
                                         @endif
                                     </div>
                                 </td>

@@ -128,9 +128,11 @@
             <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-outline-secondary">
                 <i class="ri ri-arrow-left-line me-1"></i> Kembali
             </a>
+            @if(Auth::user()->role !== 'leader')
             <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}" class="btn btn-primary shadow-sm">
                 <i class="ri ri-pencil-line me-1"></i> Edit PKS
             </a>
+            @endif
         </div>
     </div>
 

@@ -32,6 +32,8 @@ class AppVersionController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $request->validate([
             'version'      => 'required|string|max:255|unique:app_versions,version',
             'release_date' => 'required|date',

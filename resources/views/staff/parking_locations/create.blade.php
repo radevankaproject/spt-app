@@ -94,7 +94,7 @@
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Foto Lokasi</label>
                         <div class="dropzone-area" id="dropzoneBox" onclick="document.getElementById('image-upload').click()">
-                            <img src="{{ asset('assets/img/illustrations/image-light.png') }}" alt="preview" id="image-preview" class="d-block mx-auto mb-2" style="max-height: 100px; object-fit: cover; border-radius: 6px; display: none;" />
+                            <img src="{{ asset('assets/img/map.png') }}" alt="preview" id="image-preview" class="d-block mx-auto mb-2" style="max-height: 100px; object-fit: cover; border-radius: 6px; display: none;" />
                             <div id="upload-placeholder">
                                 <i class="ri icon-base ri-upload-cloud-2-line ri-22px" style="font-size: 2rem;"></i>
                                 <p class="mb-0 mt-1">Tarik foto ke sini atau klik</p>

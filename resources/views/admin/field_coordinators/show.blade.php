@@ -77,7 +77,9 @@
                             <li class="d-flex align-items-start"><i class="ri ri-map-pin-line text-muted me-2 mt-1"></i> <span>{{ $fieldCoordinator->address }}</span></li>
                         </ul>
                         <div class="d-grid gap-2">
+                            @if(Auth::user()->role !== 'leader')
                             <a href="{{ route('admin.field-coordinators.edit', $fieldCoordinator->id) }}" class="btn btn-outline-primary"><i class="ri ri-edit-box-line me-1"></i> Edit Profil</a>
+                            @endif
                         </div>
                     </div>
                 </div>

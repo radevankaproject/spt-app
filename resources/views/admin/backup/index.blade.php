@@ -35,6 +35,7 @@
     @endif
 
     <!-- Card Aksi Utama -->
+    @if(Auth::user()->role !== 'leader')
     <div class="card mb-6">
         <div class="card-body text-center">
             <i class="icon-base ri ri-download-cloud-2-line text-primary" style="font-size: 80px;"></i>
@@ -52,6 +53,7 @@
             </form>
         </div>
     </div>
+    @endif
 
     <!-- Card Riwayat Backup -->
     <div class="card">
@@ -83,12 +85,14 @@
                                         class="btn btn-sm btn-icon btn-text-secondary rounded-pill me-2"
                                         data-bs-toggle="tooltip" title="Download"><i
                                             class="icon-base ri ri-download-2-line icon-22px"></i></a>
+                                    @if(Auth::user()->role !== 'leader')
                                     <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-btn"
                                         data-bs-toggle="modal" data-bs-target="#deleteModal"
                                         data-url="{{ route('admin.backup.destroy', $backup->id) }}"
                                         data-filename="{{ $backup->file_name }}" data-bs-toggle="tooltip" title="Hapus">
                                         <i class="icon-base ri ri-delete-bin-7-line icon-22px"></i>
                                     </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

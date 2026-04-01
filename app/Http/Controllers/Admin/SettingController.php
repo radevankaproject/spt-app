@@ -18,6 +18,8 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         // Ambil semua input kecuali token dan file logo
         $data = $request->except(['_token', '_method', 'app_logo']);
 

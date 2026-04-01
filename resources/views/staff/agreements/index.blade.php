@@ -88,9 +88,11 @@
                     </div>
                 </form>
                 {{-- Tombol Tambah --}}
+                @if(Auth::user()->role !== 'leader')
                 <a href="{{ route('masterdata.agreements.create') }}" class="btn btn-primary">
                     <i class="icon-base ri ri-add-line me-1"></i> Tambah PKS
                 </a>
+                @endif
             </div>
         </div>
         <div class="card-body pt-3">
@@ -178,16 +180,19 @@
                                             data-bs-toggle="tooltip" title="Lihat Detail">
                                             <i class="icon-base ri ri-eye-line icon-20px"></i>
                                         </a>
+                                        @if(Auth::user()->role !== 'leader')
                                         <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                             href="{{ route('masterdata.agreements.edit', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Edit PKS">
                                             <i class="icon-base ri ri-pencil-line icon-20px"></i>
                                         </a>
+                                        @endif
                                         <a class="btn btn-sm btn-icon btn-text-secondary rounded-pill"
                                             href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
                                             data-bs-toggle="tooltip" title="Cetak Dokumen PKS">
                                             <i class="icon-base ri ri-printer-line icon-20px"></i>
                                         </a>
+                                        @if(Auth::user()->role !== 'leader')
                                         <form action="{{ route('masterdata.agreements.destroy', $agreement->id) }}"
                                             method="POST" class="form-delete d-inline">
                                             @csrf
@@ -197,6 +202,7 @@
                                                 <i class="icon-base ri ri-delete-bin-line icon-20px"></i>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

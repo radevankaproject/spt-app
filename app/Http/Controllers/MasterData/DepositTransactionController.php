@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
@@ -23,12 +24,12 @@ class DepositTransactionController extends Controller
 {
     public function index(Request $request)
     {
-        $search         = $request->input('search');
-        $searchDate     = $request->input('search_date');
-        $searchMonth    = $request->input('search_month');
-        $searchYear     = $request->input('search_year');
+        $search = $request->input('search');
+        $searchDate = $request->input('search_date');
+        $searchMonth = $request->input('search_month');
+        $searchYear = $request->input('search_year');
         $startDateRange = $request->input('start_date_range');
-        $endDateRange   = $request->input('end_date_range');
+        $endDateRange = $request->input('end_date_range');
 
         $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
 
@@ -42,31 +43,41 @@ class DepositTransactionController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('deposit_date', 'like', '%' . $search . '%')
-                    ->orWhere('amount', 'like', '%' . $search . '%')
-                    ->orWhere('notes', 'like', '%' . $search . '%')
-                    ->orWhere('referral_code', 'like', '%' . $search . '%')
+                $q->where('deposit_date', 'like', '%'.$search.'%')
+                    ->orWhere('amount', 'like', '%'.$search.'%')
+                    ->orWhere('notes', 'like', '%'.$search.'%')
+                    ->orWhere('referral_code', 'like', '%'.$search.'%')
                     ->orWhereHas('agreement', function ($agreementQuery) use ($search) {
-                        $agreementQuery->where('agreement_number', 'like', '%' . $search . '%')
+                        $agreementQuery->where('agreement_number', 'like', '%'.$search.'%')
                             ->orWhereHas('fieldCoordinator.user', function ($fcUserQuery) use ($search) {
-                                $fcUserQuery->where('name', 'like', '%' . $search . '%');
+                                $fcUserQuery->where('name', 'like', '%'.$search.'%');
                             })
                             ->orWhereHas('leader.user', function ($leaderUserQuery) use ($search) {
-                                $leaderUserQuery->where('name', 'like', '%' . $search . '%');
+                                $leaderUserQuery->where('name', 'like', '%'.$search.'%');
                             });
                     })
                     ->orWhereHas('creator', function ($creatorQuery) use ($search) {
-                        $creatorQuery->where('name', 'like', '%' . $search . '%');
+                        $creatorQuery->where('name', 'like', '%'.$search.'%');
                     });
             });
         }
 
-        if ($searchDate) $query->whereDate('deposit_date', $searchDate);
-        if ($searchMonth) $query->whereMonth('deposit_date', $searchMonth);
-        if ($searchYear) $query->whereYear('deposit_date', $searchYear);
-        if ($startDateRange && $endDateRange) $query->whereBetween('deposit_date', [$startDateRange, $endDateRange]);
-        elseif ($startDateRange) $query->whereDate('deposit_date', '>=', $startDateRange);
-        elseif ($endDateRange) $query->whereDate('deposit_date', '<=', $endDateRange);
+        if ($searchDate) {
+            $query->whereDate('deposit_date', $searchDate);
+        }
+        if ($searchMonth) {
+            $query->whereMonth('deposit_date', $searchMonth);
+        }
+        if ($searchYear) {
+            $query->whereYear('deposit_date', $searchYear);
+        }
+        if ($startDateRange && $endDateRange) {
+            $query->whereBetween('deposit_date', [$startDateRange, $endDateRange]);
+        } elseif ($startDateRange) {
+            $query->whereDate('deposit_date', '>=', $startDateRange);
+        } elseif ($endDateRange) {
+            $query->whereDate('deposit_date', '<=', $endDateRange);
+        }
 
         $depositTransactions = $query->latest('deposit_date')->paginate(10);
 
@@ -77,45 +88,50 @@ class DepositTransactionController extends Controller
 
     public function create()
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         // Cari Bendahara yang sedang Aktif Menjabat
         $activeTreasurer = Treasurer::with('user')->whereHas('user', function ($q) {
             $q->where('is_active', true);
         })->first();
 
         // ❌ GERBANG AUDIT: Tolak jika tidak ada bendahara
-        if (!$activeTreasurer) {
+        if (! $activeTreasurer) {
             return redirect()->route('masterdata.deposit-transactions.index')
                 ->with('error', 'AKSES DITOLAK: Tidak dapat mencatat setoran karena belum ada Bendahara Penerimaan yang Aktif di sistem. Harap tugaskan Bendahara terlebih dahulu!');
         }
 
         $activeAgreements = collect();
+
         return view('masterdata.deposit_transactions.create', compact('activeAgreements', 'activeTreasurer'));
     }
 
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         // ✅ PESAN ERROR BAHASA INDONESIA
         $messages = [
-            'agreement_id.required'      => 'Perjanjian kerjasama wajib dipilih.',
-            'agreement_id.exists'        => 'Data perjanjian tidak ditemukan di sistem.',
-            'deposit_date.required'      => 'Tanggal setoran wajib diisi.',
-            'deposit_date.date'          => 'Format tanggal setoran tidak valid.',
-            'deposit_date.before_or_equal'=> 'Tanggal setoran pada struk tidak boleh melebihi hari ini (dari masa depan).',
-            'amount.required'            => 'Jumlah setoran wajib diisi.',
-            'amount.numeric'             => 'Jumlah setoran harus berupa angka yang valid.',
-            'amount.min'                 => 'Jumlah setoran tidak boleh minus.',
-            'notes.max'                  => 'Catatan tambahan maksimal 255 karakter.',
-            'proof_of_transfer.image'    => 'File bukti transfer harus berupa gambar.',
-            'proof_of_transfer.mimes'    => 'Format gambar bukti transfer harus berupa jpeg, png, atau jpg.',
-            'proof_of_transfer.max'      => 'Ukuran gambar bukti transfer tidak boleh lebih dari 1MB.',
+            'agreement_id.required' => 'Perjanjian kerjasama wajib dipilih.',
+            'agreement_id.exists' => 'Data perjanjian tidak ditemukan di sistem.',
+            'deposit_date.required' => 'Tanggal setoran wajib diisi.',
+            'deposit_date.date' => 'Format tanggal setoran tidak valid.',
+            'deposit_date.before_or_equal' => 'Tanggal setoran pada struk tidak boleh melebihi hari ini (dari masa depan).',
+            'amount.required' => 'Jumlah setoran wajib diisi.',
+            'amount.numeric' => 'Jumlah setoran harus berupa angka yang valid.',
+            'amount.min' => 'Jumlah setoran tidak boleh minus.',
+            'notes.max' => 'Catatan tambahan maksimal 255 karakter.',
+            'proof_of_transfer.image' => 'File bukti transfer harus berupa gambar.',
+            'proof_of_transfer.mimes' => 'Format gambar bukti transfer harus berupa jpeg, png, atau jpg.',
+            'proof_of_transfer.max' => 'Ukuran gambar bukti transfer tidak boleh lebih dari 1MB.',
         ];
 
         $validatedData = $request->validate([
-            'agreement_id'      => 'required|exists:agreements,id',
+            'agreement_id' => 'required|exists:agreements,id',
             // ✅ LOGIKA DIPERBAIKI: Tanggal struk boleh hari ini atau masa lalu (kemarin), tapi gak boleh besok!
-            'deposit_date'      => 'required|date|before_or_equal:today',
-            'amount'            => 'required|numeric|min:0',
-            'notes'             => 'nullable|string|max:255',
+            'deposit_date' => 'required|date|before_or_equal:today',
+            'amount' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:255',
             'proof_of_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
         ], $messages);
 
@@ -127,15 +143,15 @@ class DepositTransactionController extends Controller
                 $q->where('is_active', true);
             })->first();
 
-            if (!$activeTreasurer) {
+            if (! $activeTreasurer) {
                 return redirect()->back()->with('error', 'Gagal: Bendahara mendadak tidak aktif.')->withInput();
             }
             $transactionData['treasurer_id'] = $activeTreasurer->id;
-            $transactionData['is_validated']       = false;
-            $transactionData['referral_code'] = 'TRXPRK-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(6));
+            $transactionData['is_validated'] = false;
+            $transactionData['referral_code'] = 'TRXPRK-'.now()->format('YmdHis').'-'.strtoupper(Str::random(6));
 
             if ($request->hasFile('proof_of_transfer')) {
-                $imageName = time() . '_proof.' . $request->proof_of_transfer->extension();
+                $imageName = time().'_proof.'.$request->proof_of_transfer->extension();
                 $transactionData['proof_of_transfer'] = $request->file('proof_of_transfer')->storeAs('uploads/proofs', $imageName, 'public');
             }
 
@@ -143,7 +159,8 @@ class DepositTransactionController extends Controller
 
             return redirect()->route('masterdata.deposit-transactions.index')->with('success', 'Setoran berhasil dicatat! Menunggu validasi.');
         } catch (\Exception $e) {
-            Log::error('Gagal menyimpan setoran: ' . $e->getMessage());
+            Log::error('Gagal menyimpan setoran: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data ke database.')->withInput();
         }
     }
@@ -163,53 +180,58 @@ class DepositTransactionController extends Controller
             ->addMonths($sequence - 1);
 
         $daysInMonth = $targetDate->daysInMonth;
-        $monthName   = $targetDate->translatedFormat('F');
-        $year        = $targetDate->year;
+        $monthName = $targetDate->translatedFormat('F');
+        $year = $targetDate->year;
 
         return view('masterdata.deposit_transactions.show', compact('depositTransaction', 'uptProfile', 'daysInMonth', 'monthName', 'year'));
     }
 
     public function edit(DepositTransaction $depositTransaction)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         if ($depositTransaction->is_validated && Auth::user()->hasRole('staff_keu')) {
             return redirect()->route('masterdata.deposit-transactions.index')->with('error', 'Transaksi yang sudah divalidasi tidak dapat diedit.');
         }
+
         return view('masterdata.deposit_transactions.edit', compact('depositTransaction'));
     }
 
     public function update(Request $request, DepositTransaction $depositTransaction)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         if ($depositTransaction->is_validated && Auth::user()->hasRole('staff_keu')) {
             return redirect()->route('masterdata.deposit-transactions.index')->with('error', 'Transaksi yang sudah divalidasi tidak dapat diedit.');
         }
 
         // ✅ PESAN ERROR BAHASA INDONESIA
         $messages = [
-            'agreement_id.required'      => 'Perjanjian kerjasama wajib dipilih.',
-            'agreement_id.exists'        => 'Data perjanjian tidak ditemukan di sistem.',
-            'deposit_date.required'      => 'Tanggal setoran wajib diisi.',
-            'deposit_date.date'          => 'Format tanggal setoran tidak valid.',
-            'deposit_date.before_or_equal'=> 'Tanggal setoran pada struk tidak boleh melebihi hari ini.',
-            'deposit_date.unique'        => 'Transaksi untuk tanggal dan PKS tersebut sudah pernah dicatat sebelumnya.',
-            'amount.required'            => 'Jumlah setoran wajib diisi.',
-            'amount.numeric'             => 'Jumlah setoran harus berupa angka yang valid.',
-            'amount.min'                 => 'Jumlah setoran tidak boleh minus.',
-            'notes.max'                  => 'Catatan tambahan maksimal 255 karakter.',
-            'proof_of_transfer.image'    => 'File bukti transfer harus berupa gambar.',
-            'proof_of_transfer.mimes'    => 'Format gambar bukti transfer harus berupa jpeg, png, atau jpg.',
-            'proof_of_transfer.max'      => 'Ukuran gambar bukti transfer tidak boleh lebih dari 1MB.',
+            'agreement_id.required' => 'Perjanjian kerjasama wajib dipilih.',
+            'agreement_id.exists' => 'Data perjanjian tidak ditemukan di sistem.',
+            'deposit_date.required' => 'Tanggal setoran wajib diisi.',
+            'deposit_date.date' => 'Format tanggal setoran tidak valid.',
+            'deposit_date.before_or_equal' => 'Tanggal setoran pada struk tidak boleh melebihi hari ini.',
+            'deposit_date.unique' => 'Transaksi untuk tanggal dan PKS tersebut sudah pernah dicatat sebelumnya.',
+            'amount.required' => 'Jumlah setoran wajib diisi.',
+            'amount.numeric' => 'Jumlah setoran harus berupa angka yang valid.',
+            'amount.min' => 'Jumlah setoran tidak boleh minus.',
+            'notes.max' => 'Catatan tambahan maksimal 255 karakter.',
+            'proof_of_transfer.image' => 'File bukti transfer harus berupa gambar.',
+            'proof_of_transfer.mimes' => 'Format gambar bukti transfer harus berupa jpeg, png, atau jpg.',
+            'proof_of_transfer.max' => 'Ukuran gambar bukti transfer tidak boleh lebih dari 1MB.',
         ];
 
         $validatedData = $request->validate([
-            'agreement_id'      => ['required', 'exists:agreements,id'],
-            'deposit_date'      => [
+            'agreement_id' => ['required', 'exists:agreements,id'],
+            'deposit_date' => [
                 'required',
                 'date',
                 'before_or_equal:today', // ✅ Logika diperbaiki
-                Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id)->ignore($depositTransaction->id)
+                Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id)->ignore($depositTransaction->id),
             ],
-            'amount'            => 'required|numeric|min:0',
-            'notes'             => 'nullable|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:255',
             'proof_of_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
         ], $messages);
 
@@ -219,22 +241,23 @@ class DepositTransactionController extends Controller
             if ($depositTransaction->proof_of_transfer && Storage::disk('public')->exists($depositTransaction->proof_of_transfer)) {
                 Storage::disk('public')->delete($depositTransaction->proof_of_transfer);
             }
-            $imageName = time() . '_proof.' . $request->proof_of_transfer->extension();
+            $imageName = time().'_proof.'.$request->proof_of_transfer->extension();
             $transactionData['proof_of_transfer'] = $request->file('proof_of_transfer')->storeAs('uploads/proofs', $imageName, 'public');
         }
 
         $depositTransaction->update($transactionData);
+
         return redirect()->route('masterdata.deposit-transactions.index')->with('success', 'Setoran berhasil diperbarui.');
     }
 
     public function destroy(DepositTransaction $depositTransaction)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (! Auth::user()->hasRole('admin')) {
             return redirect()->route('masterdata.deposit-transactions.index')->with('error', 'Aksi ditolak.');
         }
 
         try {
-            if($depositTransaction->proof_of_transfer && Storage::disk('public')->exists($depositTransaction->proof_of_transfer)){
+            if ($depositTransaction->proof_of_transfer && Storage::disk('public')->exists($depositTransaction->proof_of_transfer)) {
                 Storage::disk('public')->delete($depositTransaction->proof_of_transfer);
             }
             $depositTransaction->delete();
@@ -248,7 +271,7 @@ class DepositTransactionController extends Controller
     public function validateDeposit(DepositTransaction $depositTransaction)
     {
         // 1. Gerbang Keamanan
-        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('staff_keu') && !Auth::user()->hasRole('bendahara')) {
+        if (! Auth::user()->hasRole('admin') && ! Auth::user()->hasRole('staff_keu') && ! Auth::user()->hasRole('bendahara')) {
             abort(403, 'Tindakan tidak diizinkan.');
         }
 
@@ -259,8 +282,8 @@ class DepositTransactionController extends Controller
         try {
             // 2. Update Status Transaksi Setoran
             $depositTransaction->update([
-                'is_validated'         => true,
-                'validation_date'      => now(),
+                'is_validated' => true,
+                'validation_date' => now(),
                 'validated_by_user_id' => Auth::id(),
             ]);
 
@@ -271,12 +294,12 @@ class DepositTransactionController extends Controller
 
                 // ✅ KODE YANG DIPERBAIKI SESUAI MODEL AGREEMENT HISTORY
                 AgreementHistory::create([
-                    'agreement_id'       => $agreement->id,
-                    'event_type'         => 'status_changed', // Tadi salah ketik 'action'
+                    'agreement_id' => $agreement->id,
+                    'event_type' => 'status_changed', // Tadi salah ketik 'action'
                     'changed_by_user_id' => Auth::id(),       // Tadi salah ketik 'user_id'
-                    'old_value'          => ['status' => 'pending'], // Tambahan info log
-                    'new_value'          => ['status' => 'active'],  // Tambahan info log
-                    'notes'              => 'PKS otomatis diaktifkan setelah validasi setoran pertama oleh Bendahara/Keuangan.',
+                    'old_value' => ['status' => 'pending'], // Tambahan info log
+                    'new_value' => ['status' => 'active'],  // Tambahan info log
+                    'notes' => 'PKS otomatis diaktifkan setelah validasi setoran pertama oleh Bendahara/Keuangan.',
                 ]);
             }
 
@@ -284,7 +307,8 @@ class DepositTransactionController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal memvalidasi setoran: ' . $e->getMessage());
+            Log::error('Gagal memvalidasi setoran: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat memvalidasi setoran.');
         }
 
@@ -298,8 +322,8 @@ class DepositTransactionController extends Controller
                 if ($token && $phone) {
                     $korlapName = $agreement->fieldCoordinator->user->name ?? 'Bapak/Ibu';
                     $agreementNumber = $agreement->agreement_number;
-                    $startDate = \Carbon\Carbon::parse($agreement->start_date)->translatedFormat('d F Y');
-                    $endDate = \Carbon\Carbon::parse($agreement->end_date)->translatedFormat('d F Y');
+                    $startDate = Carbon::parse($agreement->start_date)->translatedFormat('d F Y');
+                    $endDate = Carbon::parse($agreement->end_date)->translatedFormat('d F Y');
                     $amount = number_format($depositTransaction->amount, 0, ',', '.');
                     $uptName = $uptProfile->name ?? 'UPT Perparkiran';
 
@@ -327,17 +351,17 @@ class DepositTransactionController extends Controller
                         'countryCode' => '62', // Opsional, jaga-jaga kalau format 08
                     ]);
 
-                    if (!$response->successful()) {
-                        Log::warning("Fonnte WA gagal terkirim ke {$phone}: " . $response->body());
+                    if (! $response->successful()) {
+                        Log::warning("Fonnte WA gagal terkirim ke {$phone}: ".$response->body());
                     }
                 }
             } catch (\Exception $e) {
                 // Jangan gagalkan aplikasi kalau WA error
-                Log::error('Error mengirim WA Fonnte: ' . $e->getMessage());
+                Log::error('Error mengirim WA Fonnte: '.$e->getMessage());
             }
         }
 
-        return redirect()->back()->with('success', 'Setoran berhasil divalidasi' . ($isFirstDeposit ? ', status PKS AKTIF, dan Notifikasi WA telah dikirim ke Korlap!' : '!'));
+        return redirect()->back()->with('success', 'Setoran berhasil divalidasi'.($isFirstDeposit ? ', status PKS AKTIF, dan Notifikasi WA telah dikirim ke Korlap!' : '!'));
     }
 
     public function searchActiveAgreements(Request $request)
@@ -349,9 +373,9 @@ class DepositTransactionController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('agreement_number', 'like', '%' . $search . '%')
+                $q->where('agreement_number', 'like', '%'.$search.'%')
                     ->orWhereHas('fieldCoordinator.user', function ($userQuery) use ($search) {
-                        $userQuery->where('name', 'like', '%' . $search . '%');
+                        $userQuery->where('name', 'like', '%'.$search.'%');
                     });
             });
         }
@@ -360,7 +384,7 @@ class DepositTransactionController extends Controller
 
         $results = [];
         foreach ($agreements as $agreement) {
-            $text = $agreement->agreement_number . ' (Korlap: ' . ($agreement->fieldCoordinator->user->name ?? 'N/A') . ')';
+            $text = $agreement->agreement_number.' (Korlap: '.($agreement->fieldCoordinator->user->name ?? 'N/A').')';
             $results[] = ['id' => $agreement->id, 'text' => $text];
         }
 
@@ -381,7 +405,7 @@ class DepositTransactionController extends Controller
         if ($targetDate->gt($endDate)) {
             return response()->json([
                 'can_pay' => false,
-                'message' => 'Semua kewajiban setoran untuk PKS ini (hingga <strong>' . $endDate->translatedFormat('F Y') . '</strong>) sudah terpenuhi dan Lunas.',
+                'message' => 'Semua kewajiban setoran untuk PKS ini (hingga <strong>'.$endDate->translatedFormat('F Y').'</strong>) sudah terpenuhi dan Lunas.',
             ]);
         }
 
@@ -405,7 +429,7 @@ class DepositTransactionController extends Controller
             }
         }
 
-        if (!$canPay) {
+        if (! $canPay) {
             return response()->json(['can_pay' => false, 'message' => $message]);
         }
 
@@ -435,10 +459,11 @@ class DepositTransactionController extends Controller
 
         $targetDate = Carbon::parse($depositTransaction->agreement->start_date)->startOfMonth()->addMonths($sequence - 1);
         $daysInMonth = $targetDate->daysInMonth;
-        $monthName   = $targetDate->translatedFormat('F');
-        $year        = $targetDate->year;
+        $monthName = $targetDate->translatedFormat('F');
+        $year = $targetDate->year;
 
         $pdf = Pdf::loadView('pdf.deposit_receipt', compact('depositTransaction', 'uptProfile', 'daysInMonth', 'monthName', 'year'));
-        return $pdf->stream('bukti_setor_' . $depositTransaction->referral_code . '.pdf');
+
+        return $pdf->stream('bukti_setor_'.$depositTransaction->referral_code.'.pdf');
     }
 }

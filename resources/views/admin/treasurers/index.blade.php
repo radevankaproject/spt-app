@@ -74,9 +74,11 @@
                         <button class="btn btn-outline-primary" type="submit"><i class="ri ri-search-line"></i></button>
                     </div>
                 </form>
+                @if(Auth::user()->role !== 'leader')
                 <button type="button" class="btn btn-primary" id="btn-add-treasurer" data-bs-toggle="modal" data-bs-target="#treasurerModal">
                     <i class="ri ri-add-line me-1"></i> Tambah Bendahara
                 </button>
+                @endif
             </div>
         </div>
         <div class="card-body pt-3">
@@ -127,6 +129,7 @@
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('admin.treasurers.show', $treasurer->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
                                             <i class="ri ri-eye-line ri-20px"></i>
                                         </a>
+                                        @if(Auth::user()->role !== 'leader')
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill btn-edit-treasurer"
                                             data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-username="{{ $treasurer->user->username }}"
                                             data-email="{{ $treasurer->user->email }}" data-nip="{{ $treasurer->employee_number }}"
@@ -135,7 +138,9 @@
                                             data-avatar="{{ $uAvatar }}" data-bs-toggle="modal" data-bs-target="#treasurerModal" data-bs-toggle="tooltip" title="Edit Bendahara">
                                             <i class="ri ri-pencil-line ri-20px"></i>
                                         </button>
+                                        @endif
 
+                                        @if(Auth::user()->role !== 'leader')
                                         @if($isActive)
                                             <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-nonaktif"
                                                 data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalNonaktif" data-bs-toggle="tooltip" title="Purna Tugas (Nonaktif)">
@@ -154,6 +159,7 @@
                                                     </button>
                                                 </form>
                                             @endif
+                                        @endif
                                         @endif
                                     </div>
                                 </td>

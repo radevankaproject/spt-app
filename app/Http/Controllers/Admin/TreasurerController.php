@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DepositTransaction;
 use App\Models\Treasurer;
 use App\Models\TreasurerHistory;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -18,34 +19,44 @@ class TreasurerController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $tab    = $request->input('tab', 'active');
+        $tab = $request->input('tab', 'active');
 
         $query = Treasurer::with('user');
 
         if ($tab === 'active') {
-            $query->whereHas('user', function ($q) { $q->where('is_active', true); });
+            $query->whereHas('user', function ($q) {
+                $q->where('is_active', true);
+            });
         } elseif ($tab === 'inactive') {
-            $query->whereHas('user', function ($q) { $q->where('is_active', false); });
+            $query->whereHas('user', function ($q) {
+                $q->where('is_active', false);
+            });
         }
 
         if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('username', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
-            })->orWhere('employee_number', 'like', '%' . $search . '%');
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('username', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
+            })->orWhere('employee_number', 'like', '%'.$search.'%');
         }
 
         $treasurers = $query->latest()->paginate(10);
         $countAll = Treasurer::count();
-        $countActive = Treasurer::whereHas('user', function ($q) { $q->where('is_active', true); })->count();
-        $countInactive = Treasurer::whereHas('user', function ($q) { $q->where('is_active', false); })->count();
+        $countActive = Treasurer::whereHas('user', function ($q) {
+            $q->where('is_active', true);
+        })->count();
+        $countInactive = Treasurer::whereHas('user', function ($q) {
+            $q->where('is_active', false);
+        })->count();
 
         return view('admin.treasurers.index', compact('treasurers', 'search', 'tab', 'countAll', 'countActive', 'countInactive'));
     }
 
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|regex:/^[a-z0-9_-]+$/',
@@ -64,15 +75,15 @@ class TreasurerController extends Controller
                 'username' => $validatedData['username'],
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
-                'role' => 'bendahara', // ✅ ROLE BENDAHARA
-                'is_active' => true
+                'role' => 'treasurer', // ✅ ROLE BENDAHARA
+                'is_active' => true,
             ]);
 
             // Otomatis lengserkan Bendahara lain
-            User::where('role', 'bendahara')->where('id', '!=', $user->id)->update(['is_active' => false]);
+            User::where('role', 'treasurer')->where('id', '!=', $user->id)->update(['is_active' => false]);
 
             if ($request->hasFile('img')) {
-                $imageName = time() . '_userBendahara.' . $request->img->extension();
+                $imageName = time().'_userBendahara.'.$request->img->extension();
                 $path = $request->file('img')->storeAs('uploads/users', $imageName, 'public');
                 $user->img = $path;
                 $user->save();
@@ -86,10 +97,12 @@ class TreasurerController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('admin.treasurers.index')->with('success', 'Bendahara baru berhasil ditambahkan dan otomatis menjadi Bendahara Aktif!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('TreasurerController@store Error: ' . $e->getMessage());
+            Log::error('TreasurerController@store Error: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Gagal menambahkan Bendahara.');
         }
     }
@@ -97,11 +110,25 @@ class TreasurerController extends Controller
     public function show(Treasurer $treasurer)
     {
         $treasurer->load(['user', 'histories']);
-        return view('admin.treasurers.show', compact('treasurer'));
+
+        // ✅ AMBIL DATA SETORAN YANG BERHUBUNGAN DENGAN BENDAHARA INI
+        $deposits = DepositTransaction::with(['agreement.fieldCoordinator.user'])
+            ->where('treasurer_id', $treasurer->id)
+            ->latest('deposit_date') // Urutkan dari setoran terbaru
+            ->paginate(10);
+
+        // ✅ HITUNG TOTAL NOMINAL YANG SUDAH DIVALIDASI BENDAHARA INI (Opsional untuk UI Premium)
+        $totalValidatedAmount = DepositTransaction::where('treasurer_id', $treasurer->id)
+            ->where('is_validated', true)
+            ->sum('amount');
+
+        return view('admin.treasurers.show', compact('treasurer', 'deposits', 'totalValidatedAmount'));
     }
 
     public function update(Request $request, Treasurer $treasurer)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($treasurer->user_id), 'regex:/^[a-z0-9_-]+$/'],
@@ -127,7 +154,7 @@ class TreasurerController extends Controller
                 if ($treasurer->user->img && Storage::disk('public')->exists($treasurer->user->img)) {
                     Storage::disk('public')->delete($treasurer->user->img);
                 }
-                $imageName = time() . '_userBendahara.' . $request->img->extension();
+                $imageName = time().'_userBendahara.'.$request->img->extension();
                 $treasurer->user->img = $request->file('img')->storeAs('uploads/users', $imageName, 'public');
             }
 
@@ -140,10 +167,12 @@ class TreasurerController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('admin.treasurers.index')->with('success', 'Data Bendahara berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('TreasurerController@update Error: ' . $e->getMessage());
+            Log::error('TreasurerController@update Error: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data.');
         }
     }
@@ -161,9 +190,12 @@ class TreasurerController extends Controller
             }
             $user = $treasurer->user;
             $treasurer->delete();
-            if($user) $user->delete();
+            if ($user) {
+                $user->delete();
+            }
         } catch (\Exception $e) {
-            Log::error('TreasurerController@destroy Error: ' . $e->getMessage());
+            Log::error('TreasurerController@destroy Error: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Gagal menghapus Bendahara.');
         }
 
@@ -181,11 +213,11 @@ class TreasurerController extends Controller
                 $request->validate(['end_date' => 'required|date']);
                 $treasurer->update(['end_date' => $request->end_date]);
                 $user->update(['is_active' => false]);
-                $msg = "Bendahara berhasil dipurna-tugaskan (Nonaktif).";
+                $msg = 'Bendahara berhasil dipurna-tugaskan (Nonaktif).';
             } else {
                 $request->validate([
                     'start_date' => 'required|date',
-                    'status_jabatan' => 'required|in:tetap,plt,plh'
+                    'status_jabatan' => 'required|in:tetap,plt,plh',
                 ]);
 
                 TreasurerHistory::create([
@@ -198,20 +230,22 @@ class TreasurerController extends Controller
                 $treasurer->update([
                     'status_jabatan' => $request->status_jabatan,
                     'start_date' => $request->start_date,
-                    'end_date' => null
+                    'end_date' => null,
                 ]);
 
                 // Lengserkan bendahara aktif lainnya
-                User::where('role', 'bendahara')->where('id', '!=', $user->id)->update(['is_active' => false]);
+                User::where('role', 'treasurer')->where('id', '!=', $user->id)->update(['is_active' => false]);
                 $user->update(['is_active' => true]);
 
-                $msg = "Bendahara berhasil menjabat kembali sebagai " . strtoupper($request->status_jabatan) . " !";
+                $msg = 'Bendahara berhasil menjabat kembali sebagai '.strtoupper($request->status_jabatan).' !';
             }
             DB::commit();
+
             return redirect()->back()->with('success', $msg);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Toggle Status Error: ' . $e->getMessage());
+            Log::error('Toggle Status Error: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Gagal memproses status jabatan.');
         }
     }

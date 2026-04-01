@@ -47,9 +47,11 @@
                 </div>
 
                 <div class="flex justify-end">
+                    @if(Auth::user()->role !== 'leader')
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200">
                         Simpan Pengaturan
                     </button>
+                    @endif
                 </div>
             </form>
         </div>

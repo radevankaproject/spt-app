@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
@@ -38,7 +39,7 @@ class ProfileController extends Controller
             if ($user->img && Storage::disk('public')->exists($user->img)) {
                 Storage::disk('public')->delete($user->img);
             }
-            $path      = $request->file('img')->store('profile-images', 'public');
+            $path = $request->file('img')->store('profile-images', 'public');
             $user->img = $path;
         }
 
@@ -76,6 +77,7 @@ class ProfileController extends Controller
             Storage::disk('public')->delete($user->img);
             $user->img = null; // Set kolom img menjadi null
             $user->save();
+
             return response()->json(['success' => true, 'message' => 'Foto profil berhasil dihapus.']);
         }
 

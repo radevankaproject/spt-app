@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class AgreementController extends Controller
 {
@@ -31,10 +33,10 @@ class AgreementController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $tab    = $request->input('tab', 'all'); // Default 'all'
+        $tab = $request->input('tab', 'all'); // Default 'all'
 
         // ✅ 1. TANGKAP INPUT TAHUN DARI URL (Default: kosong/semua)
-        $year   = $request->input('year');
+        $year = $request->input('year');
 
         // ✅ 2. AMBIL DAFTAR TAHUN UNTUK DROPDOWN FILTER
         $availableYears = Agreement::selectRaw('YEAR(start_date) as year')
@@ -42,7 +44,7 @@ class AgreementController extends Controller
             ->orderBy('year', 'desc')
             ->pluck('year');
 
-        $query  = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations']);
+        $query = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations']);
 
         // LOGIKA FILTER TAB
         if ($tab === 'active') {
@@ -59,10 +61,10 @@ class AgreementController extends Controller
         // LOGIKA SEARCH
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('agreement_number', 'like', '%' . $search . '%')
-                    ->orWhere('status', 'like', '%' . $search . '%')
-                    ->orWhereHas('leader.user', fn($subq) => $subq->where('name', 'like', '%' . $search . '%'))
-                    ->orWhereHas('fieldCoordinator.user', fn($subq) => $subq->where('name', 'like', '%' . $search . '%'));
+                $q->where('agreement_number', 'like', '%'.$search.'%')
+                    ->orWhere('status', 'like', '%'.$search.'%')
+                    ->orWhereHas('leader.user', fn ($subq) => $subq->where('name', 'like', '%'.$search.'%'))
+                    ->orWhereHas('fieldCoordinator.user', fn ($subq) => $subq->where('name', 'like', '%'.$search.'%'));
             });
         }
 
@@ -71,10 +73,12 @@ class AgreementController extends Controller
 
         // MENGHITUNG TOTAL UNTUK BADGE DI TAB (Disesuaikan dengan Tahun jika difilter)
         $baseCountQuery = Agreement::query();
-        if ($year) { $baseCountQuery->whereYear('start_date', $year); } // Badge menyesuaikan tahun
+        if ($year) {
+            $baseCountQuery->whereYear('start_date', $year);
+        } // Badge menyesuaikan tahun
 
-        $countAll      = (clone $baseCountQuery)->count();
-        $countActive   = (clone $baseCountQuery)->whereIn('status', ['active', 'pending_renewal'])->count();
+        $countAll = (clone $baseCountQuery)->count();
+        $countActive = (clone $baseCountQuery)->whereIn('status', ['active', 'pending_renewal'])->count();
         $countInactive = (clone $baseCountQuery)->whereIn('status', ['expired', 'terminated'])->count();
 
         return view('staff.agreements.index', compact(
@@ -87,6 +91,8 @@ class AgreementController extends Controller
      */
     public function create()
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         // ✅ 1. HANYA AMBIL PIMPINAN YANG AKTIF
         $leaders = Leader::with('user')
             ->whereHas('user', function ($q) {
@@ -109,7 +115,7 @@ class AgreementController extends Controller
     public function getRoadSectionsByZone($zone)
     {
         $roadSections = RoadSection::where('zone', $zone)
-            ->whereHas('parkingLocations', fn($q) => $q->where('status', 'tersedia'))
+            ->whereHas('parkingLocations', fn ($q) => $q->where('status', 'tersedia'))
             ->orderBy('name', 'asc')
             ->get(['id', 'name']);
 
@@ -133,31 +139,33 @@ class AgreementController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
-            'agreement_number'       => 'required|string|max:255|unique:agreements,agreement_number',
-            'leader_id'              => 'required|exists:leaders,id',
-            'field_coordinator_id'   => 'required|exists:field_coordinators,id',
-            'start_date'             => 'required|date',
-            'end_date'               => 'required|date|after_or_equal:start_date',
-            'daily_deposit_amount'   => 'required|numeric|min:1',
+            'agreement_number' => 'required|string|max:255|unique:agreements,agreement_number',
+            'leader_id' => 'required|exists:leaders,id',
+            'field_coordinator_id' => 'required|exists:field_coordinators,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'daily_deposit_amount' => 'required|numeric|min:1',
             // ✅ Validasi 'status' KITA HAPUS! Kita tidak menerima input status dari form saat Create
-            'signed_date'            => 'required|date',
-            'parking_location_ids'   => 'required|array|min:1',
+            'signed_date' => 'required|date',
+            'parking_location_ids' => 'required|array|min:1',
             'parking_location_ids.*' => 'exists:parking_locations,id',
         ]);
 
-        $dailyAmount    = (float) $validatedData['daily_deposit_amount'];
-        $startDate      = Carbon::parse($validatedData['start_date']);
-        $endDate        = Carbon::parse($validatedData['end_date']);
+        $dailyAmount = (float) $validatedData['daily_deposit_amount'];
+        $startDate = Carbon::parse($validatedData['start_date']);
+        $endDate = Carbon::parse($validatedData['end_date']);
         $durationInDays = $endDate->diffInDays($startDate) + 1;
 
-        $agreementData                           = $validatedData;
+        $agreementData = $validatedData;
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
-        $agreementData['total_deposit_target']   = $dailyAmount * $durationInDays;
-        $agreementData['verification_code']      = Str::uuid()->toString();
+        $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
+        $agreementData['verification_code'] = Str::uuid()->toString();
 
         // ✅ KUNCI PERMANEN: Setiap PKS baru WAJIB berstatus 'pending' (Menunggu Setoran Pertama)
-        $agreementData['status']                 = 'pending';
+        $agreementData['status'] = 'pending';
 
         DB::beginTransaction();
         try {
@@ -177,9 +185,9 @@ class AgreementController extends Controller
             foreach ($validatedData['parking_location_ids'] as $locationId) {
                 ParkingLocationHistory::create([
                     'parking_location_id' => $locationId,
-                    'user_id'             => Auth::id(),
-                    'action'              => 'owner_changed',
-                    'description'         => "Lokasi diserahkan ke Koordinator: {$korlapName} (PKS: {$freshAgreement->agreement_number}). Menunggu setoran pertama.",
+                    'user_id' => Auth::id(),
+                    'action' => 'owner_changed',
+                    'description' => "Lokasi diserahkan ke Koordinator: {$korlapName} (PKS: {$freshAgreement->agreement_number}). Menunggu setoran pertama.",
                 ]);
             }
 
@@ -188,11 +196,12 @@ class AgreementController extends Controller
             DB::commit();
 
             return redirect()->route('masterdata.agreements.index')
-                ->with('success', 'Perjanjian "' . $agreement->agreement_number . '" berhasil ditambahkan! Status saat ini PENDING hingga setoran pertama divalidasi.');
+                ->with('success', 'Perjanjian "'.$agreement->agreement_number.'" berhasil ditambahkan! Status saat ini PENDING hingga setoran pertama divalidasi.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('AgreementController@store: ' . $e->getMessage(), ['exception' => $e]);
-            return redirect()->back()->withInput()->with('error', 'Gagal menambahkan perjanjian: ' . $e->getMessage());
+            Log::error('AgreementController@store: '.$e->getMessage(), ['exception' => $e]);
+
+            return redirect()->back()->withInput()->with('error', 'Gagal menambahkan perjanjian: '.$e->getMessage());
         }
     }
 
@@ -235,6 +244,8 @@ class AgreementController extends Controller
 
     public function edit(Agreement $agreement)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $agreement->load('leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection');
 
         // ✅ 1. HANYA AMBIL PIMPINAN YANG AKTIF UNTUK PILIHAN DROPDOWN
@@ -245,7 +256,7 @@ class AgreementController extends Controller
 
         // ✅ 2. SISTEM ANTI-BUG: Jika pimpinan lama (yang teken PKS ini) sudah nonaktif,
         // tetap sisipkan dia ke dalam list agar dropdown tidak blank/error!
-        if (!$leaders->contains($agreement->leader_id)) {
+        if (! $leaders->contains($agreement->leader_id)) {
             $leaders->push($agreement->leader);
         }
 
@@ -280,26 +291,28 @@ class AgreementController extends Controller
 
     public function update(Request $request, Agreement $agreement)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
-            'agreement_number'       => ['required', 'string', 'max:255', Rule::unique('agreements', 'agreement_number')->ignore($agreement->id)],
-            'leader_id'              => 'required|exists:leaders,id',
-            'start_date'             => 'required|date',
-            'end_date'               => 'required|date|after_or_equal:start_date',
-            'daily_deposit_amount'   => 'required|numeric|min:0',
-            'status'                 => 'required|string|in:active,expired,terminated,pending_renewal',
-            'signed_date'            => 'required|date',
-            'parking_location_ids'   => 'nullable|array',
+            'agreement_number' => ['required', 'string', 'max:255', Rule::unique('agreements', 'agreement_number')->ignore($agreement->id)],
+            'leader_id' => 'required|exists:leaders,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'daily_deposit_amount' => 'required|numeric|min:0',
+            'status' => 'required|string|in:active,expired,terminated,pending_renewal',
+            'signed_date' => 'required|date',
+            'parking_location_ids' => 'nullable|array',
             'parking_location_ids.*' => 'exists:parking_locations,id',
         ]);
 
-        $dailyAmount    = (float) $validatedData['daily_deposit_amount'];
-        $startDate      = Carbon::parse($validatedData['start_date']);
-        $endDate        = Carbon::parse($validatedData['end_date']);
+        $dailyAmount = (float) $validatedData['daily_deposit_amount'];
+        $startDate = Carbon::parse($validatedData['start_date']);
+        $endDate = Carbon::parse($validatedData['end_date']);
         $durationInDays = $endDate->diffInDays($startDate) + 1;
 
-        $agreementData                           = $validatedData;
+        $agreementData = $validatedData;
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
-        $agreementData['total_deposit_target']   = $dailyAmount * $durationInDays;
+        $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
 
         DB::beginTransaction();
         try {
@@ -307,29 +320,29 @@ class AgreementController extends Controller
             $agreement->update($agreementData);
             $agreement->load('leader.user');
 
-            $newLocationIds           = $validatedData['parking_location_ids'] ?? [];
+            $newLocationIds = $validatedData['parking_location_ids'] ?? [];
             $currentActiveLocationIds = $oldData->activeParkingLocations->pluck('id')->toArray();
-            $allRelatedLocations      = $oldData->parkingLocations()->get()->keyBy('id');
-            $korlapName               = $oldData->fieldCoordinator->user->name ?? 'N/A'; // Ambil nama korlap
-            $userId                   = Auth::id();
+            $allRelatedLocations = $oldData->parkingLocations()->get()->keyBy('id');
+            $korlapName = $oldData->fieldCoordinator->user->name ?? 'N/A'; // Ambil nama korlap
+            $userId = Auth::id();
 
             $historyRecords = [];
-            $now            = now();
+            $now = now();
 
             if ($oldData->leader_id != $agreement->leader_id) {
-                $historyRecords[] = ['notes' => 'Pimpinan diubah dari "' . ($oldData->leader->user->name ?? 'N/A') . '" menjadi "' . ($agreement->leader->user->name ?? 'N/A') . '".'];
+                $historyRecords[] = ['notes' => 'Pimpinan diubah dari "'.($oldData->leader->user->name ?? 'N/A').'" menjadi "'.($agreement->leader->user->name ?? 'N/A').'".'];
             }
             if (! $oldData->start_date->isSameDay($agreement->start_date)) {
-                $historyRecords[] = ['notes' => 'Tanggal mulai diubah dari "' . $oldData->start_date->translatedFormat('d M Y') . '" menjadi "' . $agreement->start_date->translatedFormat('d M Y') . '".'];
+                $historyRecords[] = ['notes' => 'Tanggal mulai diubah dari "'.$oldData->start_date->translatedFormat('d M Y').'" menjadi "'.$agreement->start_date->translatedFormat('d M Y').'".'];
             }
             if (! $oldData->end_date->isSameDay($agreement->end_date)) {
-                $historyRecords[] = ['notes' => 'Tanggal selesai diubah dari "' . $oldData->end_date->translatedFormat('d M Y') . '" menjadi "' . $agreement->end_date->translatedFormat('d M Y') . '".'];
+                $historyRecords[] = ['notes' => 'Tanggal selesai diubah dari "'.$oldData->end_date->translatedFormat('d M Y').'" menjadi "'.$agreement->end_date->translatedFormat('d M Y').'".'];
             }
             if ($oldData->daily_deposit_amount != $agreement->daily_deposit_amount) {
-                $historyRecords[] = ['event_type' => 'deposit_changed', 'notes' => 'Setoran diubah dari Rp ' . number_format($oldData->daily_deposit_amount) . ' menjadi Rp ' . number_format($agreement->daily_deposit_amount) . '.'];
+                $historyRecords[] = ['event_type' => 'deposit_changed', 'notes' => 'Setoran diubah dari Rp '.number_format($oldData->daily_deposit_amount).' menjadi Rp '.number_format($agreement->daily_deposit_amount).'.'];
             }
             if ($oldData->status != $agreement->status) {
-                $historyRecords[] = ['event_type' => 'status_changed', 'notes' => 'Status diubah dari "' . ucfirst($oldData->status) . '" menjadi "' . ucfirst($agreement->status) . '".'];
+                $historyRecords[] = ['event_type' => 'status_changed', 'notes' => 'Status diubah dari "'.ucfirst($oldData->status).'" menjadi "'.ucfirst($agreement->status).'".'];
             }
 
             // Lokasi yang dinonaktifkan
@@ -337,15 +350,15 @@ class AgreementController extends Controller
             if (! empty($locationsToDeactivate)) {
                 foreach ($locationsToDeactivate as $locationId) {
                     $agreement->parkingLocations()->updateExistingPivot($locationId, ['status' => 'inactive', 'removed_date' => now()]);
-                    $locationName     = $allRelatedLocations[$locationId]->name ?? 'N/A';
-                    $historyRecords[] = ['event_type' => 'location_removed', 'notes' => 'Lokasi "' . $locationName . '" dikeluarkan.'];
+                    $locationName = $allRelatedLocations[$locationId]->name ?? 'N/A';
+                    $historyRecords[] = ['event_type' => 'location_removed', 'notes' => 'Lokasi "'.$locationName.'" dikeluarkan.'];
 
                     // ✅ 2A. CATAT HISTORI KEPEMILIKAN: DIKELUARKAN
                     ParkingLocationHistory::create([
                         'parking_location_id' => $locationId,
-                        'user_id'             => $userId,
-                        'action'              => 'owner_changed',
-                        'description'         => "Lokasi dikeluarkan dari (PKS: {$agreement->agreement_number}) milik Koordinator {$korlapName}.",
+                        'user_id' => $userId,
+                        'action' => 'owner_changed',
+                        'description' => "Lokasi dikeluarkan dari (PKS: {$agreement->agreement_number}) milik Koordinator {$korlapName}.",
                     ]);
                 }
                 ParkingLocation::whereIn('id', $locationsToDeactivate)->update(['status' => 'tersedia']);
@@ -357,14 +370,14 @@ class AgreementController extends Controller
                 if (isset($allRelatedLocations[$locationId])) {
                     if ($allRelatedLocations[$locationId]->pivot->status === 'inactive') {
                         $agreement->parkingLocations()->updateExistingPivot($locationId, ['status' => 'active', 'assigned_date' => now(), 'removed_date' => null]);
-                        $historyRecords[] = ['event_type' => 'location_added', 'notes' => 'Lokasi "' . $allRelatedLocations[$locationId]->name . '" diaktifkan kembali.'];
+                        $historyRecords[] = ['event_type' => 'location_added', 'notes' => 'Lokasi "'.$allRelatedLocations[$locationId]->name.'" diaktifkan kembali.'];
 
                         // ✅ 2B. CATAT HISTORI KEPEMILIKAN: DIAKTIFKAN KEMBALI
                         ParkingLocationHistory::create([
                             'parking_location_id' => $locationId,
-                            'user_id'             => $userId,
-                            'action'              => 'owner_changed',
-                            'description'         => "Lokasi dimasukkan kedalam PKS milik Koordinator: {$korlapName} (PKS: {$agreement->agreement_number}).",
+                            'user_id' => $userId,
+                            'action' => 'owner_changed',
+                            'description' => "Lokasi dimasukkan kedalam PKS milik Koordinator: {$korlapName} (PKS: {$agreement->agreement_number}).",
                         ]);
                     }
                 } else {
@@ -377,16 +390,16 @@ class AgreementController extends Controller
                 $agreement->parkingLocations()->attach($attachData);
                 $addedLocationsDetails = ParkingLocation::whereIn('id', array_keys($attachData))->pluck('name');
                 foreach ($addedLocationsDetails as $name) {
-                    $historyRecords[] = ['event_type' => 'location_added', 'notes' => 'Lokasi "' . $name . '" ditambahkan.'];
+                    $historyRecords[] = ['event_type' => 'location_added', 'notes' => 'Lokasi "'.$name.'" ditambahkan.'];
                 }
 
                 // ✅ 2C. CATAT HISTORI KEPEMILIKAN: BARU DITAMBAHKAN
                 foreach (array_keys($attachData) as $locId) {
                     ParkingLocationHistory::create([
                         'parking_location_id' => $locId,
-                        'user_id'             => $userId,
-                        'action'              => 'owner_changed',
-                        'description'         => "Lokasi diserahkan ke Koordinator: {$korlapName} (PKS: {$agreement->agreement_number}).",
+                        'user_id' => $userId,
+                        'action' => 'owner_changed',
+                        'description' => "Lokasi diserahkan ke Koordinator: {$korlapName} (PKS: {$agreement->agreement_number}).",
                     ]);
                 }
             }
@@ -399,10 +412,10 @@ class AgreementController extends Controller
             // Simpan semua catatan riwayat
             if (! empty($historyRecords)) {
                 foreach ($historyRecords as &$record) {
-                    $record['agreement_id']       = $agreement->id;
+                    $record['agreement_id'] = $agreement->id;
                     $record['changed_by_user_id'] = Auth::id();
-                    $record['created_at']         = $now;
-                    $record['updated_at']         = $now;
+                    $record['created_at'] = $now;
+                    $record['updated_at'] = $now;
                     if (! isset($record['event_type'])) {
                         $record['event_type'] = 'details_updated';
                     }
@@ -410,7 +423,7 @@ class AgreementController extends Controller
                 AgreementHistory::insert($historyRecords);
 
                 // Generate PDF versi terbaru
-                $pdfNotes       = implode('; ', Arr::pluck($historyRecords, 'notes'));
+                $pdfNotes = implode('; ', Arr::pluck($historyRecords, 'notes'));
                 $freshAgreement = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection'])->find($agreement->id);
                 $this->generateAndStorePdfHistory($freshAgreement, $pdfNotes);
             }
@@ -421,8 +434,9 @@ class AgreementController extends Controller
                 ->with('success', 'Perjanjian berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('AgreementController@update: Error updating agreement: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui perjanjian: ' . $e->getMessage());
+            Log::error('AgreementController@update: Error updating agreement: '.$e->getMessage());
+
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui perjanjian: '.$e->getMessage());
         }
     }
 
@@ -439,9 +453,9 @@ class AgreementController extends Controller
                 foreach ($activeLocationIds as $locId) {
                     ParkingLocationHistory::create([
                         'parking_location_id' => $locId,
-                        'user_id'             => Auth::id(),
-                        'action'              => 'owner_changed',
-                        'description'         => "Lokasi dikeluarkan karena PKS {$agreement->agreement_number} dibatalkan/dihapus.",
+                        'user_id' => Auth::id(),
+                        'action' => 'owner_changed',
+                        'description' => "Lokasi dikeluarkan karena PKS {$agreement->agreement_number} dibatalkan/dihapus.",
                     ]);
                 }
             }
@@ -451,7 +465,8 @@ class AgreementController extends Controller
             return redirect()->route('masterdata.agreements.index')->with('success', 'Perjanjian berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('AgreementController@destroy: ' . $e->getMessage());
+            Log::error('AgreementController@destroy: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Gagal menghapus perjanjian.');
         }
     }
@@ -461,7 +476,7 @@ class AgreementController extends Controller
         DB::beginTransaction();
         try {
             $agreement->parkingLocations()->updateExistingPivot($parkingLocation->id, [
-                'status'       => 'inactive',
+                'status' => 'inactive',
                 'removed_date' => now(),
             ]);
 
@@ -470,32 +485,51 @@ class AgreementController extends Controller
             // ✅ 4. CATAT HISTORI KEPEMILIKAN: DIKELUARKAN MANUAL
             ParkingLocationHistory::create([
                 'parking_location_id' => $parkingLocation->id,
-                'user_id'             => Auth::id(),
-                'action'              => 'owner_changed',
-                'description'         => "Lokasi dikeluarkan/ditarik secara manual dari PKS: {$agreement->agreement_number}.",
+                'user_id' => Auth::id(),
+                'action' => 'owner_changed',
+                'description' => "Lokasi dikeluarkan/ditarik secara manual dari PKS: {$agreement->agreement_number}.",
             ]);
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Lokasi parkir "' . $parkingLocation->name . '" berhasil dikeluarkan dari perjanjian.');
+            return redirect()->back()->with('success', 'Lokasi parkir "'.$parkingLocation->name.'" berhasil dikeluarkan dari perjanjian.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error detaching parking location: ' . $e->getMessage(), ['exception' => $e]);
-            return redirect()->back()->with('error', 'Gagal mengeluarkan lokasi parkir: ' . $e->getMessage());
+            Log::error('Error detaching parking location: '.$e->getMessage(), ['exception' => $e]);
+
+            return redirect()->back()->with('error', 'Gagal mengeluarkan lokasi parkir: '.$e->getMessage());
         }
     }
 
+    // ====================================================================
+    // 1. FUNGSI UTAMA GENERATE PDF UNTUK DITAMPILKAN KE BROWSER
+    // ====================================================================
     public function generatePdf(Agreement $agreement)
     {
+        $user = Auth::user();
+        $agreement->load(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection']);
+
+        // ✅ KEAMANAN TAMBAHAN: Cegah Korlap melihat PDF PKS milik orang lain!
+        if ($user->hasRole('field_coordinator')) {
+            if ($agreement->field_coordinator_id !== $user->fieldCoordinator->id) {
+                abort(403, 'Akses Ditolak! Anda tidak berhak melihat Dokumen PKS ini.');
+            }
+        }
+
         $activeBankAccount = BludBankAccount::where('is_active', true)->first();
         $uptProfile = UptProfile::first();
 
-        $agreement->load(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection']);
+        // ✅ PANGGIL FUNGSI HELPER QR CODE
+        $qrCodeImage = $this->generateQrCodeImage($agreement);
 
-        $pdf = Pdf::loadView('pdf.agreement', compact('agreement', 'activeBankAccount', 'uptProfile'));
-        return $pdf->stream(str_replace('/', '_', $agreement->agreement_number) . '_' . date('dmY', strtotime($agreement->start_date)) . '-' . date('dmy', strtotime($agreement->end_date)) . '.pdf');
+        $pdf = Pdf::loadView('pdf.agreement', compact('agreement', 'activeBankAccount', 'uptProfile', 'qrCodeImage'));
+
+        return $pdf->stream(str_replace('/', '_', $agreement->agreement_number).'_'.date('dmY', strtotime($agreement->start_date)).'-'.date('dmy', strtotime($agreement->end_date)).'.pdf');
     }
 
+    // ====================================================================
+    // 2. FUNGSI UNTUK GENERATE & SIMPAN PDF KE DALAM HISTORY (STORAGE)
+    // ====================================================================
     private function generateAndStorePdfHistory(Agreement $agreement, string $notes)
     {
         try {
@@ -505,31 +539,99 @@ class AgreementController extends Controller
             }
             $uptProfile = UptProfile::first();
 
-            $pdf        = Pdf::loadView('pdf.agreement', compact('agreement', 'activeBankAccount', 'uptProfile'));
+            // ✅ PANGGIL FUNGSI HELPER QR CODE JUGA DI SINI! (Biar nggak Error Undefined Variable)
+            $qrCodeImage = $this->generateQrCodeImage($agreement);
+
+            $pdf = Pdf::loadView('pdf.agreement', compact('agreement', 'activeBankAccount', 'uptProfile', 'qrCodeImage'));
             $pdfContent = $pdf->output();
 
-            $fileName = 'PKS_' . str_replace('/', '_', $agreement->agreement_number) . '_' . time() . '.pdf';
-            $filePath = 'agreements_history/' . $fileName;
+            $fileName = 'PKS_'.str_replace('/', '_', $agreement->agreement_number).'_'.time().'.pdf';
+            $filePath = 'agreements_history/'.$fileName;
 
             Storage::disk('public')->put($filePath, $pdfContent);
 
             AgreementPdfHistory::create([
-                'agreement_id'         => $agreement->id,
-                'file_path'            => $filePath,
-                'notes'                => $notes,
+                'agreement_id' => $agreement->id,
+                'file_path' => $filePath,
+                'notes' => $notes,
                 'generated_by_user_id' => Auth::id(),
             ]);
 
             Log::info("Successfully generated PDF history for agreement ID: {$agreement->id}");
         } catch (\Exception $e) {
-            Log::error("Failed to generate PDF history for agreement ID {$agreement->id}: " . $e->getMessage());
+            Log::error("Failed to generate PDF history for agreement ID {$agreement->id}: ".$e->getMessage());
             throw $e;
         }
     }
 
+    // ====================================================================
+    // 3. MENAMPILKAN DAFTAR HISTORY PDF
+    // ====================================================================
     public function showPdfHistory(Agreement $agreement)
     {
         $histories = $agreement->pdfHistories()->with('generator')->paginate(10);
+
         return view('staff.agreements.pdf_history', compact('agreement', 'histories'));
+    }
+
+    // ====================================================================
+    // 4. PRIVATE HELPER: GENERATOR QR CODE PREMIUM (GRAYSCALE LOGO)
+    // ====================================================================
+    private function generateQrCodeImage(Agreement $agreement)
+    {
+        $qrCodeImage = null;
+
+        if ($agreement->verification_code) {
+            $dishubLogoPath = storage_path('images/dishub.png');
+            $url = route('public.agreement.verify', $agreement->verification_code);
+
+            if (file_exists($dishubLogoPath)) {
+                try {
+                    $img = imagecreatefrompng($dishubLogoPath);
+                    imagepalettetotruecolor($img);
+
+                    // Ubah Logo Menjadi Grayscale
+                    imagefilter($img, IMG_FILTER_GRAYSCALE);
+
+                    // Buat Canvas Putih
+                    $width = imagesx($img);
+                    $height = imagesy($img);
+                    $canvasSize = max($width, $height) + 20;
+
+                    $canvas = imagecreatetruecolor($canvasSize, $canvasSize);
+                    $white = imagecolorallocate($canvas, 255, 255, 255);
+                    imagefill($canvas, 0, 0, $white);
+
+                    // Tempelkan logo
+                    $dstX = ($canvasSize - $width) / 2;
+                    $dstY = ($canvasSize - $height) / 2;
+                    imagecopy($canvas, $img, $dstX, $dstY, 0, 0, $width, $height);
+
+                    ob_start();
+                    imagepng($canvas);
+                    $logoString = ob_get_clean();
+
+                    imagedestroy($img);
+                    imagedestroy($canvas);
+
+                    // Merge Canvas Putih Berlogo dengan QR Code
+                    $qrCodeImage = base64_encode(
+                        QrCode::format('png')
+                            ->errorCorrection('H')
+                            ->size(200)
+                            ->mergeString($logoString, 0.26)
+                            ->generate($url)
+                    );
+
+                } catch (\Exception $e) {
+                    Log::warning('Gagal merge logo QR Code: '.$e->getMessage());
+                    $qrCodeImage = base64_encode(QrCode::format('png')->errorCorrection('H')->size(200)->generate($url));
+                }
+            } else {
+                $qrCodeImage = base64_encode(QrCode::format('png')->errorCorrection('H')->size(200)->generate($url));
+            }
+        }
+
+        return $qrCodeImage;
     }
 }

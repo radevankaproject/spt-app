@@ -99,7 +99,9 @@
 
     <div class="row g-4">
         {{-- KOLOM KIRI: FORMULIR INPUT (Sticky) --}}
+        {{-- KOLOM KIRI: FORMULIR INPUT (Sticky) --}}
         <div class="col-lg-4 col-md-5">
+            @if(Auth::user()->role !== 'leader')
             <div class="card sticky-form-card shadow-sm border-0" id="formContainer">
                 <div class="card-header bg-primary text-white d-flex align-items-center rounded-top">
                     {{-- ✅ ICON DIPERBAIKI --}}
@@ -180,6 +182,15 @@
                     </div>
                 </form>
             </div>
+            @else
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-5">
+                     <i class="ri ri-lock-line ri-3x text-muted mb-3"></i>
+                     <h6>Akses Dibatasi</h6>
+                     <p class="text-muted mb-0">Anda hanya dapat melihat target setoran.</p>
+                </div>
+            </div>
+            @endif
         </div>
 
         {{-- KOLOM KANAN: DATA AKUMULASI (Accordion) --}}

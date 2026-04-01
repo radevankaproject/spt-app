@@ -16,9 +16,9 @@
         }
         body {
             font-family: 'Bookman Old Style', serif;
-            font-size: 12pt; /* Sesuai standar dokumen hukum */
+            font-size: 12pt;
             line-height: 1.3;
-            margin: 1cm 1.5cm 1cm 2.5cm; /* Margin kiri lebih lebar untuk jilid */
+            margin: 1cm 1.5cm 1cm 2.5cm;
             color: #000;
         }
         .cover-page {
@@ -32,13 +32,50 @@
         .content { text-align: justify; }
         .title-header { text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 20px; line-height: 1.2; }
         .title-header span { display: block; }
-        .pasal-title { text-align: center; font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase; }
+
+        /* ✅ JUDUL PASAL TETAP MENEMPEL KE PARAGRAF BAWAHNYA */
+        .pasal-title {
+            text-align: center;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            text-transform: uppercase;
+            page-break-after: avoid;
+        }
+
+        /* ✅ PARAGRAF DAN LIST DIBEBASKAN TERPOTONG ALAMI KE HALAMAN BERIKUTNYA */
+        p { margin-bottom: 10px; text-align: justify; }
+
         table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
         table td { vertical-align: top; padding: 2px 0; }
+
         .list-ol { padding-left: 25px; margin: 0; }
         .list-ol li { margin-bottom: 8px; text-align: justify; }
+
         .sub-list { list-style-type: lower-alpha; padding-left: 20px; }
+
+        /* ✅ TANDA TANGAN */
         .signature-table { margin-top: 40px; page-break-inside: avoid; }
+
+        /* ✅ CSS AREA VERIFIKASI QR PREMIUM */
+        .verification-area {
+            margin-top: 25px;
+            text-align: right; /* Mendorong box QR ke kanan */
+            page-break-inside: avoid;
+        }
+
+        .qr-container {
+            display: inline-block; /* Membuat kotak selebar kontennya */
+            text-align: center; /* Membuat teks di dalamnya center terhadap QR */
+            vertical-align: top;
+            width: 100px; /* Lebar dibatasi agar teks wrap rapi */
+        }
+
+        .qr-text {
+            font-size: 8pt;
+            margin: 5px 0 0 0; /* Reset margin P standar dinas biar mepet QR */
+            font-style: italic;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body>
@@ -49,7 +86,7 @@
             : 'Kepala';
         $leaderTitleUpper = strtoupper($leaderTitle);
 
-        // ✅ FIX LOGIKA WAKTU (Bulatkan ke Bulan terdekat untuk PKS Bulanan)
+        // ✅ FIX LOGIKA WAKTU
         $start = \Carbon\Carbon::parse($agreement->start_date);
         $end = \Carbon\Carbon::parse($agreement->end_date);
         $diffMonths = $start->diffInMonths($end->copy()->addDay());
@@ -197,18 +234,17 @@
             <li>Setoran harus dilakukan secara rutin dan bukti penyetoran disampaikan ke Bendahara Penerimaan untuk validasi.</li>
         </ol>
 
-        {{-- PASAL LAINNYA DISINGKAT AGAR RESPON TIDAK TERPOTONG, TAPI TETAP MENGIKUTI STRUKTUR ASLI --}}
-        <p class="pasal-title">Pasal 5<br>HAK DAN KEWAJIBAN PIHAK PERTAMA</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 5<br>HAK DAN KEWAJIBAN PIHAK PERTAMA</div>
+        <ol type="1" class="list-ol">
             <li>PIHAK PERTAMA berhak :
-                <ol type="a">
+                <ol type="a" class="sub-list">
                     <li>Memperoleh setoran tarif layanan parkir sebesar : Rp. {{ number_format($agreement->daily_deposit_amount, 0, ',', '.') }} ({{ ucwords(\App\Helpers\NumberToWords::convert(round($agreement->daily_deposit_amount))) }} Rupiah) / hari.</li>
                     <li>Melakukan pengawasan langsung atas pengelolaan dan pelayanan perparkiran yang dilaksanakan oleh PIHAK KEDUA;</li>
                     <li>Memutuskan Kontrak Kerjasama ini apabila PIHAK KEDUA dianggap tidak cakap dan dalam penilaian maka PIHAK PERTAMA kerjasama oprasional perparkiran tidak dapat dilaksanakan.</li>
                 </ol>
             </li>
             <li>PIHAK PERTAMA berkewajiban :
-                <ol type="a">
+                <ol type="a" class="sub-list">
                     <li>Menentukan dan menetapkan wilayah parkir yang akan dikelola oleh PIHAK KEDUA;</li>
                     <li>Memberikan data wilayah parkir yang akan dikelola oleh PIHAK KEDUA untuk dapat melakukan pengelolaan dan pelayanan parkir sesuai kewenangan PIHAK KEDUA;</li>
                     <li>Melakukan pengawasan terhadap pengelolaan dan pelayanan parkir oleh PIHAK KEDUA.</li>
@@ -216,17 +252,17 @@
             </li>
         </ol>
 
-        <p class="pasal-title">Pasal 6<br>HAK DAN KEWAJIBAN PIHAK KEDUA</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 6<br>HAK DAN KEWAJIBAN PIHAK KEDUA</div>
+        <ol type="1" class="list-ol">
             <li>PIHAK KEDUA berhak :
-                <ol type="a">
+                <ol type="a" class="sub-list">
                     <li>Menerima data wilayah parkir yang diserahkan oleh PIHAK PERTAMA</li>
                     <li>Mengelola dan melakukan pelayanan parkir pada wilayah parkir yang telah disepakati bersama oleh PARA PIHAK;</li>
                     <li>Memperoleh keuntungan dari pengelolaan dan pelayanan parkir yang telah disepakati bersama oleh PARA PIHAK;</li>
                 </ol>
             </li>
             <li>PIHAK KEDUA berkewajiban :
-                <ol type="a">
+                <ol type="a" class="sub-list">
                     <li>Melaksanakan tugas pengelolaan parkir sesuai Peraturan Perundang – undangan yang berlaku;</li>
                     <li>Melakukan Pemungutan Jasa Layanan Perparkiran sesuai tarif yang telah ditentukan pada Peraturan Wali Kota Pekanbaru Nomor 02 Tahun 2025 tentang Peninjauan Tarif Retribusi Jasa Umum atas Pelayanan Parkir di Tepi Jalan Umum;</li>
                     <li>Menyetorkan hasil pungutan jasa layanan perparkiran setiap hari (1x24) jam secara non tunai ke rekening Kas BLUD UPT Perparkiran melalui Bendahara Penerimaan BLUD UPT Perparkiran Dinas Perhubungan Kota Pekanbaru;</li>
@@ -252,45 +288,45 @@
             </li>
         </ol>
 
-        <p class="pasal-title">Pasal 7<br>TARIF PARKIR</p>
-        <p class="paragraph">PIHAK KEDUA memungut besaran tarif layanan parkir berdasarkan tarif layanan parkir yang ditetapkan yaitu Rp. 1000,- (seribu rupiah) untuk kendaraan roda 2 dan Rp. 2000,- (dua ribu rupiah) untuk kendaraan roda 4 dan Rp. 6.000,- (enam ribu rupiah) untuk roda 6.</p>
+        <div class="pasal-title">Pasal 7<br>TARIF PARKIR</div>
+        <p>PIHAK KEDUA memungut besaran tarif layanan parkir berdasarkan tarif layanan parkir yang ditetapkan yaitu Rp. 1000,- (seribu rupiah) untuk kendaraan roda 2 dan Rp. 2000,- (dua ribu rupiah) untuk kendaraan roda 4 dan Rp. 6.000,- (enam ribu rupiah) untuk roda 6.</p>
 
-        <p class="pasal-title">Pasal 8<br>PELAYANAN DAN PELAKSANAAN</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 8<br>PELAYANAN DAN PELAKSANAAN</div>
+        <ol type="1" class="list-ol">
             <li>Dalam rangka pelaksanaan pelayanan parkir, PIHAK KEDUA wajib mempedomani Standar Pelayanan Minimal (SPM) pelayanan parkir yang ditetapkan oleh PIHAK PERTAMA;</li>
             <li>PIHAK PERTAMA melakukan monitoring dan evaluasi terhadap kinerja pelaksanaan pelayanan parkir yang dilakukan oleh PIHAK KEDUA sesuai SPM yang ditetapkan PIHAK PERTAMA;</li>
             <li>Dalam rangka monitoring dan evaluasi sebagaimana dimaksud pada ayat (2) pasal ini, PIHAK PERTAMA berhak mengakses data administrasi yang dikelola oleh PIHAK KEDUA;</li>
             <li>Dalam rangka peningkatan pelayanan parkir, juru parkir wajib menerapkan 3S (Sapa,Senyum,Salam) kepada pengguna jasa layanan parkir.</li>
         </ol>
 
-        <p class="pasal-title">Pasal 9<br>PENDAPATAN</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 9<br>PENDAPATAN</div>
+        <ol type="1" class="list-ol">
             <li>Pendapatan yang diperoleh PIHAK KEDUA dari tarif layanan parkir wajib disetorkan kepada PIHAK PERTAMA secara non tunai melalui bendaraha penerimaan sebagaimana diatur dalam pasal 4 ayat (1);</li>
             <li>Apabila terjadi perubahan penambahan potensi pendapatan layanan parkir maka PARA PIHAK dapat menyesuaikan jumlah nilai setoran sebagaimana dimaksud pada ayat (1);</li>
         </ol>
 
-        <p class="pasal-title">Pasal 10<br>KOORDINASI</p>
-        <p class="paragraph">Dalam rangka pelaksanaan Perjanjian Kerjasama ini akan dilakukan koordinasi antara PARA PIHAK paling kurang 1 (satu) minggu sekali dan/atau pada waktu tertentu yang disepakati oleh PARA PIHAK;</p>
+        <div class="pasal-title">Pasal 10<br>KOORDINASI</div>
+        <p>Dalam rangka pelaksanaan Perjanjian Kerjasama ini akan dilakukan koordinasi antara PARA PIHAK paling kurang 1 (satu) minggu sekali dan/atau pada waktu tertentu yang disepakati oleh PARA PIHAK;</p>
 
-        <p class="pasal-title">Pasal 11<br>ADENDUM</p>
-        <p class="paragraph">Adendum perjanjian kerjasama ini dapat dilakukan apabila :</p>
-        <ol type="a">
+        <div class="pasal-title">Pasal 11<br>ADENDUM</div>
+        <p style="margin-bottom: 5px;">Adendum perjanjian kerjasama ini dapat dilakukan apabila :</p>
+        <ol type="a" class="list-ol">
             <li>Terjadinya perubahan kebijakan ketenagakerjaan;</li>
             <li>Terjadinya perubahan potensi parkir;</li>
             <li>Terjadinya perubahan Tarif Layanan Parkir;</li>
             <li>Hal-hal lain yang disepakati PARA PIHAK.</li>
         </ol>
 
-        <p class="pasal-title">Pasal 12<br>KEADAAN MEMAKSA (FORCE MAJEURE)</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 12<br>KEADAAN MEMAKSA (FORCE MAJEURE)</div>
+        <ol type="1" class="list-ol">
             <li>Keadaan memaksa (force majeure) adalah keadaan yang terjadi diluar jangkauan dan kemauan PARA PIHAK seperti kerusuhan sosial, peperangan, kebakaran, peledakan, sabotase, badai, banjir, gempa bumi, tsunami yang mengakibatkan keterlambatan atau kegagalan salah satu Pihak dalam memenuhi kewajibannya sebagaimana tercantum dalam Perjanjian Kerjasama ini;</li>
             <li>Apabila terjadi force majeure sebagaimana dimaksud pada ayat (1) pasal ini maka Pihak yang mengalami force majeure wajib memberitahukan secara tertulis kepada Pihak lainnya selambat-lambatnya 7 (tujuh) hari kalender terhitung sejak tanggal terjadinya force majeure ;</li>
             <li>Keterlambatan atau kelalaian atas pemberitahuan tersebut mengakibatkan tidak diakuinya peristiwa tersebut sebagai keadaan force majeure.</li>
         </ol>
 
-        <p class="pasal-title">Pasal 13<br>LARANGAN</p>
-        <p class="paragraph">Selama Perjanjian Kerjasama ini berlaku, PIHAK KEDUA dilarang :</p>
-        <ol type="a">
+        <div class="pasal-title">Pasal 13<br>LARANGAN</div>
+        <p style="margin-bottom: 5px;">Selama Perjanjian Kerjasama ini berlaku, PIHAK KEDUA dilarang :</p>
+        <ol type="a" class="list-ol">
             <li>Melakukan pengelolaan perparkiran tidak sesuai dengan Peraturan Perundang-undangan yang berlaku;</li>
             <li>Memungut tarif layanan parkir melebihi besaran tarif layanan parkir yang berlaku yang telah diatur dalam Peraturan Perundang-undangan yang berlaku;</li>
             <li>PIHAK KEDUA tidak dibenarkan mengalihkan pegelolaan dan pemungutan jasa layanan perparkiran kepada pihak lain;</li>
@@ -298,17 +334,17 @@
             <li>Melaksanakan pelayanan parkir tidak berdasarkan Standar Pelayanan Minimal(SPM) yang ditetapkan PIHAK PERTAMA.</li>
         </ol>
 
-        <p class="pasal-title">Pasal 14<br>SANKSI</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 14<br>SANKSI</div>
+        <ol type="1" class="list-ol">
             <li>Dalam hal PIHAK KEDUA melanggar ketentuan sebagaimana dimaksud dalam Pasal 13 huruf c, maka PIHAK PERTAMA berhak memutus Perjanjian Kerjasama ini secara sepihak;</li>
             <li>Dalam hal PIHAK KEDUA melanggar ketentuan sebagaimana dimaksud dalam Pasal 13 huruf a, maka PIHAK KEDUA dikenakan sanksi dan ketentuan peraturan perundang-undangan yang berlaku;</li>
             <li>Dalam hal ayat (1) dan (2) terbukti dan terjadi pemutusan perjanjian kerjasama maka PIHAK PERTAMA berhak mengambil alih secara utuh pengelolaan pelayanan parkir didalam ruang milik jalan sesuai peraturan perundang-undangan yang berlaku;</li>
         </ol>
 
-        <p class="pasal-title">Pasal 15<br>BERAKHIRNYA PERJANJIAN KERJASAMA</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 15<br>BERAKHIRNYA PERJANJIAN KERJASAMA</div>
+        <ol type="1" class="list-ol">
             <li>Perjanjian Kerjasama ini dapat berakhir disebabkan oleh :
-                <ol type="a">
+                <ol type="a" class="sub-list">
                     <li>Berakhirnya jangka waktu;</li>
                     <li>Diputus oleh salah satu Pihak; dan</li>
                     <li>Terjadinya keadaan memaksa.</li>
@@ -319,11 +355,11 @@
             <li>Jika dikemudian hari terjadi pemutusan kerjasama sebagaimana dimaksud ayat (1) maka PIHAK KEDUA tidak dapat menuntut secara hukum yang berlaku.</li>
         </ol>
 
-        <p class="pasal-title">Pasal 16<br>PERSELISIHAN</p>
-        <p class="paragraph">Segala perbedaan pendapat atau perselisihan yang timbul dalam Perjanjian Kerjasama ini akan diselesaikan secara musyawarah dan mufakat oleh PARA PIHAK;</p>
+        <div class="pasal-title">Pasal 16<br>PERSELISIHAN</div>
+        <p>Segala perbedaan pendapat atau perselisihan yang timbul dalam Perjanjian Kerjasama ini akan diselesaikan secara musyawarah dan mufakat oleh PARA PIHAK;</p>
 
-        <p class="pasal-title">Pasal 17<br>LAIN-LAIN</p>
-        <ol type="1">
+        <div class="pasal-title">Pasal 17<br>LAIN-LAIN</div>
+        <ol type="1" class="list-ol">
             <li>Segala sesuatu yang belum atau tidak cukup diatur dalam Perjanjian Kerjasama ini akan dituangkan dalam suatu perjanjian tambahan (addendum) tersendiri yang merupakan satu kesatuan yang tidak dapat terpisahkan dengan Perjanjian Kerjasama ini dan mempunyai kekuatan hukum yang sama;</li>
             <li>Perjanjian Kerjasama ini tetap berlaku walaupun terjadi perubahan kepemimpinan/jabatan dan bentuk badan hukum pada salah satu Pihak</li>
             <li>Pengajuan untuk perpanjangan Perjanjian Kerjasama wajib diajukan 10 (sepuluh) hari sebelum kerjasama ini berakhir;</li>
@@ -353,12 +389,17 @@
             </table>
         </div>
 
-        @if ($agreement->verification_code)
-        <div style="margin-top: 30px; text-align: right;">
-            <img src="data:image/svg+xml;base64,{{ base64_encode(QrCode::size(80)->generate(route('public.agreement.verify', $agreement->verification_code))) }}">
-            <p style="font-size: 8pt; margin-right: 15px;">Pindai Verifikasi</p>
+        {{-- ✅ TAMPILKAN QR CODE DARI CONTROLLER --}}
+        @if (!empty($qrCodeImage))
+        <div class="verification-area">
+            <div class="qr-container">
+                {{-- Karena dari controller sudah berupa base64 encoded PNG utuh, DOMPDF tinggal nampilin saja --}}
+                <img src="data:image/png;base64,{{ $qrCodeImage }}" width="90" height="90" style="display: block; margin: 0 auto;">
+                <p class="qr-text">Pindai Verifikasi</p>
+            </div>
         </div>
         @endif
+
     </div>
 </body>
 </html>

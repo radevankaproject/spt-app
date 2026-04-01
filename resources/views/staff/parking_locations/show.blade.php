@@ -95,9 +95,11 @@
             <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-outline-secondary">
                 <i class="ri icon-base ri-arrow-left-line me-1"></i> Kembali
             </a>
+            @if(Auth::user()->role !== 'leader')
             <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-primary shadow-sm">
                 <i class="ri icon-base ri-pencil-line me-1"></i> Edit Lokasi
             </a>
+            @endif
         </div>
     </div>
 
@@ -236,7 +238,9 @@
                         <div class="text-center py-5 bg-light rounded-3 border-dashed">
                             <i class="ri icon-base ri-map-pin-add-line text-muted mb-2" style="font-size: 2.5rem;"></i>
                             <p class="text-muted mb-0">Titik koordinat belum ditambahkan di peta.</p>
+                            @if(Auth::user()->role !== 'leader')
                             <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-sm btn-outline-secondary mt-3">Set Koordinat</a>
+                            @endif
                         </div>
                     @endif
                 </div>

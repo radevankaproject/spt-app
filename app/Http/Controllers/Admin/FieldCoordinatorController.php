@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -20,7 +21,7 @@ class FieldCoordinatorController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $tab    = $request->input('tab', 'active'); // ✅ Default ke tab 'active'
+        $tab = $request->input('tab', 'active'); // ✅ Default ke tab 'active'
 
         $query = FieldCoordinator::with(['user', 'agreements' => function ($query) {
             $query->where('status', 'active');
@@ -28,18 +29,22 @@ class FieldCoordinatorController extends Controller
 
         // ✅ LOGIKA TAB IS_ACTIVE
         if ($tab === 'active') {
-            $query->whereHas('user', function ($q) { $q->where('is_active', true); });
+            $query->whereHas('user', function ($q) {
+                $q->where('is_active', true);
+            });
         } elseif ($tab === 'inactive') {
-            $query->whereHas('user', function ($q) { $q->where('is_active', false); });
+            $query->whereHas('user', function ($q) {
+                $q->where('is_active', false);
+            });
         }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('position', 'like', '%' . $search . '%')
-                    ->orWhere('id_card_number', 'like', '%' . $search . '%');
+                $q->where('position', 'like', '%'.$search.'%')
+                    ->orWhere('id_card_number', 'like', '%'.$search.'%');
                 $q->orWhereHas('user', function ($userQuery) use ($search) {
-                    $userQuery->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('username', 'like', '%' . $search . '%');
+                    $userQuery->where('name', 'like', '%'.$search.'%')
+                        ->orWhere('username', 'like', '%'.$search.'%');
                 });
             });
         }
@@ -50,8 +55,12 @@ class FieldCoordinatorController extends Controller
 
         // ✅ HITUNG TOTAL UNTUK BADGE
         $countAll = FieldCoordinator::count();
-        $countActive = FieldCoordinator::whereHas('user', function ($q) { $q->where('is_active', true); })->count();
-        $countInactive = FieldCoordinator::whereHas('user', function ($q) { $q->where('is_active', false); })->count();
+        $countActive = FieldCoordinator::whereHas('user', function ($q) {
+            $q->where('is_active', true);
+        })->count();
+        $countInactive = FieldCoordinator::whereHas('user', function ($q) {
+            $q->where('is_active', false);
+        })->count();
 
         return view('admin.field_coordinators.index', compact('fieldCoordinators', 'search', 'tab', 'countAll', 'countActive', 'countInactive'));
     }
@@ -61,54 +70,56 @@ class FieldCoordinatorController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         // ✅ PESAN VALIDASI BAHASA INDONESIA
         $messages = [
-            'name.required'           => 'Nama lengkap wajib diisi.',
+            'name.required' => 'Nama lengkap wajib diisi.',
             'id_card_number.required' => 'Nomor KTP (NIK) wajib diisi.',
-            'id_card_number.max'      => 'Nomor KTP tidak boleh lebih dari 16 digit.',
-            'id_card_number.unique'   => 'Nomor KTP ini sudah terdaftar pada koordinator lain.',
-            'phone_number.required'   => 'Nomor Telepon/HP wajib diisi.',
-            'address.required'        => 'Alamat lengkap wajib diisi.',
-            'position.required'       => 'Posisi/Jabatan wajib diisi.',
-            'img.image'               => 'File profil harus berupa gambar.',
-            'img.mimes'               => 'Format foto profil harus jpeg, png, atau jpg.',
-            'img.max'                 => 'Ukuran foto profil maksimal 5MB.',
-            'id_card_img.image'       => 'File KTP harus berupa gambar.',
-            'id_card_img.mimes'       => 'Format foto KTP harus jpeg, png, atau jpg.',
-            'id_card_img.max'         => 'Ukuran foto KTP maksimal 5MB.',
+            'id_card_number.max' => 'Nomor KTP tidak boleh lebih dari 16 digit.',
+            'id_card_number.unique' => 'Nomor KTP ini sudah terdaftar pada koordinator lain.',
+            'phone_number.required' => 'Nomor Telepon/HP wajib diisi.',
+            'address.required' => 'Alamat lengkap wajib diisi.',
+            'position.required' => 'Posisi/Jabatan wajib diisi.',
+            'img.image' => 'File profil harus berupa gambar.',
+            'img.mimes' => 'Format foto profil harus jpeg, png, atau jpg.',
+            'img.max' => 'Ukuran foto profil maksimal 5MB.',
+            'id_card_img.image' => 'File KTP harus berupa gambar.',
+            'id_card_img.mimes' => 'Format foto KTP harus jpeg, png, atau jpg.',
+            'id_card_img.max' => 'Ukuran foto KTP maksimal 5MB.',
         ];
 
         $validatedData = $request->validate([
-            'name'           => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'id_card_number' => 'required|string|max:16|unique:field_coordinators,id_card_number',
-            'phone_number'   => 'required|string|max:15',
-            'address'        => 'required|string',
-            'position'       => 'required|string',
-            'img'            => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'id_card_img'    => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'phone_number' => 'required|string|max:15',
+            'address' => 'required|string',
+            'position' => 'required|string',
+            'img' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'id_card_img' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ], $messages);
 
         DB::beginTransaction();
         try {
-            $username = strtolower(str_replace(' ', '_', $validatedData['name'])) . '_' . rand(100, 999);
+            $username = strtolower(str_replace(' ', '_', $validatedData['name'])).'_'.rand(100, 999);
 
             $user = User::create([
-                'name'     => $validatedData['name'],
+                'name' => $validatedData['name'],
                 'username' => $username,
-                'email'    => $username . '@korlap.local',
+                'email' => $username.'@korlap-parkir.local',
                 'password' => Hash::make('password'),
-                'role'     => 'field_coordinator',
+                'role' => 'field_coordinator',
             ]);
 
             // ✅ FIX: Simpan Foto Profil (Konsisten pakai Storage Public)
             if ($request->hasFile('img')) {
                 try {
-                    $profileImageName = time() . '_usersCoordinator.' . $request->file('img')->extension();
-                    $path             = $request->file('img')->storeAs('uploads/users', $profileImageName, 'public');
+                    $profileImageName = time().'_usersCoordinator.'.$request->file('img')->extension();
+                    $path = $request->file('img')->storeAs('uploads/users', $profileImageName, 'public');
                     $user->img = $path;
                     $user->save();
                 } catch (\Exception $e) {
-                    Log::error('FieldCoordinatorController@store: Error moving profile image: ' . $e->getMessage());
+                    Log::error('FieldCoordinatorController@store: Error moving profile image: '.$e->getMessage());
                 }
             }
 
@@ -116,20 +127,20 @@ class FieldCoordinatorController extends Controller
             $idCardImagePath = null;
             if ($request->hasFile('id_card_img')) {
                 try {
-                    $idCardImageName = time() . '_idcard.' . $request->file('id_card_img')->extension();
+                    $idCardImageName = time().'_idcard.'.$request->file('id_card_img')->extension();
                     $idCardImagePath = $request->file('id_card_img')->storeAs('uploads/id_cards', $idCardImageName, 'public');
                 } catch (\Exception $e) {
-                    Log::error('FieldCoordinatorController@store: Error moving ID card image: ' . $e->getMessage());
+                    Log::error('FieldCoordinatorController@store: Error moving ID card image: '.$e->getMessage());
                 }
             }
 
             FieldCoordinator::create([
-                'user_id'        => $user->id,
-                'position'       => $validatedData['position'],
-                'address'        => $validatedData['address'],
+                'user_id' => $user->id,
+                'position' => $validatedData['position'],
+                'address' => $validatedData['address'],
                 'id_card_number' => $validatedData['id_card_number'],
-                'id_card_img'    => $idCardImagePath,
-                'phone_number'   => $validatedData['phone_number'],
+                'id_card_img' => $idCardImagePath,
+                'phone_number' => $validatedData['phone_number'],
             ]);
 
             DB::commit();
@@ -139,7 +150,8 @@ class FieldCoordinatorController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating field coordinator: ' . $e->getMessage());
+            Log::error('Error creating field coordinator: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Gagal menambahkan data. Terjadi kesalahan internal.');
         }
     }
@@ -164,7 +176,7 @@ class FieldCoordinatorController extends Controller
         $agreementsInYear = $fieldCoordinator->agreements()
             ->whereYear('start_date', $selectedYear)
             ->with(['activeParkingLocations.roadSection'])
-            ->withSum(['depositTransactions as total_deposit' => function($q) {
+            ->withSum(['depositTransactions as total_deposit' => function ($q) {
                 $q->where('is_validated', true);
             }], 'amount')
             ->orderBy('start_date', 'desc')
@@ -197,30 +209,32 @@ class FieldCoordinatorController extends Controller
      */
     public function update(Request $request, FieldCoordinator $fieldCoordinator)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $messages = [
-            'name.required'           => 'Nama lengkap wajib diisi.',
+            'name.required' => 'Nama lengkap wajib diisi.',
             'id_card_number.required' => 'Nomor KTP (NIK) wajib diisi.',
-            'id_card_number.max'      => 'Nomor KTP tidak boleh lebih dari 16 digit.',
-            'id_card_number.unique'   => 'Nomor KTP ini sudah digunakan oleh koordinator lain.',
-            'phone_number.required'   => 'Nomor Telepon/HP wajib diisi.',
-            'address.required'        => 'Alamat lengkap wajib diisi.',
-            'position.required'       => 'Posisi/Jabatan wajib diisi.',
-            'img.image'               => 'File profil harus berupa gambar.',
-            'img.mimes'               => 'Format foto profil harus jpeg, png, atau jpg.',
-            'img.max'                 => 'Ukuran foto profil maksimal 5MB.',
-            'id_card_img.image'       => 'File KTP harus berupa gambar.',
-            'id_card_img.mimes'       => 'Format foto KTP harus jpeg, png, atau jpg.',
-            'id_card_img.max'         => 'Ukuran foto KTP maksimal 5MB.',
+            'id_card_number.max' => 'Nomor KTP tidak boleh lebih dari 16 digit.',
+            'id_card_number.unique' => 'Nomor KTP ini sudah digunakan oleh koordinator lain.',
+            'phone_number.required' => 'Nomor Telepon/HP wajib diisi.',
+            'address.required' => 'Alamat lengkap wajib diisi.',
+            'position.required' => 'Posisi/Jabatan wajib diisi.',
+            'img.image' => 'File profil harus berupa gambar.',
+            'img.mimes' => 'Format foto profil harus jpeg, png, atau jpg.',
+            'img.max' => 'Ukuran foto profil maksimal 5MB.',
+            'id_card_img.image' => 'File KTP harus berupa gambar.',
+            'id_card_img.mimes' => 'Format foto KTP harus jpeg, png, atau jpg.',
+            'id_card_img.max' => 'Ukuran foto KTP maksimal 5MB.',
         ];
 
         $validatedData = $request->validate([
-            'name'           => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'id_card_number' => ['required', 'string', 'max:16', Rule::unique('field_coordinators')->ignore($fieldCoordinator->id)],
-            'phone_number'   => 'required|string|max:15',
-            'address'        => 'required|string',
-            'position'       => 'required|string',
-            'img'            => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
-            'id_card_img'    => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'phone_number' => 'required|string|max:15',
+            'address' => 'required|string',
+            'position' => 'required|string',
+            'img' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'id_card_img' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
         ], $messages);
 
         DB::beginTransaction();
@@ -234,7 +248,7 @@ class FieldCoordinatorController extends Controller
                     if ($user->img && Storage::disk('public')->exists($user->img)) {
                         Storage::disk('public')->delete($user->img);
                     }
-                    $imagePath = $request->file('img')->storeAs('uploads/users', time() . '_profile.' . $request->file('img')->extension(), 'public');
+                    $imagePath = $request->file('img')->storeAs('uploads/users', time().'_profile.'.$request->file('img')->extension(), 'public');
                     $user->img = $imagePath;
                 }
                 $user->save();
@@ -247,7 +261,7 @@ class FieldCoordinatorController extends Controller
                 if ($fieldCoordinator->id_card_img && Storage::disk('public')->exists($fieldCoordinator->id_card_img)) {
                     Storage::disk('public')->delete($fieldCoordinator->id_card_img);
                 }
-                $idCardPath = $request->file('id_card_img')->storeAs('uploads/id_cards', time() . '_idcard.' . $request->file('id_card_img')->extension(), 'public');
+                $idCardPath = $request->file('id_card_img')->storeAs('uploads/id_cards', time().'_idcard.'.$request->file('id_card_img')->extension(), 'public');
                 $coordinatorData['id_card_img'] = $idCardPath;
             }
 
@@ -259,7 +273,8 @@ class FieldCoordinatorController extends Controller
                 ->with('success', 'Data Koordinator Lapangan berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating field coordinator: ' . $e->getMessage());
+            Log::error('Error updating field coordinator: '.$e->getMessage());
+
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data. Terjadi kesalahan internal.');
         }
     }
@@ -269,10 +284,11 @@ class FieldCoordinatorController extends Controller
         $user = $fieldCoordinator->user;
 
         if ($user) {
-            $user->is_active = !$user->is_active; // Balikkan nilainya (true jadi false, dst)
+            $user->is_active = ! $user->is_active; // Balikkan nilainya (true jadi false, dst)
             $user->save();
 
             $statusName = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
             return redirect()->back()->with('success', "Akses akun koordinator berhasil {$statusName}.");
         }
 
@@ -314,7 +330,8 @@ class FieldCoordinatorController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error('FieldCoordinatorController@destroy: Error deleting Field Coordinator or user: ' . $e->getMessage());
+            Log::error('FieldCoordinatorController@destroy: Error deleting Field Coordinator or user: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Gagal menghapus Koordinator. Terjadi kesalahan internal.');
         }
 

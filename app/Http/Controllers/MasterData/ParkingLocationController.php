@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
@@ -26,30 +27,45 @@ class ParkingLocationController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $roadSectionId = $request->input('road_section_id');
+        $status = $request->input('status'); // ✅ Tangkap input status
 
         $query = ParkingLocation::with([
             'roadSection',
             'agreements' => function ($query) {
-                // ✅ FIX: Gunakan whereIn untuk memasukkan 'pending_renewal' juga
                 $query->whereIn('agreements.status', ['active', 'pending_renewal'])
-                      ->where('agreement_parking_locations.status', 'active')
-                      ->with('fieldCoordinator.user');
+                    ->where('agreement_parking_locations.status', 'active')
+                    ->with('fieldCoordinator.user');
             },
         ]);
 
+        // ✅ Filter berdasarkan Ruas Jalan
+        if ($roadSectionId) {
+            $query->where('road_section_id', $roadSectionId);
+        }
+
+        // ✅ Filter berdasarkan Status
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        // ✅ Filter berdasarkan Search (Teks)
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('status', 'like', '%' . $search . '%')
+                $q->where('name', 'like', '%'.$search.'%')
+                    // Pencarian status dihilangkan dari sini karena sudah pakai dropdown khusus
                     ->orWhereHas('roadSection', function ($roadSectionQuery) use ($search) {
-                        $roadSectionQuery->where('name', 'like', '%' . $search . '%');
+                        $roadSectionQuery->where('name', 'like', '%'.$search.'%');
                     });
             });
         }
 
         $parkingLocations = $query->latest()->paginate(10);
 
-        return view('staff.parking_locations.index', compact('parkingLocations', 'search'));
+        $roadSections = RoadSection::orderBy('name')->get();
+
+        // ✅ Jangan lupa lempar variabel $status ke view
+        return view('staff.parking_locations.index', compact('parkingLocations', 'search', 'roadSections', 'roadSectionId', 'status'));
     }
 
     /**
@@ -57,73 +73,80 @@ class ParkingLocationController extends Controller
      */
     public function create()
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $roadSections = RoadSection::orderBy('name')->get();
+
         return view('staff.parking_locations.create', compact('roadSections'));
     }
 
     public function getRoadSectionsByZone($zone)
     {
         $roadSections = RoadSection::where('zone', $zone)->orderBy('name', 'asc')->get();
+
         return response()->json($roadSections);
     }
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
-            'road_section_id'          => 'required|exists:road_sections,id',
-            'name'                     => [
+            'road_section_id' => 'required|exists:road_sections,id',
+            'name' => [
                 'required', 'string', 'max:255',
                 Rule::unique('parking_locations')->where(function ($query) use ($request) {
                     return $query->where('road_section_id', $request->road_section_id);
                 }),
             ],
-            'daily_deposit'            => 'required|numeric|min:0',
-            'latitude'                 => 'nullable|string|max:255',
-            'longitude'                => 'nullable|string|max:255',
-            'image'                    => 'nullable|image|mimes:jpeg,png,jpg|max:5000', // Limit awal besarin aja krn dicompress di client
-            'proposal_document'        => 'nullable|file|mimes:pdf|max:2048',
+            'daily_deposit' => 'required|numeric|min:0',
+            'latitude' => 'nullable|string|max:255',
+            'longitude' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:5000', // Limit awal besarin aja krn dicompress di client
+            'proposal_document' => 'nullable|file|mimes:pdf|max:2048',
             'official_report_document' => 'nullable|file|mimes:pdf|max:2048',
         ], [
-            'road_section_id.required'       => 'Ruas jalan wajib dipilih.',
-            'road_section_id.exists'         => 'Ruas jalan yang dipilih tidak valid.',
-            'name.required'                  => 'Nama lokasi parkir wajib diisi.',
-            'name.string'                    => 'Nama lokasi parkir harus berupa teks.',
-            'name.max'                       => 'Nama lokasi parkir tidak boleh lebih dari 255 karakter.',
-            'name.unique'                    => 'Nama lokasi parkir sudah ada di ruas jalan ini.',
-            'daily_deposit.required'         => 'Setoran harian wajib diisi.',
-            'daily_deposit.numeric'          => 'Setoran harian harus berupa angka.',
-            'daily_deposit.min'              => 'Setoran harian tidak boleh minus.',
-            'image.image'                    => 'File harus berupa gambar.',
-            'image.mimes'                    => 'Gambar harus berformat JPEG, PNG, atau JPG.',
-            'image.max'                      => 'Ukuran gambar tidak boleh lebih dari 300 KB.',
-            'proposal_document.file'         => 'Dokumen pengajuan harus berupa file.',
-            'proposal_document.mimes'        => 'Dokumen pengajuan harus berformat PDF.',
-            'proposal_document.max'          => 'Ukuran dokumen pengajuan tidak boleh lebih dari 2 MB.',
-            'official_report_document.file'  => 'Dokumen berita acara harus berupa file.',
+            'road_section_id.required' => 'Ruas jalan wajib dipilih.',
+            'road_section_id.exists' => 'Ruas jalan yang dipilih tidak valid.',
+            'name.required' => 'Nama lokasi parkir wajib diisi.',
+            'name.string' => 'Nama lokasi parkir harus berupa teks.',
+            'name.max' => 'Nama lokasi parkir tidak boleh lebih dari 255 karakter.',
+            'name.unique' => 'Nama lokasi parkir sudah ada di ruas jalan ini.',
+            'daily_deposit.required' => 'Setoran harian wajib diisi.',
+            'daily_deposit.numeric' => 'Setoran harian harus berupa angka.',
+            'daily_deposit.min' => 'Setoran harian tidak boleh minus.',
+            'image.image' => 'File harus berupa gambar.',
+            'image.mimes' => 'Gambar harus berformat JPEG, PNG, atau JPG.',
+            'image.max' => 'Ukuran gambar tidak boleh lebih dari 300 KB.',
+            'proposal_document.file' => 'Dokumen pengajuan harus berupa file.',
+            'proposal_document.mimes' => 'Dokumen pengajuan harus berformat PDF.',
+            'proposal_document.max' => 'Ukuran dokumen pengajuan tidak boleh lebih dari 2 MB.',
+            'official_report_document.file' => 'Dokumen berita acara harus berupa file.',
             'official_report_document.mimes' => 'Dokumen berita acara harus berformat PDF.',
-            'official_report_document.max'   => 'Ukuran dokumen berita acara tidak boleh lebih dari 2 MB.',
+            'official_report_document.max' => 'Ukuran dokumen berita acara tidak boleh lebih dari 2 MB.',
         ]);
 
-        $dataToStore           = Arr::except($validatedData, ['image', 'proposal_document', 'official_report_document']);
+        $dataToStore = Arr::except($validatedData, ['image', 'proposal_document', 'official_report_document']);
         $dataToStore['status'] = 'tersedia';
 
-        $safeName  = Str::slug($request->name); // Bikin nama lokasi jadi aman buat URL/File
+        $safeName = Str::slug($request->name); // Bikin nama lokasi jadi aman buat URL/File
         $randomNum = mt_rand(100, 999);         // 3 Angka Acak
 
         if ($request->hasFile('image')) {
-            $imageName            = time() . '_' . Str::random(8) . '.' . $request->image->extension();
+            $imageName = time().'_'.Str::random(8).'.'.$request->image->extension();
             $dataToStore['image'] = $request->file('image')->storeAs('uploads/locations/images', $imageName, 'public');
         }
 
         if ($request->hasFile('proposal_document')) {
-            $proposalName                     = "pengajuan_{$safeName}_{$randomNum}." . $request->proposal_document->extension();
+            $proposalName = "pengajuan_{$safeName}_{$randomNum}.".$request->proposal_document->extension();
             $dataToStore['proposal_document'] = $request->file('proposal_document')->storeAs('uploads/locations/proposals', $proposalName, 'public');
         }
 
         if ($request->hasFile('official_report_document')) {
-            $reportName                              = "berita_acara_{$safeName}_{$randomNum}." . $request->official_report_document->extension();
+            $reportName = "berita_acara_{$safeName}_{$randomNum}.".$request->official_report_document->extension();
             $dataToStore['official_report_document'] = $request->file('official_report_document')->storeAs('uploads/locations/reports', $reportName, 'public');
         }
 
@@ -131,14 +154,14 @@ class ParkingLocationController extends Controller
 
         ParkingLocationHistory::create([
             'parking_location_id' => $parkingLocation->id,
-            'user_id'             => Auth::id(),
-            'action'              => 'created',
-            'description'         => 'Lokasi parkir baru didaftarkan ke dalam sistem.',
-            'new_values'          => $dataToStore,
+            'user_id' => Auth::id(),
+            'action' => 'created',
+            'description' => 'Lokasi parkir baru didaftarkan ke dalam sistem.',
+            'new_values' => $dataToStore,
         ]);
 
         return redirect()->route('masterdata.parking-locations.index')
-            ->with('success', 'Lokasi parkir ' . $validatedData['name'] . ' berhasil ditambahkan!');
+            ->with('success', 'Lokasi parkir '.$validatedData['name'].' berhasil ditambahkan!');
     }
 
     /**
@@ -150,7 +173,7 @@ class ParkingLocationController extends Controller
 
         $activeAgreement = Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
             $query->where('parking_location_id', $parkingLocation->id)
-                  ->where('agreement_parking_locations.status', 'active');
+                ->where('agreement_parking_locations.status', 'active');
         })
             // ✅ FIX: Gunakan whereIn untuk memasukkan 'pending_renewal' juga
             ->whereIn('status', ['active', 'pending_renewal'])
@@ -166,6 +189,8 @@ class ParkingLocationController extends Controller
      */
     public function edit(ParkingLocation $parkingLocation)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         // ✅ 1. CEGAH FORCED BROWSING VIA URL (Keamanan Lapis Baja)
         if ($parkingLocation->status == 'tidak_tersedia') {
 
@@ -173,13 +198,13 @@ class ParkingLocationController extends Controller
             $namaLokasi = $parkingLocation->name;
 
             // Cari tahu PKS siapa yang sedang mengikat lokasi ini
-            $activeAgreement = \App\Models\Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
+            $activeAgreement = Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
                 $query->where('parking_location_id', $parkingLocation->id)
-                      ->where('agreement_parking_locations.status', 'active');
+                    ->where('agreement_parking_locations.status', 'active');
             })
-            ->whereIn('status', ['active', 'pending_renewal'])
-            ->with('fieldCoordinator.user')
-            ->first();
+                ->whereIn('status', ['active', 'pending_renewal'])
+                ->with('fieldCoordinator.user')
+                ->first();
 
             $noPks = $activeAgreement ? $activeAgreement->agreement_number : 'yang aktif';
             $namaKoord = $activeAgreement ? ($activeAgreement->fieldCoordinator->user->name ?? 'N/A') : 'Seseorang';
@@ -205,9 +230,11 @@ class ParkingLocationController extends Controller
      */
     public function update(Request $request, ParkingLocation $parkingLocation)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
-            'road_section_id'          => 'required|exists:road_sections,id',
-            'name'                     => [
+            'road_section_id' => 'required|exists:road_sections,id',
+            'name' => [
                 'required',
                 'string',
                 'max:255',
@@ -215,32 +242,32 @@ class ParkingLocationController extends Controller
                     return $query->where('road_section_id', $request->road_section_id);
                 })->ignore($parkingLocation->id),
             ],
-            'daily_deposit'            => 'required|numeric|min:0',
-            'latitude'                 => 'nullable|string|max:255',
-            'longitude'                => 'nullable|string|max:255',
-            'image'                    => 'nullable|image|mimes:jpeg,png,jpg|max:300',
-            'proposal_document'        => 'nullable|file|mimes:pdf|max:2048',
+            'daily_deposit' => 'required|numeric|min:0',
+            'latitude' => 'nullable|string|max:255',
+            'longitude' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:300',
+            'proposal_document' => 'nullable|file|mimes:pdf|max:2048',
             'official_report_document' => 'nullable|file|mimes:pdf|max:2048',
         ],
             [
-                'road_section_id.required'       => 'Ruas jalan wajib dipilih.',
-                'road_section_id.exists'         => 'Ruas jalan yang dipilih tidak valid.',
-                'name.required'                  => 'Nama lokasi parkir wajib diisi.',
-                'name.string'                    => 'Nama lokasi parkir harus berupa teks.',
-                'name.max'                       => 'Nama lokasi parkir tidak boleh lebih dari 255 karakter.',
-                'name.unique'                    => 'Nama lokasi parkir sudah ada di ruas jalan ini.',
-                'daily_deposit.required'         => 'Setoran harian wajib diisi.',
-                'daily_deposit.numeric'          => 'Setoran harian harus berupa angka.',
-                'daily_deposit.min'              => 'Setoran harian tidak boleh minus.',
-                'image.image'                    => 'File harus berupa gambar.',
-                'image.mimes'                    => 'Gambar harus berformat JPEG, PNG, atau JPG.',
-                'image.max'                      => 'Ukuran gambar tidak boleh lebih dari 300 KB.',
-                'proposal_document.file'         => 'Dokumen pengajuan harus berupa file.',
-                'proposal_document.mimes'        => 'Dokumen pengajuan harus berformat PDF.',
-                'proposal_document.max'          => 'Ukuran dokumen pengajuan tidak boleh lebih dari 2 MB.',
-                'official_report_document.file'  => 'Dokumen berita acara harus berupa file.',
+                'road_section_id.required' => 'Ruas jalan wajib dipilih.',
+                'road_section_id.exists' => 'Ruas jalan yang dipilih tidak valid.',
+                'name.required' => 'Nama lokasi parkir wajib diisi.',
+                'name.string' => 'Nama lokasi parkir harus berupa teks.',
+                'name.max' => 'Nama lokasi parkir tidak boleh lebih dari 255 karakter.',
+                'name.unique' => 'Nama lokasi parkir sudah ada di ruas jalan ini.',
+                'daily_deposit.required' => 'Setoran harian wajib diisi.',
+                'daily_deposit.numeric' => 'Setoran harian harus berupa angka.',
+                'daily_deposit.min' => 'Setoran harian tidak boleh minus.',
+                'image.image' => 'File harus berupa gambar.',
+                'image.mimes' => 'Gambar harus berformat JPEG, PNG, atau JPG.',
+                'image.max' => 'Ukuran gambar tidak boleh lebih dari 300 KB.',
+                'proposal_document.file' => 'Dokumen pengajuan harus berupa file.',
+                'proposal_document.mimes' => 'Dokumen pengajuan harus berformat PDF.',
+                'proposal_document.max' => 'Ukuran dokumen pengajuan tidak boleh lebih dari 2 MB.',
+                'official_report_document.file' => 'Dokumen berita acara harus berupa file.',
                 'official_report_document.mimes' => 'Dokumen berita acara harus berformat PDF.',
-                'official_report_document.max'   => 'Ukuran dokumen berita acara tidak boleh lebih dari 2 MB.',
+                'official_report_document.max' => 'Ukuran dokumen berita acara tidak boleh lebih dari 2 MB.',
             ]);
 
         $dataToUpdate = Arr::except($validatedData, ['image', 'proposal_document', 'official_report_document']);
@@ -251,24 +278,24 @@ class ParkingLocationController extends Controller
             }
         };
 
-        $safeName  = Str::slug($request->name);
+        $safeName = Str::slug($request->name);
         $randomNum = mt_rand(100, 999);
 
         if ($request->hasFile('image')) {
             $deleteOldFile($parkingLocation->image);
-            $imageName             = time() . '_' . Str::random(8) . '.' . $request->image->extension();
+            $imageName = time().'_'.Str::random(8).'.'.$request->image->extension();
             $dataToUpdate['image'] = $request->file('image')->storeAs('uploads/locations/images', $imageName, 'public');
         }
 
         if ($request->hasFile('proposal_document')) {
             $deleteOldFile($parkingLocation->proposal_document);
-            $proposalName                      = "pengajuan_{$safeName}_{$randomNum}." . $request->proposal_document->extension();
+            $proposalName = "pengajuan_{$safeName}_{$randomNum}.".$request->proposal_document->extension();
             $dataToUpdate['proposal_document'] = $request->file('proposal_document')->storeAs('uploads/locations/proposals', $proposalName, 'public');
         }
 
         if ($request->hasFile('official_report_document')) {
             $deleteOldFile($parkingLocation->official_report_document);
-            $reportName                               = "berita_acara_{$safeName}_{$randomNum}." . $request->official_report_document->extension();
+            $reportName = "berita_acara_{$safeName}_{$randomNum}.".$request->official_report_document->extension();
             $dataToUpdate['official_report_document'] = $request->file('official_report_document')->storeAs('uploads/locations/reports', $reportName, 'public');
         }
 
@@ -287,45 +314,46 @@ class ParkingLocationController extends Controller
             // Merangkai kalimat deskripsi yang pintar
             $descParts = [];
             if (isset($actualChanges['name'])) {
-                $descParts[] = "Nama";
+                $descParts[] = 'Nama';
             }
 
             if (isset($actualChanges['road_section_id'])) {
-                $descParts[] = "Ruas Jalan";
+                $descParts[] = 'Ruas Jalan';
             }
 
             if (isset($actualChanges['daily_deposit'])) {
-                $descParts[] = "Setoran Harian";
+                $descParts[] = 'Setoran Harian';
             }
 
             if (isset($actualChanges['latitude']) || isset($actualChanges['longitude'])) {
-                $descParts[] = "Titik Koordinat";
+                $descParts[] = 'Titik Koordinat';
             }
 
             if (isset($actualChanges['image']) || isset($actualChanges['proposal_document']) || isset($actualChanges['official_report_document'])) {
-                $descParts[] = "Dokumen/Foto";
+                $descParts[] = 'Dokumen/Foto';
             }
 
             $descText = count($descParts) > 0
-                ? 'Memperbarui data: ' . implode(', ', $descParts) . '.'
+                ? 'Memperbarui data: '.implode(', ', $descParts).'.'
                 : 'Memperbarui data lokasi.';
 
             // ✅ CATAT SEJARAH: UPDATED
             ParkingLocationHistory::create([
                 'parking_location_id' => $parkingLocation->id,
-                'user_id'             => Auth::id(),
-                'action'              => 'updated',
-                'description'         => $descText,
+                'user_id' => Auth::id(),
+                'action' => 'updated',
+                'description' => $descText,
 
                 // ✅ FIX 1: Gunakan $actualChanges agar updated_at tidak ikut masuk
-                'old_values'          => Arr::only($oldData, array_keys($actualChanges)),
-                'new_values'          => $actualChanges,
+                'old_values' => Arr::only($oldData, array_keys($actualChanges)),
+                'new_values' => $actualChanges,
             ]);
         }
 
         return redirect()->route('masterdata.parking-locations.index')
             ->with('success', 'Lokasi parkir berhasil diperbarui.');
     }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -343,14 +371,15 @@ class ParkingLocationController extends Controller
             }
             ParkingLocationHistory::create([
                 'parking_location_id' => $parkingLocation->id,
-                'user_id'             => Auth::id(),
-                'action'              => 'deleted',
-                'description'         => 'Lokasi parkir dihapus dari sistem.',
+                'user_id' => Auth::id(),
+                'action' => 'deleted',
+                'description' => 'Lokasi parkir dihapus dari sistem.',
             ]);
             $parkingLocation->delete();
         } catch (\Exception $e) {
-            Log::error('ParkingLocationController@destroy: Error deleting parking location: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menghapus lokasi parkir: ' . $e->getMessage());
+            Log::error('ParkingLocationController@destroy: Error deleting parking location: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal menghapus lokasi parkir: '.$e->getMessage());
         }
 
         return redirect()->route('masterdata.parking-locations.index')->with('success', 'Lokasi parkir berhasil dihapus!');
@@ -407,11 +436,11 @@ class ParkingLocationController extends Controller
         // Validasi Request (tambahkan .txt untuk handle isu CSV MS-DOS)
         $validator = Validator::make($request->all(), [
             'road_section_id' => 'required|integer|exists:road_sections,id',
-            'import_file'     => 'required|file|mimes:csv,txt,xlsx,xls',
+            'import_file' => 'required|file|mimes:csv,txt,xlsx,xls',
         ], [
             'road_section_id.required' => 'Anda harus memilih Ruas Jalan.',
-            'import_file.required'     => 'Anda harus mengupload file.',
-            'import_file.mimes'        => 'File harus berformat CSV, TXT, XLSX, atau XLS.',
+            'import_file.required' => 'Anda harus mengupload file.',
+            'import_file.mimes' => 'File harus berformat CSV, TXT, XLSX, atau XLS.',
         ]);
 
         if ($validator->fails()) {
@@ -424,29 +453,30 @@ class ParkingLocationController extends Controller
             Excel::import(new ParkingLocationsImport((int) $request->road_section_id), $request->file('import_file'));
 
             return response()->json([
-                'status'  => 'success',
+                'status' => 'success',
                 'message' => 'Data berhasil diimpor ke database!',
             ]);
 
         } catch (ValidationException $e) {
             // Tangkap error validasi baris per baris dari Excel
-            $failures      = $e->failures();
+            $failures = $e->failures();
             $errorMessages = [];
             foreach ($failures as $failure) {
-                $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()) . ' (Nilai: ' . json_encode($failure->values()) . ')';
+                $errorMessages[] = 'Baris '.$failure->row().': '.implode(', ', $failure->errors()).' (Nilai: '.json_encode($failure->values()).')';
             }
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Terdapat data yang tidak valid dalam file.',
-                'errors'  => ['file' => $errorMessages],
+                'errors' => ['file' => $errorMessages],
             ], 422);
 
         } catch (\Exception $e) {
-            Log::error('Import Error: ' . $e->getMessage());
+            Log::error('Import Error: '.$e->getMessage());
+
             return response()->json([
-                'status'  => 'error',
-                'message' => 'Terjadi kesalahan sistem saat memproses file: ' . $e->getMessage(),
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan sistem saat memproses file: '.$e->getMessage(),
             ], 500);
         }
     }

@@ -24,6 +24,7 @@ class BludBankAccountController extends Controller
      */
     public function create()
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
         return view('masterdata.blud_bank_accounts.create');
     }
 
@@ -32,6 +33,8 @@ class BludBankAccountController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'bank_name' => 'required|string|max:255',
             'account_number' => 'required|string|max:255|unique:blud_bank_accounts,account_number',
@@ -55,6 +58,7 @@ class BludBankAccountController extends Controller
      */
     public function edit(BludBankAccount $bludBankAccount)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
         return view('masterdata.blud_bank_accounts.edit', ['account' => $bludBankAccount]);
     }
 
@@ -63,6 +67,8 @@ class BludBankAccountController extends Controller
      */
     public function update(Request $request, BludBankAccount $bludBankAccount)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'bank_name' => 'required|string|max:255',
             'account_number' => ['required', 'string', 'max:255', Rule::unique('blud_bank_accounts')->ignore($bludBankAccount->id)],

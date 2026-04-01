@@ -36,6 +36,8 @@ class UptProfileController extends Controller
      */
     public function update(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $profile = UptProfile::firstOrCreate(['id' => 1]);
 
         $validatedData = $request->validate([

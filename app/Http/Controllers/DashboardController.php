@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Agreement;
@@ -6,13 +7,17 @@ use App\Models\BludBankAccount;
 use App\Models\DepositTransaction;
 use App\Models\FieldCoordinator;
 use App\Models\Leader;
+use App\Models\LocationRequest;
 use App\Models\ParkingLocation;
 use App\Models\RoadSection;
+use App\Models\Treasurer;
+use App\Models\UptProfile;
+use App\Models\User;
+use App\Models\YearlyDepositTarget;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\YearlyDepositTarget;
 
 class DashboardController extends Controller
 {
@@ -22,9 +27,9 @@ class DashboardController extends Controller
     public function adminDashboard()
     {
         // --- 1. Data untuk Info Cards ---
-        $currentLeader               = Leader::with('user')->latest()->first();
-        $startDate                   = $currentLeader ? Carbon::parse($currentLeader->start_date) : now();
-        $activeBankAccount           = BludBankAccount::where('is_active', true)->first();
+        $currentLeader = Leader::with('user')->latest()->first();
+        $startDate = $currentLeader ? Carbon::parse($currentLeader->start_date) : now();
+        $activeBankAccount = BludBankAccount::where('is_active', true)->first();
         $currentYearValidatedDeposit = DepositTransaction::where('is_validated', true)
             ->whereYear('deposit_date', now()->year)->sum('amount');
 
@@ -35,7 +40,7 @@ class DashboardController extends Controller
             ->latest('deposit_date')->limit(8)->get();
 
         $recentParkingLocations = ParkingLocation::with('roadSection')->latest()->limit(8)->get();
-        $recentCoordinators     = FieldCoordinator::with('user')->latest()->limit(8)->get();
+        $recentCoordinators = FieldCoordinator::with('user')->latest()->limit(8)->get();
 
         // --- 3. Data untuk Grafik ---
 
@@ -53,13 +58,13 @@ class DashboardController extends Controller
         $yearlyTarget = YearlyDepositTarget::with('monthlyTargets')->where('year', $currentYear)->first();
 
         $mainChartLabels = [];
-        $mainChartData   = [];
+        $mainChartData = [];
         $targetChartData = []; // Array baru untuk menyimpan target asli
 
         for ($m = 1; $m <= 12; $m++) {
-            $mainChartLabels[] = \Carbon\Carbon::create()->month($m)->translatedFormat('F');
+            $mainChartLabels[] = Carbon::create()->month($m)->translatedFormat('F');
             // ✅ TAMBAHKAN (float) DI SINI
-            $mainChartData[]   = isset($monthlyDeposits[$m]) ? (float) $monthlyDeposits[$m] : 0;
+            $mainChartData[] = isset($monthlyDeposits[$m]) ? (float) $monthlyDeposits[$m] : 0;
 
             // Cek apakah ada target di bulan tersebut
             if ($yearlyTarget) {
@@ -80,8 +85,8 @@ class DashboardController extends Controller
             ->groupBy('road_sections.zone')->pluck('total', 'zone')->all();
 
         $zoneChartData = [
-            'labels'           => array_keys($roadSectionsByZone),
-            'roadSections'     => array_values($roadSectionsByZone),
+            'labels' => array_keys($roadSectionsByZone),
+            'roadSections' => array_values($roadSectionsByZone),
             'parkingLocations' => array_values($locationsByZone),
         ];
 
@@ -92,7 +97,7 @@ class DashboardController extends Controller
 
         $barChartData = [
             'labels' => $locationsPerRoadSection->pluck('name'),
-            'data'   => $locationsPerRoadSection->pluck('parking_locations_count'),
+            'data' => $locationsPerRoadSection->pluck('parking_locations_count'),
         ];
 
         return view('admin.dashboard', compact(
@@ -117,13 +122,13 @@ class DashboardController extends Controller
     public function findAgreement(Request $request)
     {
         $request->validate(['agreement_number' => 'required|string']);
-        $agreement = Agreement::where('agreement_number', 'like', '%' . $request->agreement_number . '%')->first();
+        $agreement = Agreement::where('agreement_number', 'like', '%'.$request->agreement_number.'%')->first();
 
         if ($agreement) {
             return redirect()->route('masterdata.agreements.show', $agreement->id);
         }
 
-        return redirect()->back()->with('error', 'Perjanjian dengan nomor ' . $request->agreement_number . ' tidak ditemukan.');
+        return redirect()->back()->with('error', 'Perjanjian dengan nomor '.$request->agreement_number.' tidak ditemukan.');
     }
 
     public function staffPksDashboard()
@@ -133,11 +138,11 @@ class DashboardController extends Controller
 
         // 10 Daftar Lokasi Terbaru
         $recentParkingLocations = ParkingLocation::with('roadSection')->latest()->limit(10)->get();
-        $totalParkingLocations  = ParkingLocation::count();
+        $totalParkingLocations = ParkingLocation::count();
 
         // 10 Daftar PKS Terbaru
         $recentAgreements = Agreement::with('fieldCoordinator.user')->latest()->limit(10)->get();
-        $totalAgreements  = Agreement::count();
+        $totalAgreements = Agreement::count();
 
         // Grafik Jumlah Lokasi per Ruas Jalan (Top 10)
         $locationsPerRoadSection = RoadSection::withCount('parkingLocations')
@@ -146,7 +151,7 @@ class DashboardController extends Controller
 
         $barChartData = [
             'labels' => $locationsPerRoadSection->pluck('name'),
-            'data'   => $locationsPerRoadSection->pluck('parking_locations_count'),
+            'data' => $locationsPerRoadSection->pluck('parking_locations_count'),
         ];
 
         return view('staff.pks.dashboard', compact(
@@ -165,7 +170,7 @@ class DashboardController extends Controller
     public function staffKeuDashboard()
     {
         $currentMonth = Carbon::now()->month;
-        $currentYear  = Carbon::now()->year;
+        $currentYear = Carbon::now()->year;
 
         // Grafik Setoran per Bulan
         $monthlyDeposits = DepositTransaction::select(
@@ -176,10 +181,10 @@ class DashboardController extends Controller
             ->groupBy('month')->orderBy('month')->pluck('total', 'month')->all();
 
         $depositChartLabels = [];
-        $depositChartData   = [];
+        $depositChartData = [];
         for ($m = 1; $m <= 12; $m++) {
             $depositChartLabels[] = Carbon::create()->month($m)->translatedFormat('F');
-            $depositChartData[]   = $monthlyDeposits[$m] ?? 0;
+            $depositChartData[] = $monthlyDeposits[$m] ?? 0;
         }
 
         // Daftar PKS yang sudah & belum bayar bulan ini
@@ -191,7 +196,7 @@ class DashboardController extends Controller
             ->whereMonth('deposit_date', $currentMonth)
             ->pluck('agreement_id')->unique();
 
-        $paidAgreements   = $allActiveAgreements->whereIn('id', $paidAgreementIds);
+        $paidAgreements = $allActiveAgreements->whereIn('id', $paidAgreementIds);
         $unpaidAgreements = $allActiveAgreements->whereNotIn('id', $paidAgreementIds);
 
         // Jumlah Setoran
@@ -223,9 +228,154 @@ class DashboardController extends Controller
         // Gabungkan semua data
         $allData = array_merge($pksData, $keuData);
 
-        $allData['hideSidebar'] = true;
-
         return view('leader.dashboard', $allData);
+    }
+
+    public function fieldCoordinatorDashboard()
+    {
+        $user = Auth::user();
+
+        // ✅ INI YANG BENAR: Cari data Korlap, bukan Bendahara
+        $coordinator = FieldCoordinator::where('user_id', $user->id)->first();
+
+        if (! $coordinator) {
+            abort(403, 'Profil Koordinator Lapangan tidak ditemukan. Hubungi Administrator.');
+        }
+
+        $activeAgreement = Agreement::with(['activeParkingLocations.roadSection'])
+            ->where('field_coordinator_id', $coordinator->id)
+            ->where('status', 'active')
+            ->first();
+
+        $totalLocations = 0;
+        $dailyDeposit = 0;
+        $recentLocations = collect();
+
+        $hasPaidCurrentMonth = false;
+        $isContractLunas = false;
+        $currentMonthName = '';
+        $nextMonthName = '';
+        $nextMonthTotal = 0;
+        $daysInNextMonth = 0;
+
+        if ($activeAgreement) {
+            $totalLocations = $activeAgreement->activeParkingLocations->count();
+            $dailyDeposit = $activeAgreement->daily_deposit_amount;
+
+            $recentLocations = $activeAgreement->activeParkingLocations()
+                ->with('roadSection')
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            $paidMonthsCount = DepositTransaction::where('agreement_id', $activeAgreement->id)->count();
+
+            $contractStartDate = Carbon::parse($activeAgreement->start_date)->startOfMonth();
+            $contractEndDate = Carbon::parse($activeAgreement->end_date)->endOfMonth();
+
+            $targetDate = $contractStartDate->copy()->addMonths($paidMonthsCount);
+            $now = Carbon::now()->startOfMonth();
+
+            if ($targetDate->gt($contractEndDate)) {
+                $isContractLunas = true;
+                $hasPaidCurrentMonth = true;
+                $currentMonthName = $contractEndDate->translatedFormat('F Y');
+            } elseif ($targetDate->gt($now)) {
+                $hasPaidCurrentMonth = true;
+                $currentMonthName = $now->translatedFormat('F Y');
+
+                $nextMonthName = $targetDate->translatedFormat('F Y');
+                $daysInNextMonth = $targetDate->daysInMonth;
+                $nextMonthTotal = $dailyDeposit * $daysInNextMonth;
+            } else {
+                $hasPaidCurrentMonth = false;
+                $currentMonthName = $targetDate->translatedFormat('F Y');
+            }
+        }
+
+        $recentRequests = LocationRequest::with('parkingLocation')
+            ->whereHas('agreement', function ($q) use ($coordinator) {
+                $q->where('field_coordinator_id', $coordinator->id);
+            })->latest()->limit(5)->get();
+
+        $currentLeader = Leader::with('user')->latest()->first();
+        $currentTreasurer = Treasurer::with('user')->whereHas('user', function ($q) {
+            $q->where('is_active', true);
+        })->first();
+
+        $activeBankAccount = BludBankAccount::where('is_active', true)->first();
+
+        // ✅ AMBIL PROFIL UPT & FORMAT NOMOR WHATSAPP
+        $uptProfile = UptProfile::first();
+        $uptName = $uptProfile->name ?? 'UPT Perparkiran';
+
+        // Bersihkan nomor HP (Hanya ambil angka)
+        $uptPhoneRaw = $uptProfile->phone ?? '';
+        $uptPhoneWa = preg_replace('/[^0-9]/', '', $uptPhoneRaw);
+        // Jika berawalan '0', ganti menjadi '62' untuk link wa.me
+        if (str_starts_with($uptPhoneWa, '0')) {
+            $uptPhoneWa = '62'.substr($uptPhoneWa, 1);
+        }
+
+        return view('field_coordinator.dashboard', compact(
+            'coordinator', 'activeAgreement', 'totalLocations', 'dailyDeposit',
+            'recentLocations', 'recentRequests', 'currentLeader', 'currentTreasurer',
+            'activeBankAccount', 'hasPaidCurrentMonth', 'isContractLunas', 'currentMonthName',
+            'nextMonthName', 'nextMonthTotal', 'daysInNextMonth', 'uptName', 'uptPhoneWa'
+        ));
+    }
+
+    /**
+     * ✅ Dashboard untuk Bendahara (Treasurer).
+     */
+    public function treasurerDashboard()
+    {
+        $user = Auth::user();
+
+        // Antum naruh pengecekan Treasurer di sini!
+        // Padahal ini kan panggungnya Korlap.
+        $treasurer = Treasurer::where('user_id', $user->id)->first();
+
+        if (! $treasurer) {
+            abort(403, 'Akun Anda tidak terdaftar sebagai Bendahara.');
+        }
+
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+
+        // 1. Data Setoran Pending (Global)
+        $pendingValidationsCount = DepositTransaction::where('is_validated', false)->count();
+        $pendingAmount = DepositTransaction::where('is_validated', false)->sum('amount');
+
+        // 2. Data Setoran yang sudah divalidasi oleh Bendahara ini pada bulan ini
+        $validatedThisMonth = DepositTransaction::where('treasurer_id', $treasurer->id)
+            ->where('is_validated', true)
+            ->whereMonth('validation_date', $currentMonth)
+            ->whereYear('validation_date', $currentYear)
+            ->sum('amount');
+
+        // 3. Tabel Transaksi Menunggu Validasi (5 Terbaru)
+        $recentPendingDeposits = DepositTransaction::with('agreement.fieldCoordinator.user')
+            ->where('is_validated', false)
+            ->latest('deposit_date')
+            ->limit(5)
+            ->get();
+
+        // 4. Tabel Riwayat Validasi Bendahara (5 Terbaru)
+        $recentValidatedDeposits = DepositTransaction::with('agreement.fieldCoordinator.user')
+            ->where('treasurer_id', $treasurer->id)
+            ->where('is_validated', true)
+            ->latest('validation_date')
+            ->limit(5)
+            ->get();
+
+        $activeBankAccount = BludBankAccount::where('is_active', true)->first();
+
+        return view('treasurer.dashboard', compact(
+            'treasurer', 'pendingValidationsCount', 'pendingAmount',
+            'validatedThisMonth', 'recentPendingDeposits',
+            'recentValidatedDeposits', 'activeBankAccount'
+        ));
     }
 
     // Fallback index
@@ -237,6 +387,8 @@ class DashboardController extends Controller
                 return redirect()->route('admin.dashboard');
             case 'leader':
                 return redirect()->route('leader.dashboard');
+            case 'treasurer':
+                return redirect()->route('treasurer.dashboard');
             case 'field_coordinator':
                 return redirect()->route('field_coordinator.dashboard');
             case 'staff_keu':
@@ -258,9 +410,9 @@ class DashboardController extends Controller
 
         $agreements = Agreement::with('fieldCoordinator.user')
             ->where(function ($query) use ($term) {
-                $query->where('agreement_number', 'like', '%' . $term . '%')
+                $query->where('agreement_number', 'like', '%'.$term.'%')
                     ->orWhereHas('fieldCoordinator.user', function ($q) use ($term) {
-                        $q->where('name', 'like', '%' . $term . '%');
+                        $q->where('name', 'like', '%'.$term.'%');
                     });
             })
             ->limit(20)
@@ -268,8 +420,8 @@ class DashboardController extends Controller
 
         $results = $agreements->map(function ($agreement) {
             return [
-                'id'   => $agreement->id,
-                'text' => $agreement->agreement_number . ' (' . ($agreement->fieldCoordinator->user->name ?? 'N/A') . ')',
+                'id' => $agreement->id,
+                'text' => $agreement->agreement_number.' ('.($agreement->fieldCoordinator->user->name ?? 'N/A').')',
             ];
         });
 
@@ -285,14 +437,14 @@ class DashboardController extends Controller
         }
 
         $locations = ParkingLocation::with('roadSection')
-            ->where('name', 'like', '%' . $term . '%')
+            ->where('name', 'like', '%'.$term.'%')
             ->limit(20)
             ->get();
 
         $results = $locations->map(function ($location) {
             return [
-                'id'   => $location->id,
-                'text' => $location->name . ' (' . ($location->roadSection->name ?? 'Tanpa Ruas Jalan') . ')',
+                'id' => $location->id,
+                'text' => $location->name.' ('.($location->roadSection->name ?? 'Tanpa Ruas Jalan').')',
             ];
         });
 
@@ -312,18 +464,95 @@ class DashboardController extends Controller
 
         // Mencari transaksi yang nomor referensinya BERAKHIRAN dengan term yang diketik
         $deposits = DepositTransaction::with('agreement')
-            ->where('referral_code ', 'like', '%' . $term . '%')
+            ->where('referral_code ', 'like', '%'.$term.'%')
             ->latest('deposit_date')
             ->limit(20)
             ->get();
 
         $results = $deposits->map(function ($deposit) {
             return [
-                'id'   => $deposit->id,
-                'text' => 'Ref: ...' . substr($deposit->referral_code, -6) . ' | Rp ' . number_format($deposit->amount, 0, ',', '.') . ' (' . $deposit->agreement->agreement_number . ')',
+                'id' => $deposit->id,
+                'text' => 'Ref: ...'.substr($deposit->referral_code, -6).' | Rp '.number_format($deposit->amount, 0, ',', '.').' ('.$deposit->agreement->agreement_number.')',
             ];
         });
 
         return response()->json(['results' => $results]);
+    }
+
+    /**
+     * ✅ FITUR PENCARIAN GLOBAL (NAVBAR)
+     */
+    public function globalSearch(Request $request)
+    {
+        $term = $request->input('q');
+
+        // Batasi minimal ketik 2 huruf biar server nggak capek
+        if (! $term || strlen($term) < 2) {
+            return response()->json([]);
+        }
+
+        $results = [];
+
+        // 1. Cari Lokasi Parkir (Titik)
+        $locations = ParkingLocation::where('name', 'like', "%{$term}%")->limit(3)->get();
+        foreach ($locations as $loc) {
+            $results[] = [
+                'title' => $loc->name,
+                'subtitle' => 'Lokasi Parkir',
+                'url' => route('masterdata.parking-locations.show', $loc->id),
+                'icon' => 'ri icon-base ri-map-pin-line text-danger bg-label-danger',
+            ];
+        }
+
+        // 2. Cari Perjanjian PKS
+        $agreements = Agreement::where('agreement_number', 'like', "%{$term}%")->limit(3)->get();
+        foreach ($agreements as $agr) {
+            $results[] = [
+                'title' => $agr->agreement_number,
+                'subtitle' => 'Perjanjian PKS',
+                'url' => route('masterdata.agreements.show', $agr->id),
+                'icon' => 'ri icon-base ri-file-text-line text-primary bg-label-primary',
+            ];
+        }
+
+        // 3. Cari User (Khusus Admin) - SMART ROUTING
+        if (Auth::user()->role === 'admin') {
+            $users = User::where('name', 'like', "%{$term}%")->limit(3)->get();
+
+            foreach ($users as $u) {
+                // Tentukan URL berdasarkan Role User yang dicari
+                $url = route('admin.users.show', $u->id); // Default URL
+                $icon = 'ri icon-base ri-user-line text-secondary bg-label-secondary'; // Default Icon
+                $roleLabel = str_replace('_', ' ', $u->role);
+
+                // Cek relasi dan sesuaikan route
+                if ($u->role === 'leader' && $u->leader) {
+                    $url = route('admin.leaders.show', $u->leader->id);
+                    $icon = 'ri icon-base ri-user-star-line text-warning bg-label-warning';
+                    $roleLabel = 'Pimpinan UPT';
+                } elseif ($u->role === 'treasurer' && $u->treasurer) {
+                    $url = route('admin.treasurers.show', $u->treasurer->id);
+                    $icon = 'ri icon-base ri-safe-2-line text-success bg-label-success';
+                    $roleLabel = 'Bendahara';
+                } elseif ($u->role === 'field_coordinator' && $u->fieldCoordinator) {
+                    $url = route('admin.field-coordinators.show', $u->fieldCoordinator->id);
+                    $icon = 'ri icon-base ri-user-location-line text-info bg-label-info';
+                    $roleLabel = 'Koordinator Lapangan';
+                } elseif (in_array($u->role, ['admin', 'staff_pks', 'staff_keu'])) {
+                    // Admin & Staff cukup pakai route users biasa
+                    $url = route('admin.users.show', $u->id);
+                    $icon = 'ri icon-base ri-shield-user-line text-primary bg-label-primary';
+                }
+
+                $results[] = [
+                    'title' => $u->name,
+                    'subtitle' => 'Pengguna ('.ucwords($roleLabel).')',
+                    'url' => $url,
+                    'icon' => $icon,
+                ];
+            }
+        }
+
+        return response()->json($results);
     }
 }

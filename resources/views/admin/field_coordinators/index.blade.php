@@ -85,10 +85,11 @@
                         <button class="btn btn-outline-primary" type="submit"><i class="ri icon-base ri-search-line"></i></button>
                     </div>
                 </form>
-                {{-- Tombol Tambah (Trigger Modal Create) --}}
+                @if(Auth::user()->role !== 'leader')
                 <button type="button" class="btn btn-primary" id="btn-add-korlap" data-bs-toggle="modal" data-bs-target="#korlapModal">
                     <i class="ri icon-base ri-add-line me-1"></i> Tambah Korlap
                 </button>
+                @endif
             </div>
         </div>
         <div class="card-body pt-3">
@@ -151,6 +152,7 @@
                                             <i class="ri icon-base ri-eye-line icon-20px"></i>
                                         </a>
 
+                                        @if(Auth::user()->role !== 'leader')
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill btn-edit-korlap"
                                             data-id="{{ $coordinator->id }}"
                                             data-name="{{ $uName }}"
@@ -164,8 +166,10 @@
                                             data-bs-toggle="tooltip" title="Edit Koordinator">
                                             <i class="ri icon-base ri-pencil-line icon-20px"></i>
                                         </button>
+                                        @endif
 
                                         {{-- ✅ LOGIKA ACTION SUPER CERDAS (SESUAI REQUEST) --}}
+                                        @if(Auth::user()->role !== 'leader')
                                         @if($isActive)
                                             {{-- 1. POSISI DI TAB AKTIF --}}
                                             @if($coordinator->agreements->isEmpty())
@@ -196,6 +200,7 @@
                                                     <i class="ri icon-base ri-delete-bin-line icon-20px"></i>
                                                 </button>
                                             </form>
+                                        @endif
                                         @endif
                                     </div>
                                 </td>

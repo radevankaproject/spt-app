@@ -81,10 +81,12 @@
                         <button class="btn btn-outline-primary" type="submit"><i class="ri ri-search-line icon-20px"></i></button>
                     </div>
                 </form>
+                @if(Auth::user()->role !== 'leader')
                 {{-- Tombol Tambah --}}
                 <button type="button" class="btn btn-primary" id="btn-add-leader" data-bs-toggle="modal" data-bs-target="#leaderModal">
                     <i class="ri ri-add-line me-1"></i> Tambah Pimpinan
                 </button>
+                @endif
             </div>
         </div>
         <div class="card-body pt-3">
@@ -146,6 +148,7 @@
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('admin.leaders.show', $leader->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
                                             <i class="ri icon-base ri-eye-line icon-20px"></i>
                                         </a>
+                                        @if(Auth::user()->role !== 'leader')
                                         {{-- Tombol Edit --}}
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill btn-edit-leader"
                                             data-id="{{ $leader->id }}"
@@ -160,7 +163,9 @@
                                             data-bs-toggle="tooltip" title="Edit Pimpinan">
                                             <i class="ri ri-pencil-line icon-20px"></i>
                                         </button>
+                                        @endif
 
+                                        @if(Auth::user()->role !== 'leader')
                                         {{-- SMART ACTION: Toggle Aktif/Nonaktif & Hapus Permanen --}}
                                         @if($isActive)
                                             <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-nonaktif"
@@ -182,6 +187,7 @@
                                                     </button>
                                                 </form>
                                             @endif
+                                        @endif
                                         @endif
                                     </div>
                                 </td>

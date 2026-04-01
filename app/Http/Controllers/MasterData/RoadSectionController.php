@@ -38,6 +38,8 @@ class RoadSectionController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:road_sections,name',
             'zone' => 'required|string|in:Zona 2,Zona 3',
@@ -54,6 +56,8 @@ class RoadSectionController extends Controller
      */
     public function update(Request $request, RoadSection $roadSection)
     {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         // Cek apakah sedang digunakan
         $inUse = $roadSection->parkingLocations()->count() > 0;
 
