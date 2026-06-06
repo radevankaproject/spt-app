@@ -1,40 +1,53 @@
 # Changelog
 
-Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini.
+Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
 ## [v1.3.0] - 2026-06-06
+**_"The Enterprise Dashboard & Security Update"_**
 
-- **Major Overhaul Dashboard:** Redesain antarmuka (_Premium Dashboard_) untuk seluruh peran pengguna (Admin, Pimpinan, Bendahara, Staff Keuangan, & Staff PKS) agar 100% selaras dengan tema Vuexy, termasuk integrasi UI-Avatars otomatis dan _skeleton loading_.
-- **Sistem Keamanan & Akses:** Implementasi pemulihan kata sandi (_Forgot Password_) yang lebih aman menggunakan _One Time Password_ (OTP) terintegrasi langsung dengan WhatsApp (Fonnte API), ditopang oleh penanganan _ConnectionException_ yang _graceful_ via Laravel Http Facade.
-- **Peningkatan Kapabilitas Backup:** Modul _Backup_ kini mendukung eksekusi _Full Application Snapshot_ (Database + Kode Sumber) secara komprehensif, dilengkapi animasi _spinner_ progresif.
-- **Penyempurnaan Modul Agreement (PKS):** Penambahan klasifikasi **Jenis Perjanjian** (Sementara/Draft/Rilis) pada _database_ dan UI, penyempurnaan form _Create/Edit_, serta pembaruan format _output_ dokumen PDF.
-- **Penyempurnaan Profil Pengguna & Formatting:** Integrasi kolom `phone_number` dan `employee_number` (NIP) untuk pelaporan dengan pencarian nomor terpusat (multi-role). Ditambah dengan implementasi _helper_ standar penulisan NIP Indonesia yang seragam di seluruh halaman _dashboard_ dan tabel.
-- **Refactoring & Pembersihan _Bug_ IDE:** Penghapusan fungsi _deprecated_, pengoptimalan _query_, pembersihan sisa file _.zip_, serta pembaruan mendetail *Tech Stack* di dokumen `README.md`.
+Pembaruan masif yang difokuskan pada perombakan _user interface_ secara ekstensif, peningkatan standar keamanan otentikasi tingkat tinggi, serta fitur-fitur administratif esensial.
+
+- **Major Overhaul Dashboard (UI/UX):** Redesain antarmuka (_Premium Dashboard_) untuk seluruh peran pengguna (Admin, Pimpinan, Bendahara, Staff Keuangan, & Staff PKS). Tampilan kini 100% selaras dengan tema Vuexy Premium, diintegrasikan dengan modul profil dinamis (UI-Avatars API) berdasarkan nama pengguna, serta implementasi efek _Skeleton Loading_ untuk transisi halaman yang lebih mulus.
+- **Sistem Keamanan & Akses (WhatsApp OTP):** Implementasi metode pemulihan kata sandi (_Forgot Password_) yang jauh lebih modern dan aman. Sistem kini mengirimkan *One Time Password* (OTP) 6 digit yang *expired* dalam 5 menit, terintegrasi langsung dengan WhatsApp melalui gateway Fonnte API. Dilengkapi juga dengan mekanisme *Rate Limiting* (maksimal 5 kali percobaan) untuk mencegah serangan _Brute Force_.
+- **Network Resilience:** Penanganan _ConnectionException_ secara _graceful_ via Laravel Http Facade untuk modul pengiriman pesan OTP. Jika API Fonnte mengalami *downtime*, sistem tidak akan _crash_ (Internal Server Error 500) melainkan memberikan notifikasi ramah kepada pengguna dan mencatatnya dalam *log*.
+- **Peningkatan Kapabilitas Backup:** Modul _Backup_ kini mendukung eksekusi *Full Application Snapshot* (pengunduhan *database* SQL sekaligus kompresi _source code_ secara utuh). Dilengkapi animasi _spinner_ progresif pada tombol unduh.
+- **Penyempurnaan Modul Agreement (PKS):** Penambahan klasifikasi **Jenis Perjanjian** (Sementara/Draft/Rilis) pada _database_ dan antarmuka. Menyempurnakan form *Create/Edit* untuk Staff PKS serta melakukan *rendering* ulang pada _output_ cetak dokumen PDF agar lebih informatif.
+- **Penyempurnaan Profil Pengguna & Formatting (Multi-Role):** Integrasi ekstensif kolom `phone_number` dan `employee_number` (NIP) untuk pelaporan pada tingkatan Users, Leaders, dan Treasurers. Ditambah dengan sistem pencarian _multi-role_ otomatis saat *user* meminta OTP. Format penulisan NIP juga telah distandardisasi menggunakan _helper_ NipIndoFormat.
+- **Refactoring & Pembersihan:** Penghapusan fungsi _deprecated_ (`imagedestroy`), pengoptimalan *query*, perbaikan kompatibilitas metode _download_ bawaan Laravel, pembersihan sisa *file build/zip* lama, dan perombakan deskripsi *Tech Stack* di dokumen `README.md`.
 
 ## [v1.2.9] - 2026-04-01
+**_"Security Patch & Application Compliance"_**
 
-- **Role-Based Access Fix:** Penerapan **Akses View-Only** secara menyeluruh untuk role Pimpinan di semua halaman demi menjaga integritas laporan dan mencegah _human error_, serta membuka kembali akses edit target setoran untuk Pimpinan saat dibutuhkan.
-- **Security Update:** Patch mitigasi celah keamanan **IDOR** (_Insecure Direct Object Reference_) pada modul pengajuan dan persetujuan lokasi parkir oleh Koordinator Lapangan.
-- **Fitur Baru (Manajemen Versi):** Implementasi _Rich Text Editor_ (Quill.js) pada menu Manajemen Versi Aplikasi untuk penulisan *log* yang lebih ekspresif dan dinamis (terekam di _database_).
-- **Dokumentasi Lanjutan:** Penambahan _End-User License Agreement_ (EULA) untuk perlindungan legalitas kepemilikan aplikasi pada Klien UPT Perparkiran.
-- **Optimization:** Berbagai _minor bug squashing_, _code cleaning_, dan pengoptimalan _query_ database.
+Pembaruan krusial yang difokuskan pada penambalan celah keamanan sistem, penerapan hierarki akses birokrasi, dan kepatuhan perizinan (*compliance*).
+
+- **Role-Based Access Fix (View-Only Mode):** Penerapan aturan pembatasan akses (*Akses View-Only*) secara menyeluruh untuk *role* Pimpinan (Leader) di semua halaman aplikasi demi menjaga integritas pelaporan, melindungi sistem dari _human error_, serta secara dinamis membuka kembali hak untuk mengedit *Deposit Target* (Target Setoran) ketika memang dibutuhkan secara struktural.
+- **Security Update (Anti-IDOR):** Penambalan celah keamanan tingkat tinggi **IDOR** (_Insecure Direct Object Reference_) pada modul pengajuan dan persetujuan (Approval) Lokasi Parkir oleh Koordinator Lapangan. Mencegah manipulasi parameter ID pada URL yang berpotensi diretas oleh _user_ tidak sah.
+- **Manajemen Versi Terintegrasi:** Implementasi modul _Rich Text Editor_ (Quill.js) untuk manajemen *changelog* bawaan aplikasi. Admin kini dapat menulis catatan perubahan versi (*log*) secara ekspresif, rapi, dan dinamis langsung di dalam sistem tanpa menyentuh *database* secara manual.
+- **Kepatuhan Legal (EULA):** Penambahan dokumen _End-User License Agreement_ (EULA) yang komprehensif pada aplikasi untuk menegaskan perlindungan hak cipta dan legalitas kepemilikan piranti lunak bagi klien UPT Perparkiran.
+- **Optimization:** Berbagai perbaikan _minor bug_ (_squashing_), pembersihan kode (_code cleaning_), dan pengoptimalan algoritma *query* Eloquent ORM di *database*.
 
 ## [v1.2.0] - 2026-03-30
+**_"Digital Workflow & Master Data Optimization"_**
 
-- **Digitalisasi Workflow (Paperless):** Menghadirkan fitur baru (_Update sPKP_) berupa pengajuan penambahan, perpindahan, atau pencabutan titik parkir secara sistem dari Koordinator/Mitra ke Dinas.
-- **Penyempurnaan Modul Master Data:** Optimalisasi *flow* validasi setoran secara riil.
-- **Sistem Notifikasi:** Peningkatan *feedback* UI dengan integrasi sistem _SweetAlert_ untuk respon interaksi pengguna yang lebih baik.
+Transformasi pengelolaan operasional dari berbasis kertas (konvensional) menjadi sepenuhnya *paperless*.
+
+- **Digitalisasi Workflow (Update sPKP):** Menghadirkan fitur revolusioner berupa pengajuan titik lokasi baru, perpindahan lahan, atau pencabutan titik parkir langsung dari panel sistem Koordinator Lapangan/Mitra untuk dievaluasi oleh Dinas.
+- **Penyempurnaan Modul Master Data:** Optimalisasi proses *flow* validasi setoran harian/bulanan agar laporan keuangan yang ditinjau Bendahara tersinkronisasi lebih cepat dan presisi secara *real-time*.
+- **Sistem Notifikasi Berbasis UX:** Integrasi masif *SweetAlert2* pada berbagai *action* CRUD (Create, Read, Update, Delete) guna memberikan *feedback* dialog antarmuka yang modern, dinamis, dan menghindarkan *user* dari kebingungan eksekusi sistem.
 
 ## [v1.1.0] - 2025-10-20
+**_"Performance Leap & UX Enhancements"_**
 
-- **Performance & UI Upgrade:** _Upgrade skeleton_ secara masif (*upgrade skeleton all page*) pada seluruh halaman untuk mempercepat persepsi waktu *loading* aplikasi bagi *user* ketika berpindah menu (meningkatkan _User Experience_ / UX).
+- **Massive Performance Upgrade:** Penerapan sistem *Upgrade Skeleton All Page* yang secara dramatis mengubah teknik transisi pemuatan (_loading_) aplikasi. Menggunakan konsep visual *skeleton placeholders* untuk meminimalkan waktu tunggu layar kosong (*blank screen*) saat menavigasi menu yang berisi tabel berat. Meningkatkan retensi dan psikologis _User Experience_ (UX) secara drastis.
 
 ## [v1.0.0] - 2025-08-04
+**_"The Genesis - Rilis Perdana SiPKS"_**
 
-- **Rilis Perdana (Publish v1.0.0):** Inisialisasi stabil _codebase_ aplikasi Sistem Parkir Terpadu (SPT).
-- **File Management:** Pengaturan awal _storage link_ untuk manajemen berkas terintegrasi.
-- **Manajemen GIS Terpusat:** Penambahan fitur koordinat (Latitude/Longitude) beserta opsi pengunggahan *file* di manajemen Titik Parkir (Parking Location).
-- **Manajemen Transaksi:** Implementasi alur input setoran/pembayaran (Report Deposite Menu) beserta fitur _edit_ transaksi yang bisa ditangani oleh role _Staff Keuangan_.
-- **Sistem PKS (Staff PKS):** Alokasi modul kerja spesifik untuk role *Staff PKS* guna mendata surat keputusan dan kesepakatan parkir.
-- **UI Engine Integration:** Inisialisasi awal adopsi template premium (Vuexy base) yang sudah disesuaikan dan di-fix secara iteratif.
+Versi *Milestone* pertama. Aplikasi dirilis menjadi stabil *(Production Ready)* setelah siklus pengerjaan *core logic* dari bulan Juli 2025.
+
+- **Rilis Perdana & File Management:** Penetapan fondasi arsitektur kode utama (*Codebase Init*) dan eksekusi konfigurasi _storage:link_ untuk menangani direktori penyimpan ribuan _file_ unggahan secara aman (*secure file storage*).
+- **Manajemen GIS Terpusat (Sistem Informasi Geografis):** Peluncuran modul peta interaktif dengan *Leaflet.js*. Admin dan pengawas dapat mendaftarkan titik koordinat spesifik (*Latitude/Longitude*) untuk lahan parkir, yang divisualisasikan dalam bentuk pemetaan digital.
+- **Manajemen Transaksi BLUD:** Implementasi modul *Report Deposite* (Laporan Setoran Keuangan). Mendukung pencatatan riwayat pembayaran retribusi parkir hingga proses moderasi pengeditan data oleh *role Staff Keuangan*.
+- **Manajemen PKS & Surat Keputusan:** Alokasi panel khusus untuk *Staff PKS* guna mendata riwayat kontrak perjanjian (*Agreements*) dan legalitas Surat Keputusan bagi penunjukan mitra pengelola lahan parkir.
+- **UI Engine Integration:** Hasil asimilasi iteratif dari _template_ dasar *Vuexy Premium* ke dalam kerangka aplikasi *Blade Laravel*. Disusun dengan gaya _Enterprise_ yang proporsional dan responsif secara lintas perangkat.
 
