@@ -40,35 +40,20 @@ class PasswordResetLinkController extends Controller
         $otpCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // In a real app, send OTP via SMS/WhatsApp here. 
-        // Menggunakan Fonnte API
+        // Menggunakan Fonnte API dengan Laravel Http Facade
         $uptProfile = \App\Models\UptProfile::first();
         $apiToken = $uptProfile ? $uptProfile->api_token_fonnte : null;
 
         if ($apiToken) {
-            $curl = curl_init();
             $message = "Halo {$user->name},\n\nIni adalah kode OTP Anda untuk mereset kata sandi: *{$otpCode}*.\n\nKode ini berlaku selama 5 menit. Jangan berikan kode ini kepada siapa pun.";
 
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://api.fonnte.com/send',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
-                CURLOPT_POSTFIELDS => array(
-                    'target' => $request->phone_number,
-                    'message' => $message,
-                    'countryCode' => '62',
-                ),
-                CURLOPT_HTTPHEADER => array(
-                    "Authorization: $apiToken"
-                ),
-            ));
-
-            curl_exec($curl);
-            // curl_close is deprecated in newer PHP versions as CurlHandle handles its own memory
+            \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => $apiToken,
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $request->phone_number,
+                'message' => $message,
+                'countryCode' => '62', // Default Indonesia
+            ]);
         }
         
         \App\Models\OtpReset::updateOrCreate(
