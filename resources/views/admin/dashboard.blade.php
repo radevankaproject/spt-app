@@ -80,30 +80,48 @@
         $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number) : '-';
     @endphp
 
-    {{-- ✅ 1. HERO SEARCH SECTION --}}
-    <div class="card mb-4 hero-search-card shadow-lg">
-        <div class="card-body p-4 p-md-5 position-relative">
-            <div class="row justify-content-center">
-                <div class="col-md-8 text-center">
-                    <h3 class="text-white fw-bold mb-2">Selamat Datang di Pusat Kendali Admin! 🚀</h3>
-                    <p class="text-white-50 mb-4">Akses cepat data Perjanjian Kerja Sama (PKS) berdasarkan nomor registrasi.</p>
+    @php
+        $adminName = Auth::user()->name ?? 'Administrator';
+        $adminNip = Auth::user()->employee_number ? formatNip(Auth::user()->employee_number) : '-';
+        $adminAvatar = (Auth::user() && Auth::user()->img)
+            ? asset('storage/' . Auth::user()->img)
+            : "https://ui-avatars.com/api/?name=" . urlencode($adminName) . "&background=fff&color=696cff&bold=true";
+            
+        $hour = date('H');
+        if ($hour >= 5 && $hour < 11) {
+            $greeting = 'Selamat Pagi';
+        } elseif ($hour >= 11 && $hour < 15) {
+            $greeting = 'Selamat Siang';
+        } elseif ($hour >= 15 && $hour < 18) {
+            $greeting = 'Selamat Sore';
+        } else {
+            $greeting = 'Selamat Malam';
+        }
+    @endphp
 
-                    <form action="{{ route('admin.agreements.find') }}" method="POST">
-                        @csrf
-                        <div class="input-group input-group-lg rounded-pill overflow-hidden bg-white">
-                            <span class="input-group-text bg-white border-0 text-primary ps-4">
-                                <i class="ri icon-base ri-search-line ri-22px"></i>
-                            </span>
-                            <input type="search" name="agreement_number" class="form-control border-0 fs-6 shadow-none"
-                                placeholder="Ketik Nomor PKS di sini..." required>
-                            <button class="btn btn-primary px-4 fw-bold" type="submit">Cari PKS</button>
-                        </div>
-                        @if (session('error'))
-                            <div class="text-danger bg-white rounded-pill d-inline-block px-3 py-1 fw-bold small mt-3 shadow-sm">
-                                <i class="ri ri-error-warning-line me-1"></i> {{ session('error') }}
-                            </div>
-                        @endif
-                    </form>
+    <div class="card mb-4 hero-search-card shadow-lg border-0" style="background: linear-gradient(135deg, #696cff 0%, #3b3e99 100%);">
+        <div class="card-body p-4 p-md-5 position-relative overflow-hidden">
+            <!-- Dekorasi background -->
+            <i class="ri ri-vip-crown-line position-absolute text-white opacity-10" style="font-size: 8rem; right: -1%; top: -10%; transform: rotate(15deg);"></i>
+            
+            <div class="row align-items-center position-relative z-1">
+                <div class="col-md-8 text-md-start text-center mb-4 mb-md-0">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm mb-3">
+                        <i class="ri ri-calendar-todo-line me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                    <h2 class="text-white fw-bold mb-2" style="letter-spacing: -0.5px;">{{ $greeting }}, {{ $adminName }}! 👋</h2>
+                    <div class="badge border border-white text-white rounded-pill px-3 py-2 mb-3">
+                        <i class="ri ri-profile-line me-1 align-middle"></i> NIP: {{ $adminNip }}
+                    </div>
+                    <p class="text-white-75 mb-0 fs-6" style="max-width: 500px;">
+                        Selamat datang kembali di Pusat Kendali Administrator. Berikut adalah ringkasan kinerja dan data pengelolaan perparkiran (SPKP) terkini.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <div class="d-inline-block position-relative rounded-circle p-1" style="background: linear-gradient(135deg, #f6d365 0%, #ffb142 100%);">
+                        <img src="{{ $adminAvatar }}" alt="Admin Avatar" class="rounded-circle shadow-lg border border-3 border-white" style="width: 120px; height: 120px; object-fit: cover; background: #fff;">
+                        <span class="position-absolute bottom-0 end-0 bg-success border border-3 border-white rounded-circle" style="width: 25px; height: 25px; margin-bottom: 5px; margin-right: 5px;" title="Online"></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,7 +139,7 @@
                         <h6 class="mb-0 fw-bold text-dark text-wrap">{{ $leaderName }}</h6>
                         <p class="text-muted mb-0" style="font-size: 0.75rem;">{{ $leaderJabatan }}</p>
                         <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">NIP. {{ $leaderNip }}</p>
-                        <p class="text-primary fw-bold mb-0 mt-1" style="font-size: 0.70rem;"><i class="ri ri-calendar-check-line me-1"></i>Mulai: {{ $leaderStart }}</p>
+                        <p class="text-primary fw-bold mb-0 mt-1" style="font-size: 0.70rem;"><i class="ri ri ri-calendar-check-line me-1"></i>Mulai: {{ $leaderStart }}</p>
                     </div>
                 </div>
             </div>
@@ -187,7 +205,7 @@
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center pb-3">
                     <h5 class="card-title fw-bold mb-0">
-                        <i class="ri icon-base ri-bar-chart-grouped-line text-primary me-2 ri-20px"></i> Grafik Validasi Setoran vs Target
+                        <i class="ri icon-base ri ri-bar-chart-grouped-line text-primary me-2 ri-20px"></i> Grafik Validasi Setoran vs Target
                     </h5>
                     <span class="badge bg-primary bg-opacity-10 text-primary fw-bold">Tahun {{ now()->year }}</span>
                 </div>

@@ -153,14 +153,14 @@
             </li>
 
             {{-- Leader biasanya cukup pantau, staff/admin yang eksekusi persetujuan titik --}}
-            @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
+            <!-- @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
             <li class="menu-item {{ request()->routeIs('masterdata.location-requests.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.location-requests.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-survey-line"></i>
                     <div data-i18n="Persetujuan Titik">Persetujuan Titik</div>
                 </a>
             </li>
-            @endif
+            @endif -->
 
             <li class="menu-item {{ request()->routeIs('masterdata.agreements.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.agreements.index') }}" class="menu-link">

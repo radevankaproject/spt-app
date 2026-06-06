@@ -53,6 +53,7 @@ class ProfileSettingController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'employee_number' => ['nullable', 'string', 'max:50'],
             'img' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
         ], [
             'username.unique' => 'Username ini sudah digunakan oleh pengguna lain.',

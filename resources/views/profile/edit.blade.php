@@ -110,12 +110,19 @@
                                 </div>
                                 @error('username', 'updateProfile')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input class="form-control @error('email', 'updateProfile') is-invalid @enderror" type="email" id="email" name="email" value="{{ old('email', $user->email) }}" placeholder="Email" />
                                     <label for="email">Alamat Email</label>
                                 </div>
                                 @error('email', 'updateProfile')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input class="form-control @error('employee_number', 'updateProfile') is-invalid @enderror" type="text" id="employee_number" name="employee_number" value="{{ old('employee_number', $user->employee_number) }}" placeholder="Kosongkan jika tidak ada" />
+                                    <label for="employee_number">NIP / Employee Number (Opsional)</label>
+                                </div>
+                                @error('employee_number', 'updateProfile')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
                         </div>
                         

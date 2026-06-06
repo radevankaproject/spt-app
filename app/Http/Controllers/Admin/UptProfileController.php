@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\UptProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class UptProfileController extends Controller
 {
@@ -28,6 +29,7 @@ class UptProfileController extends Controller
             ['id' => 1],                                  // Kunci untuk memastikan hanya ada 1 baris
             ['name' => 'UPT Perparkiran Dishub Pekanbaru']// Nilai default jika baru dibuat
         );
+
         return view('admin.upt_profile.index', compact('profile'));
     }
 
@@ -41,17 +43,17 @@ class UptProfileController extends Controller
         $profile = UptProfile::firstOrCreate(['id' => 1]);
 
         $validatedData = $request->validate([
-            'name'             => 'required|string|max:255',
-            'app_name'         => 'required|string|max:255',
-            'address'          => 'nullable|string',
-            'phone'            => 'nullable|string|max:20',
-            'email'            => 'nullable|email|max:255',
-            'website'          => 'nullable|url|max:255',
-            'login_greetings'  => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'app_name' => 'required|string|max:255',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'website' => 'nullable|url|max:255',
+            'login_greetings' => 'nullable|string',
             'api_token_fonnte' => 'nullable|string',
-            'about_us'         => 'nullable|string',
-            'privacy_policy'   => 'nullable|string',
-            'logo'             => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+            'about_us' => 'nullable|string',
+            'privacy_policy' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
         try {
@@ -60,15 +62,15 @@ class UptProfileController extends Controller
                 $file = $request->file('logo');
 
                 // Cek apakah file valid (tidak korup / putus di jalan)
-                if (!$file->isValid()) {
-                    throw new \Exception('File upload gagal. Kode Error PHP: ' . $file->getError());
+                if (! $file->isValid()) {
+                    throw new \Exception('File upload gagal. Kode Error PHP: '.$file->getError());
                 }
 
                 $fileName = 'logo.png';
                 $publicPath = public_path();
 
                 // 🚨 CEK PERMISSION FOLDER PUBLIC
-                if (!is_writable($publicPath)) {
+                if (! is_writable($publicPath)) {
                     throw new \Exception("Folder public/ TIDAK BISA DITULIS (Permission Denied). Silakan jalankan perintah 'chmod 775 public' atau 'chmod 777 public' di terminal server Anda.");
                 }
 
@@ -77,7 +79,7 @@ class UptProfileController extends Controller
                 $validatedData['logo'] = $fileName;
 
                 // Otomatis update favicon
-                $this->generateFavicon($publicPath . '/' . $fileName);
+                $this->generateFavicon($publicPath.'/'.$fileName);
             }
 
             $profile->update($validatedData);
@@ -86,12 +88,12 @@ class UptProfileController extends Controller
                 ->with('success', 'Profil UPT berhasil diperbarui.');
 
         } catch (\Exception $e) {
-            Log::error('Error update profil: ' . $e->getMessage());
+            Log::error('Error update profil: '.$e->getMessage());
 
             // 🚨 TAMPILKAN ERROR EKSTREM KE LAYAR
             return redirect()->back()
                 ->withInput()
-                ->with('error', '🛑 GAGAL MENYIMPAN: ' . $e->getMessage());
+                ->with('error', '🛑 GAGAL MENYIMPAN: '.$e->getMessage());
         }
     }
 
@@ -101,15 +103,16 @@ class UptProfileController extends Controller
      */
     private function generateFavicon($sourcePath)
     {
-        if (!extension_loaded('gd')) {
+        if (! extension_loaded('gd')) {
             Log::warning('Ekstensi PHP GD tidak aktif. Favicon tidak diperbarui.');
+
             return;
         }
 
         // Path tujuan (Di root public)
         $faviconPath = public_path('favicon.ico');
 
-        list($width, $height, $type) = getimagesize($sourcePath);
+        [$width, $height, $type] = getimagesize($sourcePath);
 
         // Ukuran standar favicon adalah 32x32
         $thumb = imagecreatetruecolor(32, 32);
@@ -134,12 +137,11 @@ class UptProfileController extends Controller
 
             // Opsional: Jika template antum menyimpan favicon di path lain, timpah juga
             $templateFavicon = public_path('assets/img/favicon/favicon.ico');
-            if(file_exists($templateFavicon)){
+            if (file_exists($templateFavicon)) {
                 copy($faviconPath, $templateFavicon);
             }
 
-            imagedestroy($thumb);
-            imagedestroy($source);
+            // Note: imagedestroy() is deprecated since PHP 8.0/8.5. Let GC handle it.
         }
     }
 }

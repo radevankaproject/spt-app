@@ -2,6 +2,13 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini.
 
+## [v1.3.0] - 2026-06-06
+- **Major Overhaul:** Redesain antarmuka (_Premium Dashboard_) untuk seluruh peran pengguna (Admin, Pimpinan, Bendahara, Staff Keuangan, & Staff PKS) agar 100% selaras dengan tema Vuexy, termasuk integrasi UI-Avatars otomatis dan skeleton loading.
+- **Sistem Keamanan Akses:** Implementasi pemulihan kata sandi (_Forgot Password_) yang lebih aman menggunakan *One Time Password* (OTP) terintegrasi langsung dengan WhatsApp (Fonnte API).
+- **Peningkatan Kapabilitas Backup:** Modul _Backup_ kini mendukung eksekusi *Full Application Snapshot* (Database + Kode Sumber) secara komprehensif, dilengkapi animasi _spinner_ progresif.
+- **Penyempurnaan Struktur Data:** Integrasi otomatis input Nomor Handphone (`phone_number`) untuk seluruh tingkatan pengguna demi memfasilitasi fungsionalitas sistem.
+
+
 ## [v1.2.9] - 2026-04-01
 - Penerapan **Akses View-Only** secara menyeluruh untuk role Pimpinan di semua halaman demi menjaga integritas laporan dan mencegah _human error_.
 - Patch mitigasi celah keamanan **IDOR** (_Insecure Direct Object Reference_) pada modul pengajuan dan persetujuan lokasi parkir oleh Koordinator Lapangan.

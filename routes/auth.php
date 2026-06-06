@@ -25,6 +25,13 @@ Route::middleware('guest')->group(function () {
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
+    Route::post('forgot-password/otp', [PasswordResetLinkController::class, 'store'])
+        ->name('password.otp.send');
+        
+    Route::post('forgot-password/verify', [PasswordResetLinkController::class, 'verifyOtp'])
+        ->name('password.otp.verify');
+
+    // Keep password.email for legacy or override it to avoid errors if used elsewhere
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 

@@ -61,11 +61,18 @@
                                         id="generate-username">Generate</button>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input type="email" class="form-control" id="email" name="email"
                                         placeholder="contoh@email.com" value="{{ old('email') }}" required />
                                     <label for="email">Email</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control" id="phone_number" name="phone_number"
+                                        placeholder="Contoh: 08123456789" value="{{ old('phone_number') }}" maxlength="14" />
+                                    <label for="phone_number">No. Handphone (Opsional)</label>
                                 </div>
                             </div>
                             <div class="col-md-6">

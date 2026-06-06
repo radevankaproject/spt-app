@@ -17,6 +17,7 @@ class Agreement extends Model
         'field_coordinator_id',
         'start_date',
         'end_date',
+        'jenis',
         'daily_deposit_amount',
         'monthly_deposit_target', // ✅ TAMBAHKAN INI
         'total_deposit_target',   // ✅ TAMBAHKAN INI

@@ -23,6 +23,8 @@ class DashboardController extends Controller
 {
     /**
      * Menampilkan dashboard utama untuk Admin dengan data yang komprehensif.
+     * 
+     * @return \Illuminate\View\View
      */
     public function adminDashboard()
     {

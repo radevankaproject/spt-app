@@ -81,11 +81,36 @@
                                         id="signed_date" name="signed_date" value="{{ old('signed_date', date('Y-m-d')) }}"
                                         required /><label for="signed_date">Tanggal TTD</label></div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <select name="status" id="status" class="form-select" required>
+                                        <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending (Menunggu Setoran)</option>
+                                        <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Aktif</option>
+                                    </select>
+                                    <label for="status">Status Awal PKS</label>
+                                </div>
+                            </div>
 
-                            {{-- ✅ PERUBAHAN DI SINI: Input Setoran --}}
+                            {{-- ✅ PERUBAHAN DI SINI: Input Jenis & Setoran --}}
+                            <div class="col-md-12">
+                                <label class="form-label d-block">Jenis Perjanjian</label>
+                                <div class="form-check form-check-inline mt-2">
+                                    <input class="form-check-input" type="radio" name="jenis" id="jenis_draft" value="draft" {{ old('jenis', 'draft') == 'draft' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="jenis_draft">Draft</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="jenis" id="jenis_sementara" value="sementara" {{ old('jenis') == 'sementara' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="jenis_sementara">Sementara</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="jenis" id="jenis_rilis" value="rilis" {{ old('jenis') == 'rilis' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="jenis_rilis">Rilis</label>
+                                </div>
+                            </div>
+
                             <div class="col-md-4">
                                 <div class="form-floating form-floating-outline">
-                                    <input type="number" class="form-control" id="daily_deposit_amount"
+                                    <input type="text" class="form-control" id="daily_deposit_amount"
                                         name="daily_deposit_amount" placeholder="Otomatis dari lokasi"
                                         value="{{ old('daily_deposit_amount', 0) }}" required />
                                     <label for="daily_deposit_amount">Setoran Harian (Rp)</label>
@@ -242,16 +267,56 @@
             }
 
             function updateDailyDepositTotal() {
-                let total = 0;
-                for (const id in selectedLocations) {
-                    total += parseFloat(selectedLocations[id].daily_deposit) || 0;
+                const jenis = $('input[name="jenis"]:checked').val();
+                if (jenis === 'rilis') {
+                    let total = 0;
+                    for (const id in selectedLocations) {
+                        total += parseFloat(selectedLocations[id].daily_deposit) || 0;
+                    }
+                    dailyDepositInput.value = total > 0 ? new Intl.NumberFormat('id-ID').format(total) : '';
                 }
-                dailyDepositInput.value = total;
                 calculateTotals();
             }
 
+            dailyDepositInput.addEventListener('input', function(e) {
+                let cleanValue = this.value.replace(/[^0-9]/g, '');
+                if (cleanValue) {
+                    this.value = parseInt(cleanValue, 10).toLocaleString('id-ID');
+                } else {
+                    this.value = '';
+                }
+                calculateTotals();
+            });
+
+            $('form').on('submit', function() {
+                dailyDepositInput.value = dailyDepositInput.value.replace(/\./g, '');
+            });
+
+            function toggleJenisLogic() {
+                const jenis = $('input[name="jenis"]:checked').val();
+                if (jenis === 'rilis') {
+                    dailyDepositInput.readOnly = true;
+                    // Lock zones
+                    const selectedZone = $('input[name="zone_filter"]:checked').val();
+                    if (selectedZone) {
+                        $('input[name="zone_filter"]').not('input[name="zone_filter"]:checked').prop('disabled', true);
+                        resetZoneBtn.show();
+                    }
+                } else {
+                    dailyDepositInput.readOnly = false;
+                    // Unlock zones
+                    $('input[name="zone_filter"]').prop('disabled', false);
+                    resetZoneBtn.hide();
+                }
+                updateDailyDepositTotal();
+            }
+
+            $('input[name="jenis"]').on('change', toggleJenisLogic);
+            toggleJenisLogic();
+
             function calculateTotals() {
-                const dailyAmount = parseFloat(dailyDepositInput.value) || 0;
+                let cleanValue = dailyDepositInput.value.replace(/\./g, '');
+                const dailyAmount = parseFloat(cleanValue) || 0;
                 const startDate = startDatePicker.selectedDates[0];
                 const endDate = endDatePicker.selectedDates[0];
                 const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
@@ -271,8 +336,11 @@
 
             $('input[name="zone_filter"]').on('change', function() {
                 const selectedZone = $(this).val();
-                $('input[name="zone_filter"]').not(this).prop('disabled', true);
-                resetZoneBtn.show();
+                const jenis = $('input[name="jenis"]:checked').val();
+                if (jenis === 'rilis') {
+                    $('input[name="zone_filter"]').not(this).prop('disabled', true);
+                    resetZoneBtn.show();
+                }
                 roadSectionSelect.empty().append('<option value="">Memuat ruas jalan...</option>').prop(
                     'disabled', true).trigger('change');
                 parkingContainer.html(
@@ -348,7 +416,9 @@
                                         data-daily-deposit="${location.daily_deposit}"
                                         data-name="${location.name}"
                                         data-road-section-name="${roadSectionName}" ${isChecked}>
-                                    <label class="form-check-label" for="loc-${location.id}">${location.name}</label>
+                                    <label class="form-check-label" for="loc-${location.id}">
+                                        ${location.name} <span class="text-success fw-bold">(Rp ${new Intl.NumberFormat('id-ID').format(location.daily_deposit)})</span>
+                                    </label>
                                 </div>
                             </div>`;
                             });

@@ -40,21 +40,22 @@
                 <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
                     id="nav-theme" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <i class="icon-base ri ri-sun-line ri-22px theme-icon-active text-warning"></i>
+                    <span id="nav-theme-text" class="d-none">Toggle theme</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end mt-2 rounded-3 shadow-sm py-2" aria-labelledby="nav-theme-text">
                     <li>
-                        <button type="button" class="dropdown-item align-items-center theme-switch-btn" data-theme-value="light">
-                            <i class="icon-base ri ri-sun-line ri-20px me-3 text-warning"></i><span class="fw-medium">Light</span>
+                        <button type="button" class="dropdown-item align-items-center theme-switch-btn" data-bs-theme-value="light">
+                            <i class="icon-base ri ri-sun-line ri-20px me-3 text-warning" data-icon="sun-line"></i><span class="fw-medium">Light</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item align-items-center theme-switch-btn" data-theme-value="dark">
-                            <i class="icon-base ri ri-moon-clear-fill ri-20px me-3 text-primary"></i><span class="fw-medium">Dark</span>
+                        <button type="button" class="dropdown-item align-items-center theme-switch-btn" data-bs-theme-value="dark">
+                            <i class="icon-base ri ri-moon-clear-fill ri-20px me-3 text-primary" data-icon="moon-clear-fill"></i><span class="fw-medium">Dark</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item align-items-center theme-switch-btn" data-theme-value="system">
-                            <i class="icon-base ri ri-computer-line ri-20px me-3 text-secondary"></i><span class="fw-medium">System</span>
+                        <button type="button" class="dropdown-item align-items-center theme-switch-btn" data-bs-theme-value="system">
+                            <i class="icon-base ri ri-computer-line ri-20px me-3 text-secondary" data-icon="computer-line"></i><span class="fw-medium">System</span>
                         </button>
                     </li>
                 </ul>
@@ -158,14 +159,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Update UI tombol di dalam dropdown
         themeBtns.forEach(btn => {
-            if (btn.getAttribute('data-theme-value') === theme) {
+            if (btn.getAttribute('data-bs-theme-value') === theme) {
                 btn.classList.add('active', 'bg-primary', 'text-white');
                 btn.querySelector('i').className = btn.querySelector('i').className.replace(/text-\w+/, 'text-white');
             } else {
                 btn.classList.remove('active', 'bg-primary', 'text-white');
                 let iconClass = 'text-secondary';
-                if(btn.getAttribute('data-theme-value') === 'light') iconClass = 'text-warning';
-                if(btn.getAttribute('data-theme-value') === 'dark') iconClass = 'text-primary';
+                if(btn.getAttribute('data-bs-theme-value') === 'light') iconClass = 'text-warning';
+                if(btn.getAttribute('data-bs-theme-value') === 'dark') iconClass = 'text-primary';
                 btn.querySelector('i').className = btn.querySelector('i').className.replace(/text-white/, iconClass);
             }
         });
@@ -173,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     themeBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            applyTheme(this.getAttribute('data-theme-value'));
+            applyTheme(this.getAttribute('data-bs-theme-value'));
         });
     });
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Treasurer extends Model
 {
-    protected $fillable = ['user_id', 'employee_number', 'status_jabatan', 'start_date', 'end_date'];
+    protected $fillable = ['user_id', 'employee_number', 'phone_number', 'status_jabatan', 'start_date', 'end_date'];
     protected $casts = ['start_date' => 'date', 'end_date' => 'date'];
 
     public function user() { return $this->belongsTo(User::class); }

@@ -41,14 +41,17 @@
             <i class="icon-base ri ri-download-cloud-2-line text-primary" style="font-size: 80px;"></i>
             <h5 class="mt-4">Buat Cadangan Database Baru</h5>
             <p class="text-muted">
-                Klik tombol di bawah untuk membuat file cadangan (.sql) dari seluruh database aplikasi.<br>
-                Proses ini akan menyimpan catatan di tabel riwayat di bawah ini.
+                Pilih jenis backup yang ingin Anda lakukan. Backup Database hanya mencadangkan data SQL, sedangkan Backup Full Aplikasi mencadangkan database beserta semua file source code.
             </p>
-            <form action="{{ route('admin.backup.store') }}" method="POST" id="backup-form">
+            <form action="{{ route('admin.backup.store') }}" method="POST" id="backup-form" class="d-flex justify-content-center gap-3 flex-wrap">
                 @csrf
-                <button type="submit" class="btn btn-primary btn-lg">
+                <button type="submit" name="type" value="db" class="btn btn-primary btn-lg backup-btn">
                     <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
-                    <i class="icon-base ri ri-add-circle-line me-2"></i>Buat Backup Baru
+                    <i class="icon-base ri ri-database-2-line me-2"></i>Backup Database
+                </button>
+                <button type="submit" name="type" value="full" class="btn btn-warning btn-lg backup-btn">
+                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                    <i class="icon-base ri ri-folder-zip-line me-2"></i>Backup Full Aplikasi
                 </button>
             </form>
         </div>
@@ -135,16 +138,21 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Script untuk menampilkan spinner saat form backup di-submit
-            const backupForm = document.getElementById('backup-form');
-            if (backupForm) {
-                backupForm.addEventListener('submit', function(e) {
-                    const button = e.target.querySelector('button[type="submit"]');
-                    const spinner = button.querySelector('.spinner-border');
-
-                    button.disabled = true;
-                    spinner.classList.remove('d-none');
+            const backupButtons = document.querySelectorAll('.backup-btn');
+            backupButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const spinner = this.querySelector('.spinner-border');
+                    
+                    // Supaya nilai tombol (type) tetap terkirim, kita tidak disable buttonnya, 
+                    // tapi set readonly atau pointer-events none dan ganti teks.
+                    // Namun cara termudah: submit formnya langsung atau biarkan default event berjalan
+                    // lalu tambahkan sedikit delay untuk visualnya.
+                    setTimeout(() => {
+                        backupButtons.forEach(btn => btn.classList.add('disabled'));
+                        spinner.classList.remove('d-none');
+                    }, 50);
                 });
-            }
+            });
 
             // Script untuk modal konfirmasi hapus
             const deleteModal = document.getElementById('deleteModal');

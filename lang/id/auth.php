@@ -1,0 +1,1 @@
+<?php return ["failed" => "Maaf, Username atau Kata Sandi yang Anda masukkan salah.", "password" => "Kata sandi yang diberikan salah.", "throttle" => "Terlalu banyak upaya masuk. Silakan coba lagi dalam :seconds detik."];

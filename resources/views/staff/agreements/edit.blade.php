@@ -53,11 +53,21 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-6">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline"><input type="text" class="form-control"
                                         id="agreement_number" name="agreement_number"
                                         value="{{ old('agreement_number', $agreement->agreement_number) }}"
                                         readonly /><label for="agreement_number">Nomor Perjanjian</label></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <select name="jenis" id="jenis" class="form-select" required>
+                                        <option value="draft" {{ old('jenis', $agreement->jenis) == 'draft' ? 'selected' : '' }}>Draft</option>
+                                        <option value="sementara" {{ old('jenis', $agreement->jenis) == 'sementara' ? 'selected' : '' }}>Sementara</option>
+                                        <option value="rilis" {{ old('jenis', $agreement->jenis) == 'rilis' ? 'selected' : '' }}>Rilis</option>
+                                    </select>
+                                    <label for="jenis">Jenis Perjanjian</label>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -106,27 +116,27 @@
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <select name="status" id="status" class="form-select" required>
-                                        {{-- Tampilkan status saat ini sebagai opsi pertama --}}
                                         <option value="{{ $agreement->status }}" selected>
                                             {{ ucwords(str_replace('_', ' ', $agreement->status)) }}
                                         </option>
-
-                                        {{-- Jika status belum terminated, berikan opsi untuk memutus kontrak --}}
+                                        @if($agreement->status === 'pending')
+                                            <option value="active">Aktif</option>
+                                        @endif
                                         @if($agreement->status !== 'terminated')
                                             <option value="terminated">Diakhiri (Terminated)</option>
                                         @endif
                                     </select>
                                     <label for="status">Status Perjanjian</label>
                                 </div>
-                                <div class="form-text text-warning"><i class="ri ri-error-warning-line"></i> Status hanya bisa diubah ke diakhiri (terminated).</div>
+                                <div class="form-text text-warning"><i class="ri ri-error-warning-line"></i> Status dapat diubah sesuai kondisi PKS.</div>
                             </div>
 
                             {{-- Kalkulasi Setoran --}}
                             <div class="col-md-4">
-                                <div class="form-floating form-floating-outline"><input type="number" class="form-control"
+                                <div class="form-floating form-floating-outline"><input type="text" class="form-control"
                                         id="daily_deposit_amount" name="daily_deposit_amount"
                                         placeholder="Otomatis dari lokasi"
-                                        value="{{ old('daily_deposit_amount', $agreement->daily_deposit_amount) }}"
+                                        value="{{ old('daily_deposit_amount', number_format($agreement->daily_deposit_amount, 0, '', '.')) }}"
                                         required /><label for="daily_deposit_amount">Setoran Harian (Rp)</label>
                                 </div>
                             </div>
@@ -153,8 +163,9 @@
                     <div class="card-body d-flex flex-column">
                         @php
                             // ✅ LOGIKA KUNCI ZONA
-                            // Terkunci JIKA: Ada lokasi yg terikat ATAU status PKS bukan 'active'
-                            $isZoneLocked = !is_null($initialZone) || $agreement->status !== 'active';
+                            // Terkunci JIKA status PKS bukan 'active' atau 'pending' ATAU jenis adalah rilis
+                            // Namun jika jenis rilis, form input bisa memicu kunci
+                            $isStatusLocked = !in_array($agreement->status, ['active', 'pending']);
                         @endphp
 
                         <div class="mb-3">
@@ -162,26 +173,31 @@
                             <div class="d-flex pt-2">
                                 <div class="form-check me-4">
                                     <input name="zone_filter" class="form-check-input" type="radio" value="Zona 2"
-                                        id="zone2" {{ $initialZone == 'Zona 2' ? 'checked' : '' }} {{ $isZoneLocked ? 'disabled' : '' }} />
+                                        id="zone2" {{ $initialZone == 'Zona 2' ? 'checked' : '' }} {{ $isStatusLocked ? 'disabled' : '' }} />
                                     <label class="form-check-label" for="zone2"> Zona 2</label>
                                 </div>
                                 <div class="form-check">
                                     <input name="zone_filter" class="form-check-input" type="radio" value="Zona 3"
-                                        id="zone3" {{ $initialZone == 'Zona 3' ? 'checked' : '' }} {{ $isZoneLocked ? 'disabled' : '' }} />
+                                        id="zone3" {{ $initialZone == 'Zona 3' ? 'checked' : '' }} {{ $isStatusLocked ? 'disabled' : '' }} />
                                     <label class="form-check-label" for="zone3"> Zona 3</label>
                                 </div>
                             </div>
 
                             {{-- Keterangan dinamis di bawah radio button --}}
-                            @if($isZoneLocked)
-                                @if($agreement->status !== 'active')
-                                    <div class="form-text text-danger"><i class="ri-lock-line"></i> Zona terkunci karena status PKS sudah tidak aktif.</div>
-                                @else
-                                    <div class="form-text text-danger"><i class="ri-lock-line"></i> Zona terkunci berdasarkan lokasi yang sedang terikat.</div>
-                                @endif
-                            @else
-                                <div class="form-text text-success fw-bold"><i class="ri-lock-unlock-line"></i> Silakan pilih zona baru untuk PKS ini.</div>
+                            @if($isStatusLocked)
+                                <div class="form-text text-danger"><i class="ri-lock-line"></i> Zona terkunci karena status PKS sudah tidak aktif.</div>
                             @endif
+                            <div id="zona_lock_info" class="form-text text-danger" style="display: none;"><i class="ri-lock-line"></i> Zona terkunci per zona karena jenis Rilis.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="road_section_filter" class="form-label">Filter Ruas Jalan</label>
+                            <select id="road_section_filter" class="form-select select2">
+                                <option value="">Tampilkan Semua Lokasi</option>
+                                @foreach ($allRoadSections as $section)
+                                    <option value="{{ $section->id }}">{{ $section->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         {{-- Container untuk Hasil Filter (Tempat Memilih) --}}
@@ -255,7 +271,9 @@
 
             // --- State Management ---
             let selectedLocations = {};
-            const isZoneLocked = {{ $isZoneLocked ? 'true' : 'false' }};
+            const isStatusLocked = {{ $isStatusLocked ? 'true' : 'false' }};
+            const jenisSelect = $('#jenis');
+            const zonaLockInfo = $('#zona_lock_info');
 
             // --- Definisi Fungsi ---
             function initializeSelectedLocations() {
@@ -296,16 +314,60 @@
             }
 
             function updateDailyDepositTotal() {
-                let total = 0;
-                for (const id in selectedLocations) {
-                    total += parseFloat(selectedLocations[id].daily_deposit) || 0;
+                const jenis = jenisSelect.val();
+                if (jenis === 'rilis') {
+                    let total = 0;
+                    for (const id in selectedLocations) {
+                        total += parseFloat(selectedLocations[id].daily_deposit) || 0;
+                    }
+                    dailyDepositInput.value = total > 0 ? new Intl.NumberFormat('id-ID').format(total) : '';
                 }
-                dailyDepositInput.value = total.toFixed(0);
                 calculateTotals();
             }
 
+            dailyDepositInput.addEventListener('input', function(e) {
+                let cleanValue = this.value.replace(/[^0-9]/g, '');
+                if (cleanValue) {
+                    this.value = parseInt(cleanValue, 10).toLocaleString('id-ID');
+                } else {
+                    this.value = '';
+                }
+                calculateTotals();
+            });
+
+            $('form').on('submit', function() {
+                dailyDepositInput.value = dailyDepositInput.value.replace(/\./g, '');
+            });
+
+            function toggleJenisLogic() {
+                const jenis = jenisSelect.val();
+                if (jenis === 'rilis') {
+                    dailyDepositInput.readOnly = true;
+                    if (!isStatusLocked) {
+                        const selectedZone = $('input[name="zone_filter"]:checked').val();
+                        if (selectedZone) {
+                            $('input[name="zone_filter"]').not('input[name="zone_filter"]:checked').prop('disabled', true);
+                            zonaLockInfo.show();
+                        }
+                    }
+                } else {
+                    dailyDepositInput.readOnly = false;
+                    if (!isStatusLocked) {
+                        $('input[name="zone_filter"]').prop('disabled', false);
+                        zonaLockInfo.hide();
+                    }
+                }
+                updateDailyDepositTotal();
+            }
+
+            jenisSelect.on('change', function() {
+                toggleJenisLogic();
+            });
+            toggleJenisLogic();
+
             function calculateTotals() {
-                const dailyAmount = parseFloat(dailyDepositInput.value) || 0;
+                let cleanValue = dailyDepositInput.value.replace(/\./g, '');
+                const dailyAmount = parseFloat(cleanValue) || 0;
 
                 // Karena flatpickr dihapus, kita ambil nilai langsung dari input hidden/readonly
                 const startDateStr = document.getElementById('start_date').value;
@@ -334,13 +396,16 @@
             }
 
             // ========================================================
-            // ✅ LOGIKA PERCABANGAN (ZONA TERBUKA vs ZONA TERKUNCI)
+            // ✅ ZONA AJAX FETCH (Sama seperti halaman Create) ATAU LOKAL JIKA TERKUNCI
             // ========================================================
 
-            if (!isZoneLocked) {
-                // 1. ZONA TERBUKA: Gunakan AJAX Fetch (Sama seperti halaman Create)
+            if (!isStatusLocked) {
                 $('input[name="zone_filter"]').on('change', function() {
                     const zone = $(this).val();
+                    if (jenisSelect.val() === 'rilis') {
+                        $('input[name="zone_filter"]').not(this).prop('disabled', true);
+                        zonaLockInfo.show();
+                    }
                     roadSectionFilter.html('<option value="">Memuat Ruas Jalan...</option>');
                     parkingContainer.html('<p class="text-muted text-center">Silakan pilih ruas jalan terlebih dahulu.</p>');
 
@@ -351,6 +416,7 @@
                             data.forEach(section => {
                                 roadSectionFilter.append(`<option value="${section.id}">${section.name}</option>`);
                             });
+                            roadSectionFilter.trigger('change');
                         });
                 });
 
@@ -388,27 +454,39 @@
                             });
                         });
                 });
-
             } else {
-                // 2. ZONA TERKUNCI: Gunakan DOM Filter Element yang sudah ada di HTML
                 roadSectionFilter.on('change', function() {
                     const selectedSectionId = $(this).val();
                     $('#location-placeholder').remove();
                     parkingContainer.find('.location-item').each(function() {
-                        const show = !selectedSectionId || $(this).data('road-section') == selectedSectionId;
-                        $(this).toggle(show);
+                        // Jika memilih 'Tampilkan Semua Lokasi' (value kosong), 
+                        // kita sembunyikan yang tidak dicentang agar kembali ke tampilan awal,
+                        // KECUALI jika memang ingin melihat semuanya (bisa disesuaikan).
+                        // Sesuai request, saat awal buka hanya tampil PKS. Saat pilih jalan, tampil jalan tsb.
+                        // Jika kembali ke "Semua", tampilkan hanya yang dicentang saja.
+                        if (!selectedSectionId) {
+                            const isChecked = $(this).find('input[type="checkbox"]').is(':checked');
+                            $(this).toggle(isChecked);
+                        } else {
+                            const show = $(this).data('road-section') == selectedSectionId;
+                            $(this).toggle(show);
+                        }
                     });
 
                     if (parkingContainer.find('.location-item:visible').length === 0) {
-                        const message = selectedSectionId ? 'Tidak ada lokasi pada ruas jalan ini.' : 'Silakan pilih ruas jalan untuk menampilkan lokasi.';
+                        const message = selectedSectionId ? 'Tidak ada lokasi pada ruas jalan ini.' : 'Pilih ruas jalan untuk menambah lokasi baru.';
                         parkingContainer.append(`<p id="location-placeholder" class="text-muted text-center">${message}</p>`);
                     }
                 });
 
-                // Sembunyikan semua item lokasi di awal saat halaman dimuat
-                parkingContainer.find('.location-item').hide();
-                parkingContainer.append('<p id="location-placeholder" class="text-muted text-center">Silakan pilih ruas jalan untuk menampilkan lokasi.</p>');
+                $('input[name="zone_filter"]').prop('disabled', true);
             }
+
+            // --- Tampilan Awal: Hanya Tampilkan Lokasi yang Masuk PKS ---
+            parkingContainer.find('.location-item').each(function() {
+                const isChecked = $(this).find('input[type="checkbox"]').is(':checked');
+                $(this).toggle(isChecked);
+            });
 
             // --- Event Listeners Global ---
             parkingContainer.on('change', 'input[type="checkbox"]', function() {

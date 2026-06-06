@@ -5,8 +5,9 @@ namespace App\Http\Controllers\MasterData;
 use App\Http\Controllers\Controller;
 use App\Models\RoadSection;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class RoadSectionController extends Controller
 {
@@ -22,7 +23,7 @@ class RoadSectionController extends Controller
         $query = RoadSection::withCount('parkingLocations');
 
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $query->where('name', 'like', '%'.$search.'%');
         }
 
         if ($zoneFilter) {
@@ -30,6 +31,7 @@ class RoadSectionController extends Controller
         }
 
         $roadSections = $query->latest()->paginate(10);
+
         return view('admin.road-sections.index', compact('roadSections', 'search', 'zoneFilter'));
     }
 
@@ -48,7 +50,7 @@ class RoadSectionController extends Controller
         RoadSection::create($validatedData);
 
         return redirect()->route('masterdata.road-sections.index')
-            ->with('success', 'Ruas jalan ' . $validatedData['name'] . ' berhasil ditambahkan!');
+            ->with('success', 'Ruas jalan '.$validatedData['name'].' berhasil ditambahkan!');
     }
 
     /**
@@ -66,7 +68,7 @@ class RoadSectionController extends Controller
         ];
 
         // ✅ Logika Keamanan Backend: Hanya izinkan ubah zona jika belum ada titik parkir
-        if (!$inUse) {
+        if (! $inUse) {
             $rules['zone'] = 'required|string|in:Zona 2,Zona 3';
         }
 
@@ -75,7 +77,7 @@ class RoadSectionController extends Controller
         $roadSection->update($validatedData);
 
         return redirect()->route('masterdata.road-sections.index')
-            ->with('success', 'Ruas Jalan ' . $roadSection->name . ' berhasil diperbarui.');
+            ->with('success', 'Ruas Jalan '.$roadSection->name.' berhasil diperbarui.');
     }
 
     /**
@@ -91,10 +93,12 @@ class RoadSectionController extends Controller
         try {
             $name = $roadSection->name;
             $roadSection->delete();
+
             return redirect()->route('masterdata.road-sections.index')->with('success', "Ruas jalan '$name' berhasil dihapus!");
         } catch (\Exception $e) {
-            Log::error('RoadSectionController@destroy: Error deleting road section: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menghapus ruas jalan: ' . $e->getMessage());
+            Log::error('RoadSectionController@destroy: Error deleting road section: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal menghapus ruas jalan: '.$e->getMessage());
         }
     }
 }

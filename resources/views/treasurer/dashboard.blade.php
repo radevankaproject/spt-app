@@ -47,6 +47,15 @@
 </style>
 @endpush
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-treasurer-dashboard')
+@endsection
+
+@php
+    $treasurerName = explode(' ', Auth::user()->name)[0];
+    $userAvatar = Auth::user()->img ? asset('storage/' . Auth::user()->img) : 'https://ui-avatars.com/api/?name='.urlencode($treasurerName).'&background=fff&color=696cff';
+@endphp
+
 @section('content')
 {{-- ========================================== --}}
 {{-- HEADER: WELCOME & GRAFIK APEXCHARTS --}}
@@ -55,28 +64,38 @@
   {{-- Welcome Card --}}
   <div class="col-xl-8 col-lg-7">
     <div class="card border-0 shadow-sm bg-gradient-primary text-white h-100" style="border-radius: 16px;">
-      <div class="card-body p-4 d-flex align-items-center position-relative overflow-hidden">
-        <div style="max-width: 600px; position: relative; z-index: 2;">
-          <span class="badge bg-white text-primary rounded-pill mb-3 fw-bold px-3 py-2 shadow-sm">Portal
-            Bendahara</span>
-          <h2 class="text-white fw-bold mb-2">Selamat datang, {{ explode(' ', Auth::user()->name)[0] }}! 👋</h2>
-          <p class="mb-4 opacity-75" style="font-size: 1.05rem;">
-            Pusat kendali validasi setoran pendapatan parkir UPT. Pastikan untuk meneliti setiap bukti transfer sebelum
-            mengesahkan transaksi.
-          </p>
+      <div class="card-body p-4 p-md-5 d-flex align-items-center position-relative overflow-hidden">
+        <div class="row w-100 align-items-center position-relative z-1">
+          <div class="col-md-8 text-md-start text-center mb-4 mb-md-0">
+            <span class="badge bg-white text-primary rounded-pill mb-3 fw-bold px-3 py-2 shadow-sm">Portal
+              Bendahara</span>
+            <h2 class="text-white fw-bold mb-2">Selamat datang, {{ $treasurerName }}! 👋</h2>
+            <div class="badge border border-white text-white rounded-pill px-3 py-2 mb-3">
+               <i class="ri ri-profile-line me-1 align-middle"></i> NIP: {{ Auth::user()->employee_number ? formatNip(Auth::user()->employee_number) : '-' }}
+            </div>
+            <p class="mb-4 opacity-75" style="font-size: 1.05rem;">
+              Pusat kendali validasi setoran pendapatan parkir UPT. Pastikan untuk meneliti setiap bukti transfer sebelum
+              mengesahkan transaksi.
+            </p>
 
-          {{-- Info Rekening (Glassmorphism) --}}
-          <div class="glass-panel p-3 d-inline-flex align-items-center">
-            <i class="ri ri-bank-card-2-line ri-2x me-3 opacity-75"></i>
-            <div>
-              <span class="d-block opacity-75 small text-uppercase fw-bold">Rekening Penerima (BLUD)</span>
-              <span class="fw-bold fs-6">{{ $activeBankAccount->bank_name ?? 'N/A' }} - {{
-                $activeBankAccount->account_number ?? 'Belum diatur' }}</span>
+            {{-- Info Rekening (Glassmorphism) --}}
+            <div class="glass-panel p-3 d-inline-flex align-items-center">
+              <i class="ri ri-bank-card-2-line ri-2x me-3 opacity-75"></i>
+              <div>
+                <span class="d-block opacity-75 small text-uppercase fw-bold">Rekening Penerima (BLUD)</span>
+                <span class="fw-bold fs-6">{{ $activeBankAccount->bank_name ?? 'N/A' }} - {{
+                  $activeBankAccount->account_number ?? 'Belum diatur' }}</span>
+              </div>
             </div>
           </div>
+          <div class="col-md-4 text-center text-md-end">
+             <div class="d-inline-block position-relative rounded-circle p-1" style="background: linear-gradient(135deg, #f6d365 0%, #ffb142 100%);">
+                 <img src="{{ $userAvatar }}" alt="Avatar" class="rounded-circle shadow-lg border border-3 border-white" style="width: 120px; height: 120px; object-fit: cover; background: #fff;">
+             </div>
+          </div>
         </div>
-        {{-- Background Watermark --}}
-        <i class="ri ri-safe-2-fill position-absolute text-white"
+        
+        <i class="ri ri-safe-2-line position-absolute text-white"
           style="font-size: 220px; right: -20px; bottom: -40px; opacity: 0.1; transform: rotate(-10deg);"></i>
       </div>
     </div>
@@ -127,7 +146,7 @@
             <h6 class="fw-bold text-muted text-uppercase mb-1" style="font-size: 0.75rem;">Total Nominal Pending</h6>
             <h3 class="fw-bold text-dark mb-0">Rp {{ number_format($pendingAmount, 0, ',', '.') }}</h3>
           </div>
-          <div class="icon-shape bg-label-danger"><i class="ri ri-wallet-3-line ri-24px"></i></div>
+          <div class="icon-shape bg-label-danger"><i class="ri ri ri-wallet-3-line ri-24px"></i></div>
         </div>
         <div class="mt-1">
           <small class="text-muted fw-medium">Uang yang belum disahkan ke sistem</small>
@@ -145,7 +164,7 @@
               now()->translatedFormat('M') }})</h6>
             <h3 class="fw-bold text-success mb-0">Rp {{ number_format($validatedThisMonth, 0, ',', '.') }}</h3>
           </div>
-          <div class="icon-shape bg-label-success"><i class="ri ri-check-double-line ri-24px"></i></div>
+          <div class="icon-shape bg-label-success"><i class="ri ri ri-check-double-line ri-24px"></i></div>
         </div>
         <div class="mt-1">
           <small class="text-muted fw-medium">Pendapatan sah bulan ini</small>
@@ -216,7 +235,7 @@
               <td colspan="3" class="text-center py-5">
                 <div
                   class="avatar avatar-xl bg-label-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
-                  <i class="ri ri-check-double-line ri-2x"></i>
+                  <i class="ri ri ri-check-double-line ri-2x"></i>
                 </div>
                 <h6 class="fw-bold text-dark mb-1">Kerja Bagus!</h6>
                 <p class="text-muted small mb-0">Tidak ada antrean setoran yang menunggu validasi saat ini.</p>

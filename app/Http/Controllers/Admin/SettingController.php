@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 
 class SettingController extends Controller
@@ -13,6 +14,7 @@ class SettingController extends Controller
     {
         // Ambil semua data setting dan ubah menjadi format array key => value
         $settings = Setting::pluck('value', 'key')->toArray();
+
         return view('admin.settings.index', compact('settings'));
     }
 
@@ -36,16 +38,16 @@ class SettingController extends Controller
             $file = $request->file('app_logo');
 
             // 1. Simpan path logo ke database
-            $logoName = 'logo.' . $file->getClientOriginalExtension();
+            $logoName = 'logo.'.$file->getClientOriginalExtension();
             $file->move(public_path('uploads/logo'), $logoName);
             Setting::updateOrCreate(
                 ['key' => 'app_logo'],
-                ['value' => 'uploads/logo/' . $logoName]
+                ['value' => 'uploads/logo/'.$logoName]
             );
 
             // 2. Timpa langsung file favicon.ico di root public
             // Browser modern bisa membaca format gambar apapun yang direname menjadi .ico
-            File::copy(public_path('uploads/logo/' . $logoName), public_path('favicon.ico'));
+            File::copy(public_path('uploads/logo/'.$logoName), public_path('favicon.ico'));
         }
 
         return back()->with('success', 'Pengaturan aplikasi berhasil diperbarui!');

@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -27,19 +28,19 @@ class UserController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('username', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%');
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('username', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
         // Terapkan filter pencarian jika ada
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('username', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%')
-                    ->orWhere('role', 'like', '%' . $search . '%'); // Bisa juga mencari berdasarkan role
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('username', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('role', 'like', '%'.$search.'%'); // Bisa juga mencari berdasarkan role
             });
         }
 
@@ -57,6 +58,7 @@ class UserController extends Controller
     public function create()
     {
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         return view('admin.users.create');
     }
 
@@ -73,6 +75,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed|not_regex:/\s/',
             'role' => 'required|string|in:admin,leader,field_coordinator,staff_keu,staff_pks', // Tambahkan validasi role
+            'employee_number' => 'nullable|string|max:50',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:300',
         ]);
 
@@ -82,11 +85,12 @@ class UserController extends Controller
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
             'role' => $validatedData['role'],
+            'employee_number' => $validatedData['employee_number'] ?? null,
         ]);
 
         if ($request->hasFile('img')) {
             // 1. Tentukan nama file kustom Anda.
-            $imageName = time() . '_users.' . $request->img->extension();
+            $imageName = time().'_users.'.$request->img->extension();
 
             // 2. Simpan file dengan nama kustom ke disk 'public'.
             // Ini akan menyimpan file di: storage/app/public/uploads/users/
@@ -99,7 +103,7 @@ class UserController extends Controller
         }
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Pengguna ' . $user->name . ' berhasil ditambahkan!')
+            ->with('success', 'Pengguna '.$user->name.' berhasil ditambahkan!')
             ->with('user_name', $user->name); // Kirim nama user untuk popup
     }
 
@@ -117,6 +121,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
         return view('admin.users.edit', compact('user'));
     }
 
@@ -143,8 +148,10 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
+            'phone_number' => 'nullable|numeric|digits_between:10,14',
             'password' => 'nullable|string|min:8|confirmed|not_regex:/\s/',
             'role' => 'required|string|in:admin,leader,field_coordinator,staff_pks,staff_keu',
+            'employee_number' => 'nullable|string|max:50',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:300',
         ]);
 
@@ -152,6 +159,8 @@ class UserController extends Controller
         $user->username = $validatedData['username'];
         $user->email = $validatedData['email'];
         $user->role = $validatedData['role'];
+        $user->employee_number = $validatedData['employee_number'] ?? null;
+        $user->phone_number = $validatedData['phone_number'] ?? null;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($validatedData['password']);
@@ -159,23 +168,24 @@ class UserController extends Controller
 
         if ($request->hasFile('img')) {
             try {
-                //hapus gambar lama jika ada
+                // hapus gambar lama jika ada
                 if ($user->img) {
                     Storage::disk('public')->delete($user->img);
                 }
 
-                $imageName = time() . '_users.' . $request->img->extension();
+                $imageName = time().'_users.'.$request->img->extension();
                 $path = $request->file('img')->storeAs('uploads/users', $imageName, 'public');
                 $user->img = $path;
             } catch (\Exception $e) {
-                Log::error('UserController@update: Error handling user image upload: ' . $e->getMessage());
+                Log::error('UserController@update: Error handling user image upload: '.$e->getMessage());
+
                 return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan saat mengunggah gambar.');
             }
         }
         $user->save();
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Data pengguna ' . $user->name . ' berhasil diperbarui!')
+            ->with('success', 'Data pengguna '.$user->name.' berhasil diperbarui!')
             ->with('user_name', $user->name);
     }
 
@@ -191,8 +201,9 @@ class UserController extends Controller
             }
             $user->delete(); // Soft delete user
         } catch (\Exception $e) {
-            Log::error('UserController@destroy: Error deleting user: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menghapus pengguna: ' . $e->getMessage());
+            Log::error('UserController@destroy: Error deleting user: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal menghapus pengguna: '.$e->getMessage());
         }
 
         return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus!');

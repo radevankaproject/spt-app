@@ -113,6 +113,9 @@
         </div>
         <div class="cover-title" style="margin-top: 40px;">
             <h1>KONTRAK PERJANJIAN KERJASAMA</h1>
+            @if(in_array($agreement->jenis, ['draft', 'sementara']))
+                <h1 style="margin-top: 5px;">{{ strtoupper($agreement->jenis) }}</h1>
+            @endif
             <h1>PERJANJIAN KERJASAMA</h1>
             <h1>ANTARA</h1>
             <h1>DINAS PERHUBUNGAN KOTA PEKANBARU</h1>
@@ -229,9 +232,17 @@
 
         <div class="pasal-title">Pasal 4<br>Pembayaran</div>
         <ol class="list-ol">
+            @if(in_array($agreement->jenis, ['draft', 'sementara']))
+            <li>Pendapatan layanan parkir sebagaimana yang sudah ditetapkan dan tertuang didalam kontrak perjanjian kerjasama ini dengan jumlah setoran sebesar <strong>Rp. {{ number_format($agreement->daily_deposit_amount, 0, ',', '.') }} ({{ ucwords(\App\Helpers\NumberToWords::convert(round($agreement->daily_deposit_amount))) }} Rupiah) / hari</strong> dan disetorkan langsung ke rekening pendapatan kas BLUD Perparkiran dengan nomor rekening : @if($activeBankAccount) <strong>{{ $activeBankAccount->account_number }} ({{ $activeBankAccount->bank_name }})</strong> atas nama <strong>{{ $activeBankAccount->account_name }}</strong> @endif dan bukti penyetoran disampaikan ke bendahara penerimaan untuk dilakukan validasi. Jumlah setoran tersebut bersifat sementara dan ditetapkan berdasarkan justifikasi pengurangan potensi terbaru, sampai dengan adanya penetapan kembali berdasarkan hasil evaluasi atau survei potensi parkir selanjutnya;</li>
+            <li>Apabila terjadi keterlambatan penyetoran/kekurangan penyetoran maka PIHAK PERTAMA berhak melakukan pemotongan uang jaminan secara sepihak sebesar kekurangan setoran yang ditetapkan ke kas penampungan BLUD.</li>
+            <li>Apabila PIHAK KEDUA tidak menyetorkan kewajiban 3 hari berturut-turut pertama maka PIHAK PERTAMA memberikan surat teguran tertulis I dan di ikuti penarikan setoran, selanjutnya dalam 3 hari berturut-turut kedua masih juga tidak dilakukan penyetoran maka dapat diberikan surat teguran II, dan dalam 3 hari berturut-turut ketiga tetap tidak melakukan penyetoran maka PIHAK PERTAMA memberikan surat teguran III sekaligus dengan pemutusan kerjasama;</li>
+            <li>Dalam hal PIHAK KEDUA telah melakukan penyetoran kewajiban dalam jangka waktu 6 (enam) hari berturut-turut dengan lancar maka surat teguran I dinyatakan tidak berlaku dengan sendirinya;</li>
+            <li>Selanjutnya PIHAK KEDUA telah melakukan penyetoran kewajiban dalam jangka waktu 2 (dua) minggu berturut-turut dengan lancar maka surat teguran II dinyatakan gugur dengan sendirinya.</li>
+            @else
             <li>Jumlah setoran harian sebesar <strong>Rp. {{ number_format($agreement->daily_deposit_amount, 0, ',', '.') }},- ({{ ucwords(\App\Helpers\NumberToWords::convert(round($agreement->daily_deposit_amount))) }} Rupiah)</strong> disetorkan ke rekening Kas BLUD Perparkiran @if($activeBankAccount) <strong>{{ $activeBankAccount->account_number }} ({{ $activeBankAccount->bank_name }})</strong> a.n <strong>{{ $activeBankAccount->account_name }}</strong> @endif.</li>
             <li>PIHAK KEDUA wajib menyerahkan dana jaminan pelaksanaan sebesar jumlah nilai setoran selama jangka waktu kerjasama.</li>
             <li>Setoran harus dilakukan secara rutin dan bukti penyetoran disampaikan ke Bendahara Penerimaan untuk validasi.</li>
+            @endif
         </ol>
 
         <div class="pasal-title">Pasal 5<br>HAK DAN KEWAJIBAN PIHAK PERTAMA</div>

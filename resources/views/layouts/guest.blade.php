@@ -56,6 +56,7 @@
             const assetsPath = document.documentElement.getAttribute('data-assets-path');
         </script>
         <script src="{{ asset('assets/js/config.js') }}"></script>
+        @stack('styles')
     </head>
 
     <body>

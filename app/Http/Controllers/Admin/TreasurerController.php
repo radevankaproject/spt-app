@@ -8,6 +8,7 @@ use App\Models\Treasurer;
 use App\Models\TreasurerHistory;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -61,6 +62,7 @@ class TreasurerController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username|regex:/^[a-z0-9_-]+$/',
             'email' => 'required|string|email|max:255|unique:users,email',
+            'phone_number' => 'nullable|numeric|digits_between:10,14',
             'password' => 'required|string|min:8|confirmed|not_regex:/\s/',
             'img' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'employee_number' => 'required|string|max:18|unique:treasurers,employee_number',
@@ -74,6 +76,7 @@ class TreasurerController extends Controller
                 'name' => $validatedData['name'],
                 'username' => $validatedData['username'],
                 'email' => $validatedData['email'],
+                'phone_number' => $validatedData['phone_number'] ?? null,
                 'password' => Hash::make($validatedData['password']),
                 'role' => 'treasurer', // ✅ ROLE BENDAHARA
                 'is_active' => true,
@@ -92,6 +95,7 @@ class TreasurerController extends Controller
             Treasurer::create([
                 'user_id' => $user->id,
                 'employee_number' => $validatedData['employee_number'],
+                'phone_number' => $validatedData['phone_number'] ?? null,
                 'start_date' => $validatedData['start_date'],
                 'end_date' => $validatedData['end_date'],
             ]);
@@ -133,6 +137,7 @@ class TreasurerController extends Controller
             'name' => 'required|string|max:255',
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($treasurer->user_id), 'regex:/^[a-z0-9_-]+$/'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($treasurer->user_id)],
+            'phone_number' => 'nullable|numeric|digits_between:10,14',
             'password' => 'nullable|string|min:8|confirmed|not_regex:/\s/',
             'img' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'employee_number' => ['required', 'string', 'max:18', Rule::unique('treasurers', 'employee_number')->ignore($treasurer->id)],
@@ -145,6 +150,7 @@ class TreasurerController extends Controller
             $treasurer->user->name = $validatedData['name'];
             $treasurer->user->username = $validatedData['username'];
             $treasurer->user->email = $validatedData['email'];
+            $treasurer->user->phone_number = $validatedData['phone_number'] ?? null;
 
             if ($request->filled('password')) {
                 $treasurer->user->password = Hash::make($validatedData['password']);
@@ -162,6 +168,7 @@ class TreasurerController extends Controller
 
             $treasurer->update([
                 'employee_number' => $validatedData['employee_number'],
+                'phone_number' => $validatedData['phone_number'] ?? null,
                 'start_date' => $validatedData['start_date'],
                 'end_date' => $validatedData['end_date'],
             ]);

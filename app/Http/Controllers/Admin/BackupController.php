@@ -22,9 +22,17 @@ class BackupController extends Controller
     {
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
 
+        $type = $request->input('type', 'db');
+
         DB::beginTransaction();
         try {
-            Artisan::call('backup:run', ['--only-db' => true, '--disable-notifications' => true]);
+            if ($type === 'full') {
+                Artisan::call('backup:run', ['--disable-notifications' => true]);
+                $successMessage = 'Backup full aplikasi berhasil dibuat.';
+            } else {
+                Artisan::call('backup:run', ['--only-db' => true, '--disable-notifications' => true]);
+                $successMessage = 'Backup database berhasil dibuat.';
+            }
 
             // ✅ LOGIKA BARU YANG LEBIH KUAT
             // Cari backup terbaru secara manual di storage
@@ -52,7 +60,7 @@ class BackupController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('admin.backup.index')->with('success', 'Backup database berhasil dibuat.');
+            return redirect()->route('admin.backup.index')->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -67,8 +75,9 @@ class BackupController extends Controller
 
         // ✅ Gunakan Storage::exists() untuk mengecek file di disk yang benar
         if (Storage::disk($disk)->exists($backup->file_path)) {
-            // ✅ Gunakan Storage::download() untuk mengunduh file
-            return Storage::disk($disk)->download($backup->file_path, $backup->file_name);
+            // ✅ Gunakan Storage::disk() dengan absolute path untuk menghindari IDE warning
+            $absolutePath = Storage::disk($disk)->path($backup->file_path);
+            return response()->download($absolutePath, $backup->file_name);
         }
 
         return redirect()->back()->with('error', 'File backup tidak ditemukan di disk.');

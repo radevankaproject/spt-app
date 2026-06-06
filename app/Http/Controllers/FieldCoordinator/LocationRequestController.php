@@ -8,7 +8,7 @@ use App\Models\LocationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str; // ✅ WAJIB ADA UNTUK STR::SLUG & STR::RANDOM
+use Illuminate\Support\Str;
 
 class LocationRequestController extends Controller
 {

@@ -188,6 +188,13 @@
                             </div>
                         </li>
                         <li class="d-flex align-items-center mb-3">
+                            <i class="ri ri-file-list-line text-primary me-2 ri-20px"></i>
+                            <div class="w-100 d-flex justify-content-between">
+                                <span class="fw-medium text-heading">Jenis</span>
+                                <span class="badge bg-label-info rounded-pill">{{ ucfirst($agreement->jenis) }}</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
                             <i class="ri ri-user-star-line text-primary me-2 ri-20px"></i>
                             <div class="w-100 d-flex justify-content-between">
                                 <span class="fw-medium text-heading">Pimpinan</span>

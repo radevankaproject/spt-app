@@ -1,19 +1,26 @@
 {{-- resources/views/layouts/partials/_skeleton-admin-dashboard.blade.php --}}
 <div id="skeleton-loader" class="container-fluid p-0">
 
-    {{-- ✅ 1. HERO SEARCH SKELETON --}}
+    {{-- ✅ 1. HERO GREETING SKELETON --}}
     <div class="card mb-4 border-0 shadow-sm placeholder-glow" style="height: 220px; background: #eef0f8;">
-        <div class="card-body d-flex flex-column align-items-center justify-content-center">
-            <span class="placeholder col-6 rounded-pill mb-3 bg-secondary opacity-50" style="height: 28px;"></span>
-            <span class="placeholder col-4 rounded-pill mb-4 bg-secondary opacity-50" style="height: 16px;"></span>
-            <span class="placeholder col-8 rounded-pill bg-secondary opacity-50" style="height: 55px;"></span>
+        <div class="card-body p-4 p-md-5 d-flex align-items-center">
+            <div class="row w-100 align-items-center">
+                <div class="col-md-8 text-md-start text-center">
+                    <span class="placeholder col-3 rounded-pill mb-3 bg-secondary opacity-50" style="height: 30px;"></span>
+                    <span class="placeholder col-8 rounded-pill mb-2 bg-secondary opacity-50 d-block" style="height: 40px;"></span>
+                    <span class="placeholder col-6 rounded-pill bg-secondary opacity-50" style="height: 18px;"></span>
+                </div>
+                <div class="col-md-4 text-center text-md-end mt-4 mt-md-0 d-flex justify-content-md-end justify-content-center">
+                    <span class="placeholder rounded-circle bg-secondary opacity-50" style="width: 120px; height: 120px;"></span>
+                </div>
+            </div>
         </div>
     </div>
 
-    {{-- ✅ 2. TOP METRICS SKELETON (3 Card Row) --}}
+    {{-- ✅ 2. TOP METRICS SKELETON (4 Card Row) --}}
     <div class="row g-4 mb-4">
-        @for ($i = 0; $i < 3; $i++)
-        <div class="col-md-4">
+        @for ($i = 0; $i < 4; $i++)
+        <div class="col-xl-3 col-md-6">
             <div class="card h-100 shadow-sm border-0 placeholder-glow">
                 <div class="card-body d-flex align-items-center">
                     {{-- Avatar/Icon Placeholder --}}

@@ -132,7 +132,7 @@
                                         @if(Auth::user()->role !== 'leader')
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill btn-edit-treasurer"
                                             data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-username="{{ $treasurer->user->username }}"
-                                            data-email="{{ $treasurer->user->email }}" data-nip="{{ $treasurer->employee_number }}"
+                                            data-email="{{ $treasurer->user->email }}" data-phone_number="{{ $treasurer->user->phone_number ?? '' }}" data-nip="{{ $treasurer->employee_number }}"
                                             data-startdate="{{ $treasurer->start_date ? \Carbon\Carbon::parse($treasurer->start_date)->format('Y-m-d') : '' }}"
                                             data-enddate="{{ $treasurer->end_date ? \Carbon\Carbon::parse($treasurer->end_date)->format('Y-m-d') : '' }}"
                                             data-avatar="{{ $uAvatar }}" data-bs-toggle="modal" data-bs-target="#treasurerModal" data-bs-toggle="tooltip" title="Edit Bendahara">
@@ -204,10 +204,16 @@
                                             <button class="btn btn-outline-primary w-25 px-1" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ri ri-loop-left-line"></i></button>
                                         </div>
                                     </div>
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="email" class="form-control" id="email" name="email" placeholder="contoh@email.com" required />
                                             <label for="email">Alamat Email</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" class="form-control" id="phone_number" name="phone_number" placeholder="08..." />
+                                            <label for="phone_number">No. Handphone</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -415,6 +421,7 @@
                     document.getElementById('name').value = this.dataset.name;
                     document.getElementById('username').value = this.dataset.username;
                     document.getElementById('email').value = this.dataset.email;
+                    document.getElementById('phone_number').value = this.dataset.phone_number || '';
                     document.getElementById('start_date').value = this.dataset.startdate;
                     document.getElementById('end_date').value = this.dataset.enddate;
 

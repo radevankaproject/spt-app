@@ -138,6 +138,7 @@
                                 <td>
                                     <span class="fw-bold text-dark">{{ $agreement->agreement_number }}</span>
                                     <small class="d-block text-muted">Pimpinan: {{ Str::limit($agreement->leader->user->name ?? 'N/A', 15) }}</small>
+                                    <span class="badge bg-label-info rounded-pill mt-1" style="font-size: 0.7rem;">{{ ucfirst($agreement->jenis) }}</span>
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-start align-items-center">

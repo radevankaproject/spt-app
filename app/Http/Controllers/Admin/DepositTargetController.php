@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\YearlyDepositTarget;
 use App\Models\MonthlyDepositTarget;
+use App\Models\YearlyDepositTarget;
 use Illuminate\Http\Request;
 
 class DepositTargetController extends Controller
@@ -12,6 +13,7 @@ class DepositTargetController extends Controller
     {
         // Ambil data tahunan beserta anak bulanannya
         $targets = YearlyDepositTarget::with('monthlyTargets')->orderBy('year', 'desc')->get();
+
         return view('admin.deposit_targets.index', compact('targets'));
     }
 
@@ -19,9 +21,9 @@ class DepositTargetController extends Controller
     {
 
         $request->validate([
-            'year'          => 'required|digits:4|integer',
-            'month'         => 'required|integer|min:1|max:12',
-            'target_amount' => 'required|numeric|min:0'
+            'year' => 'required|digits:4|integer',
+            'month' => 'required|integer|min:1|max:12',
+            'target_amount' => 'required|numeric|min:0',
         ]);
 
         try {
@@ -37,7 +39,7 @@ class DepositTargetController extends Controller
 
             return redirect()->back()->with('success', 'Target Setoran berhasil disimpan!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menyimpan target: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menyimpan target: '.$e->getMessage());
         }
     }
 }

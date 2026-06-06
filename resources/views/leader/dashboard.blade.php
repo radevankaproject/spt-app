@@ -45,6 +45,10 @@
     </style>
 @endpush
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-leader-dashboard')
+@endsection
+
 @section('content')
 
     {{-- ========================================== --}}

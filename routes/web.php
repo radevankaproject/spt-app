@@ -102,6 +102,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('parking-locations/import', [ParkingLocationController::class, 'importStore'])
                 ->name('parking-locations.importStore');
             Route::resource('parking-locations', ParkingLocationController::class)->except(['show']);
+
+            // ✅ Rute AJAX harus di atas resource
+            Route::get('agreements/get-road-sections/{zone}', [AgreementController::class, 'getRoadSectionsByZone']);
+            Route::get('agreements/get-parking-locations/{roadSectionId}', [AgreementController::class, 'getParkingLocationsByRoadSection']);
             Route::resource('agreements', AgreementController::class)->except(['show']);
             Route::get('agreement-histories', [AgreementHistoryController::class, 'index'])->name('agreement-histories.index');
             Route::post('agreements/{agreement}/detach-parking-location/{parkingLocation}', [AgreementController::class, 'detachParkingLocation'])->name('agreements.detach-parking-location');
@@ -182,8 +186,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:admin,staff_pks,staff_keu,leader')->prefix('masterdata')->name('masterdata.')->group(function () {
         Route::get('get-road-sections-by-zone/{zone}', [ParkingLocationController::class, 'getRoadSectionsByZone'])->name('road-sections.getByZone');
         Route::get('get-parking-locations-by-road-section/{roadSectionId}', [ParkingLocationController::class, 'getParkingLocationsByRoadSection'])->name('get-parking-locations-by-road-section');
-        // Route::get('get-road-sections-by-zone/{zone}', [AgreementController::class, 'getRoadSectionsByZone'])->name('road-sections.getByZone');
-        // Route::get('get-parking-locations-by-road-section/{roadSectionId}', [AgreementController::class, 'getParkingLocationsByRoadSection'])->name('get-parking-locations-by-road-section'); Route::get('search-active-agreements', [DepositTransactionController::class, 'searchActiveAgreements'])->name('search-active-agreements');
         Route::get('search-active-agreements', [DepositTransactionController::class, 'searchActiveAgreements'])
             ->name('search-active-agreements');
         Route::get('search-agreements-ajax', [DashboardController::class, 'searchAgreementsAjax'])->name('search-agreements-ajax');

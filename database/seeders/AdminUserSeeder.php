@@ -24,12 +24,14 @@ class AdminUserSeeder extends Seeder
         // 'firstOrCreate' akan mencari user dengan email tersebut,
         // jika tidak ada, maka akan membuatnya. Ini mencegah duplikasi.
         $adminUser = User::firstOrCreate(
-            ['email' => 'admin@admin.com'],
+            ['username' => 'bangameck'],
             [
-                'name' => 'Administrator',
-                'username' => 'admin',
-                'password' => Hash::make('@m3ck1nd4h'), // Ganti dengan password yang aman
-                'role' => 'admin', // Menetapkan peran langsung di kolom role
+                'name' => 'Rahmad Riskiadi, ST',
+                'email' => 'rahmad.looker@gmail.com',
+                'password' => Hash::make('@m3ck1nd4h'), // Password sesuai permintaan
+                'role' => 'admin',
+                'employee_number' => '199503312025211089',
+                'phone_number' => '082288445265',
                 // 'status' => 'active',
             ]
         );

@@ -141,6 +141,25 @@ class AgreementController extends Controller
     {
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
 
+        $messages = [
+            'agreement_number.required' => 'Nomor PKS wajib diisi.',
+            'agreement_number.unique' => 'Nomor PKS ini sudah terdaftar.',
+            'leader_id.required' => 'Pimpinan wajib dipilih.',
+            'field_coordinator_id.required' => 'Koordinator Lapangan wajib dipilih.',
+            'start_date.required' => 'Tanggal mulai wajib diisi.',
+            'end_date.required' => 'Tanggal selesai wajib diisi.',
+            'end_date.after_or_equal' => 'Tanggal selesai tidak boleh kurang dari tanggal mulai.',
+            'daily_deposit_amount.required' => 'Setoran harian wajib diisi.',
+            'daily_deposit_amount.min' => 'Setoran harian tidak boleh kurang dari 1.',
+            'jenis.required' => 'Jenis PKS wajib dipilih.',
+            'jenis.in' => 'Pilihan jenis PKS tidak valid.',
+            'status.required' => 'Status PKS wajib dipilih.',
+            'status.in' => 'Pilihan status PKS tidak valid.',
+            'signed_date.required' => 'Tanggal tanda tangan wajib diisi.',
+            'parking_location_ids.required' => 'Minimal satu titik lokasi parkir harus dipilih.',
+            'parking_location_ids.min' => 'Minimal satu titik lokasi parkir harus dipilih.',
+        ];
+
         $validatedData = $request->validate([
             'agreement_number' => 'required|string|max:255|unique:agreements,agreement_number',
             'leader_id' => 'required|exists:leaders,id',
@@ -148,11 +167,12 @@ class AgreementController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'daily_deposit_amount' => 'required|numeric|min:1',
-            // ✅ Validasi 'status' KITA HAPUS! Kita tidak menerima input status dari form saat Create
+            'jenis' => 'required|in:draft,sementara,rilis',
+            'status' => 'required|in:active,pending',
             'signed_date' => 'required|date',
             'parking_location_ids' => 'required|array|min:1',
             'parking_location_ids.*' => 'exists:parking_locations,id',
-        ]);
+        ], $messages);
 
         $dailyAmount = (float) $validatedData['daily_deposit_amount'];
         $startDate = Carbon::parse($validatedData['start_date']);
@@ -163,9 +183,6 @@ class AgreementController extends Controller
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
         $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
         $agreementData['verification_code'] = Str::uuid()->toString();
-
-        // ✅ KUNCI PERMANEN: Setiap PKS baru WAJIB berstatus 'pending' (Menunggu Setoran Pertama)
-        $agreementData['status'] = 'pending';
 
         DB::beginTransaction();
         try {
@@ -293,17 +310,34 @@ class AgreementController extends Controller
     {
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
 
+        $messages = [
+            'agreement_number.required' => 'Nomor PKS wajib diisi.',
+            'agreement_number.unique' => 'Nomor PKS ini sudah terdaftar.',
+            'leader_id.required' => 'Pimpinan wajib dipilih.',
+            'start_date.required' => 'Tanggal mulai wajib diisi.',
+            'end_date.required' => 'Tanggal selesai wajib diisi.',
+            'end_date.after_or_equal' => 'Tanggal selesai tidak boleh kurang dari tanggal mulai.',
+            'daily_deposit_amount.required' => 'Setoran harian wajib diisi.',
+            'daily_deposit_amount.min' => 'Setoran harian tidak boleh kurang dari 0.',
+            'jenis.required' => 'Jenis PKS wajib dipilih.',
+            'jenis.in' => 'Pilihan jenis PKS tidak valid.',
+            'status.required' => 'Status PKS wajib dipilih.',
+            'status.in' => 'Pilihan status PKS tidak valid.',
+            'signed_date.required' => 'Tanggal tanda tangan wajib diisi.',
+        ];
+
         $validatedData = $request->validate([
             'agreement_number' => ['required', 'string', 'max:255', Rule::unique('agreements', 'agreement_number')->ignore($agreement->id)],
             'leader_id' => 'required|exists:leaders,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'daily_deposit_amount' => 'required|numeric|min:0',
-            'status' => 'required|string|in:active,expired,terminated,pending_renewal',
+            'jenis' => 'required|in:draft,sementara,rilis',
+            'status' => 'required|string|in:active,pending,expired,terminated,pending_renewal',
             'signed_date' => 'required|date',
             'parking_location_ids' => 'nullable|array',
             'parking_location_ids.*' => 'exists:parking_locations,id',
-        ]);
+        ], $messages);
 
         $dailyAmount = (float) $validatedData['daily_deposit_amount'];
         $startDate = Carbon::parse($validatedData['start_date']);
@@ -340,6 +374,9 @@ class AgreementController extends Controller
             }
             if ($oldData->daily_deposit_amount != $agreement->daily_deposit_amount) {
                 $historyRecords[] = ['event_type' => 'deposit_changed', 'notes' => 'Setoran diubah dari Rp '.number_format($oldData->daily_deposit_amount).' menjadi Rp '.number_format($agreement->daily_deposit_amount).'.'];
+            }
+            if ($oldData->jenis != $agreement->jenis) {
+                $historyRecords[] = ['event_type' => 'details_updated', 'notes' => 'Jenis PKS diubah dari "'.ucfirst($oldData->jenis).'" menjadi "'.ucfirst($agreement->jenis).'".'];
             }
             if ($oldData->status != $agreement->status) {
                 $historyRecords[] = ['event_type' => 'status_changed', 'notes' => 'Status diubah dari "'.ucfirst($oldData->status).'" menjadi "'.ucfirst($agreement->status).'".'];
