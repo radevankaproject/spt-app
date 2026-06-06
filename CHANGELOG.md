@@ -3,10 +3,12 @@
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini.
 
 ## [v1.3.0] - 2026-06-06
-- **Major Overhaul:** Redesain antarmuka (_Premium Dashboard_) untuk seluruh peran pengguna (Admin, Pimpinan, Bendahara, Staff Keuangan, & Staff PKS) agar 100% selaras dengan tema Vuexy, termasuk integrasi UI-Avatars otomatis dan skeleton loading.
-- **Sistem Keamanan Akses:** Implementasi pemulihan kata sandi (_Forgot Password_) yang lebih aman menggunakan *One Time Password* (OTP) terintegrasi langsung dengan WhatsApp (Fonnte API).
+- **Major Overhaul Dashboard:** Redesain antarmuka (_Premium Dashboard_) untuk seluruh peran pengguna (Admin, Pimpinan, Bendahara, Staff Keuangan, & Staff PKS) agar 100% selaras dengan tema Vuexy, termasuk integrasi UI-Avatars otomatis dan _skeleton loading_.
+- **Sistem Keamanan & Akses:** Implementasi pemulihan kata sandi (_Forgot Password_) yang lebih aman menggunakan *One Time Password* (OTP) terintegrasi langsung dengan WhatsApp (Fonnte API).
 - **Peningkatan Kapabilitas Backup:** Modul _Backup_ kini mendukung eksekusi *Full Application Snapshot* (Database + Kode Sumber) secara komprehensif, dilengkapi animasi _spinner_ progresif.
-- **Penyempurnaan Struktur Data:** Integrasi otomatis input Nomor Handphone (`phone_number`) untuk seluruh tingkatan pengguna demi memfasilitasi fungsionalitas sistem.
+- **Penyempurnaan Modul Agreement (PKS):** Penambahan klasifikasi **Jenis Perjanjian** (Mandiri/Pihak Ketiga) pada _database_ dan UI, penyempurnaan form _Create/Edit_, serta pembaruan format _output_ dokumen PDF.
+- **Penyempurnaan Profil Pengguna & Formatting:** Integrasi kolom `phone_number` dan `employee_number` (NIP) untuk pelaporan. Ditambah dengan implementasi *helper* standar penulisan NIP Indonesia yang seragam di seluruh halaman _dashboard_ dan tabel.
+- **Refactoring & Pembersihan _Bug_ IDE:** Penghapusan fungsi _deprecated_, pengoptimalan *query*, serta penyesuaian kompatibilitas *helper* respon bawaan Laravel.
 
 
 ## [v1.2.9] - 2026-04-01
