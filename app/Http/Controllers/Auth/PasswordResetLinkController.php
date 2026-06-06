@@ -29,7 +29,17 @@ class PasswordResetLinkController extends Controller
             'phone_number' => ['required', 'numeric', 'digits_between:10,14'],
         ]);
 
-        $user = \App\Models\User::where('phone_number', $request->phone_number)->first();
+        $user = \App\Models\User::where('phone_number', $request->phone_number)
+            ->orWhereHas('leader', function ($query) use ($request) {
+                $query->where('phone_number', $request->phone_number);
+            })
+            ->orWhereHas('treasurer', function ($query) use ($request) {
+                $query->where('phone_number', $request->phone_number);
+            })
+            ->orWhereHas('fieldCoordinator', function ($query) use ($request) {
+                $query->where('phone_number', $request->phone_number);
+            })
+            ->first();
 
         if (!$user) {
             return back()->withInput($request->only('phone_number'))
@@ -47,13 +57,22 @@ class PasswordResetLinkController extends Controller
         if ($apiToken) {
             $message = "Halo {$user->name},\n\nIni adalah kode OTP Anda untuk mereset kata sandi: *{$otpCode}*.\n\nKode ini berlaku selama 5 menit. Jangan berikan kode ini kepada siapa pun.";
 
-            \Illuminate\Support\Facades\Http::withHeaders([
-                'Authorization' => $apiToken,
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $request->phone_number,
-                'message' => $message,
-                'countryCode' => '62', // Default Indonesia
-            ]);
+            try {
+                \Illuminate\Support\Facades\Http::withHeaders([
+                    'Authorization' => $apiToken,
+                ])->post('https://api.fonnte.com/send', [
+                    'target' => $request->phone_number,
+                    'message' => $message,
+                    'countryCode' => '62', // Default Indonesia
+                ]);
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                \Illuminate\Support\Facades\Log::error('Fonnte API Connection Error: ' . $e->getMessage());
+                return back()->withInput($request->only('phone_number'))
+                    ->withErrors(['phone_number' => 'Gagal terhubung ke server WhatsApp. Silakan coba beberapa saat lagi.']);
+            } catch (\Exception $e) {
+                return back()->withInput($request->only('phone_number'))
+                    ->withErrors(['phone_number' => 'Gagal terhubung ke server WhatsApp. Silakan coba beberapa saat lagi.']);
+            }
         }
         
         \App\Models\OtpReset::updateOrCreate(
@@ -110,7 +129,17 @@ class PasswordResetLinkController extends Controller
         // I will log them in directly and let them change password in profile, or show reset password form.
         // To be safe, generate a token and redirect to reset-password.
         
-        $user = \App\Models\User::where('phone_number', $request->phone_number)->first();
+        $user = \App\Models\User::where('phone_number', $request->phone_number)
+            ->orWhereHas('leader', function ($query) use ($request) {
+                $query->where('phone_number', $request->phone_number);
+            })
+            ->orWhereHas('treasurer', function ($query) use ($request) {
+                $query->where('phone_number', $request->phone_number);
+            })
+            ->orWhereHas('fieldCoordinator', function ($query) use ($request) {
+                $query->where('phone_number', $request->phone_number);
+            })
+            ->first();
         if ($user) {
             $token = Password::createToken($user);
             $otpRecord->delete();

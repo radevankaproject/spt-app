@@ -63,6 +63,11 @@ class User extends Authenticatable
         return $this->hasOne(FieldCoordinator::class);
     }
 
+    public function treasurer()
+    {
+        return $this->hasOne(Treasurer::class);
+    }
+
     // --- Start: Metode Helper Role ---
 
     public function isAdmin(): bool
@@ -78,6 +83,11 @@ class User extends Authenticatable
     public function isFieldCoordinator(): bool
     {
         return $this->role === 'field_coordinator';
+    }
+
+    public function isTreasurer(): bool
+    {
+        return $this->role === 'treasurer';
     }
 
     public function isStaffKeu(): bool
