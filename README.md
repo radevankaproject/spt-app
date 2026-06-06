@@ -1,6 +1,6 @@
 <h1 align="center">⚡ Bangameck ⚡</h1>
 
-![Twitter Follow](https://img.shields.io/twitter/follow/bangameck?style=social) 
+![Twitter Follow](https://img.shields.io/twitter/follow/bangameck?style=social)
 ![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UChbu6CEMvD3RO1RBo9ADldg?label=RRA%20Dev&style=social)
 
 <p align="center">
@@ -17,22 +17,28 @@
 ---
 
 ## 🚗 Sistem Parkir Terpadu (SiPKS)
-Sistem Informasi Manajemen Perparkiran Terpadu (SiPKS) / SPT adalah aplikasi *enterprise-grade* yang dirancang untuk mendigitalisasi tata kelola perparkiran pada Dinas Perhubungan / UPT Perparkiran. Aplikasi ini mempermudah pengelolaan **Perjanjian Kerjasama (PKS)**, evaluasi rasio keuangan (target setoran), pemetaan lokasi parkir, hingga manajemen mitra/koordinator secara *real-time* dan transparan.
 
-### 🛠️ Tech Stack Aplikasi
-Aplikasi ini dikembangkan dengan *stack* modern dan standard keamanan yang kokoh:
-- **Backend:** Laravel 11 / PHP 8.2+
-- **Frontend:** Bootstrap 5, Blade Engine (dengan struktur Template Premium)
+Sistem Informasi Manajemen Perparkiran Terpadu (SiPKS) / SPT adalah aplikasi _enterprise-grade_ yang dirancang untuk mendigitalisasi tata kelola perparkiran pada Dinas Perhubungan / UPT Perparkiran. Aplikasi ini mempermudah pengelolaan **Perjanjian Kerjasama (PKS)**, evaluasi rasio keuangan (target setoran), pemetaan lokasi parkir, hingga manajemen mitra/koordinator secara _real-time_, aman, dan transparan.
+
+### 🛠️ Tech Stack & Integrasi Aplikasi
+
+Aplikasi ini dibangun menggunakan arsitektur modern yang mengedepankan performa, estetika premium, serta standar keamanan tinggi:
+
+- **Core Backend:** Laravel 12 / PHP 8.4+
+- **UI/UX & Frontend:** Vuexy Premium Template, Bootstrap 5, Laravel Blade Engine
 - **Database:** MySQL
-- **Maps & Geolocation:** Leaflet.js terintegrasi dengan OpenStreetMap API
-- **Security:** CSRF Protection, Anti-IDOR Middleware logic, *Role-Based Access Control* (RBAC) dengan pemisahan Hak Akses Ekstrem (*View-Only Mode*).
-- **Utilities & UI Engine:** SweetAlert2 (Dynamic Alerts), Select2, DataTables, Quill.js (Rich Text Editor), ApexCharts (Graphic & Analytics)
+- **Mapping & Geolocation:** Leaflet.js terintegrasi dengan OpenStreetMap API
+- **Gateway & Notifikasi:** Fonnte API (Integrasi pengiriman OTP via WhatsApp)
+- **Security:** _Role-Based Access Control_ (RBAC) 5 level (Admin, Pimpinan, Bendahara, Staff Keuangan, Staff PKS), Anti-IDOR Middleware, dan perlindungan _View-Only Mode_.
+- **Reporting & Analytics:** DOMPDF (Cetak Dokumen PKS), ApexCharts (Visualisasi Data Dashboard)
+- **Utilities & Komponen:** SweetAlert2 (Dynamic Alerting), DataTables, Select2, Quill.js (Rich Text Editor), UI-Avatars API (Dynamic Profile Image)
 
 ### ✨ Fitur Unggulan SiPKS
-1. **Analitik Executive Dashboard:** Menampilkan perbandingan diagram (*Pie/Bar*) terkait rasio setoran, jumlah PKS aktif, PKS jatuh tempo, hingga persebaran titik parkir.
+
+1. **Analitik Executive Dashboard:** Menampilkan perbandingan diagram (_Pie/Bar_) terkait rasio setoran, jumlah PKS aktif, PKS jatuh tempo, hingga persebaran titik parkir.
 2. **Manajemen PKS Kompleks:** Administrasi terpusat untuk Surat Keputusan (SK) dan _Agreement_ yang mensinergikan pihak dinas dengan koordinator lapangan.
 3. **Peta Interaktif (GIS):** Sistem informasi geografis untuk memetakan koordinat riil (Latitude / Longitude) dari masing-masing titik lahan parkir yang disewakan.
-4. **Alur Pengajuan (*Workflows*):** Proses disposisi (Verifikasi/Preview dinas) untuk usulan penambahan lahan parkir baru atau pencabutan lahan secara _paperless_ dari pihak koordinator.
+4. **Alur Pengajuan (_Workflows_):** Proses disposisi (Verifikasi/Preview dinas) untuk usulan penambahan lahan parkir baru atau pencabutan lahan secara _paperless_ dari pihak koordinator.
 5. **Akuntansi Target Biaya:** Kalkulasi akurat target tahunan vs setoran bulanan (_revenue tracking_) yang terhubung pada buku bank BLUD daerah.
 6. **Manajemen Versi (In-App Changelog):** _Update notification_ terenkapsulasi langsung di dalam aplikasi agar mitra selalu mendapat informasi terbaru setiap kali ada peningkatan perangkat lunak.
 
@@ -45,10 +51,11 @@ Saya **Bangameck**, seorang **Independent Web & Mobile Developer** dengan brand:
 <h2 align="center">🚀 RadevankaProject</h2>
 
 Saya membangun **produk nyata**, bukan sekadar demo:
-- 🏢 Sistem Enterprise & Pemerintahan  
-- 📱 Mobile App (Flutter)  
-- 🌐 Web App (Laravel, React, Vue)  
-- 🔐 Sistem Biometrik & Keamanan  
+
+- 🏢 Sistem Enterprise & Pemerintahan
+- 📱 Mobile App (Flutter)
+- 🌐 Web App (Laravel, React, Vue)
+- 🔐 Sistem Biometrik & Keamanan
 
 > _Project kecil (skripsi, landing page)? Gas._  
 > _Project besar (enterprise, absensi, biometrik)? Lebih gas._
@@ -61,29 +68,33 @@ Saya membangun **produk nyata**, bukan sekadar demo:
 ✔️ Information System & Dashboard  
 ✔️ API & Backend Architecture  
 ✔️ Research Project & Private App  
-✔️ UI/UX Modern & Secure Flow  
+✔️ UI/UX Modern & Secure Flow
 
 ---
 
 ## 🛠 Tech Stack (Battle Tested)
 
 ### 💻 Languages
+
 ![PHP](https://img.shields.io/badge/PHP-Laravel-blue?logo=php)
 ![Dart](https://img.shields.io/badge/Dart-Flutter-0175C2?logo=dart)
 ![Java](https://img.shields.io/badge/Java-ED8B00?logo=openjdk)
 ![C++](https://img.shields.io/badge/C++-00599C?logo=cplusplus)
 
 ### 🌐 Frameworks
+
 ![Laravel](https://img.shields.io/badge/Laravel-EF4135?logo=laravel)
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter)
 ![React](https://img.shields.io/badge/React-20232A?logo=react)
 ![Vue.js](https://img.shields.io/badge/Vue.js-35495E?logo=vue.js)
 
 ### 🛢 Database & Services
+
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase)
 
 ### 🔧 Tools
+
 ![VS Code](https://img.shields.io/badge/VS_Code-007ACC?logo=visualstudiocode)
 ![Android Studio](https://img.shields.io/badge/Android_Studio-3DDC84?logo=androidstudio)
 ![Git](https://img.shields.io/badge/Git-F05032?logo=git)
@@ -112,6 +123,7 @@ Saya membangun **produk nyata**, bukan sekadar demo:
 ## 🤝 Work With Me
 
 💼 **Available for:**
+
 - Freelance & Contract
 - Startup MVP
 - Enterprise / Government Project
@@ -122,7 +134,7 @@ Saya membangun **produk nyata**, bukan sekadar demo:
 ## 📞 Contact & Social
 
 📱 **WhatsApp**: +62 822-8844-5265  
-📧 **Email**: `radevankaproject@gmail.com`  
+📧 **Email**: `radevankaproject@gmail.com`
 
 [![GitHub](https://img.shields.io/badge/GitHub-bangameck-black?logo=github)](https://github.com/bangameck)
 [![Instagram](https://img.shields.io/badge/Instagram-@bangameck-E4405F?logo=instagram&logoColor=white)](https://instagram.com/bangameck)
