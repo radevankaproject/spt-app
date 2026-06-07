@@ -237,7 +237,11 @@
             const selectedCountEl = $('#selected-count');
             const resetZoneBtn = $('#reset-zone-btn');
 
-            let selectedLocations = {};
+            let selectedLocations = {!! json_encode($oldLocations ?? new \stdClass()) !!};
+            
+            // --- Trigger Awal untuk memuat Old Inputs ---
+            renderSummary();
+            updateDailyDepositTotal();
 
             function renderSummary() {
                 summaryContainer.empty();

@@ -90,7 +90,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::get('/deposit-targets', [DepositTargetController::class, 'index'])->name('deposit-targets.index');
             Route::post('/deposit-targets', [DepositTargetController::class, 'store'])->name('deposit-targets.store');
+        });
 
+        // ✅ Peta Wilayah Parkir (Dapat diakses oleh admin, leader, staff_pks, treasurer)
+        Route::middleware('role:admin,leader,staff_pks,treasurer')->group(function () {
+            Route::get('/parking-locations-map', [ParkingLocationController::class, 'mapView'])->name('parking-locations.map');
         });
 
         // --- Rute untuk Tiga Role (Admin, Staff Keu, Staff PKS) ---
@@ -128,6 +132,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
             Route::get('agreements/{agreement}/pdf-history', [AgreementController::class, 'showPdfHistory'])->name('agreements.pdf-history');
             Route::get('agreements/{agreement}/pdf', [AgreementController::class, 'generatePdf'])->name('agreements.pdf');
+            Route::post('agreements/{agreement}/upload-scan', [AgreementController::class, 'uploadSignedDocument'])->name('agreements.upload-scan');
         });
     });
 

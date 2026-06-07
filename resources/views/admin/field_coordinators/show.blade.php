@@ -141,6 +141,9 @@
                                 </div>
                             </div>
                             <div class="mt-4 pt-3 border-top text-end">
+                                @if($pks->signed_document_path)
+                                <a href="{{ Storage::url($pks->signed_document_path) }}" target="_blank" class="btn btn-sm btn-outline-success me-2"><i class="ri ri-file-check-line me-1"></i> File Scan Asli</a>
+                                @endif
                                 <a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="btn btn-sm btn-primary shadow-sm"><i class="ri ri-eye-line me-1"></i> Buka Detail PKS</a>
                             </div>
                         </div>
@@ -184,6 +187,11 @@
                                             </span>
                                         </td>
                                         <td class="text-center">
+                                            @if($history->signed_document_path)
+                                            <a href="{{ Storage::url($history->signed_document_path) }}" target="_blank" class="btn btn-sm btn-icon btn-text-success rounded-pill me-1" data-bs-toggle="tooltip" title="File Scan Asli">
+                                                <i class="ri ri-file-check-line icon-22px"></i>
+                                            </a>
+                                            @endif
                                             <a href="{{ route('masterdata.agreements.show', $history->id) }}" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Lihat Histori">
                                                 <i class="ri ri-arrow-right-circle-line icon-22px"></i>
                                             </a>

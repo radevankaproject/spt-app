@@ -17,7 +17,7 @@
         <div class="navbar-nav align-items-center flex-grow-1 position-relative me-3">
             <div class="nav-item d-flex align-items-center w-100">
                 <i class="ri ri-search-line ri-22px text-muted me-2"></i>
-                <input type="text" id="global-search-input" class="form-control border-0 shadow-none bg-transparent ps-1" placeholder="Cari PKS, Titik Parkir, User... (Tekan / )" autocomplete="off">
+                <input type="text" id="global-search-input" class="form-control border-0 shadow-none bg-transparent ps-1" placeholder="Cari PKS, Titik Parkir, User... (Ctrl+K atau Ctrl+/)" autocomplete="off">
             </div>
             
             {{-- Dropdown Hasil Pencarian --}}
@@ -186,11 +186,13 @@ document.addEventListener("DOMContentLoaded", function() {
     const searchLoading = document.getElementById('global-search-loading');
     let searchTimeout = null;
 
-    // Shortcut Keyboard (Tekan "/" untuk fokus)
+    // Shortcut Keyboard (Tekan Ctrl+K atau Ctrl+/)
     document.addEventListener('keydown', function(e) {
-        if (e.key === '/' && document.activeElement !== searchInput) {
-            e.preventDefault();
-            searchInput.focus();
+        if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.ctrlKey && e.key === '/')) {
+            if (document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
         }
         if (e.key === 'Escape') {
             searchResults.style.display = 'none';

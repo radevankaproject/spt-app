@@ -45,7 +45,17 @@ class RoadSectionController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255|unique:road_sections,name',
             'zone' => 'required|string|in:Zona 2,Zona 3',
+            'coordinates' => 'nullable|string',
         ]);
+
+        if (!empty($validatedData['coordinates'])) {
+            $parts = explode(',', $validatedData['coordinates']);
+            if (count($parts) >= 2) {
+                $validatedData['latitude'] = trim($parts[0]);
+                $validatedData['longitude'] = trim($parts[1]);
+            }
+        }
+        unset($validatedData['coordinates']);
 
         RoadSection::create($validatedData);
 
@@ -65,6 +75,7 @@ class RoadSectionController extends Controller
 
         $rules = [
             'name' => ['required', 'string', 'max:255', Rule::unique('road_sections')->ignore($roadSection->id)],
+            'coordinates' => ['nullable', 'string'],
         ];
 
         // ✅ Logika Keamanan Backend: Hanya izinkan ubah zona jika belum ada titik parkir
@@ -73,6 +84,19 @@ class RoadSectionController extends Controller
         }
 
         $validatedData = $request->validate($rules);
+
+        if (!empty($validatedData['coordinates'])) {
+            $parts = explode(',', $validatedData['coordinates']);
+            if (count($parts) >= 2) {
+                $validatedData['latitude'] = trim($parts[0]);
+                $validatedData['longitude'] = trim($parts[1]);
+            }
+        } else {
+            // Jika dikosongkan, hapus lat/long
+            $validatedData['latitude'] = null;
+            $validatedData['longitude'] = null;
+        }
+        unset($validatedData['coordinates']);
 
         $roadSection->update($validatedData);
 

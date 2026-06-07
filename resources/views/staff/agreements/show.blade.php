@@ -496,9 +496,16 @@
                             <div
                                 class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
                                 <h6 class="card-title fw-bold mb-0">Preview Dokumen Perjanjian</h6>
-                                <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
-                                    class="btn btn-sm btn-outline-primary rounded-pill"><i
-                                        class="ri ri-file-copy-2-line me-1"></i> Versi Sebelumnya</a>
+                                <div class="d-flex gap-2">
+                                    @if($agreement->signed_document_path)
+                                    <a href="{{ Storage::url($agreement->signed_document_path) }}" target="_blank"
+                                        class="btn btn-sm btn-success rounded-pill"><i
+                                            class="ri ri-file-check-line me-1"></i> Scan Tertanda Tangan</a>
+                                    @endif
+                                    <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
+                                        class="btn btn-sm btn-outline-primary rounded-pill"><i
+                                            class="ri ri-file-copy-2-line me-1"></i> Versi Sebelumnya</a>
+                                </div>
                             </div>
                             <div class="card-body pt-4">
                                 <div class="pdf-viewer-wrapper shadow-sm">

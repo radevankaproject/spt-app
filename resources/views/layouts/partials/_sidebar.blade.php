@@ -137,7 +137,7 @@
         {{-- ✅ LOKASI PARKIR & PKS (DIBUKA UNTUK LEADER JUGA) --}}
         @if (in_array(Auth::user()->role, ['admin', 'staff_pks', 'leader']))
             <li class="menu-header small"><span class="menu-header-text">Data Wilayah & PKS</span></li>
-            <li class="menu-item {{ request()->routeIs('masterdata.road-sections.*') || request()->routeIs('masterdata.parking-locations.*') ? 'active open' : '' }}">
+            <li class="menu-item {{ request()->routeIs('masterdata.road-sections.*') || (request()->routeIs('masterdata.parking-locations.*') && !request()->routeIs('masterdata.parking-locations.map')) ? 'active open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                     <i class="icon-base ri menu-icon tf-icons ri-map-pin-line"></i>
                     <div data-i18n="Master Lokasi">Master Lokasi</div>
@@ -146,7 +146,7 @@
                     <li class="menu-item {{ request()->routeIs('masterdata.road-sections.*') ? 'active' : '' }}">
                         <a href="{{ route('masterdata.road-sections.index') }}" class="menu-link"><div data-i18n="Ruas Jalan">Ruas Jalan</div></a>
                     </li>
-                    <li class="menu-item {{ request()->routeIs('masterdata.parking-locations.*') ? 'active' : '' }}">
+                    <li class="menu-item {{ request()->routeIs('masterdata.parking-locations.*') && !request()->routeIs('masterdata.parking-locations.map') ? 'active' : '' }}">
                         <a href="{{ route('masterdata.parking-locations.index') }}" class="menu-link"><div data-i18n="Titik Parkir">Titik Parkir</div></a>
                     </li>
                 </ul>
@@ -173,6 +173,17 @@
                 <a href="{{ route('masterdata.agreement-histories.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-history-line"></i>
                     <div data-i18n="Histori Perjanjian">Riwayat PKS</div>
+                </a>
+            </li>
+        @endif
+
+        {{-- ✅ PETA WILAYAH PARKIR --}}
+        @if (in_array(Auth::user()->role, ['admin', 'leader', 'staff_pks', 'treasurer']))
+            <li class="menu-header small"><span class="menu-header-text">Pemetaan</span></li>
+            <li class="menu-item {{ request()->routeIs('masterdata.parking-locations.map') ? 'active' : '' }}">
+                <a href="{{ route('masterdata.parking-locations.map') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-map-2-line"></i>
+                    <div data-i18n="Peta Wilayah Parkir">Peta Wilayah Parkir</div>
                 </a>
             </li>
         @endif

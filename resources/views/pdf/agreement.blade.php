@@ -141,6 +141,7 @@
             <span>TENTANG</span>
             <span>KONTRAK KERJASAMA PENGELOLAAN PERPARKIRAN DI KOTA PEKANBARU</span>
             <span style="font-weight: normal; margin-top: 10px;">Nomor : {{ $agreement->agreement_number }}</span>
+            <hr style="border: 0; border-top: 2px solid #000; margin-top: 15px; margin-bottom: 15px;">
         </div>
 
         <p>Pada hari ini <strong>{{ $agreement->signed_date->translatedFormat('l') }}</strong> tanggal <strong>{{ ucwords(\App\Helpers\NumberToWords::convert($agreement->signed_date->format('d'))) }}</strong> bulan <strong>{{ $agreement->signed_date->translatedFormat('F') }}</strong> tahun <strong>{{ ucwords(\App\Helpers\NumberToWords::convert($agreement->signed_date->format('Y'))) }}</strong>, Kami yang bertanda tangan di bawah ini :</p>
@@ -156,7 +157,7 @@
                 <td></td>
                 <td>Jabatan</td>
                 <td>:</td>
-                <td>{{ $leaderTitle }} UPT. Perparkiran</td>
+                <td>{{ $leaderTitle }} UPT Perparkiran</td>
             </tr>
             <tr>
                 <td></td>
@@ -197,6 +198,17 @@
             </tr>
             <tr>
                 <td></td>
+                <td>No. HP</td>
+                <td>:</td>
+                <td>{{ $agreement->fieldCoordinator->phone_number ?? '-' }}</td>
+            </tr>
+        </table>
+        
+        <div class="page-break"></div>
+        
+        <table>
+            <tr>
+                <td width="30"></td>
                 <td colspan="3" style="padding-top: 5px;">Bertindak dalam jabatannya tersebut, untuk dan atas nama berkedudukan sebagai mitra kerjasama selanjutnya disebut <strong>PIHAK KEDUA</strong>.</td>
             </tr>
         </table>
@@ -219,9 +231,9 @@
         <p>Objek Perjanjian Kerjasama ini adalah pengelolaan perparkiran pada :</p>
         <ol class="list-ol" style="list-style-type: lower-alpha;">
             @foreach ($agreement->activeParkingLocations->groupBy('roadSection.name') as $roadSectionName => $locations)
-                <li>Segmen Lokasi Parkir di Ruas Jalan <strong>{{ $roadSectionName }}</strong>, yaitu :
+                <li>Segmen Lokasi Parkir di Ruas <strong>{{ $roadSectionName }}</strong>, yaitu :
                     <ol style="list-style-type: decimal; padding-left: 20px;">
-                        @foreach ($locations as $location) <li>{{ $location->name }};</li> @endforeach
+                        @foreach ($locations as $location) <li><strong>{{ $location->name }}</strong>;</li> @endforeach
                     </ol>
                 </li>
             @endforeach
@@ -411,6 +423,36 @@
         </div>
         @endif
 
+        {{-- ✅ PARAF PIHAK DI SETIAP HALAMAN KECUALI COVER & LAST PAGE --}}
+        <script type="text/php">
+            if (isset($pdf)) {
+                $pdf->page_script('
+                    // $PAGE_NUM adalah halaman saat ini, $PAGE_COUNT adalah total halaman
+                    if ($PAGE_NUM > 1 && $PAGE_NUM < $PAGE_COUNT) {
+                        $font = $fontMetrics->get_font("Helvetica", "normal");
+                        $size = 9;
+                        $color = array(0, 0, 0); // Hitam
+                        
+                        $w = 100; // Lebar total (50px per kolom)
+                        $h = 45; // Tinggi total
+                        $x = $pdf->get_width() - $w - 70; // Jarak dari kanan (70px menyesuaikan margin kanan 2.5cm)
+                        $y = $pdf->get_height() - $h - 28; // Jarak dari bawah (28px menyesuaikan margin bawah 1cm)
+                        
+                        // Garis luar kotak
+                        $pdf->rectangle($x, $y, $w, $h, $color, 0.5);
+                        // Garis horizontal pemisah judul dan kotak paraf
+                        $pdf->line($x, $y + 15, $x + $w, $y + 15, $color, 0.5);
+                        // Garis vertikal tengah
+                        $pdf->line($x + ($w / 2), $y, $x + ($w / 2), $y + $h, $color, 0.5);
+                        
+                        // Teks (Pihak I dan Pihak II)
+                        // Posisi Y adalah koordinat top teks
+                        $pdf->text($x + 10, $y + 4, "Pihak I", $font, $size, $color);
+                        $pdf->text($x + 58, $y + 4, "Pihak II", $font, $size, $color);
+                    }
+                ');
+            }
+        </script>
     </div>
 </body>
 </html>

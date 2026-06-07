@@ -253,9 +253,12 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <input type="date" class="form-control" id="end_date" name="end_date" />
-                                            <label for="end_date">Akhir Menjabat (Opsional)</label>
+                                        <div class="input-group">
+                                            <div class="form-floating form-floating-outline w-75">
+                                                <input type="date" class="form-control" id="end_date" name="end_date" />
+                                                <label for="end_date">Akhir Menjabat (Opsional)</label>
+                                            </div>
+                                            <button class="btn btn-outline-danger w-25 px-1" type="button" onclick="document.getElementById('end_date').value=''" data-bs-toggle="tooltip" title="Kosongkan Tanggal Akhir"><i class="ri ri-close-line"></i></button>
                                         </div>
                                     </div>
                                 </div>

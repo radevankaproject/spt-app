@@ -74,6 +74,7 @@ class LeaderController extends Controller
             'password' => 'required|string|min:8|confirmed|not_regex:/\s/',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'employee_number' => 'required|string|max:18|unique:leaders,employee_number',
+            'status_jabatan' => 'required|in:tetap,plt,plh',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
@@ -103,6 +104,7 @@ class LeaderController extends Controller
             Leader::create([
                 'user_id' => $user->id,
                 'employee_number' => $validatedData['employee_number'],
+                'status_jabatan' => $validatedData['status_jabatan'],
                 'phone_number' => $validatedData['phone_number'] ?? null,
                 'start_date' => $validatedData['start_date'],
                 'end_date' => $validatedData['end_date'],
@@ -134,6 +136,7 @@ class LeaderController extends Controller
             'password' => 'nullable|string|min:8|confirmed|not_regex:/\s/',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'employee_number' => ['required', 'string', 'max:18', Rule::unique('leaders', 'employee_number')->ignore($leader->id)],
+            'status_jabatan' => 'required|in:tetap,plt,plh',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
@@ -161,6 +164,7 @@ class LeaderController extends Controller
             $leader->user->save();
 
             $leader->employee_number = $validatedData['employee_number'];
+            $leader->status_jabatan = $validatedData['status_jabatan'];
             $leader->phone_number = $validatedData['phone_number'] ?? null;
             $leader->start_date = $validatedData['start_date'];
             $leader->end_date = $validatedData['end_date'];

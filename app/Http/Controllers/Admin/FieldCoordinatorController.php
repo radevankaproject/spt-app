@@ -110,6 +110,7 @@ class FieldCoordinatorController extends Controller
                 'email' => $username.'@korlap-parkir.local',
                 'password' => Hash::make('password'),
                 'role' => 'field_coordinator',
+                'phone_number' => $validatedData['phone_number'],
             ]);
 
             // ✅ FIX: Simpan Foto Profil (Konsisten pakai Storage Public)
@@ -243,6 +244,7 @@ class FieldCoordinatorController extends Controller
             $user = $fieldCoordinator->user;
             if ($user) {
                 $user->name = $validatedData['name'];
+                $user->phone_number = $validatedData['phone_number'];
 
                 // ✅ FIX UPDATE FOTO PROFIL: Hapus pakai Storage, simpan pakai storeAs
                 if ($request->hasFile('img')) {
@@ -255,7 +257,7 @@ class FieldCoordinatorController extends Controller
                 $user->save();
             }
 
-            $coordinatorData = Arr::except($validatedData, ['name', 'img']);
+            $coordinatorData = Arr::except($validatedData, ['name', 'img', 'id_card_img']);
 
             // ✅ FIX UPDATE FOTO KTP: Hapus pakai Storage, simpan pakai storeAs
             if ($request->hasFile('id_card_img')) {

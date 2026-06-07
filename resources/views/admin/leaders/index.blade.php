@@ -155,9 +155,11 @@
                                             data-name="{{ $uName }}"
                                             data-username="{{ $leader->user->username }}"
                                             data-email="{{ $leader->user->email }}"
+                                            data-phone="{{ $leader->user->phone_number ?? '' }}"
                                             data-nip="{{ $leader->employee_number }}"
                                             data-startdate="{{ $leader->start_date ? \Carbon\Carbon::parse($leader->start_date)->format('Y-m-d') : '' }}"
                                             data-enddate="{{ $leader->end_date ? \Carbon\Carbon::parse($leader->end_date)->format('Y-m-d') : '' }}"
+                                            data-statusjabatan="{{ $leader->status_jabatan }}"
                                             data-avatar="{{ $uAvatar }}"
                                             data-bs-toggle="modal" data-bs-target="#leaderModal"
                                             data-bs-toggle="tooltip" title="Edit Pimpinan">
@@ -239,10 +241,16 @@
                                             <button class="btn btn-outline-primary w-25 px-1" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ri ri-loop-left-line"></i></button>
                                         </div>
                                     </div>
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="email" class="form-control" id="email" name="email" placeholder="contoh@email.com" required />
                                             <label for="email">Alamat Email</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" class="form-control" id="phone_number" name="phone_number" placeholder="08..." required />
+                                            <label for="phone_number">No. Handphone</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -279,6 +287,16 @@
                                             <label for="employee_number_display">NIP (Nomor Induk Pegawai)</label>
                                         </div>
                                     </div>
+                                    <div class="col-md-12">
+                                        <div class="form-floating form-floating-outline">
+                                            <select class="form-select" id="status_jabatan_modal" name="status_jabatan" required>
+                                                <option value="tetap">Definitif (Tetap)</option>
+                                                <option value="plt">Plt (Pelaksana Tugas)</option>
+                                                <option value="plh">Plh (Pelaksana Harian)</option>
+                                            </select>
+                                            <label for="status_jabatan_modal">Status Jabatan</label>
+                                        </div>
+                                    </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="date" class="form-control" id="start_date" name="start_date" required />
@@ -286,9 +304,12 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <input type="date" class="form-control" id="end_date" name="end_date" />
-                                            <label for="end_date">Akhir Menjabat (Opsional)</label>
+                                        <div class="input-group">
+                                            <div class="form-floating form-floating-outline w-75">
+                                                <input type="date" class="form-control" id="end_date" name="end_date" />
+                                                <label for="end_date">Akhir Menjabat (Opsional)</label>
+                                            </div>
+                                            <button class="btn btn-outline-danger w-25 px-1" type="button" onclick="document.getElementById('end_date').value=''" data-bs-toggle="tooltip" title="Kosongkan Tanggal Akhir"><i class="ri ri-close-line"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -458,6 +479,7 @@
 
                     nipDisplay.value = '';
                     nipHidden.value = '';
+                    document.getElementById('status_jabatan_modal').value = 'tetap';
 
                     document.getElementById('password').required = true;
                     document.getElementById('password_confirmation').required = true;
@@ -481,8 +503,10 @@
                     document.getElementById('name').value = this.dataset.name;
                     document.getElementById('username').value = this.dataset.username;
                     document.getElementById('email').value = this.dataset.email;
+                    document.getElementById('phone_number').value = this.dataset.phone || '';
                     document.getElementById('start_date').value = this.dataset.startdate;
                     document.getElementById('end_date').value = this.dataset.enddate;
+                    document.getElementById('status_jabatan_modal').value = this.dataset.statusjabatan;
 
                     let nipResult = formatNipJS(this.dataset.nip);
                     nipHidden.value = nipResult.raw;

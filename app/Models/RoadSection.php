@@ -12,7 +12,10 @@ class RoadSection extends Model
 
     protected $fillable = [
         'name',
+        'code',
         'zone',
+        'latitude',
+        'longitude',
     ];
 
     //Relaso ParkingLocation

@@ -117,10 +117,21 @@
                                 <div class="form-floating form-floating-outline">
                                     <select name="status" id="status" class="form-select" required>
                                         <option value="{{ $agreement->status }}" selected>
-                                            {{ ucwords(str_replace('_', ' ', $agreement->status)) }}
+                                            @if($agreement->status === 'pending_renewal')
+                                                Menunggu Perpanjangan
+                                            @elseif($agreement->status === 'terminated')
+                                                Diakhiri (Terminated)
+                                            @elseif($agreement->status === 'active')
+                                                Aktif
+                                            @else
+                                                {{ ucwords(str_replace('_', ' ', $agreement->status)) }}
+                                            @endif
                                         </option>
                                         @if($agreement->status === 'pending')
                                             <option value="active">Aktif</option>
+                                        @endif
+                                        @if($agreement->status !== 'pending_renewal')
+                                            <option value="pending_renewal">Menunggu Perpanjangan</option>
                                         @endif
                                         @if($agreement->status !== 'terminated')
                                             <option value="terminated">Diakhiri (Terminated)</option>

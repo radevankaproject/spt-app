@@ -2,6 +2,26 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v1.3.1] - 2026-06-07
+**_"Agreement Enhancements & Workflow Refinements"_**
+
+Pembaruan yang menitikberatkan pada penyempurnaan alur kerja Perjanjian Kerjasama (PKS), optimasi dokumen PDF, sinkronisasi data antar tabel, serta perbaikan minor pada UI/UX dan sistem *routing*.
+
+- **Penyempurnaan Dokumen PKS (PDF):** Menghapus implementasi *page-break* paksa pada templat PDF (`agreement.blade.php`) untuk mencegah munculnya halaman kosong yang tidak diinginkan ketika teks alamat terlalu panjang. 
+- **Manajemen Status Jabatan (Pimpinan):** Menambahkan field `status_jabatan` pada form modal Pimpinan (`LeaderController`). Sistem kini mendeteksi status seperti "Plt." atau "Plh." dan menampilkannya secara otomatis dengan format huruf kapital di awal (Title Case) pada hasil cetak dokumen PKS (contoh: "Plt. Kepala UPT Perparkiran").
+- **Manajemen Arsip Digital PKS:** Menambahkan fitur unggah dokumen hasil _scan_ PKS fisik (bertanda tangan) dalam format PDF (maks. 1MB). Terintegrasi dengan **Ghostscript** untuk mengompresi ukuran file PDF secara cerdas sebelum disimpan ke server. Antarmuka unggah dilengkapi dengan _Progress Bar_ premium dan validasi SweetAlert. Arsip kini dapat diunduh langsung oleh Admin, Pimpinan, Staff PKS, maupun Koordinator Lapangan.
+- **Pembaruan Status & Shortcut Navigasi:** 
+  - Menambahkan *global shortcut* `Ctrl + /` atau `Ctrl + K` untuk secara instan mengaktifkan (fokus) kotak pencarian global pada *navbar*, mempercepat efisiensi navigasi pengguna.
+  - Menambahkan status baru "Menunggu Perpanjangan" (`pending_renewal`) pada opsi *dropdown* form *Edit Agreement*.
+- **Optimalisasi Sinkronisasi Data Pengguna:** Memperbaiki celah logika sinkronisasi antara tabel peran spesifik (`leaders`, `field_coordinators`, `treasurers`) dengan tabel induk (`users`). Kini setiap kali terdapat pembaruan Nomor Handphone, sistem secara serentak akan memperbaruinya pada tabel induk. Turut dieksekusi skrip retroaktif (`fix_phone.php`) untuk menambal data lama yang kosong tanpa perlu *refresh database*.
+- **Penyempurnaan Modal UI (UX):** 
+  - Menghapus form halaman terpisah (_Create/Edit_) untuk Pimpinan agar lebih seragam, mencegah kerancuan dan sepenuhnya beralih ke desain Modal satu pintu.
+  - Menambahkan tombol _Clear_ (ikon silang merah) secara *inline* menggunakan struktur _input-group_ pada input "Tanggal Akhir Menjabat" di modal Pimpinan dan Bendahara, memungkinkan pengguna mengosongkan nilai dengan satu kali klik.
+- **Perbaikan Rute & Sidebar (Role Authorization):** 
+  - Memperbaiki _bug_ di mana menu _sidebar_ "Titik Parkir" ikut menyala (*active*) ketika halaman "Peta Wilayah Parkir" dibuka. 
+  - Melakukan restrukturisasi hak akses secara ketat untuk rute `parking-locations.map`. Peta Sebaran Parkir kini secara eksklusif hanya dapat diakses oleh Admin, Pimpinan, Bendahara, dan Staff PKS, sekaligus memblokir akses yang tidak relevan dari peran Staff Keuangan.
+
+
 ## [v1.3.0] - 2026-06-06
 **_"The Enterprise Dashboard & Security Update"_**
 

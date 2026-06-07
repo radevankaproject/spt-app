@@ -194,6 +194,15 @@
                                             <i class="icon-base ri ri-printer-line icon-20px"></i>
                                         </a>
                                         @if(Auth::user()->role !== 'leader')
+                                        <button type="button" class="btn btn-sm btn-icon {{ $agreement->signed_document_path ? 'btn-text-success' : 'btn-text-warning' }} rounded-pill btn-upload-scan"
+                                            data-id="{{ $agreement->id }}"
+                                            data-number="{{ $agreement->agreement_number }}"
+                                            data-bs-toggle="modal" data-bs-target="#uploadScanModal"
+                                            data-bs-toggle="tooltip" title="{{ $agreement->signed_document_path ? 'Update File Scan (Sudah Ada)' : 'Upload File Scan PKS' }}">
+                                            <i class="icon-base ri {{ $agreement->signed_document_path ? 'ri-file-check-line' : 'ri-file-upload-line' }} icon-20px"></i>
+                                        </button>
+                                        @endif
+                                        @if(Auth::user()->role !== 'leader')
                                         <form action="{{ route('masterdata.agreements.destroy', $agreement->id) }}"
                                             method="POST" class="form-delete d-inline">
                                             @csrf
@@ -221,6 +230,67 @@
             <div class="mt-4 px-3">
                 {{-- Memastikan query search dan tab dibawa saat pindah halaman --}}
                 {{ $agreements->appends(['search' => request('search'), 'tab' => $tab, 'year' => request('year')])->links() }}
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL UPLOAD SCAN --}}
+    <div class="modal fade" id="uploadScanModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom px-4 py-3">
+                    <h5 class="modal-title fw-bold text-primary"><i class="ri ri-file-upload-line me-1"></i> Upload Scan PKS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 py-4">
+                    <p class="text-dark mb-4">Upload dokumen PKS yang telah ditandatangani untuk nomor: <strong id="scanAgreementNumber"></strong></p>
+                    
+                    <form id="formUploadScan" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" id="scanAgreementId" name="agreement_id">
+                        
+                        {{-- DRAG & DROP AREA --}}
+                        <div id="drop-area" class="border rounded-3 p-4 text-center cursor-pointer mb-3" style="border: 2px dashed #696cff !important; background-color: rgba(105, 108, 255, 0.05); transition: all 0.3s ease;">
+                            <i class="ri ri-upload-cloud-2-line text-primary mb-2" style="font-size: 3rem;"></i>
+                            <h6 class="fw-bold mb-1">Drag & Drop file PDF di sini</h6>
+                            <p class="text-muted small mb-3">Atau klik untuk memilih file dari komputer</p>
+                            <input type="file" id="signed_document" name="signed_document" class="d-none" accept=".pdf" required>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill" onclick="document.getElementById('signed_document').click()">Pilih File</button>
+                        </div>
+                        <div id="file-info" class="d-none mb-3 p-3 bg-light rounded-3 d-flex justify-content-between align-items-center border">
+                            <div class="d-flex align-items-center">
+                                <i class="ri ri-file-pdf-line text-danger fs-3 me-2"></i>
+                                <div>
+                                    <span id="file-name" class="fw-bold text-dark d-block" style="font-size: 0.9rem;"></span>
+                                    <small id="file-size" class="text-muted"></small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-icon btn-text-danger rounded-pill" id="btn-remove-file">
+                                <i class="ri ri-close-line"></i>
+                            </button>
+                        </div>
+
+                        {{-- PROGRESS BAR --}}
+                        <div id="progress-container" class="d-none mt-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span id="progress-text" class="text-primary fw-bold" style="font-size: 0.85rem;">Mengupload...</span>
+                                <span id="progress-percentage" class="text-primary fw-bold" style="font-size: 0.85rem;">0%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;"></div>
+                            </div>
+                            <small class="text-muted d-block mt-2 text-center" id="progress-helper-text">Mohon tunggu, jangan tutup halaman ini.</small>
+                        </div>
+                        
+                        <div id="upload-error" class="text-danger small mt-2 d-none"></div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 border-top">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="btn-cancel-upload">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btn-submit-upload" disabled>
+                        <i class="ri ri-upload-2-line me-1"></i> Upload & Kompresi
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -258,6 +328,204 @@
                         }
                     });
                 });
+            });
+        });
+
+        // ==========================================
+        // LOGIKA UPLOAD & KOMPRESI PDF (PREMIUM UI)
+        // ==========================================
+        document.addEventListener("DOMContentLoaded", function() {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('signed_document');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const fileSize = document.getElementById('file-size');
+            const btnRemoveFile = document.getElementById('btn-remove-file');
+            const btnSubmitUpload = document.getElementById('btn-submit-upload');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressPercentage = document.getElementById('progress-percentage');
+            const progressHelperText = document.getElementById('progress-helper-text');
+            const uploadError = document.getElementById('upload-error');
+            const btnCancelUpload = document.getElementById('btn-cancel-upload');
+
+            let selectedFile = null;
+
+            // Format ukuran file
+            function formatBytes(bytes, decimals = 2) {
+                if (!+bytes) return '0 Bytes';
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+            }
+
+            // Fungsi reset UI
+            function resetUploadUI() {
+                selectedFile = null;
+                fileInput.value = '';
+                dropArea.classList.remove('d-none');
+                fileInfo.classList.add('d-none');
+                btnSubmitUpload.disabled = true;
+                progressContainer.classList.add('d-none');
+                uploadError.classList.add('d-none');
+                progressBar.style.width = '0%';
+                progressBar.classList.remove('bg-success', 'bg-warning');
+                progressBar.classList.add('bg-primary');
+            }
+
+            // Buka Modal & Set Data
+            document.querySelectorAll('.btn-upload-scan').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    resetUploadUI();
+                    document.getElementById('scanAgreementId').value = this.dataset.id;
+                    document.getElementById('scanAgreementNumber').innerText = this.dataset.number;
+                });
+            });
+
+            // Handle Drag & Drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.style.backgroundColor = 'rgba(105, 108, 255, 0.1)';
+                    dropArea.style.borderColor = '#696cff';
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.style.backgroundColor = 'rgba(105, 108, 255, 0.05)';
+                }, false);
+            });
+
+            dropArea.addEventListener('drop', (e) => {
+                let dt = e.dataTransfer;
+                let files = dt.files;
+                handleFiles(files);
+            }, false);
+
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+
+            btnRemoveFile.addEventListener('click', resetUploadUI);
+
+            function handleFiles(files) {
+                if(files.length > 0) {
+                    const file = files[0];
+                    if(file.type !== 'application/pdf') {
+                        uploadError.innerText = "Error: File harus berformat PDF.";
+                        uploadError.classList.remove('d-none');
+                        return;
+                    }
+                    if(file.size > 10 * 1024 * 1024) { // 10MB
+                        uploadError.innerText = "Error: Ukuran maksimal file 10MB.";
+                        uploadError.classList.remove('d-none');
+                        return;
+                    }
+
+                    selectedFile = file;
+                    uploadError.classList.add('d-none');
+                    dropArea.classList.add('d-none');
+                    fileInfo.classList.remove('d-none');
+                    fileName.innerText = file.name;
+                    fileSize.innerText = formatBytes(file.size);
+                    btnSubmitUpload.disabled = false;
+                }
+            }
+
+            // Eksekusi Upload
+            btnSubmitUpload.addEventListener('click', function() {
+                if(!selectedFile) return;
+
+                const agreementId = document.getElementById('scanAgreementId').value;
+                const formData = new FormData();
+                formData.append('signed_document', selectedFile);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                // Update UI state
+                btnSubmitUpload.disabled = true;
+                btnCancelUpload.disabled = true;
+                btnRemoveFile.disabled = true;
+                progressContainer.classList.remove('d-none');
+                uploadError.classList.add('d-none');
+
+                const xhr = new XMLHttpRequest();
+                let uploadUrl = "{{ url('masterdata/agreements') }}/" + agreementId + "/upload-scan";
+                
+                xhr.open('POST', uploadUrl, true);
+
+                // Progress Upload ke Server
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        let percentComplete = Math.floor((e.loaded / e.total) * 100);
+                        // Tahan di 90% karena 10% sisa adalah waktu proses kompresi di server
+                        let displayPercent = Math.min(percentComplete, 90); 
+                        
+                        progressBar.style.width = displayPercent + '%';
+                        progressPercentage.innerText = displayPercent + '%';
+
+                        if(displayPercent === 90) {
+                            progressBar.classList.remove('bg-primary');
+                            progressBar.classList.add('bg-warning');
+                            progressText.innerText = 'Mengkompresi Dokumen via Ghostscript...';
+                            progressText.classList.remove('text-primary');
+                            progressText.classList.add('text-warning');
+                            progressPercentage.classList.remove('text-primary');
+                            progressPercentage.classList.add('text-warning');
+                            progressHelperText.innerText = 'Proses kompresi memakan waktu beberapa detik. Harap bersabar...';
+                        }
+                    }
+                };
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if(response.success) {
+                            progressBar.style.width = '100%';
+                            progressBar.classList.remove('bg-warning', 'progress-bar-animated', 'progress-bar-striped');
+                            progressBar.classList.add('bg-success');
+                            progressText.innerText = 'Selesai!';
+                            progressText.classList.remove('text-warning');
+                            progressText.classList.add('text-success');
+                            progressPercentage.innerText = '100%';
+                            progressPercentage.classList.remove('text-warning');
+                            progressPercentage.classList.add('text-success');
+                            progressHelperText.innerText = response.message;
+                            
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }
+                    } else {
+                        handleError('Terjadi kesalahan pada server. Kode: ' + xhr.status);
+                    }
+                };
+
+                xhr.onerror = function() {
+                    handleError('Gagal menghubungi server.');
+                };
+
+                xhr.send(formData);
+
+                function handleError(msg) {
+                    uploadError.innerText = msg;
+                    uploadError.classList.remove('d-none');
+                    btnSubmitUpload.disabled = false;
+                    btnCancelUpload.disabled = false;
+                    btnRemoveFile.disabled = false;
+                    progressContainer.classList.add('d-none');
+                }
             });
         });
     </script>

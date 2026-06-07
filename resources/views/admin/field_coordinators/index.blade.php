@@ -355,7 +355,7 @@
                 document.getElementById('avatar-preview').src = defaultAvatar;
                 document.getElementById('idcard-preview').src = defaultKtp;
                 document.getElementById('img-upload').required = false;
-                document.getElementById('idcard-upload').required = true;
+                document.getElementById('idcard-upload').required = false;
             });
 
             document.querySelectorAll('.btn-edit-korlap').forEach(btn => {

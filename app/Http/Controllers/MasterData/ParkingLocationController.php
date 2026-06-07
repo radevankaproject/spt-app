@@ -69,6 +69,26 @@ class ParkingLocationController extends Controller
     }
 
     /**
+     * Tampilkan Peta Seluruh Wilayah Parkir
+     */
+    public function mapView()
+    {
+        $totalParkingLocations = ParkingLocation::count();
+        $totalMappedLocations = ParkingLocation::whereNotNull('latitude')->whereNotNull('longitude')->count();
+
+        $parkingLocations = ParkingLocation::with([
+            'roadSection',
+            'agreements' => function ($query) {
+                $query->whereIn('agreements.status', ['active', 'pending_renewal'])
+                    ->where('agreement_parking_locations.status', 'active')
+                    ->with('fieldCoordinator.user');
+            },
+        ])->whereNotNull('latitude')->whereNotNull('longitude')->get();
+
+        return view('staff.parking_locations.map', compact('parkingLocations', 'totalParkingLocations', 'totalMappedLocations'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

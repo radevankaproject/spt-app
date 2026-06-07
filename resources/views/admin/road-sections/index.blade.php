@@ -197,6 +197,15 @@
                                                             </div>
                                                         </div>
                                                     </div>
+
+                                                    <div class="col-12 mt-3">
+                                                        <div class="form-floating form-floating-outline">
+                                                            <input type="text" class="form-control" name="coordinates"
+                                                                placeholder="Contoh: 0.5333, 101.4500" value="{{ $roadSection->latitude && $roadSection->longitude ? $roadSection->latitude . ', ' . $roadSection->longitude : '' }}" />
+                                                            <label>Koordinat Titik Tengah (Latitude, Longitude)</label>
+                                                        </div>
+                                                        <small class="text-muted"><i class="ri-information-line"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="modal-footer pt-3 border-top">
@@ -263,6 +272,14 @@
                                         <label class="form-check-label" for="createZone3"> Zona 3 </label>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control" name="coordinates"
+                                        placeholder="Contoh: 0.5333, 101.4500" value="{{ old('coordinates') }}" />
+                                    <label>Koordinat Titik Tengah (Latitude, Longitude)</label>
+                                </div>
+                                <small class="text-muted"><i class="ri-information-line"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
                             </div>
                         </div>
                     </div>

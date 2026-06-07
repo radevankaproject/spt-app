@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class AgreementController extends Controller
 {
@@ -109,7 +111,22 @@ class AgreementController extends Controller
             })
             ->get();
 
-        return view('staff.agreements.create', compact('leaders', 'fieldCoordinators'));
+        // ✅ 3. AMBIL DATA LOKASI YANG DIPILIH SEBELUMNYA (JIKA ADA VALIDATION ERROR)
+        $oldLocationIds = old('parking_location_ids', []);
+        $oldLocations = new \stdClass();
+        if (!empty($oldLocationIds)) {
+            $locations = ParkingLocation::with('roadSection')->whereIn('id', $oldLocationIds)->get();
+            $oldLocations = $locations->mapWithKeys(function ($loc) {
+                return [$loc->id => [
+                    'id' => $loc->id,
+                    'name' => $loc->name,
+                    'daily_deposit' => $loc->daily_deposit,
+                    'road_section_name' => $loc->roadSection->name ?? 'N/A'
+                ]];
+            });
+        }
+
+        return view('staff.agreements.create', compact('leaders', 'fieldCoordinators', 'oldLocations'));
     }
 
     public function getRoadSectionsByZone($zone)
@@ -281,18 +298,23 @@ class AgreementController extends Controller
         $firstLocation = $agreement->activeParkingLocations->first();
         $initialZone = $firstLocation ? $firstLocation->roadSection->zone : null;
 
-        $parkingLocationsForCheckboxes = collect();
-        if ($initialZone) {
-            $parkingLocationsForCheckboxes = ParkingLocation::with('roadSection')
-                ->whereHas('roadSection', function ($q) use ($initialZone) {
-                    $q->where('zone', $initialZone);
-                })
-                ->where(function ($q) use ($currentParkingLocationIds) {
-                    $q->where('status', 'tersedia')
-                        ->orWhereIn('id', $currentParkingLocationIds);
-                })
-                ->get();
-        }
+        $parkingLocationsForCheckboxes = ParkingLocation::with('roadSection')
+            ->where(function ($q) use ($initialZone, $currentParkingLocationIds) {
+                if ($initialZone) {
+                    // Ambil lokasi tersedia di initialZone
+                    $q->where(function ($subQ) use ($initialZone) {
+                        $subQ->whereHas('roadSection', function ($roadQ) use ($initialZone) {
+                            $roadQ->where('zone', $initialZone);
+                        })->where('status', 'tersedia');
+                    });
+                }
+                
+                // ATAU lokasi yang saat ini sudah masuk ke PKS (zona manapun)
+                if (!empty($currentParkingLocationIds)) {
+                    $q->orWhereIn('id', $currentParkingLocationIds);
+                }
+            })
+            ->get();
 
         $allRoadSections = $initialZone ? RoadSection::where('zone', $initialZone)->orderBy('name')->get() : collect();
 
@@ -670,5 +692,89 @@ class AgreementController extends Controller
         }
 
         return $qrCodeImage;
+    }
+
+    /**
+     * Handle the upload of a signed agreement document and compress it.
+     */
+    public function uploadSignedDocument(Request $request, Agreement $agreement)
+    {
+        $request->validate([
+            'signed_document' => 'required|file|mimes:pdf|max:10240', // Max 10MB input
+        ]);
+
+        $file = $request->file('signed_document');
+        $originalFilename = 'scan_' . time() . '_' . $file->getClientOriginalName();
+        $inputPath = $file->path();
+        
+        // Define storage path
+        $storageDir = 'agreements/scans';
+        if (!Storage::disk('public')->exists($storageDir)) {
+            Storage::disk('public')->makeDirectory($storageDir);
+        }
+        
+        $outputFilename = 'compressed_' . $originalFilename;
+        $outputFilePath = storage_path('app/public/' . $storageDir . '/' . $outputFilename);
+
+        try {
+            // Compress using Ghostscript
+            $process = new Process([
+                'gs',
+                '-sDEVICE=pdfwrite',
+                '-dCompatibilityLevel=1.4',
+                '-dPDFSETTINGS=/screen', // Lowest quality / smallest size (72 dpi)
+                '-dNOPAUSE',
+                '-dQUIET',
+                '-dBATCH',
+                '-sOutputFile=' . $outputFilePath,
+                $inputPath
+            ]);
+
+            $process->setTimeout(60); // 60 seconds timeout
+            $process->run();
+
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            }
+
+            // Delete old file if it exists
+            if ($agreement->signed_document_path && Storage::disk('public')->exists($agreement->signed_document_path)) {
+                Storage::disk('public')->delete($agreement->signed_document_path);
+            }
+
+            // Save new path
+            $agreement->signed_document_path = $storageDir . '/' . $outputFilename;
+            $agreement->save();
+
+            // Calculate new size for response
+            $newSize = filesize($outputFilePath);
+            $newSizeMb = number_format($newSize / 1048576, 2);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Dokumen berhasil diupload dan dikompresi ({$newSizeMb} MB).",
+                'path' => Storage::url($agreement->signed_document_path)
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('PDF Compression failed: ' . $e->getMessage());
+            
+            // Fallback: just store the original file if compression fails
+            $path = $file->storeAs($storageDir, $originalFilename, 'public');
+            
+            // Delete old file if it exists
+            if ($agreement->signed_document_path && Storage::disk('public')->exists($agreement->signed_document_path)) {
+                Storage::disk('public')->delete($agreement->signed_document_path);
+            }
+            
+            $agreement->signed_document_path = $path;
+            $agreement->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Dokumen berhasil diupload (Tanpa Kompresi, karena terjadi kesalahan pada server).',
+                'path' => Storage::url($agreement->signed_document_path)
+            ]);
+        }
     }
 }
