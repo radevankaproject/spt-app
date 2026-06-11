@@ -106,11 +106,18 @@
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input type="text" class="form-control" id="phone" name="phone"
-                                        placeholder="Nomor Telepon" value="{{ old('phone', $profile->phone) }}" />
-                                    <label for="phone">Nomor Telepon</label>
+                                        placeholder="Nomor Telepon UPT" value="{{ old('phone', $profile->phone) }}" />
+                                    <label for="phone">Nomor Telepon UPT</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control" id="phone_number_admin" name="phone_number_admin"
+                                        placeholder="Nomor WA Admin (Misal: 62812...)" value="{{ old('phone_number_admin', $profile->phone_number_admin) }}" />
+                                    <label for="phone_number_admin">Nomor WA Admin (Untuk Bantuan)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
                                 <div class="form-floating form-floating-outline">
                                     <input type="email" class="form-control" id="email" name="email"
                                         placeholder="Email" value="{{ old('email', $profile->email) }}" />

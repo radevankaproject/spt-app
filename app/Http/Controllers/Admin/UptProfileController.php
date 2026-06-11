@@ -47,6 +47,7 @@ class UptProfileController extends Controller
             'app_name' => 'required|string|max:255',
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:20',
+            'phone_number_admin' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'website' => 'nullable|url|max:255',
             'login_greetings' => 'nullable|string',

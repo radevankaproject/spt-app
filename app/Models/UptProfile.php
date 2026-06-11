@@ -15,6 +15,7 @@ class UptProfile extends Model
         'address',
         'logo',
         'phone',
+        'phone_number_admin',
         'email',
         'website',
         'login_greetings',

@@ -27,7 +27,7 @@ class ProfileSettingController extends Controller
             $user->load('fieldCoordinator');
         } elseif ($user->role === 'leader') {
             $user->load('leader');
-        } elseif ($user->role === 'bendahara' || $user->role === 'staff_keu') {
+        } elseif ($user->role === 'treasurer' || $user->role === 'staff_keu') {
             // Asumsi model bendahara berelasi dengan user
             if (method_exists($user, 'treasurer')) {
                 $user->load('treasurer');

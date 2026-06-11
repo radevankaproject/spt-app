@@ -8,6 +8,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
         .nav-tabs .nav-link.active {
             font-weight: 600;
@@ -79,6 +80,14 @@
                         <option value="">Semua Tahun</option>
                         @foreach($availableYears as $y)
                             <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>Tahun {{ $y }}</option>
+                        @endforeach
+                    </select>
+
+                    {{-- Dropdown Filter Korlap --}}
+                    <select name="korlap_id" class="form-select select2" style="width: 200px;">
+                        <option value="">Semua Korlap</option>
+                        @foreach($fieldCoordinators as $fc)
+                            <option value="{{ $fc->id }}" {{ request('korlap_id') == $fc->id ? 'selected' : '' }}>{{ $fc->user->name ?? 'N/A' }}</option>
                         @endforeach
                     </select>
 
@@ -181,28 +190,45 @@
                                             data-bs-toggle="tooltip" title="Lihat Detail">
                                             <i class="icon-base ri ri-eye-line icon-20px"></i>
                                         </a>
-                                        @if(Auth::user()->role !== 'leader')
+                                        @if(Auth::user()->role !== 'leader' && $agreement->status !== 'expired')
                                         <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                             href="{{ route('masterdata.agreements.edit', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Edit PKS">
                                             <i class="icon-base ri ri-pencil-line icon-20px"></i>
                                         </a>
                                         @endif
+                                        
+                                        @if($agreement->status !== 'expired')
                                         <a class="btn btn-sm btn-icon btn-text-secondary rounded-pill"
                                             href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
                                             data-bs-toggle="tooltip" title="Cetak Dokumen PKS">
                                             <i class="icon-base ri ri-printer-line icon-20px"></i>
                                         </a>
+                                        @endif
                                         @if(Auth::user()->role !== 'leader')
+                                        @if($agreement->status === 'expired' && $agreement->signed_document_path)
+                                        <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
+                                            data-bs-toggle="tooltip" title="PKS Expired dan sudah memiliki file scan">
+                                            <i class="icon-base ri ri-file-check-line icon-20px opacity-50"></i>
+                                        </button>
+                                        @else
                                         <button type="button" class="btn btn-sm btn-icon {{ $agreement->signed_document_path ? 'btn-text-success' : 'btn-text-warning' }} rounded-pill btn-upload-scan"
                                             data-id="{{ $agreement->id }}"
                                             data-number="{{ $agreement->agreement_number }}"
-                                            data-bs-toggle="modal" data-bs-target="#uploadScanModal"
+                                            data-has-scan="{{ $agreement->signed_document_path ? '1' : '0' }}"
                                             data-bs-toggle="tooltip" title="{{ $agreement->signed_document_path ? 'Update File Scan (Sudah Ada)' : 'Upload File Scan PKS' }}">
                                             <i class="icon-base ri {{ $agreement->signed_document_path ? 'ri-file-check-line' : 'ri-file-upload-line' }} icon-20px"></i>
                                         </button>
                                         @endif
+                                        @endif
                                         @if(Auth::user()->role !== 'leader')
+                                        @if($agreement->status == 'active' && $agreement->end_date->isPast())
+                                        <a class="btn btn-sm btn-icon btn-text-warning rounded-pill"
+                                            href="{{ route('masterdata.agreements.renew', $agreement->id) }}"
+                                            data-bs-toggle="tooltip" title="Perpanjang PKS">
+                                            <i class="icon-base ri ri-loop-right-line icon-20px"></i>
+                                        </a>
+                                        @endif
                                         <form action="{{ route('masterdata.agreements.destroy', $agreement->id) }}"
                                             method="POST" class="form-delete d-inline">
                                             @csrf
@@ -296,6 +322,10 @@
     </div>
 @endsection
 
+@push('vendors-js')
+    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@endpush
+
 @push('scripts')
     <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
     <script>
@@ -304,6 +334,14 @@
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Inisialisasi Select2 untuk Filter Korlap
+            $('.select2').select2({
+                placeholder: "Semua Korlap"
+            }).on('change', function() {
+                // Submit form otomatis saat dropdown korlap (select2) berubah
+                $(this).closest('form').submit();
             });
 
             // ✅ HANYA Modal Konfirmasi Hapus
@@ -378,12 +416,53 @@
 
             // Buka Modal & Set Data
             document.querySelectorAll('.btn-upload-scan').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    resetUploadUI();
-                    document.getElementById('scanAgreementId').value = this.dataset.id;
-                    document.getElementById('scanAgreementNumber').innerText = this.dataset.number;
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const id = this.dataset.id;
+                    const number = this.dataset.number;
+                    const hasScan = this.dataset.hasScan === '1';
+
+                    if (hasScan) {
+                        Swal.fire({
+                            title: 'Ubah File Scan?',
+                            text: 'File Scan sudah ada (silahkan lihat di details PKS) apakah anda ingin mengubah file scan?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Ubah',
+                            cancelButtonText: 'Batal',
+                            customClass: {
+                                confirmButton: 'btn btn-primary me-3',
+                                cancelButton: 'btn btn-outline-secondary'
+                            },
+                            buttonsStyling: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                openUploadModal(id, number);
+                            }
+                        });
+                    } else {
+                        openUploadModal(id, number);
+                    }
                 });
             });
+
+            function openUploadModal(id, number) {
+                resetUploadUI();
+                document.getElementById('scanAgreementId').value = id;
+                document.getElementById('scanAgreementNumber').innerText = number;
+                
+                // Sembunyikan semua tooltip yang sedang aktif agar tidak nyangkut
+                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+                tooltipTriggerList.forEach(t => {
+                    const tooltipInstance = bootstrap.Tooltip.getInstance(t);
+                    if (tooltipInstance) {
+                        tooltipInstance.hide();
+                    }
+                });
+                
+                $('#uploadScanModal').modal('show');
+            }
 
             // Handle Drag & Drop
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {

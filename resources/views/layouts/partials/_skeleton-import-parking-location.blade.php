@@ -5,7 +5,7 @@
         <div class="rounded bg-label-secondary" style="height: 20px; width: 200px;"></div>
     </div>
 
-    <div class="card">
+    <div class="card border-0 shadow-sm">
         <div class="card-body">
             {{-- Card Header Skeleton --}}
             <div class="d-flex align-items-center justify-content-between mb-4">
@@ -16,34 +16,34 @@
                 <div class="rounded bg-label-secondary" style="height: 34px; width: 180px;"></div>
             </div>
 
-            {{-- Form Skeleton (Layout Baru Anda) --}}
-            <div class="row g-3 mb-3">
-                {{-- Zona Skeleton --}}
+            {{-- Form Skeleton (Premium Layout) --}}
+            <div class="row g-4 mb-4 align-items-center">
+                {{-- Zona Skeleton (Radio Cards) --}}
                 <div class="col-md-6">
-                    <div class="rounded bg-label-secondary mb-2" style="height: 18px; width: 100px;"></div>
-                    <div class="d-flex pt-2">
-                        <div class="rounded bg-label-secondary me-4" style="height: 38px; width: 100px;"></div>
-                        <div class="rounded bg-label-secondary" style="height: 38px; width: 100px;"></div>
+                    <div class="rounded bg-label-secondary mb-3" style="height: 18px; width: 100px;"></div>
+                    <div class="d-flex gap-3">
+                        <div class="w-50 rounded bg-label-secondary" style="height: 110px; border-radius: 0.75rem;"></div>
+                        <div class="w-50 rounded bg-label-secondary" style="height: 110px; border-radius: 0.75rem;"></div>
                     </div>
                 </div>
                 {{-- Ruas Jalan Skeleton (Floating Label) --}}
                 <div class="col-md-6">
-                    {{-- Skeleton untuk form-floating (lebih tinggi) --}}
-                    <div class="rounded bg-label-secondary" style="height: 58px; width: 100%;"></div>
+                    <div class="rounded bg-label-secondary mb-3" style="height: 18px; width: 150px;"></div>
+                    <div class="rounded bg-label-secondary" style="height: 58px; width: 100%; border-radius: 0.5rem;"></div>
                 </div>
             </div>
 
-            {{-- Upload Area Skeleton --}}
-            <div class="row g-3">
+            {{-- Upload Area Skeleton (Modern) --}}
+            <div class="row g-4">
                 <div class="col-12">
-                    <div class="rounded bg-label-secondary mb-2" style="height: 18px; width: 100px;"></div>
-                    <div class="rounded-3 bg-label-secondary" style="height: 200px; width: 100%;"></div>
+                    <div class="rounded bg-label-secondary mb-3" style="height: 18px; width: 150px;"></div>
+                    <div class="bg-label-secondary" style="height: 250px; width: 100%; border-radius: 1rem;"></div>
                 </div>
 
-                {{-- Button Skeleton --}}
+                {{-- Button Skeleton (Large Buttons) --}}
                 <div class="col-12 d-flex gap-3 pt-3">
-                    <div class="rounded bg-label-primary" style="height: 40px; width: 180px;"></div>
-                    <div class="rounded bg-label-secondary" style="height: 40px; width: 80px;"></div>
+                    <div class="rounded bg-label-primary" style="height: 48px; width: 220px;"></div>
+                    <div class="rounded bg-label-secondary" style="height: 48px; width: 100px;"></div>
                 </div>
             </div>
 

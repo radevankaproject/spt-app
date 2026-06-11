@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
 
             View::share('latestAppVersion', $latestAppVersion);
         }
-        View::composer(['layouts.partials._sidebar', 'layouts.partials._navbar'], function ($view) {
+        View::composer('*', function ($view) {
             // Cek dulu apakah tabelnya ada, untuk menghindari error saat migrasi awal
             if (Schema::hasTable('upt_profiles')) {
                 // Ambil data dari cache selamanya. Jika cache kosong, jalankan fungsi
@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
                     );
                 });
 
-                // Kirim variabel $uptProfile ke view (_sidebar atau _navbar)
+                // Kirim variabel $uptProfile ke view
                 $view->with('uptProfile', $uptProfile);
             }
         });

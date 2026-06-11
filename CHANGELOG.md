@@ -2,6 +2,27 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v1.4.0] - 2026-06-12
+**_"The Map Dashboard & Document Upload Update"_**
+
+Pembaruan signifikan yang berfokus pada penyempurnaan UI/UX Dashboard Pimpinan, penyempurnaan modul PDF, serta penambahan kapabilitas pengarsipan dokumen PKS fisik (bertanda tangan) secara digital.
+
+- **Dashboard Pimpinan Interaktif:** 
+  - Mengintegrasikan Peta Persebaran Lokasi Parkir (Leaflet.js) langsung ke dalam _dashboard_ Pimpinan dengan tampilan visual yang komprehensif, _auto fit-bounds_ ([60, 60] padding, zoom 13), serta optimasi _rendering_ anti-macet via *delay*.
+  - Merombak tabel Kontrak PKS Terbaru dengan hanya menampilkan PKS Aktif dan menambahkan metrik analitik: jumlah titik parkir aktif, setoran harian, dan target bulanan.
+- **Pembaruan Fitur Titik Parkir:** 
+  - Lokasi parkir dengan status "Tidak Tersedia" kini difilter agar fitur *edit*-nya hanya mengizinkan pengubahan Nama Lokasi, Koordinat, Foto, dan dokumen PDF (pengajuan/berita acara), sementara isian lain terkunci otomatis.
+  - Peta pada halaman *edit* titik parkir dioptimalkan agar selalu termuat penuh (anti kotak abu-abu/terpotong) dan letak *marker* selalu presisi.
+- **Fitur Baru - Perpanjangan PKS (Renewal):** 
+  - Menghadirkan kapabilitas untuk memperpanjang PKS (*Renewal*). Saat diperpanjang, seluruh titik parkir aktif akan otomatis dimigrasi dari PKS lama ke PKS baru. 
+  - PKS lama secara cerdas akan diubah statusnya menjadi *expired* dan tanggal berahirnya otomatis disesuaikan (*end date* dipotong ke hari sebelum *start date* PKS baru), sehingga tidak ada celah kekosongan waktu maupun tumpang tindih masa aktif.
+- **Manajemen Arsip PKS & Expired:** 
+  - PKS berstatus *expired* otomatis menyembunyikan tombol Edit dan Print di halaman indeks maupun detail.
+  - Saat membuka detail PKS berstatus *expired*, antarmuka secara intuitif akan langsung membuka tab "Arsip PKS".
+  - Menambahkan perlindungan saat mengunggah PDF *scan* (arsip fisik). PKS *expired* yang sudah memiliki *file scan* tidak bisa diunggah ulang. Pada PKS aktif, pengguna akan diberi peringatan *SweetAlert* jika ingin menimpa *file* lama.
+- **Sistem Penyimpanan Hibrida (Ghostscript):** Melakukan perbaikan krusial pada alur unggah dan kompresi PDF (Ghostscript) agar menggunakan _temporary directory_ sistem (`sys_get_temp_dir()`) dan dipindahkan via `Storage::disk('public')`. Ini memecahkan masalah isu izin akses (Permission Denied) antara *web-server* (`www-data`) dan CLI (`php artisan serve`), memastikan unggahan sukses di semua environment.
+
+
 ## [v1.3.1] - 2026-06-07
 **_"Agreement Enhancements & Workflow Refinements"_**
 

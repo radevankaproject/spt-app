@@ -3,6 +3,7 @@
 @section('title', 'Dashboard Pimpinan')
 
 @push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
@@ -176,7 +177,69 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 4. GRAFIK APEXCHARTS                       --}}
+    {{-- 4. MAP & TABEL AKTIVITAS TERBARU           --}}
+    {{-- ========================================== --}}
+    <div class="row g-4 mb-4">
+        {{-- Peta Lokasi Parkir (col-xl-8) --}}
+        <div class="col-xl-8 col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <h6 class="card-title mb-0 fw-bold"><i class="ri ri-map-pin-line text-danger me-2"></i>Peta Sampel Lokasi Parkir</h6>
+                        <small class="text-muted">50 Titik Acak (Real-time)</small>
+                    </div>
+                    <a href="{{ route('masterdata.parking-locations.map') }}" class="btn btn-sm btn-outline-danger rounded-pill">Lihat Peta Lengkap <i class="ri ri-arrow-right-line ms-1"></i></a>
+                </div>
+                <div class="card-body p-0">
+                    <div id="leader-map" style="height: 400px; width: 100%; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; z-index: 1;"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Titik Parkir Terbaru (col-xl-4) --}}
+        <div class="col-xl-4 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
+                    <h6 class="card-title mb-0 fw-bold"><i class="ri ri-map-pin-add-line text-warning me-2"></i>Lokasi Terbaru</h6>
+                    @if ($totalParkingLocations > 10)
+                        <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-sm btn-outline-warning rounded-pill">Semua</a>
+                    @endif
+                </div>
+                <div class="table-responsive text-nowrap" style="max-height: 400px;">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-lighter position-sticky top-0 z-1">
+                            <tr>
+                                <th class="text-uppercase" style="font-size: 0.75rem;">Nama Lokasi</th>
+                                <th class="text-uppercase text-end" style="font-size: 0.75rem;">Zona</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentParkingLocations as $loc)
+                                <tr>
+                                    <td>
+                                        <a href="{{ route('masterdata.parking-locations.show', $loc->id) }}" class="fw-bold text-dark" style="font-size: 0.85rem;">{{ Str::limit($loc->name, 25) }}</a>
+                                        <small class="d-block text-muted" style="font-size: 0.75rem;">{{ Str::limit($loc->roadSection->name ?? '-', 25) }}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge bg-label-dark rounded-pill">{{ $loc->roadSection->zone ?? 'N/A' }}</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2" class="text-center py-5 text-muted">
+                                        <i class="ri ri-map-pin-off-line ri-2x opacity-50 mb-2 d-block"></i> Belum ada.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ========================================== --}}
+    {{-- 5. GRAFIK APEXCHARTS                       --}}
     {{-- ========================================== --}}
     <div class="row g-4 mb-4">
         {{-- Area Chart: Tren Setoran --}}
@@ -210,11 +273,11 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 5. TABEL AKTIVITAS TERBARU                 --}}
+    {{-- 6. PKS TERBARU                             --}}
     {{-- ========================================== --}}
     <div class="row g-4">
-        {{-- PKS Terbaru --}}
-        <div class="col-lg-6">
+        {{-- PKS Terbaru (col-12) --}}
+        <div class="col-12">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
                     <h6 class="card-title mb-0 fw-bold"><i class="ri ri-file-list-3-line text-primary me-2"></i>Kontrak PKS Terbaru</h6>
@@ -228,6 +291,9 @@
                             <tr>
                                 <th class="text-uppercase" style="font-size: 0.75rem;">No. Kontrak PKS</th>
                                 <th class="text-uppercase" style="font-size: 0.75rem;">Mitra (Korlap)</th>
+                                <th class="text-uppercase text-center" style="font-size: 0.75rem;">Titik Parkir</th>
+                                <th class="text-uppercase text-end" style="font-size: 0.75rem;">Setoran Harian</th>
+                                <th class="text-uppercase text-end" style="font-size: 0.75rem;">Target Bulanan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -240,52 +306,20 @@
                                     <td>
                                         <span class="fw-medium text-dark">{{ $pks->fieldCoordinator->user->name ?? 'N/A' }}</span>
                                     </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center py-5 text-muted">
-                                        <i class="ri ri-inbox-2-line ri-3x opacity-50 mb-2 d-block"></i> Belum ada kontrak PKS.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        {{-- Titik Parkir Terbaru --}}
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
-                    <h6 class="card-title mb-0 fw-bold"><i class="ri ri-map-pin-add-line text-warning me-2"></i>Lokasi Parkir Terbaru</h6>
-                    @if ($totalParkingLocations > 10)
-                        <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-sm btn-outline-warning rounded-pill">Lihat Semua</a>
-                    @endif
-                </div>
-                <div class="table-responsive text-nowrap" style="max-height: 320px;">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="bg-lighter position-sticky top-0 z-1">
-                            <tr>
-                                <th class="text-uppercase" style="font-size: 0.75rem;">Nama Lokasi</th>
-                                <th class="text-uppercase text-end" style="font-size: 0.75rem;">Zona</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($recentParkingLocations as $loc)
-                                <tr>
-                                    <td>
-                                        <a href="{{ route('masterdata.parking-locations.show', $loc->id) }}" class="fw-bold text-dark">{{ Str::limit($loc->name, 35) }}</a>
-                                        <small class="d-block text-muted">{{ $loc->roadSection->name ?? '-' }}</small>
+                                    <td class="text-center">
+                                        <span class="badge bg-label-info rounded-pill">{{ $pks->active_parking_locations_count }} Lokasi</span>
                                     </td>
                                     <td class="text-end">
-                                        <span class="badge bg-label-dark rounded-pill">{{ $loc->roadSection->zone ?? 'N/A' }}</span>
+                                        <span class="fw-medium text-success">Rp {{ number_format($pks->daily_deposit_amount, 0, ',', '.') }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-primary">Rp {{ number_format($pks->monthly_deposit_target, 0, ',', '.') }}</span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="2" class="text-center py-5 text-muted">
-                                        <i class="ri ri-map-pin-off-line ri-3x opacity-50 mb-2 d-block"></i> Belum ada lokasi terdaftar.
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="ri ri-inbox-2-line ri-3x opacity-50 mb-2 d-block"></i> Belum ada kontrak PKS.
                                     </td>
                                 </tr>
                             @endforelse
@@ -299,6 +333,7 @@
 
 @push('vendors-js')
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
 @endpush
 
@@ -446,6 +481,57 @@
                     cache: true
                 }
             }).on('select2:select', e => redirectToPage(e, '{{ route('masterdata.deposit-transactions.show', ':id') }}'));
+
+            // ==========================================
+            // 4. MAP 50 TITIK ACAK (LEAFLET)
+            // ==========================================
+            setTimeout(() => {
+                const mapEl = document.getElementById('leader-map');
+                if(mapEl) {
+                    // Initialize map (center of Pekanbaru)
+                    const map = L.map('leader-map').setView([0.5070677, 101.4477793], 11);
+
+                    // Add Base Layer
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    // Load Data
+                    const locations = @json($randomMapLocations ?? []);
+                    
+                    // Add Markers
+                    const bounds = [];
+                    locations.forEach(loc => {
+                        if (loc.latitude && loc.longitude) {
+                            const marker = L.marker([loc.latitude, loc.longitude]).addTo(map);
+                            
+                            // Popup HTML
+                            const roadName = loc.road_section ? loc.road_section.name : 'Tanpa Ruas';
+                            const zone = loc.road_section ? loc.road_section.zone : '-';
+                            const url = `/masterdata/parking-locations/${loc.id}`; // URL view
+                            
+                            marker.bindPopup(`
+                                <div class="p-1">
+                                    <h6 class="fw-bold mb-1">${loc.name}</h6>
+                                    <p class="small text-muted mb-2"><i class="ri ri-road-map-line align-middle"></i> ${roadName} (Zona ${zone})</p>
+                                    <a href="${url}" class="btn btn-xs btn-outline-secondary w-100">Detail</a>
+                                </div>
+                            `);
+                            
+                            bounds.push([loc.latitude, loc.longitude]);
+                        }
+                    });
+
+                    // Auto Fit Bounds
+                    if (bounds.length > 0) {
+                        map.fitBounds(bounds, { padding: [100, 100], maxZoom: 12 });
+                    }
+                    
+                    // Force size recalculation to prevent gray boxes and coordinate shifts
+                    map.invalidateSize();
+                }
+            }, 500);
         });
     </script>
 @endpush

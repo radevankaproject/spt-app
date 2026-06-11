@@ -1,6 +1,8 @@
 {
     "bookman old style": {
         "normal": "\/www\/spt-app\/storage\/fonts\/bookman_old_style_normal_4ae37554b595a297e51e8bf5c8cd74ae",
-        "bold": "bookman_old_style_bold_a49bdc075fa3e3270141d8ff111e3141"
+        "bold": "\/www\/spt-app\/storage\/fonts\/bookman_old_style_bold_a49bdc075fa3e3270141d8ff111e3141",
+        "italic": "\/www\/spt-app\/storage\/fonts\/bookman_old_style_italic_e1a7c5fb42df56cee2ac80a3a4756cd7",
+        "bold_italic": "bookman_old_style_bold_italic_bc02cfb7552d87293e682059814ab063"
     }
 }

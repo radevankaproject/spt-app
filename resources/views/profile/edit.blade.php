@@ -25,7 +25,7 @@
             'leader' => ['text' => 'Kepala UPT / Pimpinan', 'color' => 'bg-label-primary'],
             'staff_pks' => ['text' => 'Staff Administrasi PKS', 'color' => 'bg-label-info'],
             'staff_keu' => ['text' => 'Staff Keuangan', 'color' => 'bg-label-warning'],
-            'bendahara' => ['text' => 'Bendahara Penerimaan', 'color' => 'bg-label-warning'],
+            'treasurer' => ['text' => 'Bendahara Penerimaan', 'color' => 'bg-label-warning'],
             'field_coordinator' => ['text' => 'Koordinator Lapangan (Mitra)', 'color' => 'bg-label-success'],
         ];
         
@@ -117,6 +117,7 @@
                                 </div>
                                 @error('email', 'updateProfile')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
+                            @if(!in_array($user->role, ['leader', 'treasurer', 'staff_keu', 'staff_pks', 'field_coordinator']))
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input class="form-control @error('employee_number', 'updateProfile') is-invalid @enderror" type="text" id="employee_number" name="employee_number" value="{{ old('employee_number', $user->employee_number) }}" placeholder="Kosongkan jika tidak ada" />
@@ -124,6 +125,7 @@
                                 </div>
                                 @error('employee_number', 'updateProfile')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
+                            @endif
                         </div>
                         
                         <div class="mt-4 d-flex justify-content-end">
@@ -139,7 +141,7 @@
         <div class="col-xl-4 col-lg-5">
             
             {{-- ✅ FORM DINAMIS BERDASARKAN ROLE --}}
-            @if($user->role !== 'admin' && $user->role !== 'staff_pks' && $user->role !== 'staff_keu')
+            @if($user->role !== 'admin')
                 <div class="card mb-4 border-0 shadow-sm rounded-4 border-start border-4 border-info">
                     <div class="card-header bg-transparent border-bottom py-3">
                         <h6 class="mb-0 fw-bold text-info"><i class="ri ri-profile-line me-2"></i>Informasi Spesifik</h6>
@@ -164,18 +166,42 @@
                                 <i class="ri ri-information-line"></i> Hubungi Admin Dinas jika ingin mengubah data spesifik ini.
                             </div>
                         
-                        {{-- JIKA PIMPINAN --}}
-                        @elseif($user->role === 'leader' && $user->leader)
+                        {{-- JIKA PIMPINAN, STAFF, ATAU BENDAHARA --}}
+                        @elseif(in_array($user->role, ['leader', 'treasurer', 'staff_keu', 'staff_pks']))
+                            @php
+                                $nipValue = '-';
+                                if ($user->role === 'leader' && $user->leader) {
+                                    $nipValue = $user->leader->employee_number ?? '-';
+                                } else {
+                                    $nipValue = $user->employee_number ?? '-';
+                                }
+                            @endphp
                             <div class="mb-3">
                                 <label class="text-muted small fw-bold">Nomor Induk Pegawai (NIP)</label>
-                                <input type="text" class="form-control readonly-field form-control-sm" value="{{ $user->leader->employee_number ?? '-' }}" readonly>
+                                <input type="text" class="form-control readonly-field form-control-sm" value="{{ $nipValue }}" readonly>
                             </div>
+                            <div class="mb-3">
+                                <label class="text-muted small fw-bold">Nomor WhatsApp / HP</label>
+                                <input type="text" class="form-control readonly-field form-control-sm" value="{{ $user->phone_number ?? '-' }}" readonly>
+                            </div>
+                            @if($user->role === 'leader' && $user->leader)
                             <div class="mb-3">
                                 <label class="text-muted small fw-bold">Status Jabatan</label>
                                 <input type="text" class="form-control readonly-field form-control-sm text-uppercase" value="{{ $user->leader->status_jabatan ?? '-' }}" readonly>
                             </div>
-                            <div class="alert alert-warning mb-0 py-2 small">
-                                <i class="ri ri-information-line"></i> Hubungi Admin jika ada perubahan NIP / Jabatan.
+                            @endif
+                            <div class="alert alert-warning mb-0 py-2 small text-center">
+                                <i class="ri ri-information-line mb-1 d-block" style="font-size: 1.5rem;"></i> 
+                                Hubungi Admin jika ada perubahan NIP / Jabatan.
+                                @if(!empty($uptProfile->phone_number_admin))
+                                    @php
+                                        // Ubah angka 0 di depan menjadi 62
+                                        $waAdmin = preg_replace('/^0/', '62', $uptProfile->phone_number_admin);
+                                    @endphp
+                                    <a href="https://wa.me/{{ $waAdmin }}" target="_blank" class="btn btn-success btn-sm w-100 mt-2 rounded-pill">
+                                        <i class="ri-whatsapp-line me-1"></i> Chat Admin
+                                    </a>
+                                @endif
                             </div>
                         @endif
 

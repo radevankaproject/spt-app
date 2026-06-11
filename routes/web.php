@@ -105,12 +105,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('parking-locations.importCreate');
             Route::post('parking-locations/import', [ParkingLocationController::class, 'importStore'])
                 ->name('parking-locations.importStore');
+            Route::delete('parking-locations/bulk-delete', [ParkingLocationController::class, 'bulkDeleteUnused'])
+                ->name('parking-locations.bulkDeleteUnused');
             Route::resource('parking-locations', ParkingLocationController::class)->except(['show']);
 
             // ✅ Rute AJAX harus di atas resource
             Route::get('agreements/get-road-sections/{zone}', [AgreementController::class, 'getRoadSectionsByZone']);
             Route::get('agreements/get-parking-locations/{roadSectionId}', [AgreementController::class, 'getParkingLocationsByRoadSection']);
             Route::resource('agreements', AgreementController::class)->except(['show']);
+            Route::get('agreements/{agreement}/renew', [AgreementController::class, 'renew'])->name('agreements.renew');
+            Route::post('agreements/{agreement}/renew', [AgreementController::class, 'storeRenewal'])->name('agreements.storeRenewal');
             Route::get('agreement-histories', [AgreementHistoryController::class, 'index'])->name('agreement-histories.index');
             Route::post('agreements/{agreement}/detach-parking-location/{parkingLocation}', [AgreementController::class, 'detachParkingLocation'])->name('agreements.detach-parking-location');
         });

@@ -39,12 +39,15 @@ class AgreementController extends Controller
 
         // ✅ 1. TANGKAP INPUT TAHUN DARI URL (Default: kosong/semua)
         $year = $request->input('year');
+        $korlapId = $request->input('korlap_id');
 
         // ✅ 2. AMBIL DAFTAR TAHUN UNTUK DROPDOWN FILTER
         $availableYears = Agreement::selectRaw('YEAR(start_date) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
+            
+        $fieldCoordinators = \App\Models\FieldCoordinator::with('user')->get();
 
         $query = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations']);
 
@@ -55,9 +58,13 @@ class AgreementController extends Controller
             $query->whereIn('status', ['expired', 'terminated']);
         }
 
-        // ✅ 3. LOGIKA FILTER TAHUN
+        // ✅ 3. LOGIKA FILTER TAHUN & KORLAP
         if ($year) {
             $query->whereYear('start_date', $year);
+        }
+        
+        if ($korlapId) {
+            $query->where('field_coordinator_id', $korlapId);
         }
 
         // LOGIKA SEARCH
@@ -78,13 +85,16 @@ class AgreementController extends Controller
         if ($year) {
             $baseCountQuery->whereYear('start_date', $year);
         } // Badge menyesuaikan tahun
+        if ($korlapId) {
+            $baseCountQuery->where('field_coordinator_id', $korlapId);
+        }
 
         $countAll = (clone $baseCountQuery)->count();
         $countActive = (clone $baseCountQuery)->whereIn('status', ['active', 'pending_renewal'])->count();
         $countInactive = (clone $baseCountQuery)->whereIn('status', ['expired', 'terminated'])->count();
 
         return view('staff.agreements.index', compact(
-            'agreements', 'search', 'tab', 'year', 'availableYears', 'countAll', 'countActive', 'countInactive'
+            'agreements', 'search', 'tab', 'year', 'availableYears', 'countAll', 'countActive', 'countInactive', 'fieldCoordinators', 'korlapId'
         ));
     }
 
@@ -239,6 +249,173 @@ class AgreementController extends Controller
         }
     }
 
+    public function renew(Agreement $agreement)
+    {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
+        $agreement->load('leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection');
+
+        // ✅ HANYA AMBIL PIMPINAN YANG AKTIF UNTUK PILIHAN DROPDOWN
+        $leaders = Leader::with('user')
+            ->whereHas('user', function ($q) {
+                $q->where('is_active', true);
+            })->get();
+
+        if (! $leaders->contains($agreement->leader_id)) {
+            $leaders->push($agreement->leader);
+        }
+
+        $oldLocationIds = old('parking_location_ids', $agreement->activeParkingLocations->pluck('id')->toArray());
+        $oldLocations = new \stdClass();
+        
+        if (!empty($oldLocationIds)) {
+            $locations = ParkingLocation::with('roadSection')->whereIn('id', $oldLocationIds)->get();
+            $oldLocations = $locations->mapWithKeys(function ($loc) {
+                return [$loc->id => [
+                    'id' => $loc->id,
+                    'name' => $loc->name,
+                    'daily_deposit' => $loc->daily_deposit,
+                    'road_section_name' => $loc->roadSection->name ?? 'N/A'
+                ]];
+            });
+        }
+
+        return view('staff.agreements.renew', compact('agreement', 'leaders', 'oldLocations'));
+    }
+
+    public function storeRenewal(Request $request, Agreement $agreement)
+    {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
+        $messages = [
+            'agreement_number.required' => 'Nomor PKS wajib diisi.',
+            'agreement_number.unique' => 'Nomor PKS ini sudah terdaftar.',
+            'leader_id.required' => 'Pimpinan wajib dipilih.',
+            'start_date.required' => 'Tanggal mulai wajib diisi.',
+            'end_date.required' => 'Tanggal selesai wajib diisi.',
+            'end_date.after_or_equal' => 'Tanggal selesai tidak boleh kurang dari tanggal mulai.',
+            'daily_deposit_amount.required' => 'Setoran harian wajib diisi.',
+            'daily_deposit_amount.min' => 'Setoran harian tidak boleh kurang dari 1.',
+            'jenis.required' => 'Jenis PKS wajib dipilih.',
+            'jenis.in' => 'Pilihan jenis PKS tidak valid.',
+            'status.required' => 'Status PKS wajib dipilih.',
+            'status.in' => 'Pilihan status PKS tidak valid.',
+            'signed_date.required' => 'Tanggal tanda tangan wajib diisi.',
+            'parking_location_ids.required' => 'Minimal satu titik lokasi parkir harus dipilih.',
+            'parking_location_ids.min' => 'Minimal satu titik lokasi parkir harus dipilih.',
+        ];
+
+        $validatedData = $request->validate([
+            'agreement_number' => 'required|string|max:255|unique:agreements,agreement_number',
+            'leader_id' => 'required|exists:leaders,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'daily_deposit_amount' => 'required|numeric|min:1',
+            'jenis' => 'required|in:draft,sementara,rilis',
+            'status' => 'required|in:active,pending',
+            'signed_date' => 'required|date',
+            'parking_location_ids' => 'required|array|min:1',
+            'parking_location_ids.*' => 'exists:parking_locations,id',
+        ], $messages);
+
+        // Keep field_coordinator_id from the old agreement
+        $validatedData['field_coordinator_id'] = $agreement->field_coordinator_id;
+
+        $dailyAmount = (float) $validatedData['daily_deposit_amount'];
+        $startDate = Carbon::parse($validatedData['start_date']);
+        $endDate = Carbon::parse($validatedData['end_date']);
+        $durationInDays = $endDate->diffInDays($startDate) + 1;
+
+        $agreementData = $validatedData;
+        $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
+        $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
+        $agreementData['verification_code'] = Str::uuid()->toString();
+
+        DB::beginTransaction();
+        try {
+            // Load old agreement relations needed for logic AND PDF generation
+            $agreement->load('activeParkingLocations.roadSection', 'fieldCoordinator.user', 'leader.user');
+            $currentActiveLocationIds = $agreement->activeParkingLocations->pluck('id')->toArray();
+            $newLocationIds = $validatedData['parking_location_ids'];
+            $korlapName = $agreement->fieldCoordinator->user->name ?? 'N/A';
+            $userId = Auth::id();
+
+            // 1. Create the new agreement
+            $newAgreement = Agreement::create($agreementData);
+
+            // 1.5 Generate PDF for the OLD agreement before it expires
+            $this->generateAndStorePdfHistory($agreement, "Arsip final sebelum perpanjangan ke PKS baru: {$newAgreement->agreement_number}");
+
+            // 2. Expire the old agreement and detach its active locations
+            $agreement->update(['status' => 'expired']);
+            $agreementHistoryRecords = [
+                [
+                    'agreement_id' => $agreement->id,
+                    'event_type' => 'status_changed',
+                    'notes' => "PKS diperpanjang. Status diubah menjadi Expired, PKS baru: {$newAgreement->agreement_number}",
+                    'changed_by_user_id' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
+            ];
+            
+            // Set old pivot to inactive
+            foreach ($currentActiveLocationIds as $locId) {
+                $agreement->parkingLocations()->updateExistingPivot($locId, ['status' => 'inactive', 'removed_date' => now()]);
+            }
+            AgreementHistory::insert($agreementHistoryRecords);
+
+            // 3. Attach locations to the new agreement
+            $parkingLocationsToAttach = [];
+            foreach ($newLocationIds as $locationId) {
+                $parkingLocationsToAttach[$locationId] = ['assigned_date' => now(), 'status' => 'active'];
+                // Update status in master
+                ParkingLocation::where('id', $locationId)->update(['status' => 'tidak_tersedia']);
+                
+                // Track location history
+                $actionDesc = in_array($locationId, $currentActiveLocationIds) 
+                    ? "Lokasi diperpanjang ke PKS baru: {$newAgreement->agreement_number}."
+                    : "Lokasi baru ditambahkan pada perpanjangan PKS: {$newAgreement->agreement_number}.";
+                    
+                ParkingLocationHistory::create([
+                    'parking_location_id' => $locationId,
+                    'user_id' => $userId,
+                    'action' => 'owner_changed',
+                    'description' => $actionDesc,
+                ]);
+            }
+            $newAgreement->parkingLocations()->attach($parkingLocationsToAttach);
+
+            // Set locations that were dropped back to available
+            $droppedLocations = array_diff($currentActiveLocationIds, $newLocationIds);
+            if (!empty($droppedLocations)) {
+                ParkingLocation::whereIn('id', $droppedLocations)->update(['status' => 'tersedia']);
+                foreach ($droppedLocations as $dropLocId) {
+                    ParkingLocationHistory::create([
+                        'parking_location_id' => $dropLocId,
+                        'user_id' => $userId,
+                        'action' => 'owner_changed',
+                        'description' => "Lokasi dikeluarkan pada saat perpanjangan PKS lama ({$agreement->agreement_number}).",
+                    ]);
+                }
+            }
+
+            // 4. Generate PDF for the new agreement
+            $freshNewAgreement = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection'])->find($newAgreement->id);
+            $this->generateAndStorePdfHistory($freshNewAgreement, "Perjanjian diperpanjang dari PKS lama ({$agreement->agreement_number}).");
+
+            DB::commit();
+
+            return redirect()->route('masterdata.agreements.index')
+                ->with('success', 'Perjanjian berhasil diperpanjang menjadi "'.$newAgreement->agreement_number.'"! PKS lama telah diubah statusnya menjadi Expired.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('AgreementController@storeRenewal: '.$e->getMessage(), ['exception' => $e]);
+
+            return redirect()->back()->withInput()->with('error', 'Gagal memperpanjang perjanjian: '.$e->getMessage());
+        }
+    }
+
     public function show(Agreement $agreement)
     {
         $agreement->load(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection', 'depositTransactions', 'histories.changer']);
@@ -271,8 +448,10 @@ class AgreementController extends Controller
         // 3. Lokasi Parkir yang aktif
         $locationsByRoadSection = $agreement->activeParkingLocations->groupBy('roadSection.name');
 
+        $pdfHistories = $agreement->pdfHistories()->with('generator')->latest()->get();
+
         return view('staff.agreements.show', compact(
-            'agreement', 'totalDepositThisYear', 'locationsByRoadSection', 'chartLabels', 'chartData'
+            'agreement', 'totalDepositThisYear', 'locationsByRoadSection', 'chartLabels', 'chartData', 'pdfHistories'
         ));
     }
 
@@ -372,7 +551,7 @@ class AgreementController extends Controller
 
         DB::beginTransaction();
         try {
-            $oldData = $agreement->fresh()->load('leader.user', 'activeParkingLocations', 'fieldCoordinator.user');
+            $oldData = $agreement->fresh()->load('leader.user', 'activeParkingLocations.roadSection', 'fieldCoordinator.user');
             $agreement->update($agreementData);
             $agreement->load('leader.user');
 
@@ -481,10 +660,9 @@ class AgreementController extends Controller
                 }
                 AgreementHistory::insert($historyRecords);
 
-                // Generate PDF versi terbaru
+                // Generate PDF versi LAMA sebelum perubahan diterapkan (Audit Trail)
                 $pdfNotes = implode('; ', Arr::pluck($historyRecords, 'notes'));
-                $freshAgreement = Agreement::with(['leader.user', 'fieldCoordinator.user', 'activeParkingLocations.roadSection'])->find($agreement->id);
-                $this->generateAndStorePdfHistory($freshAgreement, $pdfNotes);
+                $this->generateAndStorePdfHistory($oldData, "Arsip PKS sebelum perubahan: " . $pdfNotes);
             }
 
             DB::commit();
@@ -699,6 +877,13 @@ class AgreementController extends Controller
      */
     public function uploadSignedDocument(Request $request, Agreement $agreement)
     {
+        if ($agreement->status === 'expired' && $agreement->signed_document_path) {
+            return response()->json([
+                'success' => false,
+                'message' => 'PKS ini sudah kadaluwarsa dan sudah memiliki file scan. File scan tidak dapat diubah lagi.'
+            ], 403);
+        }
+
         $request->validate([
             'signed_document' => 'required|file|mimes:pdf|max:10240', // Max 10MB input
         ]);
@@ -708,16 +893,12 @@ class AgreementController extends Controller
         $inputPath = $file->path();
         
         // Define storage path
-        $storageDir = 'agreements/scans';
-        if (!Storage::disk('public')->exists($storageDir)) {
-            Storage::disk('public')->makeDirectory($storageDir);
-        }
-        
+        $storageDir = 'agreements_scans';
         $outputFilename = 'compressed_' . $originalFilename;
-        $outputFilePath = storage_path('app/public/' . $storageDir . '/' . $outputFilename);
+        $tempFilePath = sys_get_temp_dir() . '/' . uniqid('compressed_') . '.pdf';
 
         try {
-            // Compress using Ghostscript
+            // Compress using Ghostscript ke temporary file
             $process = new Process([
                 'gs',
                 '-sDEVICE=pdfwrite',
@@ -726,7 +907,7 @@ class AgreementController extends Controller
                 '-dNOPAUSE',
                 '-dQUIET',
                 '-dBATCH',
-                '-sOutputFile=' . $outputFilePath,
+                '-sOutputFile=' . $tempFilePath,
                 $inputPath
             ]);
 
@@ -737,18 +918,31 @@ class AgreementController extends Controller
                 throw new ProcessFailedException($process);
             }
 
+            // Gunakan Laravel Storage (Hybrid) untuk memindahkan file
+            $path = Storage::disk('public')->putFileAs(
+                $storageDir, 
+                new \Illuminate\Http\File($tempFilePath), 
+                $outputFilename
+            );
+            
+            if (!$path) {
+                throw new \Exception("Laravel Storage gagal memindahkan file ke direktori (Kemungkinan masalah permission di {$storageDir}).");
+            }
+
+            // Delete temporary file
+            @unlink($tempFilePath);
+
             // Delete old file if it exists
             if ($agreement->signed_document_path && Storage::disk('public')->exists($agreement->signed_document_path)) {
                 Storage::disk('public')->delete($agreement->signed_document_path);
             }
 
             // Save new path
-            $agreement->signed_document_path = $storageDir . '/' . $outputFilename;
+            $agreement->signed_document_path = $path;
             $agreement->save();
 
             // Calculate new size for response
-            $newSize = filesize($outputFilePath);
-            $newSizeMb = number_format($newSize / 1048576, 2);
+            $newSizeMb = number_format(Storage::disk('public')->size($path) / 1048576, 2);
 
             return response()->json([
                 'success' => true,
@@ -761,6 +955,13 @@ class AgreementController extends Controller
             
             // Fallback: just store the original file if compression fails
             $path = $file->storeAs($storageDir, $originalFilename, 'public');
+            
+            if (!$path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengupload dokumen karena batasan izin sistem (Permission Denied). Silakan periksa pengaturan folder.'
+                ], 500);
+            }
             
             // Delete old file if it exists
             if ($agreement->signed_document_path && Storage::disk('public')->exists($agreement->signed_document_path)) {

@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
      <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/timeline.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <style>
         .timeline-scrollable {
             max-height: 600px;
@@ -56,6 +58,48 @@
         }
 
         .cursor-pointer { cursor: pointer; }
+
+        /* Premium Map Popup Customization */
+        .custom-popup .leaflet-popup-content-wrapper {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .custom-popup .leaflet-popup-content {
+            margin: 0;
+            line-height: 1.5;
+        }
+        .custom-popup .leaflet-popup-tip {
+            background: rgba(255, 255, 255, 0.98);
+        }
+        .custom-div-icon {
+            background: transparent;
+            border: none;
+        }
+        .custom-div-icon .marker-pin {
+            background-color: #696cff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: absolute;
+            left: -18px;
+            top: -36px;
+        }
+        .custom-div-icon .marker-pin i {
+            transform: rotate(45deg);
+            font-size: 16px;
+        }
     </style>
 @endpush
 
@@ -98,6 +142,23 @@
                 urlencode($cName) .
                 '&background=random&color=fff&size=120&rounded=true&bold=true';
 
+    // Logika Map Lokasi
+    $mapLocations = [];
+    foreach ($locationsByRoadSection as $roadSectionName => $locations) {
+        foreach ($locations as $loc) {
+            if (!empty($loc->latitude) && !empty($loc->longitude)) {
+                $mapLocations[] = [
+                    'id' => $loc->id,
+                    'name' => $loc->name,
+                    'lat' => $loc->latitude,
+                    'lng' => $loc->longitude,
+                    'deposit' => number_format($loc->daily_deposit, 0, ',', '.'),
+                    'road_section' => $roadSectionName
+                ];
+            }
+        }
+    }
+
     // Logika Format Angka Dinamis
     $formattedDeposit = '0';
     $depositSuffix = '';
@@ -128,7 +189,7 @@
             <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-outline-secondary">
                 <i class="ri ri-arrow-left-line me-1"></i> Kembali
             </a>
-            @if(Auth::user()->role !== 'leader')
+            @if(Auth::user()->role !== 'leader' && $agreement->status !== 'expired')
             <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}" class="btn btn-primary shadow-sm">
                 <i class="ri ri-pencil-line me-1"></i> Edit PKS
             </a>
@@ -225,12 +286,14 @@
                         </div>
                     @endif
 
+                    @if($agreement->status !== 'expired')
                     <div class="d-grid gap-2">
                         <a href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
                             class="btn btn-outline-danger">
                             <i class="ri ri-printer-line me-1"></i> Cetak Dokumen PDF
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -240,7 +303,7 @@
             <div class="nav-align-top mb-4">
                 <ul class="nav nav-pills mb-3 gap-2" role="tablist">
                     <li class="nav-item">
-                        <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
+                        <button type="button" class="nav-link {{ $agreement->status !== 'expired' ? 'active' : '' }}" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-overview">
                             <i class="ri ri-bar-chart-box-line me-1"></i> Setoran & Grafik
                         </button>
@@ -259,7 +322,7 @@
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                        <button type="button" class="nav-link {{ $agreement->status === 'expired' ? 'active' : '' }}" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-pdf">
                             <i class="ri ri-file-pdf-2-line me-1"></i> Arsip PKS
                         </button>
@@ -269,7 +332,7 @@
                 <div class="tab-content bg-transparent p-0 shadow-none border-0">
 
                     {{-- TAB 1: OVERVIEW SETORAN & GRAFIK --}}
-                    <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                    <div class="tab-pane fade {{ $agreement->status !== 'expired' ? 'show active' : '' }}" id="tab-overview" role="tabpanel">
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header bg-transparent border-bottom">
                                 <h6 class="card-title fw-bold mb-0">Grafik Setoran Tahun {{ now()->year }}</h6>
@@ -335,8 +398,18 @@
 
                     {{-- TAB 2: LOKASI PARKIR --}}
                     <div class="tab-pane fade" id="tab-locations" role="tabpanel">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-transparent border-bottom">
+                                <h6 class="card-title fw-bold mb-0"><i class="ri ri-map-2-line text-primary me-2"></i>Peta Persebaran Lokasi Parkir</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="agreementLocationsMap" style="height: 400px; width: 100%; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; z-index: 1;"></div>
+                            </div>
+                        </div>
+
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
+                                <h6 class="fw-bold mb-3">Daftar Lokasi berdasarkan Ruas Jalan</h6>
                                 <div class="accordion accordion-header-primary" id="accordionParkingLocations">
                                     @forelse ($locationsByRoadSection as $roadSectionName => $locations)
                                         @php $accordionId = 'collapse-' . Str::slug($roadSectionName); @endphp
@@ -491,7 +564,7 @@
                     </div>
 
                     {{-- TAB 4: DOKUMEN PKS --}}
-                    <div class="tab-pane fade" id="tab-pdf" role="tabpanel">
+                    <div class="tab-pane fade {{ $agreement->status === 'expired' ? 'show active' : '' }}" id="tab-pdf" role="tabpanel">
                         <div class="card border-0 shadow-sm">
                             <div
                                 class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
@@ -508,10 +581,117 @@
                                 </div>
                             </div>
                             <div class="card-body pt-4">
-                                <div class="pdf-viewer-wrapper shadow-sm">
-                                    <iframe src="{{ route('masterdata.agreements.pdf', $agreement->id) }}#toolbar=0"
-                                        frameborder="0"></iframe>
-                                </div>
+                                @if($agreement->status === 'expired')
+                                    <div class="table-responsive text-nowrap">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th width="20%">Tanggal Arsip</th>
+                                                    <th width="40%">Catatan Perubahan</th>
+                                                    <th width="25%">Dibuat Oleh</th>
+                                                    <th width="15%" class="text-center">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="table-border-bottom-0">
+                                                @forelse ($pdfHistories as $history)
+                                                    @php
+                                                        $uName = $history->generator->name ?? 'Sistem Server';
+                                                        $uAvatar = ($history->generator && $history->generator->img)
+                                                            ? asset('storage/' . $history->generator->img)
+                                                            : "https://ui-avatars.com/api/?name=" . urlencode($uName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
+                                                    @endphp
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="avatar avatar-sm me-3">
+                                                                    <span class="avatar-initial rounded bg-label-danger"><i class="ri ri-file-pdf-2-line ri-20px"></i></span>
+                                                                </div>
+                                                                <div>
+                                                                    <span class="fw-bold text-dark d-block">{{ $history->created_at->translatedFormat('d M Y') }}</span>
+                                                                    <small class="text-muted">{{ $history->created_at->format('H:i') }} WIB</small>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                       <td>
+                                                            @php
+                                                                $notesList = array_filter(array_map('trim', explode(';', $history->notes)));
+                                                                $hasMultiple = count($notesList) > 1;
+                                                                $previewText = Str::limit($notesList[0] ?? $history->notes, 50);
+                                                                $collapseId = 'collapseNote_' . $history->id;
+                                                            @endphp
+                        
+                                                            @if($hasMultiple || strlen($history->notes) > 50)
+                                                                <div class="d-flex flex-column align-items-start">
+                                                                    <div class="d-flex align-items-center gap-2 cursor-pointer"
+                                                                         data-bs-toggle="collapse"
+                                                                         data-bs-target="#{{ $collapseId }}"
+                                                                         aria-expanded="false"
+                                                                         aria-controls="{{ $collapseId }}">
+                                                                        <span class="text-body fw-medium">{{ $previewText }}</span>
+                                                                        <span class="badge bg-label-primary rounded-pill px-2 py-1" data-bs-toggle="tooltip" title="Klik untuk lihat detail">
+                                                                            <i class="ri ri-arrow-down-s-line"></i> Detail
+                                                                        </span>
+                                                                    </div>
+                        
+                                                                    <div class="collapse w-100 mt-2" id="{{ $collapseId }}">
+                                                                        <div class="p-3 bg-lighter rounded-3 border">
+                                                                            @if($hasMultiple)
+                                                                                <ul class="list-unstyled mb-0">
+                                                                                    @foreach($notesList as $note)
+                                                                                        <li class="d-flex align-items-start mb-2">
+                                                                                            <i class="ri ri-checkbox-circle-fill text-primary me-2 mt-1 ri-14px"></i>
+                                                                                            <span class="text-wrap" style="white-space: normal; line-height: 1.4;">{{ $note }}</span>
+                                                                                        </li>
+                                                                                    @endforeach
+                                                                                </ul>
+                                                                            @else
+                                                                                <p class="mb-0 text-wrap" style="white-space: normal; line-height: 1.4;">{{ $history->notes }}</p>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            @else
+                                                                <span class="text-wrap" style="white-space: normal;">{{ $history->notes }}</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle me-2 shadow-sm" width="28" height="28" style="object-fit: cover;">
+                                                                <span class="fw-medium text-dark">{{ $uName }}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <div class="d-flex justify-content-center gap-2">
+                                                                <a href="{{ asset('storage/' . $history->file_path) }}" target="_blank"
+                                                                    class="btn btn-sm btn-icon btn-text-info rounded-pill" data-bs-toggle="tooltip"
+                                                                    title="Buka PDF">
+                                                                    <i class="icon-base ri ri-external-link-line ri-20px"></i>
+                                                                </a>
+                                                                <a href="{{ asset('storage/' . $history->file_path) }}" download
+                                                                    class="btn btn-sm btn-icon btn-text-primary rounded-pill" data-bs-toggle="tooltip"
+                                                                    title="Unduh PDF">
+                                                                    <i class="icon-base ri ri-download-cloud-2-line ri-20px"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="4" class="text-center py-5">
+                                                            <i class="ri ri-folder-open-line text-muted mb-3 d-block" style="font-size: 3rem;"></i>
+                                                            <p class="mb-0 text-muted">Belum ada arsip PDF yang tersimpan untuk perjanjian ini.</p>
+                                                        </td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div class="pdf-viewer-wrapper shadow-sm">
+                                        <iframe src="{{ route('masterdata.agreements.pdf', $agreement->id) }}#toolbar=0"
+                                            frameborder="0"></iframe>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -525,6 +705,8 @@
 @push('vendors-js')
     <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 @endpush
 
 @push('scripts')
@@ -649,6 +831,95 @@
                 const chart = new ApexCharts(document.querySelector("#depositChart"), options);
                 chart.render();
             @endif
+
+            // 3. Inisialisasi Peta Lokasi (Leaflet)
+            const mapLocations = {!! json_encode($mapLocations ?? []) !!};
+            let mapInitialized = false;
+            let map;
+
+            const tabLocationsBtn = document.querySelector('button[data-bs-target="#tab-locations"]');
+            if (tabLocationsBtn) {
+                tabLocationsBtn.addEventListener('shown.bs.tab', function () {
+                    if (!mapInitialized) {
+                        initMap();
+                        mapInitialized = true;
+                    } else {
+                        if (map) {
+                            map.invalidateSize();
+                        }
+                    }
+                });
+            }
+
+            function initMap() {
+                // Default center (Pekanbaru)
+                let centerLat = 0.5071; 
+                let centerLng = 101.4478;
+                
+                if (mapLocations.length > 0) {
+                    centerLat = mapLocations[0].lat;
+                    centerLng = mapLocations[0].lng;
+                }
+
+                map = L.map('agreementLocationsMap', {
+                    zoomControl: false 
+                }).setView([centerLat, centerLng], 14);
+
+                L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+                // Premium Base Map (CartoDB Positron)
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                    subdomains: 'abcd',
+                    maxZoom: 20
+                }).addTo(map);
+
+                const bounds = [];
+
+                const defaultIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="marker-pin"><i class="ri ri-map-pin-fill"></i></div>`,
+                    iconSize: [36, 36],
+                    iconAnchor: [0, 0],
+                    popupAnchor: [0, -36]
+                });
+
+                mapLocations.forEach(loc => {
+                    if (loc.lat && loc.lng) {
+                        bounds.push([loc.lat, loc.lng]);
+                        
+                        const popupContent = `
+                            <div class="p-3">
+                                <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
+                                    <div class="avatar avatar-sm me-3 bg-label-primary rounded-circle d-flex align-items-center justify-content-center">
+                                        <i class="ri ri-map-pin-line text-primary"></i>
+                                    </div>
+                                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 14px; line-height: 1.2;">${loc.name}</h6>
+                                </div>
+                                <div class="mb-2 text-muted" style="font-size: 13px;">
+                                    <i class="ri ri-route-line me-2"></i> ${loc.road_section}
+                                </div>
+                                <div class="fw-bold text-primary mb-3" style="font-size: 14px;">
+                                    <i class="ri ri-wallet-3-line me-2"></i> Rp ${loc.deposit} <span class="text-muted fw-normal" style="font-size: 12px;">/ hari</span>
+                                </div>
+                            </div>
+                        `;
+
+                        L.marker([loc.lat, loc.lng], {icon: defaultIcon})
+                            .addTo(map)
+                            .bindPopup(popupContent, {
+                                className: 'custom-popup',
+                                minWidth: 260
+                            });
+                    }
+                });
+
+                if (bounds.length > 1) {
+                    map.fitBounds(bounds, {padding: [50, 50]});
+                } else if (bounds.length === 1) {
+                    map.setView(bounds[0], 16);
+                }
+            }
         });
     </script>
 @endpush

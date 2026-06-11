@@ -213,8 +213,11 @@
 
                         {{-- Container untuk Hasil Filter (Tempat Memilih) --}}
                         <label class="form-label">Pilih Lokasi Parkir dari Ruas Jalan</label>
+                        <div class="mb-2">
+                            <input type="text" id="search-parking" class="form-control form-control-sm" placeholder="Cari nama lokasi parkir (Ketik di sini)...">
+                        </div>
                         <div id="parking-location-container" class="border rounded-3 p-4 mb-4"
-                            style="overflow-y: auto; min-height: 200px;">
+                            style="overflow-y: auto; min-height: 200px; max-height: 300px;">
                             @forelse($parkingLocationsForCheckboxes as $location)
                                 <div class="form-check mb-3 location-item"
                                     data-road-section="{{ $location->road_section_id }}">
@@ -245,9 +248,9 @@
                 </div>
             </div>
 
-            <div class="col-12 text-end">
+            <div class="col-12 text-end position-sticky bottom-0 bg-white p-3 border-top shadow z-3 rounded">
                 <a href="{{ route('masterdata.agreements.show', $agreement->id) }}"
-                    class="btn btn-outline-secondary">Batal</a>
+                    class="btn btn-outline-secondary me-2">Batal</a>
                 <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
             </div>
         </div>
@@ -433,6 +436,7 @@
 
                 roadSectionFilter.on('change', function() {
                     const roadSectionId = $(this).val();
+                    $('#search-parking').val(''); // Reset search
                     parkingContainer.html('<p class="text-muted text-center">Memuat data lokasi...</p>');
 
                     if (!roadSectionId) {
@@ -468,6 +472,7 @@
             } else {
                 roadSectionFilter.on('change', function() {
                     const selectedSectionId = $(this).val();
+                    $('#search-parking').val(''); // Reset search
                     $('#location-placeholder').remove();
                     parkingContainer.find('.location-item').each(function() {
                         // Jika memilih 'Tampilkan Semua Lokasi' (value kosong), 
@@ -523,6 +528,25 @@
                 $('#loc-' + locationId).prop('checked', false);
                 updateDailyDepositTotal();
                 renderSummary();
+            });
+
+            $('#search-parking').on('input', function() {
+                let keyword = $(this).val().toLowerCase();
+                const selectedSectionId = roadSectionFilter.val();
+                
+                $('#parking-location-container .location-item').each(function() {
+                    // Cek filter ruas jalan jika aktif (khusus form yang di-lock vs tidak)
+                    if (isStatusLocked && selectedSectionId && $(this).data('road-section') != selectedSectionId) {
+                        return; // Jangan tampilkan yang beda jalan kalau filternya aktif
+                    }
+
+                    let labelText = $(this).find('label').text().toLowerCase();
+                    if (labelText.includes(keyword)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
             });
 
             // --- Trigger Awal ---

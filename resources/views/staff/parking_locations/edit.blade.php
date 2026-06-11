@@ -43,6 +43,7 @@
 
                 @if(!$isTersedia)
                     <input type="hidden" name="road_section_id" value="{{ $parkingLocation->road_section_id }}">
+                    <input type="hidden" name="daily_deposit" value="{{ $parkingLocation->daily_deposit }}">
                 @endif
 
                 <div class="row g-6">
@@ -72,7 +73,8 @@
                         <div class="form-floating form-floating-outline"><input type="text" class="form-control" id="name" name="name" value="{{ old('name', $parkingLocation->name) }}" required /><label for="name">Nama Lokasi Parkir</label></div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating form-floating-outline"><input type="number" class="form-control" id="daily_deposit" name="daily_deposit" value="{{ old('daily_deposit', $parkingLocation->daily_deposit) }}" required min="0" /><label for="daily_deposit">Setoran / Hari (Rp)</label></div>
+                        <div class="form-floating form-floating-outline"><input type="number" class="form-control" id="daily_deposit" name="daily_deposit" value="{{ old('daily_deposit', $parkingLocation->daily_deposit) }}" required min="0" {{ !$isTersedia ? 'disabled' : '' }} /><label for="daily_deposit">Setoran / Hari (Rp)</label></div>
+                        @if(!$isTersedia) <small class="text-danger">Setoran Harian tidak bisa diubah karena lokasi sudah terikat PKS.</small> @endif
                     </div>
 
                     <div class="col-12 mt-2">
@@ -172,16 +174,24 @@
                     $('#latitude').val(pos.lat);
                     $('#longitude').val(pos.lng);
                 });
-            } else {
-                map.invalidateSize();
             }
+            
+            // Selalu panggil invalidateSize agar peta tidak render warna abu/abu (grey bug)
+            setTimeout(() => {
+                map.invalidateSize();
+                map.setView(marker.getLatLng(), 15);
+            }, 100);
         }
 
-        if($('#toggleMap').is(':checked')) { initMap(); }
+        if($('#toggleMap').is(':checked')) { 
+            setTimeout(() => { initMap(); }, 200);
+        }
 
         $('#toggleMap').on('change', function() {
             if($(this).is(':checked')) {
-                $('#mapSection').slideDown(() => initMap());
+                $('#mapSection').slideDown(300, () => {
+                    initMap();
+                });
                 $('#coordinate_input').prop('disabled', false);
             } else {
                 $('#mapSection').slideUp();

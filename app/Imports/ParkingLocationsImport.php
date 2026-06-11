@@ -21,6 +21,7 @@ WithChunkReading  // Baca file per bagian (chunks)
 
 {
     protected int $roadSectionId;
+    public int $rowCount = 0;
 
     /**
      * Kita akan 'menyuntikkan' ID ruas jalan dari controller ke class ini.
@@ -63,6 +64,8 @@ WithChunkReading  // Baca file per bagian (chunks)
                 'description'         => 'Lokasi parkir ditambahkan melalui Impor Data Massal (Excel/CSV).',
                 'new_values'          => $dataToStore,
             ]);
+
+            $this->rowCount++;
         }
     }
 

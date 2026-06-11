@@ -88,6 +88,17 @@
 
                 <div class="d-flex gap-2 ms-md-3 mt-3 mt-md-0">
                     @if(Auth::user()->role !== 'leader')
+                    
+                    {{-- Tombol Bulk Delete (Sembunyi by default) --}}
+                    <form action="{{ route('masterdata.parking-locations.bulkDeleteUnused') }}" method="POST" id="form-bulk-delete" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="selected_ids" id="selected_ids" value="">
+                        <button type="button" class="btn btn-danger shadow-sm d-none" id="btn-bulk-delete" onclick="confirmBulkDelete()">
+                            <i class="ri icon-base ri-delete-bin-7-line me-1"></i> Hapus Terpilih (<span id="selected-count">0</span>)
+                        </button>
+                    </form>
+
                     <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary shadow-sm">
                         <i class="ri icon-base ri-upload-cloud-line me-1"></i> Impor
                     </a>
@@ -111,7 +122,10 @@
                 <table class="table table-hover table-striped">
                     <thead class="table-light">
                         <tr>
-                            <th width="25%">Nama Lokasi</th>
+                            <th width="5%" class="text-center">
+                                <input class="form-check-input" type="checkbox" id="check-all">
+                            </th>
+                            <th width="20%">Nama Lokasi</th>
                             <th width="20%">Ruas Jalan</th>
                             <th width="10%">Zona</th>
                             <th width="15%">Status</th>
@@ -122,9 +136,25 @@
                     <tbody class="table-border-bottom-0">
                         @forelse ($parkingLocations as $location)
                             <tr>
+                                <td class="text-center">
+                                    @if ($location->status == 'tersedia')
+                                        <input class="form-check-input row-checkbox" type="checkbox" value="{{ $location->id }}">
+                                    @else
+                                        <input class="form-check-input" type="checkbox" disabled data-bs-toggle="tooltip" title="Terikat PKS">
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="fw-bold text-dark d-block">{{ Str::limit($location->name, 30) }}</span>
-                                    <small class="text-muted">Rp {{ number_format($location->daily_deposit, 0, ',', '.') }} / hari</small>
+                                    <small class="text-muted d-block mb-1">Rp {{ number_format($location->daily_deposit, 0, ',', '.') }} / hari</small>
+                                    @if($location->latitude && $location->longitude)
+                                        <a href="https://www.google.com/maps?q={{ $location->latitude }},{{ $location->longitude }}" target="_blank" class="badge bg-label-info text-decoration-none" data-bs-toggle="tooltip" title="Lihat di Peta">
+                                            <i class="ri-map-pin-fill me-1"></i> Buka Peta
+                                        </a>
+                                    @else
+                                        <span class="badge bg-label-warning text-dark">
+                                            <i class="ri-map-pin-add-line me-1"></i> Koordinat belum diatur
+                                        </span>
+                                    @endif
                                 </td>
                                 <td>{{ $location->roadSection->name ?? 'N/A' }}</td>
                                 <td>
@@ -169,18 +199,11 @@
                                         </a>
 
                                         @if(Auth::user()->role !== 'leader')
-                                        @if ($location->status == 'tidak_tersedia')
-                                            <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
-                                                data-bs-toggle="tooltip" title="Tidak dapat diedit, sedang terikat PKS!">
-                                                <i class="ri icon-base ri-pencil-line ri-22px opacity-50"></i>
-                                            </button>
-                                        @else
                                             <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                                 href="{{ route('masterdata.parking-locations.edit', $location->id) }}"
                                                 data-bs-toggle="tooltip" title="Edit Lokasi">
                                                 <i class="ri icon-base ri-pencil-line ri-22px"></i>
                                             </a>
-                                        @endif
                                         @endif
 
                                         @if(Auth::user()->role !== 'leader')
@@ -204,7 +227,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="7" class="text-center py-5">
                                     <i class="ri ri-map-pin-time-line icon-32px text-muted opacity-50 mb-2"></i>
                                     <h6 class="fw-bold text-dark mb-1">Tidak ada data dengan keyword <span class="text-muted text-primary">"{{ request('search') }}"</span> ditemukan</h6>
                                     <p class="text-muted small">Coba ubah filter pencarian, ruas jalan, atau status.</p>
@@ -283,5 +306,70 @@
                 });
             @endif
         });
+
+        // Logika Checkbox
+        const checkAll = document.getElementById('check-all');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        const btnBulkDelete = document.getElementById('btn-bulk-delete');
+        const selectedCountEl = document.getElementById('selected-count');
+        const selectedIdsInput = document.getElementById('selected_ids');
+
+        function updateBulkDeleteButton() {
+            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+            selectedCountEl.textContent = checkedCount;
+
+            if (checkedCount > 0) {
+                btnBulkDelete.classList.remove('d-none');
+            } else {
+                btnBulkDelete.classList.add('d-none');
+                if(checkAll) checkAll.checked = false;
+            }
+            
+            // Perbarui check-all state
+            if(checkAll && rowCheckboxes.length > 0) {
+                checkAll.checked = checkedCount === rowCheckboxes.length;
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                const isChecked = this.checked;
+                rowCheckboxes.forEach(cb => {
+                    cb.checked = isChecked;
+                });
+                updateBulkDeleteButton();
+            });
+        }
+
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkDeleteButton);
+        });
+
+        // Konfirmasi Bulk Delete
+        function confirmBulkDelete() {
+            // Ambil id yang dicentang
+            const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+            if(selectedIds.length === 0) return;
+            
+            selectedIdsInput.value = JSON.stringify(selectedIds);
+
+            Swal.fire({
+                title: 'Hapus Data Terpilih?',
+                text: `Anda akan menghapus ${selectedIds.length} lokasi parkir. Tindakan ini tidak dapat dibatalkan!`,
+                icon: 'warning',
+                showCancelButton: true,
+                customClass: {
+                    confirmButton: 'btn btn-danger me-3 waves-effect waves-light',
+                    cancelButton: 'btn btn-outline-secondary waves-effect'
+                },
+                buttonsStyling: false,
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('form-bulk-delete').submit();
+                }
+            })
+        }
     </script>
 @endpush

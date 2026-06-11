@@ -142,9 +142,14 @@ class DashboardController extends Controller
         $recentParkingLocations = ParkingLocation::with('roadSection')->latest()->limit(10)->get();
         $totalParkingLocations = ParkingLocation::count();
 
-        // 10 Daftar PKS Terbaru
-        $recentAgreements = Agreement::with('fieldCoordinator.user')->latest()->limit(10)->get();
-        $totalAgreements = Agreement::count();
+        // 10 Daftar PKS Terbaru (Hanya yang Aktif)
+        $recentAgreements = Agreement::with('fieldCoordinator.user')
+            ->where('status', 'active')
+            ->withCount('activeParkingLocations')
+            ->latest()
+            ->limit(10)
+            ->get();
+        $totalAgreements = Agreement::where('status', 'active')->count();
 
         // Grafik Jumlah Lokasi per Ruas Jalan (Top 10)
         $locationsPerRoadSection = RoadSection::withCount('parkingLocations')
@@ -227,8 +232,17 @@ class DashboardController extends Controller
         $pksData = $this->staffPksDashboard()->getData();
         $keuData = $this->staffKeuDashboard()->getData();
 
+        // Ambil 50 titik parkir acak untuk peta
+        $randomMapLocations = ParkingLocation::with('roadSection')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->inRandomOrder()
+            ->take(50)
+            ->get();
+
         // Gabungkan semua data
         $allData = array_merge($pksData, $keuData);
+        $allData['randomMapLocations'] = $randomMapLocations;
 
         return view('leader.dashboard', $allData);
     }

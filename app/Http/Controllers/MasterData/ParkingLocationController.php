@@ -212,29 +212,7 @@ class ParkingLocationController extends Controller
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
 
         // ✅ 1. CEGAH FORCED BROWSING VIA URL (Keamanan Lapis Baja)
-        if ($parkingLocation->status == 'tidak_tersedia') {
-
-            // ✅ Ambil nama lokasi parkir
-            $namaLokasi = $parkingLocation->name;
-
-            // Cari tahu PKS siapa yang sedang mengikat lokasi ini
-            $activeAgreement = Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
-                $query->where('parking_location_id', $parkingLocation->id)
-                    ->where('agreement_parking_locations.status', 'active');
-            })
-                ->whereIn('status', ['active', 'pending_renewal'])
-                ->with('fieldCoordinator.user')
-                ->first();
-
-            $noPks = $activeAgreement ? $activeAgreement->agreement_number : 'yang aktif';
-            $namaKoord = $activeAgreement ? ($activeAgreement->fieldCoordinator->user->name ?? 'N/A') : 'Seseorang';
-
-            // ✅ Pesan dinamis dengan tag HTML <strong> untuk huruf tebal
-            $message = "Lokasi Parkir <strong>{$namaLokasi}</strong> tidak bisa diubah karena sudah terikat dengan PKS <strong>{$noPks}</strong> Milik <strong>{$namaKoord}</strong>.";
-
-            // Lempar kembali ke index dengan session flash khusus
-            return redirect()->route('masterdata.parking-locations.index')->with('locked_error', $message);
-        }
+        // Fitur baru: Lokasi tidak_tersedia sekarang dapat di-edit sebagian.
 
         // ✅ 2. LOGIKA ASLI ANTUM (Aman dari error tampilan)
         $parkingLocation->load('roadSection');
@@ -405,6 +383,56 @@ class ParkingLocationController extends Controller
         return redirect()->route('masterdata.parking-locations.index')->with('success', 'Lokasi parkir berhasil dihapus!');
     }
 
+    /**
+     * Hapus massal lokasi parkir yang dipilih dan berstatus 'tersedia'.
+     */
+    public function bulkDeleteUnused(Request $request)
+    {
+        $selectedIds = json_decode($request->input('selected_ids', '[]'), true);
+
+        if (empty($selectedIds)) {
+            return redirect()->back()->with('error', 'Tidak ada lokasi parkir yang dipilih.');
+        }
+
+        // Cari lokasi parkir yang dipilih dan statusnya 'tersedia'
+        $locationsToDelete = ParkingLocation::whereIn('id', $selectedIds)
+            ->where('status', 'tersedia')
+            ->get();
+
+        if ($locationsToDelete->isEmpty()) {
+            return redirect()->back()->with('error', 'Data yang dipilih sudah terikat PKS atau tidak valid untuk dihapus.');
+        }
+
+        $count = 0;
+        $userId = Auth::id();
+
+        foreach ($locationsToDelete as $location) {
+            // Catat history terlebih dahulu
+            ParkingLocationHistory::create([
+                'parking_location_id' => $location->id,
+                'user_id'             => $userId,
+                'action'              => 'deleted',
+                'description'         => 'Lokasi parkir dihapus secara massal (belum terikat PKS).',
+            ]);
+
+            if ($location->image) {
+                Storage::disk('public')->delete($location->image);
+            }
+            if ($location->proposal_document) {
+                Storage::disk('public')->delete($location->proposal_document);
+            }
+            if ($location->official_report_document) {
+                Storage::disk('public')->delete($location->official_report_document);
+            }
+
+            $location->delete();
+            $count++;
+        }
+
+        $request->session()->flash('success', "Berhasil menghapus {$count} data lokasi parkir yang terpilih.");
+        return redirect()->back();
+    }
+
     public function getParkingLocationsByRoadSection(Request $request, $roadSectionId)
     {
         // Ambil lokasi parkir yang statusnya 'tersedia'
@@ -470,11 +498,14 @@ class ParkingLocationController extends Controller
         try {
             // Proses Import
             // Menggunakan class import yang sudah kita perbaiki sebelumnya (tanpa Queue agar bisa ditangkap errornya langsung)
-            Excel::import(new ParkingLocationsImport((int) $request->road_section_id), $request->file('import_file'));
+            $import = new \App\Imports\ParkingLocationsImport((int) $request->road_section_id);
+            Excel::import($import, $request->file('import_file'));
+
+            $request->session()->flash('success', "Berhasil! {$import->rowCount} data lokasi parkir telah ditambahkan.");
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data berhasil diimpor ke database!',
+                'redirect' => route('masterdata.parking-locations.index')
             ]);
 
         } catch (ValidationException $e) {
@@ -489,6 +520,29 @@ class ParkingLocationController extends Controller
                 'status' => 'error',
                 'message' => 'Terdapat data yang tidak valid dalam file.',
                 'errors' => ['file' => $errorMessages],
+            ], 422);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Import DB Error: '.$e->getMessage());
+
+            // Kode error 1062 adalah duplicate entry pada MySQL
+            if ($e->errorInfo[1] == 1062) {
+                preg_match("/Duplicate entry '(.*)' for key/", $e->getMessage(), $matches);
+                
+                // MySQL menggabungkan column dengan '-' jika unique constraint lebih dari 1 kolom
+                // Karena unique key kita adalah ['road_section_id', 'name'], formatnya: '36-Nama Lokasi'
+                $rawDuplicate = $matches[1] ?? '';
+                $parts = explode('-', $rawDuplicate, 2);
+                $duplicateValue = count($parts) > 1 ? trim($parts[1]) : $rawDuplicate;
+                
+                $request->session()->flash('error', "Lokasi <strong>'{$duplicateValue}'</strong> duplikat mohon hapus salah satu sebelum import data.");
+            } else {
+                $request->session()->flash('error', "Terjadi kesalahan database saat mengimpor data.");
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'redirect' => route('masterdata.parking-locations.importCreate')
             ], 422);
 
         } catch (\Exception $e) {

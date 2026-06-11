@@ -11,25 +11,56 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <style>
-        .upload-area {
+        .premium-upload-area {
             border: 2px dashed #d9dee3;
-            border-radius: 0.5rem;
-            padding: 2rem;
+            border-radius: 1rem;
+            padding: 3rem 2rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: #f8f9fa;
+            transition: all 0.3s ease-in-out;
+            background: #f8f9fa;
+            position: relative;
+            overflow: hidden;
         }
-
-        .upload-area:hover,
-        .upload-area.dragover {
+        .premium-upload-area::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(45deg, rgba(105, 108, 255, 0.05), rgba(105, 108, 255, 0));
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .premium-upload-area:hover::before, .premium-upload-area.dragover::before {
+            opacity: 1;
+        }
+        .premium-upload-area:hover, .premium-upload-area.dragover {
             border-color: #696cff;
-            background-color: #f1f1ff;
+            background-color: #f8f9fa;
+            box-shadow: 0 8px 20px rgba(105, 108, 255, 0.1);
+            transform: translateY(-2px);
         }
-
+        .premium-upload-area > * {
+            position: relative;
+            z-index: 1;
+        }
+        .file-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f0f2f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            transition: all 0.3s ease;
+        }
+        .premium-upload-area:hover .file-icon-wrapper, .premium-upload-area.dragover .file-icon-wrapper {
+            background: #e7e7ff;
+            transform: scale(1.1);
+        }
         .file-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
             color: #696cff;
         }
 
@@ -38,22 +69,61 @@
             margin-top: 1.5rem;
         }
 
-        /* [PENTING] Ini CSS agar Select2 bisa pakai Floating Label */
+        /* Premium Radio Cards */
+        .zone-radio-label {
+            cursor: pointer;
+            margin: 0;
+        }
+        .zone-radio-label input {
+            display: none;
+        }
+        .zone-radio-card {
+            border: 2px solid #e7e7e8;
+            border-radius: 0.75rem;
+            transition: all 0.25s ease-in-out;
+            background-color: #fff;
+        }
+        .zone-radio-card:hover {
+            border-color: #c7c8cb;
+            background-color: #fcfcfd;
+            transform: translateY(-2px);
+        }
+        .zone-radio-label input:checked + .zone-radio-card {
+            border-color: #696cff;
+            background-color: rgba(105, 108, 255, 0.05);
+            box-shadow: 0 4px 15px rgba(105, 108, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .zone-radio-label input:checked + .zone-radio-card .icon-unselected {
+            display: none !important;
+        }
+        .zone-radio-label input:checked + .zone-radio-card .icon-selected {
+            display: block !important;
+        }
+        .zone-radio-label input:checked + .zone-radio-card span {
+            color: #696cff;
+            font-weight: 700 !important;
+        }
+
+        /* Select2 Floating Label Fix */
         .form-floating .select2-container--bootstrap-5 .select2-selection {
-            /* Samakan tinggi dengan input text floating */
             height: calc(3.5rem + 2px) !important;
             padding: 1rem 1.25rem 0 1.25rem !important;
             line-height: 1.5;
+            border-radius: 0.5rem;
+            border: 1px solid #d9dee3 !important; /* Force border */
+            background-color: transparent !important;
         }
-
+        .form-floating .select2-container--bootstrap-5.select2-container--focus .select2-selection,
+        .form-floating .select2-container--bootstrap-5.select2-container--open .select2-selection {
+            border-color: #696cff !important;
+            box-shadow: 0 0 0 0.25rem rgba(105, 108, 255, 0.1) !important;
+        }
         .form-floating .select2-container--bootstrap-5 .select2-selection__rendered {
             padding-top: 0.625rem !important;
-            /* Vertikal centering untuk text */
         }
-
         .form-floating .select2-container--bootstrap-5 .select2-selection__arrow {
             top: 0.85rem !important;
-            /* Posisi panah */
         }
     </style>
 @endpush
@@ -96,33 +166,40 @@
             <form id="importForm" enctype="multipart/form-data">
                 @csrf
                 {{-- ====================================================== --}}
-                {{-- 1. AREA FILTER (LAYOUT BARU ANDA) --}}
+                {{-- 1. AREA FILTER (PREMIUM LAYOUT) --}}
                 {{-- ====================================================== --}}
-                <div class="row g-3 mb-3">
+                <div class="row g-4 mb-4 align-items-center">
                     <div class="col-md-6">
-                        <label class="form-label">1. Pilih Zona</label>
-                        <div class="d-flex pt-2">
-                            <div class="form-check me-4">
-                                <input name="zone_filter" class="form-check-input" type="radio" value="Zona 2"
-                                    id="zone2" required />
-                                <label class="form-check-label" for="zone2"> Zona 2</label>
-                            </div>
-                            <div class="form-check">
-                                <input name="zone_filter" class="form-check-input" type="radio" value="Zona 3"
-                                    id="zone3" required />
-                                <label class="form-check-label" for="zone3"> Zona 3</label>
-                            </div>
+                        <label class="form-label fw-bold d-block mb-3">1. Pilih Zona <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-3">
+                            <label class="zone-radio-label w-50">
+                                <input name="zone_filter" type="radio" value="Zona 2" id="zone2" required />
+                                <div class="zone-radio-card text-center d-flex flex-column justify-content-center align-items-center py-3">
+                                    <i class="ri ri-map-pin-2-line fs-3 mb-2 text-muted icon-unselected"></i>
+                                    <i class="ri ri-map-pin-2-fill fs-3 mb-2 text-primary icon-selected d-none"></i>
+                                    <span class="fw-semibold text-muted">Zona 2</span>
+                                </div>
+                            </label>
+                            <label class="zone-radio-label w-50">
+                                <input name="zone_filter" type="radio" value="Zona 3" id="zone3" required />
+                                <div class="zone-radio-card text-center d-flex flex-column justify-content-center align-items-center py-3">
+                                    <i class="ri ri-map-pin-user-line fs-3 mb-2 text-muted icon-unselected"></i>
+                                    <i class="ri ri-map-pin-user-fill fs-3 mb-2 text-primary icon-selected d-none"></i>
+                                    <span class="fw-semibold text-muted">Zona 3</span>
+                                </div>
+                            </label>
                         </div>
                     </div>
 
                     {{-- [PERUBAHAN] Select2 dengan Floating Label --}}
                     <div class="col-md-6">
+                        <label class="form-label fw-bold d-block mb-3">2. Pilih Ruas Jalan <span class="text-danger">*</span></label>
                         <div class="form-floating form-floating-outline">
                             <select class="form-select select2" id="road_section_id" name="road_section_id" required
                                 disabled>
                                 <option value="">Pilih Zona terlebih dahulu</option>
                             </select>
-                            <label for="road_section_id">2. Pilih Ruas Jalan</label>
+                            <label for="road_section_id">Ruas Jalan</label>
                         </div>
                     </div>
                 </div>
@@ -130,55 +207,65 @@
                 {{-- ====================================================== --}}
                 {{-- 2. AREA UPLOAD FILE (MODERN) --}}
                 {{-- ====================================================== --}}
-                <div class="row g-3">
+                <div class="row g-4">
                     <div class="col-12">
-                        <label class="form-label">3. Upload File</label>
-                        <div class="upload-area" id="dropZone">
+                        <label class="form-label fw-bold mb-3">3. Upload File <span class="text-danger">*</span></label>
+                        <div class="premium-upload-area" id="dropZone">
                             <input type="file" id="import_file" name="import_file" class="d-none"
                                 accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                                 required>
                             <div id="uploadText">
-                                {{-- [ICON UPDATE] --}}
-                                <i class="icon-base ri ri-file-excel-2-line file-icon"></i>
-                                <h5>Klik atau Seret File ke Sini</h5>
-                                <p class="text-muted text-sm">Support CSV, XLSX, XLS (Max 10MB)</p>
+                                <div class="file-icon-wrapper">
+                                    <i class="ri ri-file-excel-2-line file-icon"></i>
+                                </div>
+                                <h5 class="fw-bold mb-1">Klik atau Seret File ke Sini</h5>
+                                <p class="text-muted mb-0">Support format CSV, XLSX, XLS (Max 10MB)</p>
                             </div>
                             <div id="fileInfo" class="d-none">
-                                {{-- [ICON UPDATE] --}}
-                                <i class="icon-base ri ri-file-check-line file-icon text-success"></i>
-                                <h5 id="fileName" class="text-dark">filename.csv</h5>
-                                <p class="text-muted text-sm">Klik untuk ganti file</p>
+                                <div class="file-icon-wrapper bg-success bg-opacity-10 text-success">
+                                    <i class="ri ri-file-check-line file-icon text-success"></i>
+                                </div>
+                                <h5 id="fileName" class="fw-bold text-dark mb-1">filename.csv</h5>
+                                <p class="text-muted mb-0">Klik untuk mengganti file</p>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Progress Bar --}}
-                    <div class="col-12 progress-wrapper" id="progressContainer">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="fw-semibold" id="progressStatus">Mengupload file...</span>
-                            <span class="fw-bold" id="progressPercent">0%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" id="progressBar"
-                                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="text-muted mt-1 d-block" id="progressDetail">Mohon tunggu, jangan tutup halaman
-                            ini.</small>
-                    </div>
 
                     {{-- Tombol Aksi --}}
                     <div class="col-12 d-flex gap-3 pt-3">
-                        <button type="submit" class="btn btn-primary" id="btnSubmit">
-                            {{-- [ICON UPDATE] --}}
-                            <i class="icon-base ri ri-upload-2-line me-2"></i> Mulai Proses Import
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm" id="btnSubmit">
+                            <i class="ri ri-upload-cloud-2-line me-2"></i> Mulai Proses Impor
                         </button>
                         <a href="{{ route('masterdata.parking-locations.index') }}"
-                            class="btn btn-label-secondary">Batal</a>
+                            class="btn btn-label-secondary btn-lg">Batal</a>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+
+                    {{-- Premium Progress Area (Hidden by default) --}}
+                    <div class="col-12 mt-2">
+                        <div id="premiumProgressArea" class="d-none p-4 rounded-3" style="background-color: #f8f9fa; border: 1px solid #e7e7e8;">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="spinner-border text-primary me-3" role="status" id="progressSpinner" style="width: 2rem; height: 2rem;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <i class="ri ri-checkbox-circle-fill text-success d-none" id="progressSuccessIcon" style="font-size: 2.5rem; margin-right: 1rem;"></i>
+                                <div>
+                                    <h5 class="mb-1 fw-bold text-primary" id="progressTitle">Mengunggah File...</h5>
+                                    <p class="mb-0 text-muted" id="progressSubtitle">Mohon jangan tutup halaman ini.</p>
+                                </div>
+                            </div>
+                            <div class="progress" style="height: 12px; border-radius: 10px;" id="progressContainer">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="progressBar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-2">
+                                <span class="fw-bold text-primary" id="progressPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
 
     {{-- Data Ruas Jalan untuk JS Filtering --}}
     <script>
@@ -276,16 +363,20 @@
                 }
             }
 
-            // 4. Handle Submit dengan Axios & Progress Bar
+            // 4. Handle Submit dengan Axios & Premium Inline Progress
             const form = document.getElementById('importForm');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressPercent = document.getElementById('progressPercent');
-            const progressStatus = document.getElementById('progressStatus');
-            const progressDetail = document.getElementById('progressDetail');
             const btnSubmit = document.getElementById('btnSubmit');
             const errorAlert = document.getElementById('errorAlert');
             const errorAlertMessage = document.getElementById('errorAlertMessage');
+
+            // Progress Elements
+            const premiumProgressArea = document.getElementById('premiumProgressArea');
+            const progressSpinner = document.getElementById('progressSpinner');
+            const progressSuccessIcon = document.getElementById('progressSuccessIcon');
+            const progressTitle = document.getElementById('progressTitle');
+            const progressSubtitle = document.getElementById('progressSubtitle');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -298,17 +389,23 @@
                 const formData = new FormData(this);
 
                 // Reset UI
-                errorAlert.classList.add('d-none'); // Sembunyikan alert error lama
-                progressContainer.style.display = 'block';
-                progressBar.style.width = '0%';
-                // [PERUBAHAN] Hapus kelas animasi di awal
-                progressBar.classList.remove('bg-success', 'bg-danger', 'progress-bar-striped',
-                    'progress-bar-animated');
-                progressBar.classList.add('bg-primary');
-                progressPercent.textContent = '0%';
-                progressStatus.textContent = 'Mengupload file...';
-                progressDetail.textContent = 'Mohon tunggu, jangan tutup halaman ini.';
+                errorAlert.classList.add('d-none');
                 btnSubmit.disabled = true;
+
+                // Tampilkan Progress Area
+                premiumProgressArea.classList.remove('d-none');
+                progressSpinner.classList.remove('d-none');
+                progressSuccessIcon.classList.add('d-none');
+                
+                progressBar.style.width = '0%';
+                progressBar.classList.remove('bg-success', 'bg-danger');
+                progressBar.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
+                
+                progressTitle.textContent = 'Mengunggah File...';
+                progressTitle.className = 'mb-1 fw-bold text-primary';
+                progressSubtitle.textContent = 'Mohon tunggu, jangan tutup halaman ini.';
+                progressPercent.textContent = '0%';
+                progressPercent.className = 'fw-bold text-primary';
 
                 axios.post("{{ route('masterdata.parking-locations.importStore') }}", formData, {
                         headers: {
@@ -316,61 +413,59 @@
                             'Accept': 'application/json'
                         },
                         onUploadProgress: function(progressEvent) {
-                            const percentCompleted = Math.round((progressEvent.loaded * 100) /
-                                progressEvent.total);
+                            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                             progressBar.style.width = percentCompleted + '%';
                             progressPercent.textContent = percentCompleted + '%';
 
                             if (percentCompleted === 100) {
-                                // [PERUBAHAN] Ini yang Anda minta
-                                // Saat upload 100%, ganti teks dan buat animasi bolak-balik
-                                progressBar.classList.add('progress-bar-striped',
-                                    'progress-bar-animated');
-                                progressStatus.textContent =
-                                    '{{ 'Proses tiap sheet di input kedalam database' }}';
-                                progressDetail.textContent =
-                                    'Menyimpan data ke database... Ini mungkin perlu beberapa saat.';
+                                progressTitle.textContent = 'Memproses Data...';
+                                progressSubtitle.textContent = 'Menyimpan baris data ke database... Ini mungkin memerlukan beberapa saat.';
                             }
                         }
                     })
                     .then(function(response) {
-                        // Sukses (Pakai Swal2)
+                        // Sukses 
                         progressBar.style.width = '100%';
-                        progressBar.classList.remove('bg-primary', 'progress-bar-striped',
-                            'progress-bar-animated');
+                        progressBar.classList.remove('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
                         progressBar.classList.add('bg-success');
-                        progressStatus.textContent = 'Selesai!';
+                        
+                        progressSpinner.classList.add('d-none');
+                        progressSuccessIcon.classList.remove('d-none');
+                        
+                        progressTitle.textContent = 'Selesai!';
+                        progressTitle.className = 'mb-1 fw-bold text-success';
+                        progressSubtitle.textContent = 'Data berhasil diproses. Mengalihkan...';
+                        progressPercent.textContent = '100%';
+                        progressPercent.className = 'fw-bold text-success';
 
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: response.data.message, // Ambil pesan dari JSON
-                            confirmButtonText: 'OK',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
-                        }).then(() => {
-                            window.location.href =
-                                "{{ route('masterdata.parking-locations.index') }}";
-                        });
+                        // Tunggu sebentar biar user lihat bar hijau 100%
+                        setTimeout(() => {
+                            if (response.data.redirect) {
+                                window.location.href = response.data.redirect;
+                            } else {
+                                window.location.href = "{{ route('masterdata.parking-locations.index') }}";
+                            }
+                        }, 1000);
                     })
                     .catch(function(error) {
-                        // [PERUBAHAN] Error (Pakai Alert Biasa)
-                        progressContainer.style.display = 'none'; // Sembunyikan progress bar
-                        btnSubmit.disabled = false; // Aktifkan tombol lagi
+                        // Jika backend mengirimkan redirect (seperti untuk pesan Toastr)
+                        if (error.response && error.response.data && error.response.data.redirect) {
+                            window.location.href = error.response.data.redirect;
+                            return;
+                        }
+
+                        premiumProgressArea.classList.add('d-none');
+                        btnSubmit.disabled = false; 
 
                         let errorMessage = 'Terjadi kesalahan pada server.';
-                        if (error.response && error.response.data) {
+                        if (error.response && error.response.data && error.response.data.message) {
                             errorMessage = error.response.data.message || errorMessage;
 
-                            // Handle error validasi Laravel
                             if (error.response.data.errors) {
                                 let errors = error.response.data.errors;
                                 let errorList = '<ul>';
                                 for (const key in errors) {
                                     errors[key].forEach(msg => {
-                                        // Bersihkan pesan error
                                         let cleanMsg = msg.replace(/^file(\.\d+)?\s*/, '');
                                         errorList += `<li>${cleanMsg}</li>`;
                                     });
@@ -380,10 +475,8 @@
                             }
                         }
 
-                        // Tampilkan di alert biasa
                         errorAlertMessage.innerHTML = errorMessage;
                         errorAlert.classList.remove('d-none');
-                        // Scroll ke atas agar user lihat errornya
                         window.scrollTo(0, 0);
                     });
             });
