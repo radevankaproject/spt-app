@@ -71,6 +71,12 @@
         if ($key == 'daily_deposit') {
             return 'Rp ' . number_format((float)$value, 0, ',', '.');
         }
+        if ($key == 'estimated_area') {
+            return number_format((float)$value, 2, ',', '.') . ' m²';
+        }
+        if (in_array($key, ['estimated_srp_r2', 'estimated_srp_r4'])) {
+            return (int)$value . ' SRP';
+        }
         return Str::limit($value, 30);
     }
 @endphp
@@ -168,6 +174,44 @@
                             @endif
                         </li>
                     </ul>
+
+                    <h6 class="pb-3 border-bottom mt-2 mb-3 text-uppercase fw-bold text-muted">Estimasi Wilayah & SRP</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-label-info p-2 rounded me-3"><i class="ri icon-base ri-ruler-2-line ri-20px"></i></span>
+                                <div>
+                                    <small class="text-muted d-block">Luas Wilayah</small>
+                                    <span class="fw-semibold">{{ $parkingLocation->estimated_area ? number_format($parkingLocation->estimated_area, 2, ',', '.') . ' m²' : '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-label-warning p-2 rounded me-3"><i class="ri icon-base ri-motorbike-line ri-20px"></i></span>
+                                <div>
+                                    <small class="text-muted d-block">SRP R2</small>
+                                    <span class="fw-semibold">{{ $parkingLocation->estimated_srp_r2 ?? '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-label-primary p-2 rounded me-3"><i class="ri icon-base ri-car-line ri-20px"></i></span>
+                                <div>
+                                    <small class="text-muted d-block">SRP R4</small>
+                                    <span class="fw-semibold">{{ $parkingLocation->estimated_srp_r4 ?? '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info small mb-4 border-0" role="alert">
+                        <div class="d-flex align-items-start">
+                            <i class="ri icon-base ri-information-line me-2 mt-1 ri-18px"></i>
+                            <span>Jumlah Setoran <strong>tidak bergantung</strong> pada luas wilayah parkir maupun jumlah SRP R2/R4.</span>
+                        </div>
+                    </div>
                     
                     @if(Auth::user()->role !== 'leader')
                     <div class="d-flex justify-content-center pt-3">

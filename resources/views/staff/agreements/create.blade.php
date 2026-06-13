@@ -241,7 +241,8 @@
             const resetZoneBtn = $('#reset-zone-btn');
 
             let selectedLocations = {!! json_encode($oldLocations ?? new \stdClass()) !!};
-            
+            let lastSelectedTotal = 0;
+
             // --- Trigger Awal untuk memuat Old Inputs ---
             renderSummary();
             updateDailyDepositTotal();
@@ -273,15 +274,29 @@
                 });
             }
 
-            function updateDailyDepositTotal() {
+            function updateDailyDepositTotal(isManualAction = false) {
                 const jenis = $('input[name="jenis"]:checked').val();
-                if (jenis === 'rilis') {
-                    let total = 0;
-                    for (const id in selectedLocations) {
-                        total += parseFloat(selectedLocations[id].daily_deposit) || 0;
-                    }
-                    dailyDepositInput.value = total > 0 ? new Intl.NumberFormat('id-ID').format(total) : '';
+                let currentSelectedTotal = 0;
+                for (const id in selectedLocations) {
+                    currentSelectedTotal += parseFloat(selectedLocations[id].daily_deposit) || 0;
                 }
+
+                if (jenis === 'rilis') {
+                    dailyDepositInput.value = currentSelectedTotal > 0 ? new Intl.NumberFormat('id-ID').format(currentSelectedTotal) : '';
+                } else {
+                    if (isManualAction) {
+                        let difference = currentSelectedTotal - lastSelectedTotal;
+                        if (difference !== 0) {
+                            let cleanValue = dailyDepositInput.value.replace(/\./g, '');
+                            let currentInputVal = parseFloat(cleanValue) || 0;
+                            let newValue = currentInputVal + difference;
+                            if (newValue < 0) newValue = 0;
+                            dailyDepositInput.value = newValue > 0 ? new Intl.NumberFormat('id-ID').format(newValue) : '';
+                        }
+                    }
+                }
+                
+                lastSelectedTotal = currentSelectedTotal;
                 calculateTotals();
             }
 
@@ -390,7 +405,7 @@
                     '<p class="text-muted text-center">Pilih Ruas Jalan terlebih dahulu.</p>');
                 selectedLocations = {};
                 renderSummary();
-                updateDailyDepositTotal();
+                updateDailyDepositTotal(true);
             });
 
             roadSectionSelect.on('change', function() {
@@ -459,7 +474,7 @@
                     delete selectedLocations[locationId];
                 }
 
-                updateDailyDepositTotal();
+                updateDailyDepositTotal(true);
                 renderSummary();
             });
 
@@ -467,7 +482,7 @@
                 const locationId = $(this).data('id');
                 delete selectedLocations[locationId];
                 $('#loc-' + locationId).prop('checked', false);
-                updateDailyDepositTotal();
+                updateDailyDepositTotal(true);
                 renderSummary();
             });
 

@@ -16,6 +16,7 @@ class RoadSection extends Model
         'zone',
         'latitude',
         'longitude',
+        'last_updated_by',
     ];
 
     //Relaso ParkingLocation

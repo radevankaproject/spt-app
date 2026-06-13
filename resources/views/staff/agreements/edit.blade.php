@@ -285,6 +285,7 @@
 
             // --- State Management ---
             let selectedLocations = {};
+            let lastSelectedTotal = 0;
             const isStatusLocked = {{ $isStatusLocked ? 'true' : 'false' }};
             const jenisSelect = $('#jenis');
             const zonaLockInfo = $('#zona_lock_info');
@@ -327,15 +328,28 @@
                 });
             }
 
-            function updateDailyDepositTotal() {
+            function updateDailyDepositTotal(isManualAction = false) {
                 const jenis = jenisSelect.val();
-                if (jenis === 'rilis') {
-                    let total = 0;
-                    for (const id in selectedLocations) {
-                        total += parseFloat(selectedLocations[id].daily_deposit) || 0;
-                    }
-                    dailyDepositInput.value = total > 0 ? new Intl.NumberFormat('id-ID').format(total) : '';
+                let currentSelectedTotal = 0;
+                for (const id in selectedLocations) {
+                    currentSelectedTotal += parseFloat(selectedLocations[id].daily_deposit) || 0;
                 }
+
+                if (jenis === 'rilis') {
+                    dailyDepositInput.value = currentSelectedTotal > 0 ? new Intl.NumberFormat('id-ID').format(currentSelectedTotal) : '';
+                } else {
+                    if (isManualAction) {
+                        let difference = currentSelectedTotal - lastSelectedTotal;
+                        if (difference !== 0) {
+                            let cleanValue = dailyDepositInput.value.replace(/\./g, '');
+                            let currentInputVal = parseFloat(cleanValue) || 0;
+                            let newValue = currentInputVal + difference;
+                            if (newValue < 0) newValue = 0;
+                            dailyDepositInput.value = newValue > 0 ? new Intl.NumberFormat('id-ID').format(newValue) : '';
+                        }
+                    }
+                }
+                lastSelectedTotal = currentSelectedTotal;
                 calculateTotals();
             }
 
@@ -518,7 +532,7 @@
                 } else {
                     delete selectedLocations[locationId];
                 }
-                updateDailyDepositTotal();
+                updateDailyDepositTotal(true);
                 renderSummary();
             });
 
@@ -526,7 +540,7 @@
                 const locationId = $(this).data('id');
                 delete selectedLocations[locationId];
                 $('#loc-' + locationId).prop('checked', false);
-                updateDailyDepositTotal();
+                updateDailyDepositTotal(true);
                 renderSummary();
             });
 

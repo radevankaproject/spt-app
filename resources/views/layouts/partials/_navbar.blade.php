@@ -77,7 +77,7 @@
                 
                 <ul class="dropdown-menu dropdown-menu-end mt-3 py-2 rounded-3 shadow-lg border-0" style="min-width: 230px;">
                     <li>
-                        <a class="dropdown-item px-4 py-3" href="{{ route('profile.edit') }}">
+                        <a class="dropdown-item px-4 py-3" href="{{ route('profile.index') }}">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
@@ -98,7 +98,7 @@
                     <li><div class="dropdown-divider border-light"></div></li>
                     
                     <li>
-                        <a class="dropdown-item px-4 py-2" href="{{ route('profile.edit') }}">
+                        <a class="dropdown-item px-4 py-2" href="{{ route('profile.index') }}">
                             <i class="icon-base ri ri-user-3-line ri-20px me-3 text-muted"></i><span class="align-middle fw-medium">Profil Saya</span>
                         </a>
                     </li>

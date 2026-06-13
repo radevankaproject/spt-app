@@ -32,12 +32,14 @@
         <div class="col-lg-5">
             @if(Auth::user()->role !== 'leader')
             <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Tambah Versi Baru</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0" id="formTitle">Tambah Versi Baru</h5>
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="btnCancelEdit" onclick="cancelEdit()">Batal Edit</button>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.app-versions.store') }}" method="POST">
+                    <form id="versionForm" action="{{ route('admin.app-versions.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="_method" id="formMethod" value="POST">
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -61,20 +63,17 @@
                             </div>
                             <div class="col-12">
                                 <div class="mb-2 d-flex justify-content-between align-items-center">
-                                    <label class="fw-bold text-dark">Catatan Perubahan (Changelog)</label>
+                                    <label class="fw-bold text-dark" for="changelog">Catatan Perubahan (Changelog)</label>
                                 </div>
-                                <div class="border rounded">
-                                    <div id="editor-container" style="height: 200px;">{!! old('changelog') !!}</div>
-                                </div>
-                                <input type="hidden" id="changelog" name="changelog" required>
-                                <div class="form-text">Sebutkan penambahan fitur atau perbaikan *bug*.</div>
+                                <textarea id="changelog" name="changelog" class="form-control" rows="8" required placeholder="Gunakan format Markdown (*Bold*, - List, dll) atau HTML biasa.">{{ old('changelog') }}</textarea>
+                                <div class="form-text mt-2">Anda bisa menggunakan format <b>Markdown</b> (.md) secara langsung (seperti *Italic*, **Bold**, atau - List).</div>
                                 @error('changelog')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         <div class="pt-6 text-end">
-                            <button type="submit" class="btn btn-primary">Simpan Versi</button>
+                            <button type="submit" class="btn btn-primary" id="btnSubmit">Simpan Versi</button>
                         </div>
                     </form>
                 </div>
@@ -101,10 +100,17 @@
                         <div class="mb-4 pb-4 @if (!$loop->last) border-bottom @endif">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-1"><strong>Versi {{ $version->version }}</strong></h6>
-                                <small class="text-muted">{{ $version->release_date->translatedFormat('d F Y') }}</small>
+                                <div>
+                                    <small class="text-muted me-2">{{ $version->release_date->translatedFormat('d F Y') }}</small>
+                                    @if(Auth::user()->role !== 'leader')
+                                    <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill" onclick="editVersion({{ $version->id }}, '{{ $version->version }}', '{{ $version->release_date->format('Y-m-d') }}', `{{ str_replace('`', '\`', $version->changelog) }}`)" title="Edit Versi">
+                                        <i class="ri ri-edit-box-line ri-18px"></i>
+                                    </button>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="mt-3 text-dark" style="font-size: 0.95rem;">
-                                {!! $version->changelog !!}
+                            <div class="mt-3 text-dark changelog-content" style="font-size: 0.95rem;">
+                                {!! \Illuminate\Support\Str::markdown($version->changelog) !!}
                             </div>
                         </div>
                     @empty
@@ -121,44 +127,60 @@
 @endsection
 
 @push('styles')
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
-    .ql-editor { min-height: 200px; }
-    .ql-editor ul {
-       padding-left: 1.5rem !important;
-       list-style-type: disc !important;
+    .changelog-content ul {
+        padding-left: 1.5rem;
+        list-style-type: disc;
     }
-    .ql-editor ol {
-       padding-left: 1.5rem !important;
-       list-style-type: decimal !important;
+    .changelog-content ol {
+        padding-left: 1.5rem;
+        list-style-type: decimal;
     }
 </style>
 @endpush
 
 @push('scripts')
-<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var quill = new Quill('#editor-container', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['link'],
-                    ['clean']
-                ]
-            }
-        });
+    const form = document.getElementById('versionForm');
+    const formTitle = document.getElementById('formTitle');
+    const formMethod = document.getElementById('formMethod');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnCancelEdit = document.getElementById('btnCancelEdit');
+    const baseAction = "{{ route('admin.app-versions.store') }}";
 
-        var form = document.querySelector('form');
-        if (form) {
-            form.onsubmit = function() {
-                var changelogInput = document.querySelector('input[name=changelog]');
-                changelogInput.value = quill.root.innerHTML;
-            };
-        }
-    });
+    function editVersion(id, version, releaseDate, changelog) {
+        form.action = baseAction.replace('store', id); // This will change to /manage/{id}
+        
+        // Use proper route generation for update if possible, but JS string replace is fine here
+        // The route is admin.app-versions.update
+        // baseAction: /admin/app-versions/manage
+        form.action = `{{ url('admin/app-versions/manage') }}/${id}`;
+        
+        formMethod.value = "PUT";
+        
+        document.getElementById('version').value = version;
+        document.getElementById('release_date').value = releaseDate;
+        document.getElementById('changelog').value = changelog;
+        
+        formTitle.innerText = "Edit Versi " + version;
+        btnSubmit.innerText = "Simpan Perubahan";
+        btnCancelEdit.classList.remove('d-none');
+        
+        // Scroll to form
+        document.getElementById('versionForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        form.action = baseAction;
+        formMethod.value = "POST";
+        
+        document.getElementById('version').value = "";
+        document.getElementById('release_date').value = "{{ date('Y-m-d') }}";
+        document.getElementById('changelog').value = "";
+        
+        formTitle.innerText = "Tambah Versi Baru";
+        btnSubmit.innerText = "Simpan Versi";
+        btnCancelEdit.classList.add('d-none');
+    }
 </script>
 @endpush

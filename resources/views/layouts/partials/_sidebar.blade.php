@@ -86,7 +86,7 @@
         @endif
 
         {{-- MENU ADMINISTRASI --}}
-        @if (Auth::user()->role === 'admin')
+        @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
             <li class="menu-header small"><span class="menu-header-text">Administrasi</span></li>
             <li class="menu-item {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.leaders.*') || request()->routeIs('admin.treasurers.*') || request()->routeIs('admin.field-coordinators.*') ? 'active open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -94,6 +94,7 @@
                     <div data-i18n="Manage Users">Manage Users</div>
                 </a>
                 <ul class="menu-sub">
+                    @if (Auth::user()->role === 'admin')
                     <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                         <a href="{{ route('admin.users.index') }}" class="menu-link"><div>All Users</div></a>
                     </li>
@@ -103,11 +104,13 @@
                     <li class="menu-item {{ request()->routeIs('admin.treasurers.*') ? 'active' : '' }}">
                         <a href="{{ route('admin.treasurers.index') }}" class="menu-link"><div>Bendahara</div></a>
                     </li>
+                    @endif
                     <li class="menu-item {{ request()->routeIs('admin.field-coordinators.*') ? 'active' : '' }}">
                         <a href="{{ route('admin.field-coordinators.index') }}" class="menu-link"><div>Koordinator Lapangan</div></a>
                     </li>
                 </ul>
             </li>
+            @if (Auth::user()->role === 'admin')
             <li class="menu-item {{ request()->routeIs('admin.upt-profile.index') ? 'active' : '' }}">
                 <a href="{{ route('admin.upt-profile.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-building-4-line"></i>
@@ -132,6 +135,7 @@
                     <div data-i18n="Manajemen Versi">Manajemen Versi</div>
                 </a>
             </li>
+            @endif
         @endif
 
         {{-- ✅ LOKASI PARKIR & PKS (DIBUKA UNTUK LEADER JUGA) --}}

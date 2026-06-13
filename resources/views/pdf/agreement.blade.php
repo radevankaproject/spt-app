@@ -564,7 +564,7 @@
         @if (!empty($qrCodeImage))
         <div class="verification-area">
             <div class="qr-container">
-                <img src="data:image/png;base64,{{ $qrCodeImage }}" width="90" height="90" style="display: block; margin: 0 auto;">
+                <img src="{{ $qrCodeImage }}" width="90" height="90" style="display: block; margin: 0 auto;">
                 <p class="qr-text">Pindai Verifikasi</p>
             </div>
         </div>

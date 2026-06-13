@@ -67,6 +67,25 @@
                         </div>
                     </div>
 
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline">
+                            <input type="number" step="0.01" class="form-control" id="estimated_area" name="estimated_area" placeholder="Contoh: 150.5" value="{{ old('estimated_area') }}" min="0" />
+                            <label for="estimated_area">Est. Luas Wilayah (m²)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline">
+                            <input type="number" class="form-control" id="estimated_srp_r2" name="estimated_srp_r2" placeholder="Contoh: 50" value="{{ old('estimated_srp_r2') }}" min="0" />
+                            <label for="estimated_srp_r2">Est. Jumlah SRP Roda 2</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline">
+                            <input type="number" class="form-control" id="estimated_srp_r4" name="estimated_srp_r4" placeholder="Contoh: 20" value="{{ old('estimated_srp_r4') }}" min="0" />
+                            <label for="estimated_srp_r4">Est. Jumlah SRP Roda 4</label>
+                        </div>
+                    </div>
+
                     <div class="col-12 mt-2">
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="toggleMap">

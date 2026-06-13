@@ -57,6 +57,7 @@ class RoadSectionController extends Controller
         }
         unset($validatedData['coordinates']);
 
+        $validatedData['last_updated_by'] = Auth::id();
         RoadSection::create($validatedData);
 
         return redirect()->route('masterdata.road-sections.index')
@@ -98,6 +99,7 @@ class RoadSectionController extends Controller
         }
         unset($validatedData['coordinates']);
 
+        $validatedData['last_updated_by'] = Auth::id();
         $roadSection->update($validatedData);
 
         return redirect()->route('masterdata.road-sections.index')

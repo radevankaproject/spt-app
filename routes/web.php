@@ -32,7 +32,10 @@ use Illuminate\Support\Facades\Route;
 
 // Rute Publik
 Route::get('/', function () {
-    return view('auth/login');
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('auth.login');
 });
 Route::get('/verify/agreement/{code}', [PublicVerificationController::class, 'verifyAgreement'])->name('public.agreement.verify');
 
@@ -47,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile/settings', [ProfileSettingController::class, 'updateProfile'])->name('profile.update.custom');
     Route::put('/password/settings', [ProfileSettingController::class, 'updatePassword'])->name('password.update.custom');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile', [ProfileSettingController::class, 'index'])->name('profile.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::delete('/profile/delete-image', [ProfileController::class, 'deleteImage'])->name('profile.delete-image');
@@ -167,12 +170,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('treasurers', TreasurerController::class);
             Route::patch('treasurers/{treasurer}/toggle-status', [TreasurerController::class, 'toggleStatus'])->name('treasurers.toggle-status');
 
-            // --- Field Coordinators ---
-            Route::get('field-coordinators/trashed', [FieldCoordinatorController::class, 'trashed'])->name('field-coordinators.trashed');
-            Route::patch('field-coordinators/{id}/restore', [FieldCoordinatorController::class, 'restore'])->name('field-coordinators.restore');
-            Route::resource('field-coordinators', FieldCoordinatorController::class);
-            Route::patch('field-coordinators/{field_coordinator}/toggle-status', [FieldCoordinatorController::class, 'toggleStatus'])->name('field-coordinators.toggle-status');
-
             // --- Rute lainnya ---
             Route::resource('blud-bank-accounts', BludBankAccountController::class);
 
@@ -186,9 +183,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::get('app-versions/manage', [AppVersionController::class, 'manage'])->name('app-versions.manage');
             Route::post('app-versions/manage', [AppVersionController::class, 'store'])->name('app-versions.store');
+            Route::put('app-versions/manage/{appVersion}', [AppVersionController::class, 'update'])->name('app-versions.update');
+            Route::delete('app-versions/manage/{appVersion}', [AppVersionController::class, 'destroy'])->name('app-versions.destroy');
 
             Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
             Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+        });
+
+    // --- RUTE-ROUTE ADMIN & STAFF PKS (MANAGE USERS/KORLAP) ---
+    Route::middleware('role:admin,staff_pks')
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            // --- Field Coordinators ---
+            Route::get('field-coordinators/trashed', [FieldCoordinatorController::class, 'trashed'])->name('field-coordinators.trashed');
+            Route::patch('field-coordinators/{id}/restore', [FieldCoordinatorController::class, 'restore'])->name('field-coordinators.restore');
+            Route::resource('field-coordinators', FieldCoordinatorController::class);
+            Route::patch('field-coordinators/{field_coordinator}/toggle-status', [FieldCoordinatorController::class, 'toggleStatus'])->name('field-coordinators.toggle-status');
+            Route::patch('field-coordinators/{field_coordinator}/update-login', [FieldCoordinatorController::class, 'updateLogin'])->name('field-coordinators.update-login');
         });
 
     // --- RUTE-ROUTE AJAX (Bisa diakses oleh beberapa role) ---

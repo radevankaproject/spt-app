@@ -822,7 +822,8 @@ class AgreementController extends Controller
             $dishubLogoPath = storage_path('images/dishub.png');
             $url = route('public.agreement.verify', $agreement->verification_code);
 
-            if (file_exists($dishubLogoPath)) {
+            // Periksa ketersediaan Imagick untuk fitur logo (PNG)
+            if (extension_loaded('imagick') && file_exists($dishubLogoPath)) {
                 try {
                     $img = imagecreatefrompng($dishubLogoPath);
                     imagepalettetotruecolor($img);
@@ -852,7 +853,7 @@ class AgreementController extends Controller
                     imagedestroy($canvas);
 
                     // Merge Canvas Putih Berlogo dengan QR Code
-                    $qrCodeImage = base64_encode(
+                    $qrCodeImage = 'data:image/png;base64,' . base64_encode(
                         QrCode::format('png')
                             ->errorCorrection('H')
                             ->size(200)
@@ -862,10 +863,11 @@ class AgreementController extends Controller
 
                 } catch (\Exception $e) {
                     Log::warning('Gagal merge logo QR Code: '.$e->getMessage());
-                    $qrCodeImage = base64_encode(QrCode::format('png')->errorCorrection('H')->size(200)->generate($url));
+                    $qrCodeImage = 'data:image/svg+xml;base64,' . base64_encode(QrCode::format('svg')->size(200)->generate($url));
                 }
             } else {
-                $qrCodeImage = base64_encode(QrCode::format('png')->errorCorrection('H')->size(200)->generate($url));
+                // Fallback ke SVG (Tanpa Logo) jika tidak ada Imagick (contoh: di Windows)
+                $qrCodeImage = 'data:image/svg+xml;base64,' . base64_encode(QrCode::format('svg')->size(200)->generate($url));
             }
         }
 

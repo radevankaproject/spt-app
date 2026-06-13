@@ -123,6 +123,9 @@ class ParkingLocationController extends Controller
                 }),
             ],
             'daily_deposit' => 'required|numeric|min:0',
+            'estimated_area' => 'nullable|numeric|min:0',
+            'estimated_srp_r2' => 'nullable|integer|min:0',
+            'estimated_srp_r4' => 'nullable|integer|min:0',
             'latitude' => 'nullable|string|max:255',
             'longitude' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:5000', // Limit awal besarin aja krn dicompress di client
@@ -138,6 +141,12 @@ class ParkingLocationController extends Controller
             'daily_deposit.required' => 'Setoran harian wajib diisi.',
             'daily_deposit.numeric' => 'Setoran harian harus berupa angka.',
             'daily_deposit.min' => 'Setoran harian tidak boleh minus.',
+            'estimated_area.numeric' => 'Estimasi luas wilayah harus berupa angka.',
+            'estimated_area.min' => 'Estimasi luas wilayah tidak boleh minus.',
+            'estimated_srp_r2.integer' => 'Estimasi SRP R2 harus berupa bilangan bulat.',
+            'estimated_srp_r2.min' => 'Estimasi SRP R2 tidak boleh minus.',
+            'estimated_srp_r4.integer' => 'Estimasi SRP R4 harus berupa bilangan bulat.',
+            'estimated_srp_r4.min' => 'Estimasi SRP R4 tidak boleh minus.',
             'image.image' => 'File harus berupa gambar.',
             'image.mimes' => 'Gambar harus berformat JPEG, PNG, atau JPG.',
             'image.max' => 'Ukuran gambar tidak boleh lebih dari 300 KB.',
@@ -241,6 +250,9 @@ class ParkingLocationController extends Controller
                 })->ignore($parkingLocation->id),
             ],
             'daily_deposit' => 'required|numeric|min:0',
+            'estimated_area' => 'nullable|numeric|min:0',
+            'estimated_srp_r2' => 'nullable|integer|min:0',
+            'estimated_srp_r4' => 'nullable|integer|min:0',
             'latitude' => 'nullable|string|max:255',
             'longitude' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:300',
@@ -257,6 +269,12 @@ class ParkingLocationController extends Controller
                 'daily_deposit.required' => 'Setoran harian wajib diisi.',
                 'daily_deposit.numeric' => 'Setoran harian harus berupa angka.',
                 'daily_deposit.min' => 'Setoran harian tidak boleh minus.',
+                'estimated_area.numeric' => 'Estimasi luas wilayah harus berupa angka.',
+                'estimated_area.min' => 'Estimasi luas wilayah tidak boleh minus.',
+                'estimated_srp_r2.integer' => 'Estimasi SRP R2 harus berupa bilangan bulat.',
+                'estimated_srp_r2.min' => 'Estimasi SRP R2 tidak boleh minus.',
+                'estimated_srp_r4.integer' => 'Estimasi SRP R4 harus berupa bilangan bulat.',
+                'estimated_srp_r4.min' => 'Estimasi SRP R4 tidak boleh minus.',
                 'image.image' => 'File harus berupa gambar.',
                 'image.mimes' => 'Gambar harus berformat JPEG, PNG, atau JPG.',
                 'image.max' => 'Ukuran gambar tidak boleh lebih dari 300 KB.',
@@ -325,6 +343,10 @@ class ParkingLocationController extends Controller
 
             if (isset($actualChanges['latitude']) || isset($actualChanges['longitude'])) {
                 $descParts[] = 'Titik Koordinat';
+            }
+
+            if (isset($actualChanges['estimated_area']) || isset($actualChanges['estimated_srp_r2']) || isset($actualChanges['estimated_srp_r4'])) {
+                $descParts[] = 'Estimasi Luas/SRP';
             }
 
             if (isset($actualChanges['image']) || isset($actualChanges['proposal_document']) || isset($actualChanges['official_report_document'])) {

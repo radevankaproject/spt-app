@@ -16,6 +16,7 @@ class FieldCoordinator extends Model
         'id_card_number',
         'id_card_img',
         'phone_number',
+        'last_updated_by',
     ];
 
     //relasi ke User

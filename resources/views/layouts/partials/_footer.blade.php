@@ -1,23 +1,31 @@
-<footer class="content-footer footer bg-footer-theme">
+<footer class="content-footer footer bg-footer-theme border-top">
     <div class="container-xxl">
-        <div class="footer-container d-flex align-items-center justify-content-between py-3 flex-md-row flex-column">
-            <div class="text-body mb-2 mb-md-0">
-                ©
-                <script>
-                    document.write(new Date().getFullYear());
-                </script>
-                , made with ❤️ by <a href="#" target="_blank" class="footer-link">Tim IT UPT Perparkiran</a>
-            </div>
-            <div class="d-none d-lg-inline-block">
-                {{-- ✅ PERUBAHAN DI SINI --}}
-                <span class="text-body">
-                    <a href="javascript:void(0);" id="changelog-link" class="footer-link ms-4" data-bs-toggle="modal"
-                        data-bs-target="#changelogModal">
-                        {{ $latestAppVersion->version ?? '1.0.0' }}
-                    </a>
+        <div class="footer-container d-flex align-items-center justify-content-between py-3 flex-column flex-md-row gap-3">
+            <!-- Left Side: Copyright -->
+            <div class="text-body text-center text-md-start" style="font-size: 0.9rem;">
+                <span class="fw-medium">© <script>document.write(new Date().getFullYear());</script></span>
+                <span class="text-muted d-none d-sm-inline-block mx-1">|</span> 
+                <span class="d-block d-sm-inline-block mt-1 mt-sm-0">
+                    Made with <i class="ri ri-heart-fill text-danger"></i> by 
+                    <a href="#" target="_blank" class="footer-link fw-bold text-primary">Tim IT UPT Perparkiran</a>
                 </span>
-                <span class="text-body">
-                    | Page Loaded in: <span id="page-load-time" class="fw-medium"></span>
+            </div>
+            
+            <!-- Right Side: Version & Load Time -->
+            <div class="d-flex align-items-center flex-wrap justify-content-center justify-content-md-end gap-3 text-body">
+                <!-- Page Load Time -->
+                <div class="d-flex align-items-center text-muted small" title="Waktu pemuatan halaman">
+                    <i class="ri ri-timer-flash-line me-1 fs-6"></i> 
+                    <span id="page-load-time" class="fw-medium"></span>
+                </div>
+                
+                <!-- Version Badge -->
+                <div>
+                    <a href="javascript:void(0);" id="changelog-link" class="badge bg-label-primary rounded-pill px-3 py-2 text-decoration-none shadow-sm" data-bs-toggle="modal" data-bs-target="#changelogModal" style="transition: all 0.2s ease; cursor: pointer;">
+                        <i class="ri ri-rocket-line me-1"></i>
+                        {{ $latestAppVersion ? $latestAppVersion->version : 'v1.0.0' }}
+                    </a>
+                </div>
             </div>
         </div>
     </div>

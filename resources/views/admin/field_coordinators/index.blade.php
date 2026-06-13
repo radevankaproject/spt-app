@@ -168,6 +168,18 @@
                                         </button>
                                         @endif
 
+                                        @if(Auth::user()->role === 'admin')
+                                        <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-edit-login"
+                                            data-id="{{ $coordinator->id }}"
+                                            data-username="{{ $coordinator->user->username ?? '' }}"
+                                            data-email="{{ $coordinator->user->email ?? '' }}"
+                                            data-phone="{{ $coordinator->phone_number ?? '' }}"
+                                            data-bs-toggle="modal" data-bs-target="#editLoginModal"
+                                            data-bs-toggle="tooltip" title="Edit Data Login">
+                                            <i class="ri icon-base ri-key-line icon-20px"></i>
+                                        </button>
+                                        @endif
+
                                         {{-- ✅ LOGIKA ACTION SUPER CERDAS (SESUAI REQUEST) --}}
                                         @if(Auth::user()->role !== 'leader')
                                         @if($isActive)
@@ -321,6 +333,73 @@
         </div>
     </div>
 
+    {{-- Modal Edit Data Login (Khusus Admin) --}}
+    @if(Auth::user()->role === 'admin')
+    <div class="modal fade" id="editLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title fw-bold text-primary"><i class="ri ri-shield-keyhole-line me-2"></i>Edit Data Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formLoginModal" action="" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div class="modal-body p-4">
+                        <div class="alert alert-warning small mb-4">
+                            <i class="ri ri-error-warning-line me-1"></i> Data di bawah ini digunakan oleh koordinator untuk masuk ke dalam sistem aplikasi.
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="login_username" name="username" required />
+                            <label for="login_username">Username</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="email" class="form-control" id="login_email" name="email" required />
+                            <label for="login_email">Alamat Email</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="login_phone" name="phone_number" required />
+                            <label for="login_phone">Nomor Telepon/HP</label>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <h6 class="fw-bold mb-3">Ubah Password (Opsional)</h6>
+                        <p class="small text-muted mb-3">Kosongkan jika tidak ingin mereset password.</p>
+
+                        <div class="form-password-toggle mb-3">
+                            <div class="input-group input-group-merge">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                    <label for="password">Password Baru</label>
+                                </div>
+                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ri-eye-off-line"></i></span>
+                            </div>
+                        </div>
+
+                        <div class="form-password-toggle mb-3">
+                            <div class="input-group input-group-merge">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                    <label for="password_confirmation">Konfirmasi Password</label>
+                                </div>
+                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ri-eye-off-line"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary"><i class="ri ri-save-3-line me-1"></i> Simpan Akses</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
 @endsection
 
 @push('scripts')
@@ -345,19 +424,30 @@
             const defaultAvatar = "{{ asset('assets/img/avatars/1.png') }}";
             const defaultKtp = "{{ asset('assets/img/ktp.png') }}";
 
-            document.getElementById('btn-add-korlap').addEventListener('click', function() {
-                modalTitle.innerText = 'Tambah Koordinator Baru';
-                formKorlap.action = "{{ route('admin.field-coordinators.store') }}";
-                methodContainer.innerHTML = '';
-                btnSubmitModal.innerHTML = '<i class="ri-save-3-line me-1"></i> Simpan Koordinator';
-                formKorlap.reset();
-                document.getElementById('position').value = "Mitra Kerjasama Pengelolaan Perparkiran";
-                document.getElementById('avatar-preview').src = defaultAvatar;
-                document.getElementById('idcard-preview').src = defaultKtp;
-                document.getElementById('img-upload').required = false;
-                document.getElementById('idcard-upload').required = false;
-            });
+            // --- 2a. LOGIKA MODAL TAMBAH KORLAP ---
+            const btnAddKorlap = document.getElementById('btn-add-korlap');
+            if(btnAddKorlap) {
+                btnAddKorlap.addEventListener('click', function() {
+                    modalTitle.innerText = 'Tambah Koordinator Baru';
+                    formKorlap.action = "{{ route('admin.field-coordinators.store') }}";
+                    methodContainer.innerHTML = '';
+                    btnSubmitModal.innerHTML = '<i class="ri-save-3-line me-1"></i> Simpan Data';
+                    
+                    document.getElementById('name').value = '';
+                    document.getElementById('id_card_number').value = '';
+                    document.getElementById('phone_number').value = '';
+                    document.getElementById('address').value = '';
+                    document.getElementById('position').value = 'Mitra Kerjasama Pengelolaan Perparkiran';
 
+                    document.getElementById('avatar-preview').src = defaultAvatar;
+                    document.getElementById('idcard-preview').src = defaultKtp;
+
+                    document.getElementById('img-upload').required = false;
+                    document.getElementById('idcard-upload').required = false;
+                });
+            }
+
+            // --- 2b. LOGIKA MODAL EDIT KORLAP ---
             document.querySelectorAll('.btn-edit-korlap').forEach(btn => {
                 btn.addEventListener('click', function() {
                     modalTitle.innerText = 'Edit Koordinator: ' + this.dataset.name;
@@ -376,6 +466,21 @@
 
                     document.getElementById('img-upload').required = false;
                     document.getElementById('idcard-upload').required = false;
+                });
+            });
+
+            // --- 2b. LOGIKA MODAL EDIT LOGIN ---
+            document.querySelectorAll('.btn-edit-login').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const formLogin = document.getElementById('formLoginModal');
+                    if(formLogin) {
+                        formLogin.action = `/admin/field-coordinators/${this.dataset.id}/update-login`;
+                        document.getElementById('login_username').value = this.dataset.username;
+                        document.getElementById('login_email').value = this.dataset.email;
+                        document.getElementById('login_phone').value = this.dataset.phone;
+                        document.getElementById('password').value = '';
+                        document.getElementById('password_confirmation').value = '';
+                    }
                 });
             });
 

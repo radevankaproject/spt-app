@@ -76,10 +76,8 @@
                             <li class="mb-2 d-flex align-items-center"><i class="ri ri-id-card-line text-muted me-2"></i> <span>{{ $fieldCoordinator->id_card_number }}</span></li>
                             <li class="d-flex align-items-start"><i class="ri ri-map-pin-line text-muted me-2 mt-1"></i> <span>{{ $fieldCoordinator->address }}</span></li>
                         </ul>
-                        <div class="d-grid gap-2">
-                            @if(Auth::user()->role !== 'leader')
-                            <a href="{{ route('admin.field-coordinators.edit', $fieldCoordinator->id) }}" class="btn btn-outline-primary"><i class="ri ri-edit-box-line me-1"></i> Edit Profil</a>
-                            @endif
+                        <div class="d-grid gap-2 mt-4">
+                            {{-- Edit buttons moved to index --}}
                         </div>
                     </div>
                 </div>
@@ -223,9 +221,6 @@
                         <img src="{{ $fieldCoordinator->id_card_img ? asset('storage/'.$fieldCoordinator->id_card_img) : '' }}"
                             class="img-fluid w-100" alt="Foto KTP">
                     </div>
-                </div>
-            </div>
-        </div>
     </div>
 @endsection
 

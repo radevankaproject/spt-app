@@ -12,10 +12,26 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Display the login view or redirect if already authenticated.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            } elseif ($user->role === 'leader') {
+                return redirect()->route('leader.dashboard');
+            } elseif ($user->role === 'treasurer') {
+                return redirect()->route('treasurer.dashboard');
+            } elseif ($user->role === 'staff_keu') {
+                return redirect()->route('staff_keu.dashboard');
+            } elseif ($user->role === 'staff_pks') {
+                return redirect()->route('staff_pks.dashboard');
+            }
+            return redirect()->route('dashboard');
+        }
+
         return view('auth.login');
     }
 

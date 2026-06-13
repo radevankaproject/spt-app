@@ -143,6 +143,7 @@ class FieldCoordinatorController extends Controller
                 'id_card_number' => $validatedData['id_card_number'],
                 'id_card_img' => $idCardImagePath,
                 'phone_number' => $validatedData['phone_number'],
+                'last_updated_by' => Auth::id(),
             ]);
 
             DB::commit();
@@ -207,6 +208,15 @@ class FieldCoordinatorController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(FieldCoordinator $fieldCoordinator)
+    {
+        $fieldCoordinator->load('user');
+        return view('admin.field_coordinators.edit', compact('fieldCoordinator'));
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, FieldCoordinator $fieldCoordinator)
@@ -268,6 +278,7 @@ class FieldCoordinatorController extends Controller
                 $coordinatorData['id_card_img'] = $idCardPath;
             }
 
+            $coordinatorData['last_updated_by'] = Auth::id();
             $fieldCoordinator->update($coordinatorData);
 
             DB::commit();
@@ -280,6 +291,34 @@ class FieldCoordinatorController extends Controller
 
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data. Terjadi kesalahan internal.');
         }
+    }
+
+    public function updateLogin(Request $request, FieldCoordinator $fieldCoordinator)
+    {
+        abort_if(Auth::user()->role !== 'admin', 403, 'Akses Ditolak! Hanya Admin yang dapat mengubah data login.');
+
+        $user = $fieldCoordinator->user;
+        
+        $validatedData = $request->validate([
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'phone_number' => 'required|string|max:15',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $user->username = $validatedData['username'];
+        $user->email = $validatedData['email'];
+        $user->phone_number = $validatedData['phone_number'];
+        if ($request->filled('password')) {
+            $user->password = Hash::make($validatedData['password']);
+        }
+        $user->save();
+
+        // Update phone number in field_coordinators table as well to keep them in sync
+        $fieldCoordinator->phone_number = $validatedData['phone_number'];
+        $fieldCoordinator->save();
+
+        return redirect()->back()->with('success', 'Data login koordinator berhasil diperbarui.');
     }
 
     public function toggleStatus(FieldCoordinator $fieldCoordinator)
