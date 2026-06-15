@@ -12,6 +12,12 @@ Pembaruan yang berfokus pada perombakan total antarmuka Profil Pengguna menjadi 
     - Mendesain ulang seluruh halaman *dashboard* dari setiap *role* (Admin, Pimpinan, Bendahara, Staff Keuangan, Staff PKS) dengan tata letak visual standar *premium government*.
     - Menghadirkan komponen *Quick Stats* (6 kartu statistik), *Hero Search Card* gradasi, serta tabel informatif dengan desain minimalis tanpa menghilangkan fungsionalitas.
     - Menyesuaikan *Skeleton Loading* agar setiap transisi sinkron dengan tata letak *dashboard* terbaru.
+- **Fitur Baru - Adendum/Diskon Khusus (Keringanan Tagihan):**
+    - Mengakomodasi kebutuhan lapangan dengan penambahan form "Potongan/Keringanan" pada transaksi setoran bulanan. Nominal tagihan akan otomatis dikurangi berdasarkan besaran potongan.
+    - Diperkuat dengan **Sistem Audit Diskon**, di mana sistem otomatis mendeteksi dan mencatat profil *user* yang menyetujui pemotongan tagihan tersebut. Rincian nama pemberi diskon dan alasannya kini dipampang transparan pada halaman *Detail Setoran* serta cetakan Struk PDF.
+- **Perombakan Premium UI Halaman Setoran:**
+    - Mendesain ulang halaman Detail Transaksi Setoran (*show*) dan Formulir Setoran (*create/edit*) dengan tampilan ultra-premium ala sistem instansi resmi (*Glassmorphism*, transisi halus, penjajaran kolom yang presisi, dan *Skeleton Loading* khusus).
+    - Melengkapi fitur interaktif berupa Modal/Popup elegan untuk memperbesar *thumbnail* lampiran Bukti Transfer langsung tanpa membuka *tab* baru.
 - **Perombakan Total Profil Pengguna (Premium Profile):**
     - Redesain antarmuka Profil menjadi jauh lebih modern, premium, dan dinamis dengan efek *Skeleton Loading* untuk transisi.
     - Mengintegrasikan UI-Avatars API sebagai *fallback* elegan jika *user* belum mengunggah foto profil.

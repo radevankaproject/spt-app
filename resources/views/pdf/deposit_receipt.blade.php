@@ -218,9 +218,23 @@
                     <td>: {{ $depositTransaction->agreement->fieldCoordinator->user->name ?? 'N/A' }}</td>
                 </tr>
                 <tr>
-                    <td>Rincian Tagihan</td>
+                    <td>Rincian Tarif Harian</td>
                     <td>: Rp {{ number_format($depositTransaction->agreement->daily_deposit_amount, 0, ',', '.') }} &times; {{ $daysInMonth }} Hari</td>
                 </tr>
+                <tr>
+                    <td>Tagihan Asli</td>
+                    <td>: Rp {{ number_format($depositTransaction->amount + $depositTransaction->discount_amount, 0, ',', '.') }}</td>
+                </tr>
+                @if ($depositTransaction->discount_amount > 0)
+                    <tr>
+                        <td>Potongan/Keringanan</td>
+                        <td>: Rp {{ number_format($depositTransaction->discount_amount, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <td>Disetujui Oleh</td>
+                        <td>: {{ $depositTransaction->discountApprover->name ?? 'N/A' }}</td>
+                    </tr>
+                @endif
                 <tr>
                     <td>Pembayaran Untuk Bulan</td>
                     <td>: <strong>{{ $monthName . ' ' . $year }}</strong></td>
@@ -251,6 +265,12 @@
             @if (!empty($depositTransaction->notes))
                 <div class="notes-section">
                     <p><strong>Catatan Tambahan:</strong><br><em>{{ $depositTransaction->notes }}</em></p>
+                </div>
+            @endif
+
+            @if (!empty($depositTransaction->discount_notes))
+                <div class="notes-section" style="margin-top: 5px;">
+                    <p><strong>Alasan Potongan:</strong><br><em>{{ $depositTransaction->discount_notes }}</em></p>
                 </div>
             @endif
 

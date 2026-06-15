@@ -1,6 +1,10 @@
 @extends('layouts.app')
 @section('title', 'Catat Setoran Baru')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-deposit-transaction-create')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
@@ -86,12 +90,33 @@
                                     <label for="deposit_date">Tanggal Setor</label>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-4">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" id="original_amount_display" class="form-control fw-bold" readonly />
+                                    <label for="original_amount_display">Tagihan Asli (Rp)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" id="discount_amount_display" class="form-control fw-bold text-danger" value="{{ old('discount_amount', 0) }}" />
+                                    <input type="hidden" name="discount_amount" id="discount_amount" value="{{ old('discount_amount', 0) }}" />
+                                    <label for="discount_amount_display">Potongan/Keringanan (Rp)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-floating form-floating-outline">
                                     <input type="text" name="amount_display" id="amount_display" class="form-control fw-bold text-success" readonly />
-                                    <input type="hidden" name="amount" id="amount" />
-                                    <label for="amount_display">Tagihan Bulan Tersebut (Rp)</label>
-                                    <div id="amount-calculation-info" class="alert alert-info d-none mt-2 p-2 mb-0" role="alert" style="font-size: 0.85rem;"></div>
+                                    <input type="hidden" name="amount" id="amount" value="{{ old('amount') }}" />
+                                    <label for="amount_display">Tagihan Bersih/Setoran (Rp)</label>
+                                </div>
+                            </div>
+                            <div class="col-12" id="amount-calculation-info-container" style="display: none;">
+                                <div id="amount-calculation-info" class="alert alert-info p-2 mb-0" role="alert" style="font-size: 0.85rem;"></div>
+                            </div>
+                            <div class="col-12" id="discount_notes_container" style="display: none;">
+                                <div class="form-floating form-floating-outline">
+                                    <textarea name="discount_notes" id="discount_notes" class="form-control" placeholder="Alasan pemberian potongan...">{{ old('discount_notes') }}</textarea>
+                                    <label for="discount_notes">Alasan Potongan / Diskon (Wajib jika ada potongan)</label>
                                 </div>
                             </div>
                             <div class="col-12">
@@ -137,6 +162,8 @@
             const formFields = $('#deposit-form-fields');
             const modal = $('#payment-exists-modal');
             const amountCalculationInfo = $('#amount-calculation-info');
+            const amountCalculationInfoContainer = $('#amount-calculation-info-container');
+            let originalTagihan = 0;
 
             agreementSelect.select2({
                 placeholder: 'Ketik No. PKS atau Nama Korlap...',
@@ -152,10 +179,16 @@
             function resetAndDisableForm() {
                 formFields.prop('disabled', true);
                 formFields.find('input[type="text"], input[type="date"], textarea').val('');
+                $('#discount_amount').val(0);
+                $('#discount_amount_display').val('');
                 $('#proof-preview').attr('src', "{{ asset('assets/img/illustrations/image-light.png') }}");
                 $('#proof-upload').val('');
-                amountCalculationInfo.addClass('d-none').html('');
+                amountCalculationInfo.html('');
+                amountCalculationInfoContainer.hide();
+                $('#discount_notes_container').hide();
+                $('#discount_notes').removeAttr('required');
                 modal.css({'visibility': 'hidden', 'opacity': '0'});
+                originalTagihan = 0;
             }
 
             agreementSelect.on('select2:select', function(e) {
@@ -176,9 +209,12 @@
 
                             const infoText = `<i class="ri ri-information-line me-1"></i> Setoran bulan <strong>${response.target_month_name}</strong> (Tarif Harian ${formatRupiah(response.daily_amount)} &times; ${response.days_in_month} hari).`;
 
-                            amountCalculationInfo.html(infoText).removeClass('d-none');
-                            $('#amount').val(response.total_amount.toFixed(0));
-                            $('#amount_display').val(formatRupiah(response.total_amount));
+                            amountCalculationInfo.html(infoText);
+                            amountCalculationInfoContainer.show();
+                            
+                            originalTagihan = response.total_amount;
+                            $('#original_amount_display').val(formatRupiah(originalTagihan));
+                            calculateNetTagihan();
 
                             const now = new Date();
                             const dateCode = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
@@ -197,6 +233,43 @@
                 agreementSelect.val(null).trigger('change');
                 resetAndDisableForm();
             });
+
+            $('#discount_amount_display').on('input', function() {
+                // Hapus karakter selain angka
+                let rawValue = $(this).val().replace(/\D/g, '');
+                let discount = parseFloat(rawValue) || 0;
+                
+                if (discount < 0) discount = 0;
+                if (discount > originalTagihan) discount = originalTagihan;
+                
+                $('#discount_amount').val(discount);
+                
+                if (discount === 0 && rawValue === '') {
+                    $(this).val('');
+                } else {
+                    $(this).val(new Intl.NumberFormat('id-ID').format(discount));
+                }
+
+                calculateNetTagihan();
+            });
+
+            function calculateNetTagihan() {
+                let discount = parseFloat($('#discount_amount').val()) || 0;
+                let net = originalTagihan - discount;
+                
+                const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+                
+                $('#amount_display').val(formatRupiah(net));
+                $('#amount').val(net);
+
+                if (discount > 0) {
+                    $('#discount_notes_container').slideDown();
+                    $('#discount_notes').attr('required', true);
+                } else {
+                    $('#discount_notes_container').slideUp();
+                    $('#discount_notes').removeAttr('required');
+                }
+            }
 
             // --- Kompresi Gambar ---
             const fileInput = document.getElementById('proof-upload');

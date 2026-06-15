@@ -1,6 +1,10 @@
 @extends('layouts.app')
 @section('title', 'Edit Transaksi Setoran')
 
+@section('skeleton')
+    @include('layouts.partials._skeleton-deposit-transaction-edit')
+@endsection
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
@@ -56,10 +60,30 @@
                             <label for="deposit_date">Tanggal Setoran</label>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-floating form-floating-outline">
-                            <input type="number" name="amount" id="amount" class="form-control" value="{{ old('amount', $depositTransaction->amount) }}" min="0" required {{ $depositTransaction->is_validated ? 'readonly' : '' }} />
-                            <label for="amount">Jumlah Setoran (Rp)</label>
+                            <input type="text" id="original_amount_display" class="form-control fw-bold" readonly value="Rp {{ number_format($depositTransaction->amount + $depositTransaction->discount_amount, 0, ',', '.') }}" />
+                            <label for="original_amount_display">Tagihan Asli (Rp)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline">
+                            <input type="text" id="discount_amount_display" class="form-control fw-bold text-danger" value="{{ old('discount_amount', $depositTransaction->discount_amount) > 0 ? number_format(old('discount_amount', $depositTransaction->discount_amount), 0, ',', '.') : 0 }}" {{ $depositTransaction->is_validated ? 'readonly' : '' }} />
+                            <input type="hidden" name="discount_amount" id="discount_amount" value="{{ old('discount_amount', $depositTransaction->discount_amount) }}" />
+                            <label for="discount_amount_display">Potongan/Keringanan (Rp)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating form-floating-outline">
+                            <input type="text" name="amount_display" id="amount_display" class="form-control fw-bold text-success" readonly value="Rp {{ number_format($depositTransaction->amount, 0, ',', '.') }}" />
+                            <input type="hidden" name="amount" id="amount" value="{{ old('amount', $depositTransaction->amount) }}" />
+                            <label for="amount_display">Tagihan Bersih/Setoran (Rp)</label>
+                        </div>
+                    </div>
+                    <div class="col-12" id="discount_notes_container" style="{{ $depositTransaction->discount_amount > 0 || old('discount_amount') > 0 ? '' : 'display: none;' }}">
+                        <div class="form-floating form-floating-outline">
+                            <textarea name="discount_notes" id="discount_notes" class="form-control" placeholder="Alasan pemberian potongan..." {{ $depositTransaction->is_validated ? 'readonly' : '' }}>{{ old('discount_notes', $depositTransaction->discount_notes) }}</textarea>
+                            <label for="discount_notes">Alasan Potongan / Diskon (Wajib jika ada potongan)</label>
                         </div>
                     </div>
 
@@ -140,6 +164,41 @@
                     } catch (error) { errorDiv.textContent = "Gagal memproses."; fileInput.value = ''; }
                 });
             }
+
+            @if (!$depositTransaction->is_validated)
+            const originalTagihan = {{ $depositTransaction->amount + $depositTransaction->discount_amount }};
+            
+            $('#discount_amount_display').on('input', function() {
+                // Hapus karakter selain angka
+                let rawValue = $(this).val().replace(/\D/g, '');
+                let discount = parseFloat(rawValue) || 0;
+                
+                if (discount < 0) discount = 0;
+                if (discount > originalTagihan) discount = originalTagihan;
+                
+                $('#discount_amount').val(discount);
+                
+                if (discount === 0 && rawValue === '') {
+                    $(this).val('');
+                } else {
+                    $(this).val(new Intl.NumberFormat('id-ID').format(discount));
+                }
+
+                let net = originalTagihan - discount;
+                const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+                
+                $('#amount_display').val(formatRupiah(net));
+                $('#amount').val(net);
+
+                if (discount > 0) {
+                    $('#discount_notes_container').slideDown();
+                    $('#discount_notes').attr('required', true);
+                } else {
+                    $('#discount_notes_container').slideUp();
+                    $('#discount_notes').removeAttr('required');
+                }
+            });
+            @endif
         });
     </script>
 @endpush

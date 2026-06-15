@@ -124,6 +124,9 @@ class DepositTransactionController extends Controller
             'proof_of_transfer.image' => 'File bukti transfer harus berupa gambar.',
             'proof_of_transfer.mimes' => 'Format gambar bukti transfer harus berupa jpeg, png, atau jpg.',
             'proof_of_transfer.max' => 'Ukuran gambar bukti transfer tidak boleh lebih dari 1MB.',
+            'discount_amount.numeric' => 'Nominal potongan harus berupa angka.',
+            'discount_amount.min' => 'Nominal potongan tidak boleh kurang dari 0.',
+            'discount_notes.required_with' => 'Alasan potongan wajib diisi jika Anda memasukkan nominal potongan/keringanan.',
         ];
 
         $validatedData = $request->validate([
@@ -131,6 +134,16 @@ class DepositTransactionController extends Controller
             // ✅ LOGIKA DIPERBAIKI: Tanggal struk boleh hari ini atau masa lalu (kemarin), tapi gak boleh besok!
             'deposit_date' => 'required|date|before_or_equal:today',
             'amount' => 'required|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'discount_notes' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->input('discount_amount') > 0 && empty($value)) {
+                        $fail('Alasan potongan wajib diisi jika Anda memasukkan nominal potongan/keringanan.');
+                    }
+                },
+            ],
             'notes' => 'nullable|string|max:255',
             'proof_of_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
         ], $messages);
@@ -149,6 +162,14 @@ class DepositTransactionController extends Controller
             $transactionData['treasurer_id'] = $activeTreasurer->id;
             $transactionData['is_validated'] = false;
             $transactionData['referral_code'] = 'TRXPRK-'.now()->format('YmdHis').'-'.strtoupper(Str::random(6));
+
+            if (!empty($transactionData['discount_amount']) && $transactionData['discount_amount'] > 0) {
+                $transactionData['discount_approved_by_user_id'] = Auth::id();
+            } else {
+                $transactionData['discount_amount'] = 0;
+                $transactionData['discount_notes'] = null;
+                $transactionData['discount_approved_by_user_id'] = null;
+            }
 
             if ($request->hasFile('proof_of_transfer')) {
                 $imageName = time().'_proof.'.$request->proof_of_transfer->extension();
@@ -220,6 +241,9 @@ class DepositTransactionController extends Controller
             'proof_of_transfer.image' => 'File bukti transfer harus berupa gambar.',
             'proof_of_transfer.mimes' => 'Format gambar bukti transfer harus berupa jpeg, png, atau jpg.',
             'proof_of_transfer.max' => 'Ukuran gambar bukti transfer tidak boleh lebih dari 1MB.',
+            'discount_amount.numeric' => 'Nominal potongan harus berupa angka.',
+            'discount_amount.min' => 'Nominal potongan tidak boleh kurang dari 0.',
+            'discount_notes.required_with' => 'Alasan potongan wajib diisi jika Anda memasukkan nominal potongan/keringanan.',
         ];
 
         $validatedData = $request->validate([
@@ -231,11 +255,29 @@ class DepositTransactionController extends Controller
                 Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id)->ignore($depositTransaction->id),
             ],
             'amount' => 'required|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'discount_notes' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->input('discount_amount') > 0 && empty($value)) {
+                        $fail('Alasan potongan wajib diisi jika Anda memasukkan nominal potongan/keringanan.');
+                    }
+                },
+            ],
             'notes' => 'nullable|string|max:255',
             'proof_of_transfer' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
         ], $messages);
 
         $transactionData = Arr::except($validatedData, ['proof_of_transfer']);
+
+        if (!empty($transactionData['discount_amount']) && $transactionData['discount_amount'] > 0) {
+            $transactionData['discount_approved_by_user_id'] = Auth::id();
+        } else {
+            $transactionData['discount_amount'] = 0;
+            $transactionData['discount_notes'] = null;
+            $transactionData['discount_approved_by_user_id'] = null;
+        }
 
         if ($request->hasFile('proof_of_transfer')) {
             if ($depositTransaction->proof_of_transfer && Storage::disk('public')->exists($depositTransaction->proof_of_transfer)) {

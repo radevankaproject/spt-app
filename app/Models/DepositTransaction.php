@@ -16,6 +16,9 @@ class DepositTransaction extends Model
         'referral_code',
         'deposit_date',
         'amount',
+        'discount_amount',
+        'discount_notes',
+        'discount_approved_by_user_id',
         'proof_of_transfer',
         'notes',
         'is_validated',
@@ -25,6 +28,7 @@ class DepositTransaction extends Model
     protected $casts = [
         'deposit_date'    => 'date',
         'amount'          => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'is_validated'    => 'boolean',
         'validation_date' => 'datetime', // <-- UBAH INI (dan pastikan tipe castnya datetime, bukan date)
     ];
@@ -50,5 +54,10 @@ class DepositTransaction extends Model
     public function treasurer()
     {
         return $this->belongsTo(Treasurer::class);
+    }
+
+    public function discountApprover()
+    {
+        return $this->belongsTo(User::class, 'discount_approved_by_user_id');
     }
 }
