@@ -364,6 +364,7 @@
                                             <th>Tanggal</th>
                                             <th>Nominal</th>
                                             <th>Status</th>
+                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="table-border-bottom-0">
@@ -382,10 +383,21 @@
                                                                 class="ri icon-base ri-time-line me-1"></i> Pending</span>
                                                     @endif
                                                 </td>
+                                                <td>
+                                                    @if ($transaction->is_validated)
+                                                        <a href="{{ route('masterdata.deposit-transactions.pdf', $transaction->id) }}" target="_blank" class="btn btn-sm btn-icon btn-outline-primary rounded-pill shadow-sm" data-bs-toggle="tooltip" title="Cetak Invoice">
+                                                            <i class="ri ri-printer-line"></i>
+                                                        </a>
+                                                    @else
+                                                        <button type="button" class="btn btn-sm btn-icon btn-outline-secondary rounded-pill shadow-sm" data-bs-toggle="tooltip" title="Menunggu Validasi" disabled>
+                                                            <i class="ri ri-printer-line"></i>
+                                                        </button>
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="3" class="text-center text-muted py-4"><i
+                                                <td colspan="4" class="text-center text-muted py-4"><i
                                                         class="ri icon-base ri-wallet-3-fill me-1"></i> Belum ada riwayat setoran sama
                                                     sekali.</td>
                                             </tr>
@@ -582,109 +594,89 @@
                             </div>
                             <div class="card-body pt-4">
                                 @if($agreement->status === 'expired')
-                                    <div class="table-responsive text-nowrap">
-                                        <table class="table table-hover mb-0">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th width="20%">Tanggal Arsip</th>
-                                                    <th width="40%">Catatan Perubahan</th>
-                                                    <th width="25%">Dibuat Oleh</th>
-                                                    <th width="15%" class="text-center">Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="table-border-bottom-0">
-                                                @forelse ($pdfHistories as $history)
-                                                    @php
-                                                        $uName = $history->generator->name ?? 'Sistem Server';
-                                                        $uAvatar = ($history->generator && $history->generator->img)
-                                                            ? asset('storage/' . $history->generator->img)
-                                                            : "https://ui-avatars.com/api/?name=" . urlencode($uName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
-                                                    @endphp
-                                                    <tr>
-                                                        <td>
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="avatar avatar-sm me-3">
-                                                                    <span class="avatar-initial rounded bg-label-danger"><i class="ri ri-file-pdf-2-line ri-20px"></i></span>
-                                                                </div>
-                                                                <div>
-                                                                    <span class="fw-bold text-dark d-block">{{ $history->created_at->translatedFormat('d M Y') }}</span>
-                                                                    <small class="text-muted">{{ $history->created_at->format('H:i') }} WIB</small>
-                                                                </div>
+                                    <div class="d-flex flex-column gap-3">
+                                        @forelse ($pdfHistories as $history)
+                                            @php
+                                                $uName = $history->generator->name ?? 'Sistem Server';
+                                                $uAvatar = ($history->generator && $history->generator->img)
+                                                    ? asset('storage/' . $history->generator->img)
+                                                    : "https://ui-avatars.com/api/?name=" . urlencode($uName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
+                                                    
+                                                $notesList = array_filter(array_map('trim', explode(';', $history->notes)));
+                                                $hasMultiple = count($notesList) > 1;
+                                                $collapseId = 'collapseNote_' . $history->id;
+                                            @endphp
+                                            
+                                            <div class="border rounded-4 p-3 bg-white shadow-sm position-relative overflow-hidden" style="transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.06)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)'">
+                                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                                    
+                                                    {{-- Kiri: Ikon & Info Tanggal --}}
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="avatar avatar-md rounded-circle bg-label-danger d-flex align-items-center justify-content-center flex-shrink-0">
+                                                            <i class="ri ri-file-pdf-2-fill fs-4"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1 fw-bold text-dark">Arsip PKS - {{ $history->created_at->translatedFormat('d M Y') }}</h6>
+                                                            <div class="d-flex align-items-center text-muted" style="font-size: 0.85rem;">
+                                                                <i class="ri ri-time-line me-1"></i> {{ $history->created_at->format('H:i') }} WIB
+                                                                <span class="mx-2">•</span>
+                                                                <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle me-1" width="16" height="16" style="object-fit: cover;">
+                                                                Dibuat oleh {{ Str::limit($uName, 15) }}
                                                             </div>
-                                                        </td>
-                                                       <td>
-                                                            @php
-                                                                $notesList = array_filter(array_map('trim', explode(';', $history->notes)));
-                                                                $hasMultiple = count($notesList) > 1;
-                                                                $previewText = Str::limit($notesList[0] ?? $history->notes, 50);
-                                                                $collapseId = 'collapseNote_' . $history->id;
-                                                            @endphp
-                        
-                                                            @if($hasMultiple || strlen($history->notes) > 50)
-                                                                <div class="d-flex flex-column align-items-start">
-                                                                    <div class="d-flex align-items-center gap-2 cursor-pointer"
-                                                                         data-bs-toggle="collapse"
-                                                                         data-bs-target="#{{ $collapseId }}"
-                                                                         aria-expanded="false"
-                                                                         aria-controls="{{ $collapseId }}">
-                                                                        <span class="text-body fw-medium">{{ $previewText }}</span>
-                                                                        <span class="badge bg-label-primary rounded-pill px-2 py-1" data-bs-toggle="tooltip" title="Klik untuk lihat detail">
-                                                                            <i class="ri ri-arrow-down-s-line"></i> Detail
-                                                                        </span>
-                                                                    </div>
-                        
-                                                                    <div class="collapse w-100 mt-2" id="{{ $collapseId }}">
-                                                                        <div class="p-3 bg-lighter rounded-3 border">
-                                                                            @if($hasMultiple)
-                                                                                <ul class="list-unstyled mb-0">
-                                                                                    @foreach($notesList as $note)
-                                                                                        <li class="d-flex align-items-start mb-2">
-                                                                                            <i class="ri ri-checkbox-circle-fill text-primary me-2 mt-1 ri-14px"></i>
-                                                                                            <span class="text-wrap" style="white-space: normal; line-height: 1.4;">{{ $note }}</span>
-                                                                                        </li>
-                                                                                    @endforeach
-                                                                                </ul>
-                                                                            @else
-                                                                                <p class="mb-0 text-wrap" style="white-space: normal; line-height: 1.4;">{{ $history->notes }}</p>
-                                                                            @endif
-                                                                        </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Kanan: Aksi --}}
+                                                    <div class="d-flex gap-2 align-items-center">
+                                                        <a href="{{ asset('storage/' . $history->file_path) }}" target="_blank"
+                                                            class="btn btn-sm btn-outline-info rounded-pill fw-medium">
+                                                            <i class="ri ri-eye-line me-1"></i> Lihat
+                                                        </a>
+                                                        <a href="{{ asset('storage/' . $history->file_path) }}" download
+                                                            class="btn btn-sm btn-primary rounded-pill fw-medium shadow-sm">
+                                                            <i class="ri ri-download-cloud-2-line me-1"></i> Unduh
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Bawah: Catatan Perubahan (Premium Box) --}}
+                                                <div class="mt-3 pt-3 border-top">
+                                                    <div class="d-flex align-items-start gap-2">
+                                                        <i class="ri ri-message-3-line text-primary mt-1"></i>
+                                                        <div class="w-100">
+                                                            @if($hasMultiple)
+                                                                <div class="d-flex justify-content-between align-items-center cursor-pointer" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">
+                                                                    <span class="text-dark fw-medium" style="font-size: 0.9rem;">Terdapat {{ count($notesList) }} catatan perubahan. <span class="text-primary">Lihat rincian</span></span>
+                                                                    <i class="ri ri-arrow-down-s-line text-muted"></i>
+                                                                </div>
+                                                                <div class="collapse mt-2" id="{{ $collapseId }}">
+                                                                    <div class="bg-lighter p-3 rounded-3">
+                                                                        <ul class="list-unstyled mb-0">
+                                                                            @foreach($notesList as $note)
+                                                                                <li class="d-flex align-items-start mb-2 text-muted" style="font-size: 0.85rem;">
+                                                                                    <i class="ri ri-check-line text-success me-2 fs-6"></i>
+                                                                                    <span style="line-height: 1.4;">{{ $note }}</span>
+                                                                                </li>
+                                                                            @endforeach
+                                                                        </ul>
                                                                     </div>
                                                                 </div>
                                                             @else
-                                                                <span class="text-wrap" style="white-space: normal;">{{ $history->notes }}</span>
+                                                                <p class="mb-0 text-muted" style="font-size: 0.9rem; line-height: 1.4;">{{ $history->notes }}</p>
                                                             @endif
-                                                        </td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center">
-                                                                <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle me-2 shadow-sm" width="28" height="28" style="object-fit: cover;">
-                                                                <span class="fw-medium text-dark">{{ $uName }}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td class="text-center">
-                                                            <div class="d-flex justify-content-center gap-2">
-                                                                <a href="{{ asset('storage/' . $history->file_path) }}" target="_blank"
-                                                                    class="btn btn-sm btn-icon btn-text-info rounded-pill" data-bs-toggle="tooltip"
-                                                                    title="Buka PDF">
-                                                                    <i class="icon-base ri ri-external-link-line ri-20px"></i>
-                                                                </a>
-                                                                <a href="{{ asset('storage/' . $history->file_path) }}" download
-                                                                    class="btn btn-sm btn-icon btn-text-primary rounded-pill" data-bs-toggle="tooltip"
-                                                                    title="Unduh PDF">
-                                                                    <i class="icon-base ri ri-download-cloud-2-line ri-20px"></i>
-                                                                </a>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td colspan="4" class="text-center py-5">
-                                                            <i class="ri ri-folder-open-line text-muted mb-3 d-block" style="font-size: 3rem;"></i>
-                                                            <p class="mb-0 text-muted">Belum ada arsip PDF yang tersimpan untuk perjanjian ini.</p>
-                                                        </td>
-                                                    </tr>
-                                                @endforelse
-                                            </tbody>
-                                        </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="text-center py-5 border rounded-4 bg-lighter" style="border-style: dashed !important; border-width: 2px !important;">
+                                                <div class="avatar avatar-xl mx-auto mb-3 bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center">
+                                                    <i class="ri ri-folder-open-line text-muted fs-2"></i>
+                                                </div>
+                                                <h6 class="fw-bold text-dark mb-1">Arsip Kosong</h6>
+                                                <p class="mb-0 text-muted">Belum ada dokumen PDF lama yang tersimpan.</p>
+                                            </div>
+                                        @endforelse
                                     </div>
                                 @else
                                     <div class="pdf-viewer-wrapper shadow-sm">

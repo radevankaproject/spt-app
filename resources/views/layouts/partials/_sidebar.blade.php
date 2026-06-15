@@ -210,7 +210,7 @@
             <li class="menu-item {{ request()->routeIs('masterdata.deposit-transactions.*') ? 'active' : '' }}">
                 <a href="{{ route('masterdata.deposit-transactions.index') }}" class="menu-link">
                     <i class="icon-base ri menu-icon tf-icons ri-safe-2-line"></i>
-                    <div data-i18n="Validasi Setoran">Validasi Setoran</div>
+                    <div data-i18n="Input Setoran">Input Setoran</div>
                 </a>
             </li>
             @endif

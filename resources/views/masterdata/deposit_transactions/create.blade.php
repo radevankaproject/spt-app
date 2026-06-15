@@ -11,7 +11,98 @@
         .select2-container .select2-selection--single { height: 58px !important; padding: 0.5rem 0.75rem; display: flex; align-items: center; }
         .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 40px !important; }
         .select2-container--default .select2-selection--single .select2-selection__arrow { height: 56px !important; }
-        #payment-exists-modal { visibility: hidden; opacity: 0; transition: opacity 0.3s ease-in-out; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.98); z-index: 1050; border-radius: 0.5rem; backdrop-filter: blur(2px); }
+        .disabled-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 0.5rem;
+        }
+        
+        .premium-lock-modal {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 48px 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05);
+            border: none;
+            max-width: 420px;
+            width: 90%;
+            transform: translateY(30px) scale(0.9);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .disabled-overlay.active .premium-lock-modal {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .modal-icon-container {
+            width: 88px;
+            height: 88px;
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.2) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.3), 0 15px 25px -5px rgba(255, 193, 7, 0.2);
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.3), 0 0 0 0 rgba(255, 193, 7, 0.4); }
+            70% { box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.3), 0 0 0 20px rgba(255, 193, 7, 0); }
+            100% { box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.3), 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+
+        .modal-icon-container i {
+            font-size: 3.5rem !important;
+            color: #ff9800 !important;
+            line-height: 1;
+            filter: drop-shadow(0 4px 6px rgba(255, 152, 0, 0.3));
+        }
+
+        .modal-title {
+            font-weight: 700;
+            color: #2b3445;
+            margin-bottom: 12px;
+            font-size: 1.25rem;
+        }
+
+        .modal-message {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
     </style>
 @endpush
 
@@ -35,22 +126,28 @@
     @endif
 
     <div class="card position-relative border-0 shadow-sm">
-        <div id="payment-exists-modal" class="d-flex justify-content-center align-items-center text-center p-4">
-            <div>
-                <i class="ri ri-time-line ri-5x text-warning mb-4 d-block"></i>
-                <h4 class="mb-2">Belum Saatnya Membayar</h4>
-                <div class="mb-4 text-muted" id="modal-message"></div>
-                <button type="button" id="change-agreement-btn" class="btn btn-outline-secondary"><i class="ri ri-arrow-go-back-line me-1"></i>Pilih PKS Lain</button>
+        <div id="payment-exists-modal" class="disabled-overlay d-flex justify-content-center align-items-center">
+            <div class="premium-lock-modal">
+                <div class="modal-icon-container">
+                    <i class="tf-icons ri ri-time-fill" id="modal-icon"></i>
+                </div>
+                <h4 class="modal-title" id="modal-title">Belum Saatnya Membayar</h4>
+                <p class="modal-message" id="modal-message"></p>
+                <button type="button" class="btn btn-primary btn-premium mt-2" id="modal-action-btn">
+                    <i class="tf-icons ri ri-refresh-line me-2"></i> Pilih PKS Lain
+                </button>
             </div>
         </div>
 
         <div class="card-header border-bottom pb-3">
             <h5 class="card-title mb-0">Formulir Setoran Bulanan</h5>
         </div>
-        <div class="card-body pt-4">
+        <div class="card-body">
             <form action="{{ route('masterdata.deposit-transactions.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="row g-5">
+                <input type="hidden" name="target_agreement_id" id="target_agreement_id">
+                
+                <div class="row g-4">
 
                     {{-- ✅ INFO BENDAHARA DIPINDAH KE LUAR FIELDSET AGAR SELALU MUNCUL --}}
                     <div class="col-12 mb-2">
@@ -77,6 +174,13 @@
                     <fieldset id="deposit-form-fields" disabled>
                         <div class="row g-4 mt-2">
                             <div class="col-12"><hr class="mt-0 mb-2"> <p class="form-label mb-0 fw-bold">2. Detail Setoran Otomatis</p></div>
+
+                            <div class="col-md-12 mb-3">
+                                <label for="transaction_month" class="form-label fw-bold">Bulan Tagihan</label>
+                                <select name="transaction_month" id="transaction_month" class="form-select" required>
+                                    <option value="">-- Pilih Bulan Tagihan --</option>
+                                </select>
+                            </div>
 
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -163,6 +267,8 @@
             const modal = $('#payment-exists-modal');
             const amountCalculationInfo = $('#amount-calculation-info');
             const amountCalculationInfoContainer = $('#amount-calculation-info-container');
+            const transactionMonthSelect = $('#transaction_month');
+            let availableMonthsData = [];
             let originalTagihan = 0;
 
             agreementSelect.select2({
@@ -179,15 +285,18 @@
             function resetAndDisableForm() {
                 formFields.prop('disabled', true);
                 formFields.find('input[type="text"], input[type="date"], textarea').val('');
+                transactionMonthSelect.empty().append('<option value="">-- Pilih Bulan Tagihan --</option>');
+                $('#target_agreement_id').val('');
                 $('#discount_amount').val(0);
                 $('#discount_amount_display').val('');
-                $('#proof-preview').attr('src', "{{ asset('assets/img/illustrations/image-light.png') }}");
+                $('#proof-preview').attr('src', "{{ asset('/assets/img/transaksi.png') }}");
                 $('#proof-upload').val('');
                 amountCalculationInfo.html('');
                 amountCalculationInfoContainer.hide();
                 $('#discount_notes_container').hide();
                 $('#discount_notes').removeAttr('required');
-                modal.css({'visibility': 'hidden', 'opacity': '0'});
+                let modal = $('#payment-exists-modal');
+                modal.removeClass('active');
                 originalTagihan = 0;
             }
 
@@ -200,21 +309,92 @@
                     type: 'GET',
                     success: function(response) {
                         if (!response.can_pay) {
+                            $('#modal-title').html('Belum Saatnya Membayar');
+                            $('#modal-icon').attr('class', 'tf-icons ri ri-time-fill');
                             $('#modal-message').html(response.message);
-                            modal.css({'visibility': 'visible', 'opacity': '1'});
+                            $('#modal-action-btn').html('<i class="tf-icons ri ri-refresh-line me-2"></i> Pilih PKS Lain')
+                                .removeClass('btn-danger').addClass('btn-primary')
+                                .off('click').on('click', function() { location.reload(); });
+                            
+                            modal.addClass('active').css({'visibility': 'visible', 'opacity': '1'});
                         } else {
+                            modal.removeClass('active').css({'visibility': 'hidden', 'opacity': '0'});
                             formFields.prop('disabled', false);
+
+                            availableMonthsData = response.available_months;
+                            transactionMonthSelect.empty().append('<option value="">-- Pilih Bulan Tagihan --</option>');
+                            
+                            $.each(availableMonthsData, function(index, month) {
+                                let opt = new Option(month.label, month.date);
+                                $(opt).attr('data-amount', month.amount);
+                                $(opt).attr('data-agreement-id', month.agreement_id);
+                                transactionMonthSelect.append(opt);
+                            });
 
                             const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 
-                            const infoText = `<i class="ri ri-information-line me-1"></i> Setoran bulan <strong>${response.target_month_name}</strong> (Tarif Harian ${formatRupiah(response.daily_amount)} &times; ${response.days_in_month} hari).`;
+                            // Saat bulan tagihan dipilih
+                            transactionMonthSelect.off('change').on('change', function() {
+                                const selectedOption = $(this).find('option:selected');
+                                const selectedMonthVal = selectedOption.val();
+                                
+                                // Validasi: Hanya boleh bayar tagihan tertua (urutan pertama)
+                                if (selectedMonthVal && availableMonthsData.length > 0) {
+                                    const firstAvailableMonthVal = availableMonthsData[0].date;
+                                    if (selectedMonthVal !== firstAvailableMonthVal) {
+                                        const firstMonthLabel = availableMonthsData[0].label;
+                                        $('#modal-title').html('Tunggakan Harus Dilunasi');
+                                        $('#modal-icon').attr('class', 'tf-icons ri ri-error-warning-fill text-danger');
+                                        $('#modal-message').html(`Sistem mendeteksi adanya tagihan tertunggak.<br><br>Anda <strong>wajib</strong> melunasi tagihan <strong>${firstMonthLabel}</strong> terlebih dahulu sebelum dapat membayar tagihan yang baru.`);
+                                        
+                                        $('#modal-action-btn').html('<i class="tf-icons ri ri-check-line me-2"></i> Mengerti, Saya Bayar Itu Dulu')
+                                            .removeClass('btn-primary')
+                                            .addClass('btn-danger')
+                                            .off('click').on('click', function() {
+                                                modal.removeClass('active').css({'visibility': 'hidden', 'opacity': '0'});
+                                                transactionMonthSelect.val(firstAvailableMonthVal).trigger('change');
+                                            });
+                                            
+                                        modal.addClass('active').css({'visibility': 'visible', 'opacity': '1'});
+                                        return;
+                                    }
+                                }
 
-                            amountCalculationInfo.html(infoText);
-                            amountCalculationInfoContainer.show();
-                            
-                            originalTagihan = response.total_amount;
-                            $('#original_amount_display').val(formatRupiah(originalTagihan));
-                            calculateNetTagihan();
+                                const targetAmount = selectedOption.data('amount');
+                                const targetAgreementId = selectedOption.data('agreement-id');
+
+                                if (targetAgreementId) {
+                                    $('#target_agreement_id').val(targetAgreementId);
+                                } else {
+                                    $('#target_agreement_id').val('');
+                                }
+
+                                if (!selectedOption.val()) {
+                                    amountCalculationInfoContainer.hide();
+                                    $('#original_amount_display').val('');
+                                    originalTagihan = 0;
+                                    calculateNetTagihan();
+                                    return;
+                                }
+
+                                const selectedMonth = availableMonthsData.find(m => m.date === selectedOption.val());
+                                if (selectedMonth) {
+                                    const dAmount = selectedMonth.daily_amount || response.daily_amount;
+                                    const infoText = `<i class="ri ri-information-line me-1"></i> Setoran bulan <strong>${selectedMonth.label}</strong> (Tarif Harian ${formatRupiah(dAmount)} &times; ${selectedMonth.days} hari).`;
+                                    
+                                    amountCalculationInfo.html(infoText);
+                                    amountCalculationInfoContainer.show();
+                                    
+                                    originalTagihan = targetAmount || selectedMonth.amount;
+                                    $('#original_amount_display').val(formatRupiah(originalTagihan));
+                                    calculateNetTagihan();
+                                }
+                            });
+
+                            // Select the first available month by default
+                            if (availableMonthsData.length > 0) {
+                                transactionMonthSelect.val(availableMonthsData[0].date).trigger('change');
+                            }
 
                             const now = new Date();
                             const dateCode = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
@@ -300,6 +480,18 @@
                     } catch (error) { errorDiv.textContent = "Gagal memproses gambar."; fileInput.value = ''; imagePreview.src = defaultSrc; }
                 });
             }
+
+            // Auto-trigger if targetAgreement is passed from server
+            @if(isset($targetAgreement))
+                var newOption = new Option("{{ $targetAgreement->agreement_number }} (Korlap: {{ $targetAgreement->fieldCoordinator->user->name ?? 'N/A' }})", "{{ $targetAgreement->id }}", true, true);
+                agreementSelect.append(newOption).trigger('change');
+                agreementSelect.trigger({
+                    type: 'select2:select',
+                    params: {
+                        data: { id: "{{ $targetAgreement->id }}" }
+                    }
+                });
+            @endif
         });
     </script>
 @endpush

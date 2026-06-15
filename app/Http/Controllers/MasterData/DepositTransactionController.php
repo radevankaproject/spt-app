@@ -30,16 +30,38 @@ class DepositTransactionController extends Controller
         $searchYear = $request->input('search_year');
         $startDateRange = $request->input('start_date_range');
         $endDateRange = $request->input('end_date_range');
+        $status = $request->input('status', 'jatuh_tempo');
 
-        $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
+        $arrears = collect();
+        if ($status === 'jatuh_tempo') {
+            $allAgreements = Agreement::with(['fieldCoordinator.user', 'leader.user'])->get();
+            $items = [];
+            $searchLower = $search ? strtolower($search) : null;
+            
+            foreach ($allAgreements as $agr) {
+                // Filter pencarian
+                if ($searchLower) {
+                    $match = false;
+                    if (str_contains(strtolower($agr->agreement_number), $searchLower)) $match = true;
+                    if ($agr->fieldCoordinator && $agr->fieldCoordinator->user && str_contains(strtolower($agr->fieldCoordinator->user->name), $searchLower)) $match = true;
+                    if (!$match) continue;
+                }
 
-        $currentYear = Carbon::now()->year;
-        $query->whereHas('agreement', function ($agreementQuery) use ($currentYear) {
-            // ✅ Ambil yang active maupun pending (karena PKS baru menunggu setoran pertama)
-            $agreementQuery->whereIn('status', ['active', 'pending'])
-                ->whereYear('start_date', '<=', $currentYear)
-                ->whereYear('end_date', '>=', $currentYear);
-        });
+                // Kita buat fungsi khusus checkExistingTransaction() berjalan
+                $calc = $this->checkExistingTransaction($agr);
+                $resp = json_decode($calc->getContent(), true);
+                if (isset($resp['can_pay']) && $resp['can_pay'] && !empty($resp['available_months'])) {
+                    $items[] = (object) [
+                        'agreement' => $agr,
+                        'month_label' => $resp['available_months'][0]['label'],
+                        'amount' => $resp['available_months'][0]['amount']
+                    ];
+                }
+            }
+            $arrears = collect($items);
+            $depositTransactions = collect(); // empty for this tab
+        } else {
+            $query = DepositTransaction::with(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -62,27 +84,34 @@ class DepositTransactionController extends Controller
             });
         }
 
+        if ($status === 'pending') {
+            $query->where('is_validated', 0);
+        } elseif ($status === 'validated') {
+            $query->where('is_validated', 1);
+        }
+
         if ($searchDate) {
             $query->whereDate('deposit_date', $searchDate);
         }
         if ($searchMonth) {
-            $query->whereMonth('deposit_date', $searchMonth);
+            $query->whereMonth('transaction_month', $searchMonth);
         }
         if ($searchYear) {
-            $query->whereYear('deposit_date', $searchYear);
+            $query->whereYear('transaction_month', $searchYear);
         }
-        if ($startDateRange && $endDateRange) {
-            $query->whereBetween('deposit_date', [$startDateRange, $endDateRange]);
-        } elseif ($startDateRange) {
-            $query->whereDate('deposit_date', '>=', $startDateRange);
-        } elseif ($endDateRange) {
-            $query->whereDate('deposit_date', '<=', $endDateRange);
-        }
+            if ($startDateRange && $endDateRange) {
+                $query->whereBetween('deposit_date', [$startDateRange, $endDateRange]);
+            } elseif ($startDateRange) {
+                $query->whereDate('deposit_date', '>=', $startDateRange);
+            } elseif ($endDateRange) {
+                $query->whereDate('deposit_date', '<=', $endDateRange);
+            }
 
-        $depositTransactions = $query->latest('deposit_date')->paginate(10);
+            $depositTransactions = $query->latest('deposit_date')->paginate(10);
+        }
 
         return view('masterdata.deposit_transactions.index', compact(
-            'depositTransactions', 'search', 'searchDate', 'searchMonth', 'searchYear', 'startDateRange', 'endDateRange'
+            'depositTransactions', 'arrears', 'search', 'searchDate', 'searchMonth', 'searchYear', 'startDateRange', 'endDateRange', 'status'
         ));
     }
 
@@ -102,8 +131,12 @@ class DepositTransactionController extends Controller
         }
 
         $activeAgreements = collect();
+        $targetAgreement = null;
+        if (request()->has('target_agreement_id')) {
+            $targetAgreement = \App\Models\Agreement::with('fieldCoordinator.user')->find(request('target_agreement_id'));
+        }
 
-        return view('masterdata.deposit_transactions.create', compact('activeAgreements', 'activeTreasurer'));
+        return view('masterdata.deposit_transactions.create', compact('activeAgreements', 'activeTreasurer', 'targetAgreement'));
     }
 
     public function store(Request $request)
@@ -114,6 +147,8 @@ class DepositTransactionController extends Controller
         $messages = [
             'agreement_id.required' => 'Perjanjian kerjasama wajib dipilih.',
             'agreement_id.exists' => 'Data perjanjian tidak ditemukan di sistem.',
+            'transaction_month.required' => 'Bulan setoran wajib dipilih.',
+            'transaction_month.date' => 'Format bulan setoran tidak valid.',
             'deposit_date.required' => 'Tanggal setoran wajib diisi.',
             'deposit_date.date' => 'Format tanggal setoran tidak valid.',
             'deposit_date.before_or_equal' => 'Tanggal setoran pada struk tidak boleh melebihi hari ini (dari masa depan).',
@@ -129,8 +164,21 @@ class DepositTransactionController extends Controller
             'discount_notes.required_with' => 'Alasan potongan wajib diisi jika Anda memasukkan nominal potongan/keringanan.',
         ];
 
+        if ($request->has('target_agreement_id') && !empty($request->target_agreement_id)) {
+            $request->merge(['agreement_id' => $request->target_agreement_id]);
+        }
+
+        if ($request->has('transaction_month') && strlen($request->transaction_month) === 7) {
+            $request->merge(['transaction_month' => $request->transaction_month . '-01']);
+        }
+
         $validatedData = $request->validate([
             'agreement_id' => 'required|exists:agreements,id',
+            'transaction_month' => [
+                'required',
+                'date',
+                Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id),
+            ],
             // ✅ LOGIKA DIPERBAIKI: Tanggal struk boleh hari ini atau masa lalu (kemarin), tapi gak boleh besok!
             'deposit_date' => 'required|date|before_or_equal:today',
             'amount' => 'required|numeric|min:0',
@@ -149,6 +197,15 @@ class DepositTransactionController extends Controller
         ], $messages);
 
         try {
+            $agreement = Agreement::findOrFail($validatedData['agreement_id']);
+            $pendingTransactionsCount = DepositTransaction::whereHas('agreement', function($q) use ($agreement) {
+                $q->where('field_coordinator_id', $agreement->field_coordinator_id);
+            })->where('is_validated', 0)->count();
+
+            if ($pendingTransactionsCount > 0) {
+                return redirect()->back()->with('error', 'Gagal: Terdapat setoran dari Koordinator ini yang masih Menunggu Validasi. Sistem dikunci sementara sampai Bendahara memvalidasi setoran sebelumnya.')->withInput();
+            }
+
             $transactionData = Arr::except($validatedData, ['proof_of_transfer']);
             $transactionData['created_by_user_id'] = Auth::id();
             // ✅ Suntik otomatis Bendahara yang sedang aktif
@@ -191,14 +248,16 @@ class DepositTransactionController extends Controller
         $depositTransaction->load(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator', 'treasurer.user']);
         $uptProfile = UptProfile::firstOrFail();
 
-        // ✅ LOGIKA BARU: Tentukan Bulan Target berdasarkan Urutan Setoran (Sequence)
-        $sequence = DepositTransaction::where('agreement_id', $depositTransaction->agreement_id)
-            ->where('id', '<=', $depositTransaction->id)
-            ->count();
-
-        $targetDate = Carbon::parse($depositTransaction->agreement->start_date)
-            ->startOfMonth()
-            ->addMonths($sequence - 1);
+        if ($depositTransaction->transaction_month) {
+            $targetDate = Carbon::parse($depositTransaction->transaction_month);
+        } else {
+            $sequence = DepositTransaction::where('agreement_id', $depositTransaction->agreement_id)
+                ->where('id', '<=', $depositTransaction->id)
+                ->count();
+            $targetDate = Carbon::parse($depositTransaction->agreement->start_date)
+                ->startOfMonth()
+                ->addMonths($sequence - 1);
+        }
 
         $daysInMonth = $targetDate->daysInMonth;
         $monthName = $targetDate->translatedFormat('F');
@@ -211,7 +270,7 @@ class DepositTransactionController extends Controller
     {
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
 
-        if ($depositTransaction->is_validated && Auth::user()->hasRole('staff_keu')) {
+        if ($depositTransaction->is_validated && !Auth::user()->hasRole('admin')) {
             return redirect()->route('masterdata.deposit-transactions.index')->with('error', 'Transaksi yang sudah divalidasi tidak dapat diedit.');
         }
 
@@ -222,7 +281,7 @@ class DepositTransactionController extends Controller
     {
         abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
 
-        if ($depositTransaction->is_validated && Auth::user()->hasRole('staff_keu')) {
+        if ($depositTransaction->is_validated && !Auth::user()->hasRole('admin')) {
             return redirect()->route('masterdata.deposit-transactions.index')->with('error', 'Transaksi yang sudah divalidasi tidak dapat diedit.');
         }
 
@@ -230,6 +289,8 @@ class DepositTransactionController extends Controller
         $messages = [
             'agreement_id.required' => 'Perjanjian kerjasama wajib dipilih.',
             'agreement_id.exists' => 'Data perjanjian tidak ditemukan di sistem.',
+            'transaction_month.required' => 'Bulan setoran wajib dipilih.',
+            'transaction_month.date' => 'Format bulan setoran tidak valid.',
             'deposit_date.required' => 'Tanggal setoran wajib diisi.',
             'deposit_date.date' => 'Format tanggal setoran tidak valid.',
             'deposit_date.before_or_equal' => 'Tanggal setoran pada struk tidak boleh melebihi hari ini.',
@@ -246,13 +307,25 @@ class DepositTransactionController extends Controller
             'discount_notes.required_with' => 'Alasan potongan wajib diisi jika Anda memasukkan nominal potongan/keringanan.',
         ];
 
+        if ($request->has('target_agreement_id') && !empty($request->target_agreement_id)) {
+            $request->merge(['agreement_id' => $request->target_agreement_id]);
+        }
+
+        if ($request->has('transaction_month') && strlen($request->transaction_month) === 7) {
+            $request->merge(['transaction_month' => $request->transaction_month . '-01']);
+        }
+
         $validatedData = $request->validate([
             'agreement_id' => ['required', 'exists:agreements,id'],
+            'transaction_month' => [
+                'required',
+                'date',
+                Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id)->ignore($depositTransaction->id),
+            ],
             'deposit_date' => [
                 'required',
                 'date',
                 'before_or_equal:today', // ✅ Logika diperbaiki
-                Rule::unique('deposit_transactions')->where('agreement_id', $request->agreement_id)->ignore($depositTransaction->id),
             ],
             'amount' => 'required|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',
@@ -294,7 +367,7 @@ class DepositTransactionController extends Controller
 
     public function destroy(DepositTransaction $depositTransaction)
     {
-        if (! Auth::user()->hasRole('admin')) {
+        if (! Auth::user()->hasRole('admin') && ! Auth::user()->hasRole('treasurer')) {
             return redirect()->route('masterdata.deposit-transactions.index')->with('error', 'Aksi ditolak.');
         }
 
@@ -313,7 +386,7 @@ class DepositTransactionController extends Controller
     public function validateDeposit(DepositTransaction $depositTransaction)
     {
         // 1. Gerbang Keamanan
-        if (! Auth::user()->hasRole('admin') && ! Auth::user()->hasRole('staff_keu') && ! Auth::user()->hasRole('bendahara')) {
+        if (! Auth::user()->hasRole('admin') && ! Auth::user()->hasRole('staff_keu') && ! Auth::user()->hasRole('treasurer')) {
             abort(403, 'Tindakan tidak diizinkan.');
         }
 
@@ -435,57 +508,124 @@ class DepositTransactionController extends Controller
 
     public function checkExistingTransaction(Agreement $agreement)
     {
-        // ✅ LOGIKA BARU: KUNCI WAKTU PEMBAYARAN & HITUNG BULAN TARGET
-        $paidMonthsCount = DepositTransaction::where('agreement_id', $agreement->id)->count();
-
-        // Target Bulan Pembayaran
-        $startDate = Carbon::parse($agreement->start_date)->startOfMonth();
-        $targetDate = $startDate->copy()->addMonths($paidMonthsCount);
-        $endDate = Carbon::parse($agreement->end_date)->endOfMonth();
-
-        // Cek apakah PKS sudah lunas sampai akhir kontrak
-        if ($targetDate->gt($endDate)) {
-            return response()->json([
-                'can_pay' => false,
-                'message' => 'Semua kewajiban setoran untuk PKS ini (hingga <strong>'.$endDate->translatedFormat('F Y').'</strong>) sudah terpenuhi dan Lunas.',
-            ]);
-        }
-
-        $canPay = true;
-        $message = '';
         $today = Carbon::today();
 
-        if ($paidMonthsCount > 0) {
-            // Aturan 10 hari sebelum bulan target dimulai
-            $allowedPaymentMonth = $targetDate->copy()->subMonth();
-            $daysInAllowedMonth = $allowedPaymentMonth->daysInMonth;
+        // Cek apakah korlap ini memiliki transaksi yang belum divalidasi
+        $pendingTransactionsCount = DepositTransaction::whereHas('agreement', function($q) use ($agreement) {
+            $q->where('field_coordinator_id', $agreement->field_coordinator_id);
+        })->where('is_validated', 0)->count();
 
-            // Tanggal buka form = Total Hari di Bulan Sebelumnya dikurangi 10 (H-10)
-            $startAllowedDate = $allowedPaymentMonth->copy()->startOfMonth()->addDays($daysInAllowedMonth - 10);
+        if ($pendingTransactionsCount > 0) {
+            return response()->json([
+                'can_pay' => false,
+                'message' => 'Terdapat setoran dari Koordinator ini yang masih <strong>Menunggu Validasi</strong>. Sistem dikunci sementara sampai Bendahara memvalidasi setoran sebelumnya.',
+            ]);
+        }
+        
+        // Fungsi helper untuk menghitung bulan tersedia
+        $calculateAvailableMonths = function($agr, $isTunggakan = false) use ($today) {
+            $paid = DepositTransaction::where('agreement_id', $agr->id)
+                            ->whereNotNull('transaction_month')
+                            ->pluck('transaction_month')
+                            ->map(fn($date) => Carbon::parse($date)->format('Y-m'))
+                            ->toArray();
 
-            if ($today->lt($startAllowedDate)) {
-                $canPay = false;
-                $formattedStartAllowed = $startAllowedDate->translatedFormat('d F Y');
-                $targetMonthName = $targetDate->translatedFormat('F Y');
-                $message = "Pembayaran untuk bulan <strong>{$targetMonthName}</strong> belum dibuka. <br>Form pembayaran baru dapat diakses mulai tanggal <strong>{$formattedStartAllowed}</strong> (10 Hari sebelum bulan target).";
+            $start = Carbon::parse($agr->start_date)->startOfMonth();
+            $end = Carbon::parse($agr->end_date)->endOfMonth();
+            $avail = [];
+            $curr = $start->copy();
+            
+            $nextAvailDate = null;
+            $nextMnthName = null;
+            
+            while ($curr->lte($end)) {
+                $monthStr = $curr->format('Y-m');
+                if (!in_array($monthStr, $paid)) {
+                    // Aturan 7 hari sebelum akhir bulan target dikurangi 1 bulan (bulan sebelumnya)
+                    $allowedMonth = $curr->copy()->subMonth();
+                    $startAllowed = $allowedMonth->copy()->startOfMonth()->addDays($allowedMonth->daysInMonth - 7);
+                    
+                    if ($today->gte($startAllowed)) {
+                        $days = $curr->daysInMonth;
+                        $dailyAmt = $agr->daily_deposit_amount ?? 0;
+                        $label = $curr->translatedFormat('F Y');
+                        if ($isTunggakan) {
+                            $label .= " (Tunggakan {$agr->agreement_number})";
+                        }
+                        
+                        $avail[] = [
+                            'date' => $curr->format('Y-m-01'),
+                            'label' => $label,
+                            'days' => $days,
+                            'amount' => $days * $dailyAmt,
+                            'agreement_id' => $agr->id,
+                            'daily_amount' => $dailyAmt
+                        ];
+                    } else {
+                        if (!$nextAvailDate && !$isTunggakan) {
+                            $nextAvailDate = $startAllowed;
+                            $nextMnthName = $curr->translatedFormat('F Y');
+                        }
+                        break;
+                    }
+                }
+                $curr->addMonth();
+            }
+            
+            $allMnths = collect(new \DatePeriod($start, new \DateInterval('P1M'), $end->copy()->startOfMonth()->addMonth()))->map(fn($d) => $d->format('Y-m'))->toArray();
+            $isFullyPaid = empty(array_diff($allMnths, $paid));
+            
+            return [
+                'available' => $avail,
+                'is_fully_paid' => $isFullyPaid,
+                'next_date' => $nextAvailDate,
+                'next_month' => $nextMnthName
+            ];
+        };
+
+        // Hitung untuk PKS Aktif/Utama
+        $mainCalc = $calculateAvailableMonths($agreement);
+        $availableMonths = $mainCalc['available'];
+        
+        // Cari PKS Expired untuk Korlap yang sama
+        $expiredAgreements = Agreement::where('field_coordinator_id', $agreement->field_coordinator_id)
+            ->where('status', 'expired')
+            ->get();
+            
+        foreach ($expiredAgreements as $expAgr) {
+            $expCalc = $calculateAvailableMonths($expAgr, true);
+            if (!empty($expCalc['available'])) {
+                $availableMonths = array_merge($availableMonths, $expCalc['available']);
             }
         }
 
-        if (! $canPay) {
-            return response()->json(['can_pay' => false, 'message' => $message]);
+        if (empty($availableMonths)) {
+            if ($mainCalc['is_fully_paid']) {
+                $endDate = Carbon::parse($agreement->end_date)->endOfMonth();
+                return response()->json([
+                    'can_pay' => false,
+                    'message' => 'Semua kewajiban setoran untuk PKS ini (hingga <strong>'.$endDate->translatedFormat('F Y').'</strong>) sudah terpenuhi dan Lunas.',
+                ]);
+            }
+            
+            $msg = 'Belum ada tagihan baru yang dapat dibayarkan saat ini.';
+            if ($mainCalc['next_date']) {
+                $msg = "Belum Saatnya Membayar.<br>Tagihan untuk bulan <strong>{$mainCalc['next_month']}</strong> baru dapat dibayarkan mulai tanggal <strong>{$mainCalc['next_date']->translatedFormat('d F Y')}</strong> (7 Hari sebelum akhir bulan sebelumnya).";
+            }
+
+            return response()->json([
+                'can_pay' => false,
+                'message' => $msg
+            ]);
         }
 
-        // Kalkulasi Total Setoran
-        $daysInTargetMonth = $targetDate->daysInMonth;
-        $dailyAmount = $agreement->daily_deposit_amount ?? 0;
-        $totalAmount = $daysInTargetMonth * $dailyAmount;
+        // Urutkan berdasarkan tanggal tertua agar frontend bisa memvalidasi tunggakan tertua
+        usort($availableMonths, fn($a, $b) => $a['date'] <=> $b['date']);
 
         return response()->json([
             'can_pay' => true,
-            'target_month_name' => $targetDate->translatedFormat('F Y'),
-            'days_in_month' => $daysInTargetMonth,
-            'daily_amount' => $dailyAmount,
-            'total_amount' => $totalAmount,
+            'available_months' => $availableMonths,
+            'daily_amount' => $agreement->daily_deposit_amount ?? 0,
         ]);
     }
 
@@ -494,12 +634,16 @@ class DepositTransactionController extends Controller
         $depositTransaction->load(['agreement.fieldCoordinator.user', 'agreement.leader.user', 'creator', 'treasurer.user']);
         $uptProfile = UptProfile::firstOrFail();
 
-        // Tentukan Bulan Target berdasarkan Urutan
-        $sequence = DepositTransaction::where('agreement_id', $depositTransaction->agreement_id)
-            ->where('id', '<=', $depositTransaction->id)
-            ->count();
-
-        $targetDate = Carbon::parse($depositTransaction->agreement->start_date)->startOfMonth()->addMonths($sequence - 1);
+        if ($depositTransaction->transaction_month) {
+            $targetDate = Carbon::parse($depositTransaction->transaction_month);
+        } else {
+            $sequence = DepositTransaction::where('agreement_id', $depositTransaction->agreement_id)
+                ->where('id', '<=', $depositTransaction->id)
+                ->count();
+            $targetDate = Carbon::parse($depositTransaction->agreement->start_date)
+                ->startOfMonth()
+                ->addMonths($sequence - 1);
+        }
         $daysInMonth = $targetDate->daysInMonth;
         $monthName = $targetDate->translatedFormat('F');
         $year = $targetDate->year;

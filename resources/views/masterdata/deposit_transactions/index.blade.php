@@ -20,47 +20,85 @@
         </nav>
     </div>
 
+    <div class="nav-align-top mb-4">
+        <ul class="nav nav-pills mb-3" role="tablist">
+            <li class="nav-item">
+                <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'jatuh_tempo'])) }}" class="nav-link {{ request('status', 'jatuh_tempo') === 'jatuh_tempo' ? 'active bg-danger text-white' : 'text-danger' }}">
+                    <i class="ri ri-alarm-warning-line me-1"></i> Jatuh Tempo
+                    @php 
+                        $jatuhTempoCount = isset($arrears) ? $arrears->count() : 0; 
+                    @endphp
+                    @if($jatuhTempoCount > 0)
+                        <span class="badge rounded-pill badge-center h-px-20 w-px-20 bg-white text-danger ms-1">{{ $jatuhTempoCount }}</span>
+                    @endif
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'all'])) }}" class="nav-link {{ request('status') === 'all' ? 'active' : '' }}">
+                    <i class="ri ri-list-check me-1"></i> Semua Setoran
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'pending'])) }}" class="nav-link {{ request('status') === 'pending' ? 'active' : '' }}">
+                    <i class="ri ri-time-line me-1"></i> Menunggu Validasi
+                    @php $pendingCount = \App\Models\DepositTransaction::where('is_validated', 0)->count(); @endphp
+                    @if($pendingCount > 0)
+                        <span class="badge rounded-pill badge-center h-px-20 w-px-20 bg-danger ms-1">{{ $pendingCount }}</span>
+                    @endif
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'validated'])) }}" class="nav-link {{ request('status') === 'validated' ? 'active' : '' }}">
+                    <i class="ri ri-checkbox-circle-line me-1"></i> Tervalidasi
+                </a>
+            </li>
+        </ul>
+    </div>
+
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header border-bottom pb-2">
             <h6 class="card-title mb-0"><i class="ri ri-filter-3-line me-1"></i> Filter Lanjutan</h6>
         </div>
         <div class="card-body pt-3">
             <form action="{{ route('masterdata.deposit-transactions.index') }}" method="GET">
+                <input type="hidden" name="status" value="{{ request('status', 'all') }}">
                 <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Tanggal Spesifik</label>
-                        <div class="input-group input-group-merge">
-                            <span class="input-group-text"><i class="ri ri-calendar-event-line"></i></span>
-                            <input type="text" name="search_date" id="search_date" class="form-control" placeholder="YYYY-MM-DD" value="{{ $searchDate ?? '' }}">
+                    @if(request('status', 'jatuh_tempo') !== 'jatuh_tempo')
+                        <div class="col-md-3">
+                            <label class="form-label">Tanggal Spesifik</label>
+                            <div class="input-group input-group-merge">
+                                <span class="input-group-text"><i class="ri ri-calendar-event-line"></i></span>
+                                <input type="text" name="search_date" id="search_date" class="form-control" placeholder="YYYY-MM-DD" value="{{ $searchDate ?? '' }}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Bulan</label>
-                        <select name="search_month" class="form-select">
-                            <option value="">Semua Bulan</option>
-                            @for ($m = 1; $m <= 12; $m++)
-                                <option value="{{ sprintf('%02d', $m) }}" {{ ($searchMonth ?? '') == sprintf('%02d', $m) ? 'selected' : '' }}>
-                                    {{ Carbon\Carbon::createFromDate(null, $m, 1)->translatedFormat('F') }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Tahun</label>
-                        <input type="number" name="search_year" min="2020" max="{{ date('Y') + 5 }}" class="form-control" value="{{ $searchYear ?? date('Y') }}">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Rentang Waktu</label>
-                        <div class="input-group">
-                            <input type="text" name="start_date_range" id="start_date_range" class="form-control" placeholder="YYYY-MM-DD" value="{{ $startDateRange ?? '' }}">
-                            <span class="input-group-text">s/d</span>
-                            <input type="text" name="end_date_range" id="end_date_range" class="form-control" placeholder="YYYY-MM-DD" value="{{ $endDateRange ?? '' }}">
+                        <div class="col-md-3">
+                            <label class="form-label">Bulan Tagihan</label>
+                            <select name="search_month" class="form-select">
+                                <option value="">Semua Bulan</option>
+                                @for ($m = 1; $m <= 12; $m++)
+                                    <option value="{{ sprintf('%02d', $m) }}" {{ ($searchMonth ?? '') == sprintf('%02d', $m) ? 'selected' : '' }}>
+                                        {{ Carbon\Carbon::createFromDate(null, $m, 1)->translatedFormat('F') }}
+                                    </option>
+                                @endfor
+                            </select>
                         </div>
-                    </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Tahun Tagihan</label>
+                            <input type="number" name="search_year" min="2020" max="{{ date('Y') + 5 }}" class="form-control" value="{{ $searchYear ?? date('Y') }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Rentang Waktu</label>
+                            <div class="input-group">
+                                <input type="text" name="start_date_range" id="start_date_range" class="form-control" placeholder="YYYY-MM-DD" value="{{ $startDateRange ?? '' }}">
+                                <span class="input-group-text">s/d</span>
+                                <input type="text" name="end_date_range" id="end_date_range" class="form-control" placeholder="YYYY-MM-DD" value="{{ $endDateRange ?? '' }}">
+                            </div>
+                        </div>
+                    @endif
                     <div class="col-12 mt-2">
                         <div class="input-group input-group-merge">
                             <span class="input-group-text"><i class="ri ri-search-line"></i></span>
-                            <input type="text" name="search" class="form-control" placeholder="Cari No PKS, Nama Korlap, Nominal..." value="{{ $search ?? '' }}">
+                            <input type="text" name="search" class="form-control" placeholder="Cari No PKS, Nama Korlap..." value="{{ $search ?? '' }}">
                         </div>
                     </div>
                 </div>
@@ -75,10 +113,15 @@
     <div class="card border-0 shadow-sm">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3">
             <div>
-                <h5 class="mb-0">Daftar Transaksi</h5>
-                <small class="text-muted">Total {{ $depositTransactions->total() }} transaksi.</small>
+                @if(request('status', 'jatuh_tempo') === 'jatuh_tempo')
+                    <h5 class="mb-0 text-danger"><i class="ri ri-alarm-warning-fill me-1"></i> Daftar PKS Jatuh Tempo</h5>
+                    <small class="text-muted">Total {{ $arrears->count() }} PKS memiliki tunggakan/jatuh tempo.</small>
+                @else
+                    <h5 class="mb-0">Daftar Transaksi</h5>
+                    <small class="text-muted">Total {{ $depositTransactions->total() }} transaksi.</small>
+                @endif
             </div>
-            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu'))
+            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu') || Auth::user()->hasRole('treasurer'))
                 <a href="{{ route('masterdata.deposit-transactions.create') }}" class="btn btn-primary">
                     <i class="ri ri-add-line me-1"></i> Catat Setoran
                 </a>
@@ -86,12 +129,59 @@
         </div>
         <div class="card-body pt-3">
             <div class="table-responsive text-nowrap">
+                @if(request('status', 'jatuh_tempo') === 'jatuh_tempo')
+                <table class="table table-hover">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>No. Perjanjian</th>
+                            <th>Koordinator Lapangan</th>
+                            <th>Tunggakan Terlama</th>
+                            <th>Tagihan Berjalan</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0">
+                        @forelse ($arrears as $arr)
+                            <tr>
+                                <td><span class="fw-bold text-dark">{{ $arr->agreement->agreement_number }}</span></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm me-2">
+                                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="ri ri-user-line"></i></span>
+                                        </div>
+                                        <span class="fw-medium">{{ $arr->agreement->fieldCoordinator->user->name ?? '-' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-label-danger"><i class="ri ri-calendar-line me-1"></i> {{ $arr->month_label }}</span>
+                                </td>
+                                <td><span class="fw-bold text-danger">Rp {{ number_format($arr->amount, 0, ',', '.') }}</span></td>
+                                <td class="text-center">
+                                    <a href="{{ route('masterdata.deposit-transactions.create', ['target_agreement_id' => $arr->agreement->id]) }}" class="btn btn-sm btn-danger rounded-pill shadow-sm">
+                                        <i class="ri ri-money-dollar-circle-line me-1"></i> Bayar Sekarang
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="ri ri-checkbox-circle-fill text-success ri-3x mb-2"></i>
+                                        <h6 class="text-dark fw-bold">Tidak ada tunggakan!</h6>
+                                        <p class="text-muted mb-0">Semua PKS sudah membayar tagihannya tepat waktu.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                @else
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
                             <th>No. Perjanjian</th>
                             <th>Koordinator</th>
-                            <th>Tgl Setor</th>
+                            <th>Tanggal & Tagihan</th>
                             <th>Jumlah</th>
                             <th>Status</th>
                             <th class="text-center">Aksi</th>
@@ -102,7 +192,10 @@
                             <tr>
                                 <td><span class="fw-medium text-primary">{{ $transaction->agreement->agreement_number ?? 'N/A' }}</span></td>
                                 <td>{{ $transaction->agreement->fieldCoordinator->user->name ?? 'N/A' }}</td>
-                                <td>{{ $transaction->deposit_date->format('d M Y') }}</td>
+                                <td>
+                                    <div class="fw-medium text-dark">{{ $transaction->deposit_date->format('d M Y') }}</div>
+                                    <small class="text-muted"><i class="ri ri-calendar-check-line align-bottom"></i> {{ $transaction->transaction_month ? $transaction->transaction_month->translatedFormat('F Y') : '-' }}</small>
+                                </td>
                                 <td><span class="fw-medium text-success">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</span></td>
                                 <td>
                                     @if ($transaction->is_validated) <span class="badge rounded-pill bg-label-success">Tervalidasi</span>
@@ -115,7 +208,7 @@
                                         </a>
 
                                         @if (!$transaction->is_validated)
-                                            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu'))
+                                            @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu') || Auth::user()->hasRole('treasurer'))
                                                 <form action="{{ route('masterdata.deposit-transactions.validate', $transaction->id) }}" method="POST" class="form-validate d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-icon btn-text-success rounded-pill" data-bs-toggle="tooltip" title="Validasi">
@@ -128,7 +221,7 @@
                                             @endif
                                         @endif
 
-                                        @if (Auth::user()->hasRole('admin'))
+                                        @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('treasurer'))
                                             <form action="{{ route('masterdata.deposit-transactions.destroy', $transaction->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus">
@@ -140,13 +233,20 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center py-4 text-muted">Belum ada transaksi setoran.</td></tr>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4"><i class="ri ri-inbox-line me-1"></i> Belum ada data transaksi setoran.</td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
+                @endif
             </div>
-            <div class="mt-4">{{ $depositTransactions->appends(request()->query())->links() }}</div>
         </div>
+        @if(request('status', 'jatuh_tempo') !== 'jatuh_tempo' && $depositTransactions->hasPages())
+            <div class="card-footer border-top pt-3 pb-2">
+                {{ $depositTransactions->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
     </div>
 @endsection
 

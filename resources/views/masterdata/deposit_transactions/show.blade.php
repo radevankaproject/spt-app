@@ -321,7 +321,7 @@
                     <div class="card-body p-4">
                         <div class="text-label mb-4 text-center">Tindakan</div>
                         
-                        @if (!$depositTransaction->is_validated && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('bendahara') || Auth::user()->hasRole('staff_keu')))
+                        @if (!$depositTransaction->is_validated && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('treasurer') || Auth::user()->hasRole('staff_keu')))
                             <form action="{{ route('masterdata.deposit-transactions.validate', $depositTransaction->id) }}" method="POST" class="form-validate mb-3">
                                 @csrf
                                 <button type="submit" class="btn btn-success btn-premium w-100 shadow-sm">
@@ -334,7 +334,7 @@
                             <i class="ri ri-printer-line fs-5"></i> Cetak Struk
                         </a>
 
-                        @if (!$depositTransaction->is_validated && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu')))
+                        @if (!$depositTransaction->is_validated && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu') || Auth::user()->hasRole('treasurer')))
                             <a href="{{ route('masterdata.deposit-transactions.edit', $depositTransaction->id) }}" class="btn btn-outline-primary btn-premium w-100 mb-4 bg-white">
                                 <i class="ri ri-pencil-line"></i> Edit Data
                             </a>

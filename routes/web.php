@@ -204,7 +204,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
     // --- RUTE-ROUTE AJAX (Bisa diakses oleh beberapa role) ---
-    Route::middleware('role:admin,staff_pks,staff_keu,leader')->prefix('masterdata')->name('masterdata.')->group(function () {
+    Route::middleware('role:admin,staff_pks,staff_keu,leader,treasurer')->prefix('masterdata')->name('masterdata.')->group(function () {
         Route::get('get-road-sections-by-zone/{zone}', [ParkingLocationController::class, 'getRoadSectionsByZone'])->name('road-sections.getByZone');
         Route::get('get-parking-locations-by-road-section/{roadSectionId}', [ParkingLocationController::class, 'getParkingLocationsByRoadSection'])->name('get-parking-locations-by-road-section');
         Route::get('search-active-agreements', [DepositTransactionController::class, 'searchActiveAgreements'])

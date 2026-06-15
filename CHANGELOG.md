@@ -15,9 +15,18 @@ Pembaruan yang berfokus pada perombakan total antarmuka Profil Pengguna menjadi 
 - **Fitur Baru - Adendum/Diskon Khusus (Keringanan Tagihan):**
     - Mengakomodasi kebutuhan lapangan dengan penambahan form "Potongan/Keringanan" pada transaksi setoran bulanan. Nominal tagihan akan otomatis dikurangi berdasarkan besaran potongan.
     - Diperkuat dengan **Sistem Audit Diskon**, di mana sistem otomatis mendeteksi dan mencatat profil *user* yang menyetujui pemotongan tagihan tersebut. Rincian nama pemberi diskon dan alasannya kini dipampang transparan pada halaman *Detail Setoran* serta cetakan Struk PDF.
-- **Perombakan Premium UI Halaman Setoran:**
+- **Perombakan Premium UI Halaman Setoran & Alur Pembayaran Sekuensial:**
     - Mendesain ulang halaman Detail Transaksi Setoran (*show*) dan Formulir Setoran (*create/edit*) dengan tampilan ultra-premium ala sistem instansi resmi (*Glassmorphism*, transisi halus, penjajaran kolom yang presisi, dan *Skeleton Loading* khusus).
     - Melengkapi fitur interaktif berupa Modal/Popup elegan untuk memperbesar *thumbnail* lampiran Bukti Transfer langsung tanpa membuka *tab* baru.
+    - **Pembaruan Sistematis:** Menerapkan alur pembayaran **Sekuensial (Wajib Berurutan)**. Pengguna dipaksa melunasi tunggakan bulan terlama terlebih dahulu sebelum dapat membayar tagihan bulan terbaru. Sistem secara otomatis memberikan peringatan elegan jika mencoba melewati urutan bayar.
+    - **Penguncian Akses Pintar (Validation Lock):** Mencegah *double-input* atau transaksi ganda. Jika seorang Koordinator Lapangan masih memiliki riwayat transaksi setoran yang berstatus *Pending / Menunggu Validasi*, maka form setoran baru akan **terkunci rapat** hingga Bendahara menyelesaikan validasi tersebut.
+- **Inovasi Navigasi - Tab Jatuh Tempo:**
+    - Menambahkan **Tab Jatuh Tempo** di posisi terdepan pada Halaman Indeks Setoran. Fitur ini menyeleksi dan mendeteksi seluruh PKS yang menunggak secara *real-time*.
+    - Menambahkan tombol "Bayar Sekarang" yang langsung menghubungkan pengguna ke form input setoran dengan sistem pengisian kolom otomatis *(Auto-Trigger Target Agreement)*.
+    - Kolom pencarian disederhanakan dan dioptimasi di tingkat *Controller* agar merender hasil dengan lebih gegas (*Super Fast Live Search*).
+- **Pembaruan Modul Cetak PDF & Sidebar:**
+    - Optimalisasi *layouting* cetak Struk Setoran (PDF) agar selalu presisi termuat pada 1 halaman utuh (dikunci dengan *page-break* CSS modern).
+    - Mengganti nomenklatur menu di panel Sidebar dari *"Validasi Setoran"* menjadi *"Input Setoran"* untuk memperjelas fungsionalitas bagi multi-peran admin/keuangan.
 - **Perombakan Total Profil Pengguna (Premium Profile):**
     - Redesain antarmuka Profil menjadi jauh lebih modern, premium, dan dinamis dengan efek *Skeleton Loading* untuk transisi.
     - Mengintegrasikan UI-Avatars API sebagai *fallback* elegan jika *user* belum mengunggah foto profil.

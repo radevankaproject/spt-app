@@ -13,6 +13,7 @@ class DepositTransaction extends Model
         'treasurer_id',
         'created_by_user_id',
         'validated_by_user_id', // ✅ TAMBAHKAN INI
+        'transaction_month',
         'referral_code',
         'deposit_date',
         'amount',
@@ -27,6 +28,7 @@ class DepositTransaction extends Model
 
     protected $casts = [
         'deposit_date'    => 'date',
+        'transaction_month' => 'date',
         'amount'          => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'is_validated'    => 'boolean',

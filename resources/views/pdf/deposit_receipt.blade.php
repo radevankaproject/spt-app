@@ -21,14 +21,16 @@
 
         body {
             font-family: 'Bookman Old Style', serif;
-            font-size: 12px;
-            margin: 1cm;
+            font-size: 11px; /* Dikurangi sedikit agar muat 1 halaman */
+            margin: 0.5cm; /* Margin dikurangi dari 1cm ke 0.5cm */
             color: #333;
         }
 
         .container {
             width: 100%;
             margin: 0 auto;
+            page-break-after: avoid;
+            page-break-before: avoid;
         }
 
         .header {
@@ -64,9 +66,9 @@
         .content-card {
             position: relative;
             border: 1px solid #ccc;
-            padding: 20px;
+            padding: 15px; /* Kurangi padding agar hemat ruang vertikal */
             border-radius: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             overflow: hidden; /* Mengunci watermark agar tidak keluar kotak */
             background-color: #fff;
             z-index: 1;
@@ -104,10 +106,11 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            page-break-inside: avoid;
         }
 
         table td {
-            padding: 6px 0;
+            padding: 4px 0; /* Kurangi padding tabel */
             vertical-align: top;
         }
 
@@ -153,8 +156,9 @@
         .badge-warning { color: #664d03; background-color: #fff3cd; border: 1px solid #ffeeba; }
 
         .signature-area {
-            margin-top: 30px;
-            width: 100%;
+            margin-top: 15px; /* Kurangi margin atas */
+            text-align: center;
+            page-break-inside: avoid; /* PASTIKAN TTD TIDAK PINDAH HALAMAN */
         }
 
         .signature-table td {

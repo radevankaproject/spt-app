@@ -56,6 +56,14 @@
 
                     <div class="col-md-6">
                         <div class="form-floating form-floating-outline">
+                            <input type="month" name="transaction_month" id="transaction_month" class="form-control fw-bold" value="{{ old('transaction_month', $depositTransaction->transaction_month ? $depositTransaction->transaction_month->format('Y-m') : '') }}" required {{ $depositTransaction->is_validated ? 'readonly' : '' }} />
+                            <label for="transaction_month">Bulan Tagihan</label>
+                            <div class="form-text">Pilih bulan yang dibayarkan untuk setoran ini. Pilihan otomatis tersimpan pada tanggal 1 di bulan terkait.</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating form-floating-outline">
                             <input type="date" name="deposit_date" id="deposit_date" class="form-control" value="{{ old('deposit_date', $depositTransaction->deposit_date->format('Y-m-d')) }}" required {{ $depositTransaction->is_validated ? 'readonly' : '' }} />
                             <label for="deposit_date">Tanggal Setoran</label>
                         </div>
