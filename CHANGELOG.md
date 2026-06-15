@@ -8,6 +8,10 @@ Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT
 
 Pembaruan yang berfokus pada perombakan total antarmuka Profil Pengguna menjadi lebih premium, dinamis, serta penguatan _audit trail_ (rekam jejak sejarah) pada Master Data.
 
+- **Perombakan Total Dashboard & UI Roles (Premium Dashboard):**
+    - Mendesain ulang seluruh halaman *dashboard* dari setiap *role* (Admin, Pimpinan, Bendahara, Staff Keuangan, Staff PKS) dengan tata letak visual standar *premium government*.
+    - Menghadirkan komponen *Quick Stats* (6 kartu statistik), *Hero Search Card* gradasi, serta tabel informatif dengan desain minimalis tanpa menghilangkan fungsionalitas.
+    - Menyesuaikan *Skeleton Loading* agar setiap transisi sinkron dengan tata letak *dashboard* terbaru.
 - **Perombakan Total Profil Pengguna (Premium Profile):**
     - Redesain antarmuka Profil menjadi jauh lebih modern, premium, dan dinamis dengan efek *Skeleton Loading* untuk transisi.
     - Mengintegrasikan UI-Avatars API sebagai *fallback* elegan jika *user* belum mengunggah foto profil.

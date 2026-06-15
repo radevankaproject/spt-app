@@ -35,6 +35,23 @@ class DashboardController extends Controller
         $currentYearValidatedDeposit = DepositTransaction::where('is_validated', true)
             ->whereYear('deposit_date', now()->year)->sum('amount');
 
+        // --- 1b. Quick Stats Baru ---
+        $totalAgreements = Agreement::where('status', 'active')->count();
+        $totalParkingLocations = ParkingLocation::count();
+        $totalRoadSections = RoadSection::count();
+        $totalFieldCoordinators = FieldCoordinator::count();
+        $pendingValidationsCount = DepositTransaction::where('is_validated', false)->count();
+        $depositThisMonth = DepositTransaction::where('is_validated', true)
+            ->whereMonth('deposit_date', now()->month)
+            ->whereYear('deposit_date', now()->year)->sum('amount');
+
+        // --- 1c. PKS Segera Berakhir (30 hari ke depan) ---
+        $expiringAgreements = Agreement::with('fieldCoordinator.user')
+            ->where('status', 'active')
+            ->whereBetween('end_date', [now(), now()->addDays(30)])
+            ->orderBy('end_date', 'asc')
+            ->limit(5)->get();
+
         // --- 2. Data untuk Tabel "Terbaru" (Max 8) ---
         $recentDeposits = DepositTransaction::with('agreement.fieldCoordinator.user')
             ->whereHas('agreement')
@@ -45,8 +62,6 @@ class DashboardController extends Controller
         $recentCoordinators = FieldCoordinator::with('user')->latest()->limit(8)->get();
 
         // --- 3. Data untuk Grafik ---
-
-        // A. Grafik Setoran per Bulan (Mixed Chart) & TARGET TAHUN BERJALAN
         $currentYear = now()->year;
 
         $monthlyDeposits = DepositTransaction::select(
@@ -56,22 +71,18 @@ class DashboardController extends Controller
             ->where('is_validated', true)->whereYear('deposit_date', $currentYear)
             ->groupBy('month')->orderBy('month')->pluck('total', 'month')->all();
 
-        // Ambil data Target Tahun ini dari database
         $yearlyTarget = YearlyDepositTarget::with('monthlyTargets')->where('year', $currentYear)->first();
 
         $mainChartLabels = [];
         $mainChartData = [];
-        $targetChartData = []; // Array baru untuk menyimpan target asli
+        $targetChartData = [];
 
         for ($m = 1; $m <= 12; $m++) {
             $mainChartLabels[] = Carbon::create()->month($m)->translatedFormat('F');
-            // ✅ TAMBAHKAN (float) DI SINI
             $mainChartData[] = isset($monthlyDeposits[$m]) ? (float) $monthlyDeposits[$m] : 0;
 
-            // Cek apakah ada target di bulan tersebut
             if ($yearlyTarget) {
                 $monthTarget = $yearlyTarget->monthlyTargets->firstWhere('month', $m);
-                // ✅ TAMBAHKAN (float) DI SINI JUGA
                 $targetChartData[] = $monthTarget ? (float) $monthTarget->target_amount : 0;
             } else {
                 $targetChartData[] = 0;
@@ -107,12 +118,19 @@ class DashboardController extends Controller
             'activeBankAccount',
             'startDate',
             'currentYearValidatedDeposit',
+            'totalAgreements',
+            'totalParkingLocations',
+            'totalRoadSections',
+            'totalFieldCoordinators',
+            'pendingValidationsCount',
+            'depositThisMonth',
+            'expiringAgreements',
             'recentDeposits',
             'recentParkingLocations',
             'recentCoordinators',
             'mainChartLabels',
             'mainChartData',
-            'targetChartData', // ✅ JANGAN LUPA DIPASSING WAK
+            'targetChartData',
             'zoneChartData',
             'barChartData',
         ));
@@ -138,9 +156,14 @@ class DashboardController extends Controller
         // Card Pimpinan
         $currentLeader = Leader::with('user')->latest()->first();
 
+        // Quick Stats
+        $totalParkingLocations = ParkingLocation::count();
+        $totalAgreements = Agreement::where('status', 'active')->count();
+        $totalRoadSections = RoadSection::count();
+        $totalFieldCoordinators = FieldCoordinator::count();
+
         // 10 Daftar Lokasi Terbaru
         $recentParkingLocations = ParkingLocation::with('roadSection')->latest()->limit(10)->get();
-        $totalParkingLocations = ParkingLocation::count();
 
         // 10 Daftar PKS Terbaru (Hanya yang Aktif)
         $recentAgreements = Agreement::with('fieldCoordinator.user')
@@ -149,7 +172,13 @@ class DashboardController extends Controller
             ->latest()
             ->limit(10)
             ->get();
-        $totalAgreements = Agreement::where('status', 'active')->count();
+
+        // PKS Segera Berakhir (30 hari ke depan)
+        $expiringAgreements = Agreement::with('fieldCoordinator.user')
+            ->where('status', 'active')
+            ->whereBetween('end_date', [now(), now()->addDays(30)])
+            ->orderBy('end_date', 'asc')
+            ->limit(5)->get();
 
         // Grafik Jumlah Lokasi per Ruas Jalan (Top 10)
         $locationsPerRoadSection = RoadSection::withCount('parkingLocations')
@@ -167,6 +196,9 @@ class DashboardController extends Controller
             'totalParkingLocations',
             'recentAgreements',
             'totalAgreements',
+            'totalRoadSections',
+            'totalFieldCoordinators',
+            'expiringAgreements',
             'barChartData'
         ));
     }
@@ -213,13 +245,23 @@ class DashboardController extends Controller
             ->sum('amount');
         $depositThisYear = array_sum($depositChartData);
 
+        // Quick Stats baru
+        $totalActiveAgreements = $allActiveAgreements->count();
+        $pendingValidationsCount = DepositTransaction::where('is_validated', false)->count();
+        $paidCount = $paidAgreements->count();
+        $unpaidCount = $unpaidAgreements->count();
+
         return view('staff.keu.dashboard', compact(
             'depositChartLabels',
             'depositChartData',
             'paidAgreements',
             'unpaidAgreements',
             'depositThisMonth',
-            'depositThisYear'
+            'depositThisYear',
+            'totalActiveAgreements',
+            'pendingValidationsCount',
+            'paidCount',
+            'unpaidCount'
         ));
     }
 
@@ -243,6 +285,7 @@ class DashboardController extends Controller
         // Gabungkan semua data
         $allData = array_merge($pksData, $keuData);
         $allData['randomMapLocations'] = $randomMapLocations;
+        $allData['pendingValidationsCount'] = DepositTransaction::where('is_validated', false)->count();
 
         return view('leader.dashboard', $allData);
     }
@@ -348,8 +391,6 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Antum naruh pengecekan Treasurer di sini!
-        // Padahal ini kan panggungnya Korlap.
         $treasurer = Treasurer::where('user_id', $user->id)->first();
 
         if (! $treasurer) {
@@ -370,14 +411,25 @@ class DashboardController extends Controller
             ->whereYear('validation_date', $currentYear)
             ->sum('amount');
 
-        // 3. Tabel Transaksi Menunggu Validasi (5 Terbaru)
+        // 3. Total Validasi Tahun Ini
+        $totalValidatedThisYear = DepositTransaction::where('is_validated', true)
+            ->whereYear('deposit_date', $currentYear)
+            ->sum('amount');
+
+        // 4. Jumlah Transaksi yang sudah divalidasi
+        $totalTransactionsValidated = DepositTransaction::where('treasurer_id', $treasurer->id)
+            ->where('is_validated', true)
+            ->whereYear('validation_date', $currentYear)
+            ->count();
+
+        // 5. Tabel Transaksi Menunggu Validasi (5 Terbaru)
         $recentPendingDeposits = DepositTransaction::with('agreement.fieldCoordinator.user')
             ->where('is_validated', false)
             ->latest('deposit_date')
             ->limit(5)
             ->get();
 
-        // 4. Tabel Riwayat Validasi Bendahara (5 Terbaru)
+        // 6. Tabel Riwayat Validasi Bendahara (5 Terbaru)
         $recentValidatedDeposits = DepositTransaction::with('agreement.fieldCoordinator.user')
             ->where('treasurer_id', $treasurer->id)
             ->where('is_validated', true)
@@ -389,8 +441,8 @@ class DashboardController extends Controller
 
         return view('treasurer.dashboard', compact(
             'treasurer', 'pendingValidationsCount', 'pendingAmount',
-            'validatedThisMonth', 'recentPendingDeposits',
-            'recentValidatedDeposits', 'activeBankAccount'
+            'validatedThisMonth', 'totalValidatedThisYear', 'totalTransactionsValidated',
+            'recentPendingDeposits', 'recentValidatedDeposits', 'activeBankAccount'
         ));
     }
 
