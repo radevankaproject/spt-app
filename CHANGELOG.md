@@ -48,6 +48,7 @@ Pembaruan yang berfokus pada perombakan total antarmuka Profil Pengguna menjadi 
 - **Penyempurnaan Form Manajemen Versi (Changelog):**
     - Mengganti editor Quill.js yang rentan *error* validasi (*hidden input bug*) dengan *Textarea* standar yang tangguh.
     - Menambahkan dukungan penuh *Markdown* bawaan Laravel (`Str::markdown()`) sehingga pengguna kini bisa langsung *copy-paste* catatan rilis berformat raw `.md` secara murni tanpa merusak format aslinya.
+- **Optimasi Performa Dashboard:** Memperbaiki isu performa kueri N+1 pada Dashboard Leader dan Staff Keuangan terkait pengambilan data transaksi setoran bulanan PKS.
 
 ## [v1.4.0] - 2026-06-12
 

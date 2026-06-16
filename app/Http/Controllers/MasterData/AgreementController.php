@@ -153,6 +153,7 @@ class AgreementController extends Controller
     {
         $locations = ParkingLocation::where('road_section_id', $roadSectionId)
             ->where('status', 'tersedia')
+            ->where('is_active', true)
             ->whereDoesntHave('agreements', function ($query) {
                 $query->where('agreement_parking_locations.status', 'active');
             })
@@ -480,11 +481,11 @@ class AgreementController extends Controller
         $parkingLocationsForCheckboxes = ParkingLocation::with('roadSection')
             ->where(function ($q) use ($initialZone, $currentParkingLocationIds) {
                 if ($initialZone) {
-                    // Ambil lokasi tersedia di initialZone
+                    // Ambil lokasi tersedia di initialZone yang aktif
                     $q->where(function ($subQ) use ($initialZone) {
                         $subQ->whereHas('roadSection', function ($roadQ) use ($initialZone) {
                             $roadQ->where('zone', $initialZone);
-                        })->where('status', 'tersedia');
+                        })->where('status', 'tersedia')->where('is_active', true);
                     });
                 }
                 

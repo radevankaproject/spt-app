@@ -128,9 +128,18 @@
                         <div class="user-info text-center">
                             <h5 class="mb-2">{{ $parkingLocation->name }}</h5>
                             @if ($parkingLocation->status == 'tersedia')
-                                <span class="badge bg-label-success rounded-pill px-3"><i class="ri icon-base ri-check-line me-1"></i> TERSEDIA</span>
+                                <span class="badge bg-label-success rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ri-check-line me-1"></i> TERSEDIA</span>
                             @else
-                                <span class="badge bg-label-danger rounded-pill px-3"><i class="ri icon-base ri-lock-line me-1"></i> TERIKAT PKS</span>
+                                <span class="badge bg-label-secondary rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ri-lock-line me-1"></i> TERIKAT PKS</span>
+                            @endif
+
+                            @if(!$parkingLocation->is_active)
+                                <br>
+                                <span class="badge bg-label-danger rounded-pill px-3 mb-2 mt-1 d-inline-block"><i class="ri icon-base ri-close-circle-line me-1"></i> NONAKTIF / TUTUP</span>
+                                <div class="mt-2 text-start p-3 bg-danger bg-opacity-10 rounded border border-danger border-opacity-25" style="font-size: 0.85rem;">
+                                    <span class="fw-bold text-danger"><i class="ri-information-line me-1"></i>Keterangan Tutup:</span><br>
+                                    <span class="text-dark">{{ $parkingLocation->keterangan ?? '-' }}</span>
+                                </div>
                             @endif
                         </div>
                     </div>

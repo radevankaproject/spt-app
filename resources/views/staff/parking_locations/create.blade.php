@@ -86,6 +86,21 @@
                         </div>
                     </div>
 
+                    <div class="col-md-6 mt-3">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold" for="is_active">Status Lokasi Aktif / Berpotensi</label>
+                        </div>
+                        <small class="text-muted">Matikan jika lokasi sudah tutup atau tidak berpotensi.</small>
+                    </div>
+
+                    <div class="col-12 mt-2" id="keteranganSection" style="display: {{ old('is_active', true) ? 'none' : 'block' }};">
+                        <div class="form-floating form-floating-outline">
+                            <textarea class="form-control h-px-100" id="keterangan" name="keterangan" placeholder="Berikan keterangan (misal: lokasi sudah tutup, tidak berpotensi, dll)">{{ old('keterangan') }}</textarea>
+                            <label for="keterangan">Keterangan Tutup/Tidak Aktif</label>
+                        </div>
+                    </div>
+
                     <div class="col-12 mt-2">
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="toggleMap">
@@ -207,6 +222,16 @@
                 $('#coordinate_input').prop('disabled', true).val('');
                 $('#latitude').val('');
                 $('#longitude').val('');
+            }
+        });
+
+        $('#is_active').on('change', function() {
+            if($(this).is(':checked')) {
+                $('#keteranganSection').slideUp();
+                $('#keterangan').prop('required', false);
+            } else {
+                $('#keteranganSection').slideDown();
+                $('#keterangan').prop('required', true);
             }
         });
 

@@ -227,7 +227,7 @@ class DashboardController extends Controller
         }
 
         // Daftar PKS yang sudah & belum bayar bulan ini
-        $allActiveAgreements = Agreement::with('fieldCoordinator.user')
+        $allActiveAgreements = Agreement::with(['fieldCoordinator.user', 'depositTransactions'])
             ->where('status', 'active')
             ->get();
 

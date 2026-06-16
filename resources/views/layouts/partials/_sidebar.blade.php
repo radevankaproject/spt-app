@@ -179,6 +179,15 @@
                     <div data-i18n="Histori Perjanjian">Riwayat PKS</div>
                 </a>
             </li>
+
+            @if (Auth::user()->role === 'admin')
+            <li class="menu-item {{ request()->routeIs('admin.parking-locations.report') ? 'active' : '' }}">
+                <a href="{{ route('admin.parking-locations.report') }}" class="menu-link">
+                    <i class="icon-base ri menu-icon tf-icons ri-file-list-3-line"></i>
+                    <div data-i18n="Laporan Titik Parkir">Laporan Titik Parkir</div>
+                </a>
+            </li>
+            @endif
         @endif
 
         {{-- ✅ PETA WILAYAH PARKIR --}}

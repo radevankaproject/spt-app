@@ -164,9 +164,14 @@
                                     @php
                                         $statusClass = $location->status == 'tersedia' ? 'bg-label-success' : 'bg-label-secondary';
                                     @endphp
-                                    <span class="badge rounded-pill {{ $statusClass }} fw-bold">
+                                    <span class="badge rounded-pill {{ $statusClass }} fw-bold mb-1 d-inline-block">
                                         {{ strtoupper(str_replace('_', ' ', $location->status)) }}
                                     </span>
+                                    @if(!$location->is_active)
+                                        <span class="badge rounded-pill bg-label-danger fw-bold d-inline-block mt-1" data-bs-toggle="tooltip" title="{{ $location->keterangan }}">
+                                            <i class="ri-close-circle-line me-1"></i>TUTUP/NONAKTIF
+                                        </span>
+                                    @endif
                                 </td>
                                 <td>
                                     @if ($location->status == 'tidak_tersedia' && $location->agreements->isNotEmpty())

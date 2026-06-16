@@ -21,6 +21,12 @@ class ParkingLocation extends Model
         'image',
         'proposal_document',
         'official_report_document',
+        'is_active',
+        'keterangan',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     //Relaso RoadSection

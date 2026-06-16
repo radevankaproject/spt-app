@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\MasterData;
 
+use App\Exports\ParkingLocationsExport;
 use App\Http\Controllers\Controller;
 use App\Imports\ParkingLocationsImport;
 use App\Models\Agreement;
+use App\Models\FieldCoordinator;
 use App\Models\ParkingLocation;
 use App\Models\ParkingLocationHistory;
 use App\Models\RoadSection;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +25,89 @@ use Maatwebsite\Excel\Validators\ValidationException;
 
 class ParkingLocationController extends Controller
 {
+    /**
+     * Filter Report Helper
+     */
+    private function applyReportFilters(Request $request, $query)
+    {
+        if ($request->filled('korlap_id')) {
+            $query->whereHas('agreements', function ($q) use ($request) {
+                $q->where('agreements.status', 'active')
+                    ->where('agreements.field_coordinator_id', $request->korlap_id);
+            });
+        }
+
+        if ($request->filled('road_section_id')) {
+            $roadSectionIds = is_array($request->road_section_id) ? $request->road_section_id : [$request->road_section_id];
+            $query->whereIn('road_section_id', $roadSectionIds);
+        }
+
+        if ($request->filled('zone')) {
+            $query->whereHas('roadSection', function ($q) use ($request) {
+                $q->where('zone', $request->zone);
+            });
+        }
+
+        if ($request->filled('no_agreement') && $request->no_agreement == '1') {
+            $query->whereDoesntHave('agreements', function ($q) {
+                $q->where('agreement_parking_locations.status', 'active');
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Laporan Titik Lokasi Parkir
+     */
+    public function report(Request $request)
+    {
+        $query = ParkingLocation::with(['roadSection', 'agreements' => function ($q) {
+            $q->where('agreements.status', 'active')
+                ->where('agreement_parking_locations.status', 'active')
+                ->with('fieldCoordinator.user');
+        }]);
+
+        $query = $this->applyReportFilters($request, $query);
+
+        $parkingLocations = $query->latest()->paginate(20);
+
+        $roadSections = RoadSection::orderBy('name')->get();
+        $zones = RoadSection::select('zone')->distinct()->pluck('zone');
+        $korlaps = FieldCoordinator::with('user')->get();
+
+        return view('staff.parking_locations.report', compact('parkingLocations', 'roadSections', 'zones', 'korlaps'));
+    }
+
+    /**
+     * Export Laporan PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = ParkingLocation::with(['roadSection', 'agreements' => function ($q) {
+            $q->where('agreements.status', 'active')
+                ->where('agreement_parking_locations.status', 'active')
+                ->with('fieldCoordinator.user');
+        }]);
+
+        $query = $this->applyReportFilters($request, $query);
+
+        $parkingLocations = $query->latest()->get();
+
+        $pdf = Pdf::loadView('staff.parking_locations.report_pdf', compact('parkingLocations'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('laporan_titik_lokasi_parkir.pdf');
+    }
+
+    /**
+     * Export Laporan Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(new ParkingLocationsExport($request), 'laporan_titik_lokasi_parkir.xlsx');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -131,6 +218,8 @@ class ParkingLocationController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:5000', // Limit awal besarin aja krn dicompress di client
             'proposal_document' => 'nullable|file|mimes:pdf|max:2048',
             'official_report_document' => 'nullable|file|mimes:pdf|max:2048',
+            'is_active' => 'nullable',
+            'keterangan' => 'required_without:is_active|nullable|string',
         ], [
             'road_section_id.required' => 'Ruas jalan wajib dipilih.',
             'road_section_id.exists' => 'Ruas jalan yang dipilih tidak valid.',
@@ -156,10 +245,15 @@ class ParkingLocationController extends Controller
             'official_report_document.file' => 'Dokumen berita acara harus berupa file.',
             'official_report_document.mimes' => 'Dokumen berita acara harus berformat PDF.',
             'official_report_document.max' => 'Ukuran dokumen berita acara tidak boleh lebih dari 2 MB.',
+            'keterangan.required_without' => 'Keterangan wajib diisi jika lokasi sudah tutup/tidak berpotensi.',
         ]);
 
         $dataToStore = Arr::except($validatedData, ['image', 'proposal_document', 'official_report_document']);
         $dataToStore['status'] = 'tersedia';
+        $dataToStore['is_active'] = $request->has('is_active');
+        if ($dataToStore['is_active']) {
+            $dataToStore['keterangan'] = null;
+        }
 
         $safeName = Str::slug($request->name); // Bikin nama lokasi jadi aman buat URL/File
         $randomNum = mt_rand(100, 999);         // 3 Angka Acak
@@ -258,6 +352,8 @@ class ParkingLocationController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:300',
             'proposal_document' => 'nullable|file|mimes:pdf|max:2048',
             'official_report_document' => 'nullable|file|mimes:pdf|max:2048',
+            'is_active' => 'nullable',
+            'keterangan' => 'required_without:is_active|nullable|string',
         ],
             [
                 'road_section_id.required' => 'Ruas jalan wajib dipilih.',
@@ -284,9 +380,14 @@ class ParkingLocationController extends Controller
                 'official_report_document.file' => 'Dokumen berita acara harus berupa file.',
                 'official_report_document.mimes' => 'Dokumen berita acara harus berformat PDF.',
                 'official_report_document.max' => 'Ukuran dokumen berita acara tidak boleh lebih dari 2 MB.',
+                'keterangan.required_without' => 'Keterangan wajib diisi jika lokasi sudah tutup/tidak berpotensi.',
             ]);
 
         $dataToUpdate = Arr::except($validatedData, ['image', 'proposal_document', 'official_report_document']);
+        $dataToUpdate['is_active'] = $request->has('is_active');
+        if ($dataToUpdate['is_active']) {
+            $dataToUpdate['keterangan'] = null;
+        }
 
         $deleteOldFile = function ($filePath) {
             if ($filePath) {
@@ -347,6 +448,10 @@ class ParkingLocationController extends Controller
 
             if (isset($actualChanges['estimated_area']) || isset($actualChanges['estimated_srp_r2']) || isset($actualChanges['estimated_srp_r4'])) {
                 $descParts[] = 'Estimasi Luas/SRP';
+            }
+
+            if (isset($actualChanges['is_active']) || isset($actualChanges['keterangan'])) {
+                $descParts[] = 'Status Aktif/Keterangan';
             }
 
             if (isset($actualChanges['image']) || isset($actualChanges['proposal_document']) || isset($actualChanges['official_report_document'])) {
@@ -432,9 +537,9 @@ class ParkingLocationController extends Controller
             // Catat history terlebih dahulu
             ParkingLocationHistory::create([
                 'parking_location_id' => $location->id,
-                'user_id'             => $userId,
-                'action'              => 'deleted',
-                'description'         => 'Lokasi parkir dihapus secara massal (belum terikat PKS).',
+                'user_id' => $userId,
+                'action' => 'deleted',
+                'description' => 'Lokasi parkir dihapus secara massal (belum terikat PKS).',
             ]);
 
             if ($location->image) {
@@ -452,6 +557,7 @@ class ParkingLocationController extends Controller
         }
 
         $request->session()->flash('success', "Berhasil menghapus {$count} data lokasi parkir yang terpilih.");
+
         return redirect()->back();
     }
 
@@ -461,6 +567,7 @@ class ParkingLocationController extends Controller
         // dan belum terikat perjanjian aktif
         $parkingLocations = ParkingLocation::where('road_section_id', $roadSectionId)
             ->where('status', 'tersedia')
+            ->where('is_active', true)
             ->whereDoesntHave('agreements', function ($query) {
                 $query->where('agreement_parking_locations.status', 'active'); // Perbaikan wherePivot
             })
@@ -520,14 +627,14 @@ class ParkingLocationController extends Controller
         try {
             // Proses Import
             // Menggunakan class import yang sudah kita perbaiki sebelumnya (tanpa Queue agar bisa ditangkap errornya langsung)
-            $import = new \App\Imports\ParkingLocationsImport((int) $request->road_section_id);
+            $import = new ParkingLocationsImport((int) $request->road_section_id);
             Excel::import($import, $request->file('import_file'));
 
             $request->session()->flash('success', "Berhasil! {$import->rowCount} data lokasi parkir telah ditambahkan.");
 
             return response()->json([
                 'status' => 'success',
-                'redirect' => route('masterdata.parking-locations.index')
+                'redirect' => route('masterdata.parking-locations.index'),
             ]);
 
         } catch (ValidationException $e) {
@@ -544,27 +651,27 @@ class ParkingLocationController extends Controller
                 'errors' => ['file' => $errorMessages],
             ], 422);
 
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             Log::error('Import DB Error: '.$e->getMessage());
 
             // Kode error 1062 adalah duplicate entry pada MySQL
             if ($e->errorInfo[1] == 1062) {
                 preg_match("/Duplicate entry '(.*)' for key/", $e->getMessage(), $matches);
-                
+
                 // MySQL menggabungkan column dengan '-' jika unique constraint lebih dari 1 kolom
                 // Karena unique key kita adalah ['road_section_id', 'name'], formatnya: '36-Nama Lokasi'
                 $rawDuplicate = $matches[1] ?? '';
                 $parts = explode('-', $rawDuplicate, 2);
                 $duplicateValue = count($parts) > 1 ? trim($parts[1]) : $rawDuplicate;
-                
+
                 $request->session()->flash('error', "Lokasi <strong>'{$duplicateValue}'</strong> duplikat mohon hapus salah satu sebelum import data.");
             } else {
-                $request->session()->flash('error', "Terjadi kesalahan database saat mengimpor data.");
+                $request->session()->flash('error', 'Terjadi kesalahan database saat mengimpor data.');
             }
 
             return response()->json([
                 'status' => 'error',
-                'redirect' => route('masterdata.parking-locations.importCreate')
+                'redirect' => route('masterdata.parking-locations.importCreate'),
             ], 422);
 
         } catch (\Exception $e) {

@@ -151,6 +151,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Dashboard Admin
             Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard');
 
+            // Laporan Titik Lokasi Parkir
+            Route::get('parking-locations/report', [ParkingLocationController::class, 'report'])->name('parking-locations.report');
+            Route::get('parking-locations/report/export-pdf', [ParkingLocationController::class, 'exportPdf'])->name('parking-locations.report.export-pdf');
+            Route::get('parking-locations/report/export-excel', [ParkingLocationController::class, 'exportExcel'])->name('parking-locations.report.export-excel');
+
             // Pencarian PKS
             Route::post('/agreements/find', [DashboardController::class, 'findAgreement'])->name('agreements.find');
 
