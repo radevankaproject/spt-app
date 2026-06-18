@@ -106,7 +106,7 @@ class DashboardController extends Controller
         // C. Grafik Titik per Ruas Jalan (Bar Chart)
         $locationsPerRoadSection = RoadSection::withCount('parkingLocations')
             ->orderBy('parking_locations_count', 'desc')
-            ->limit(20)->get();
+            ->limit(10)->get();
 
         $barChartData = [
             'labels' => $locationsPerRoadSection->pluck('name'),

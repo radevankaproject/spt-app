@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 @section('title', 'Dashboard Staff PKS')
 
-@push('styles')
+@section('page-style')
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
 <style>
     .hero-card-pks { background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); }
@@ -13,11 +13,9 @@
     .premium-table tbody tr { transition: all 0.2s ease; }
     .premium-table tbody tr:hover { background-color: rgba(99, 102, 241, 0.05); }
 </style>
-@endpush
-
-@section('skeleton')
-    @include('layouts.partials._skeleton-staff-pks-dashboard')
 @endsection
+
+
 
 @section('content')
 
@@ -41,11 +39,11 @@
                 <div class="row w-100 align-items-center position-relative z-1">
                     <div class="col-md-8 text-md-start text-center mb-4 mb-md-0">
                         <span class="badge bg-white text-primary rounded-pill mb-3 fw-bold px-3 py-2 shadow-sm">
-                            <i class="ri ri-calendar-todo-line me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                            <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
                         </span>
                         <h2 class="text-white fw-bold mb-2" style="letter-spacing: -0.5px;">{{ $greeting }}, {{ explode(' ', $staffName)[0] }}! 👋</h2>
                         <div class="badge border border-white text-white rounded-pill px-3 py-2 mb-3">
-                           <i class="ri ri-profile-line me-1 align-middle"></i> NIP: {{ $staffNip }}
+                           <i class="ti tabler-id me-1 align-middle"></i> NIP: {{ $staffNip }}
                         </div>
                         <p class="mb-0 opacity-75 fs-6" style="max-width: 500px;">
                             Pusat pengelolaan data Perjanjian Kerjasama (PKS) dan Titik Lokasi Parkir. Tetap pantau masa berlaku PKS agar selalu terbarukan.
@@ -57,7 +55,7 @@
                         </div>
                     </div>
                 </div>
-                <i class="ri ri-file-paper-2-line position-absolute text-white" style="font-size: 220px; right: -20px; bottom: -40px; opacity: 0.1; transform: rotate(-10deg);"></i>
+                <i class="ti tabler-file-description position-absolute text-white" style="font-size: 220px; right: -20px; bottom: -40px; opacity: 0.1; transform: rotate(-10deg);"></i>
             </div>
         </div>
     </div>
@@ -69,7 +67,7 @@
                 <div>
                     <h6 class="mb-0 fw-bold text-dark">{{ $currentLeader->user->name ?? 'Belum Ada' }}</h6>
                     <p class="text-muted mb-0" style="font-size: 0.75rem;">Pimpinan UPT (NIP: {{ $currentLeader->employee_number ?? '-' }})</p>
-                    <p class="text-primary fw-medium mb-0 mt-1" style="font-size: 0.70rem;"><i class="ri ri-calendar-check-line me-1"></i>Mulai: {{ $currentLeader ? $currentLeader->start_date->translatedFormat('d M Y') : '-' }}</p>
+                    <p class="text-primary fw-medium mb-0 mt-1" style="font-size: 0.70rem;"><i class="ti tabler-calendar-check me-1"></i>Mulai: {{ $currentLeader ? $currentLeader->start_date->translatedFormat('d M Y') : '-' }}</p>
                 </div>
             </div>
         </div>
@@ -81,7 +79,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-primary mx-auto mb-2"><i class="ri ri-file-text-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-primary mx-auto mb-2"><i class="ti tabler-file-text ti-md"></i></div>
                 <div class="quick-stat-value text-primary">{{ $totalAgreements }}</div>
                 <div class="quick-stat-label text-muted mt-1">PKS Aktif</div>
             </div>
@@ -90,7 +88,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-info mx-auto mb-2"><i class="ri ri-map-pin-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-info mx-auto mb-2"><i class="ti tabler-map-pin ti-md"></i></div>
                 <div class="quick-stat-value text-info">{{ $totalParkingLocations }}</div>
                 <div class="quick-stat-label text-muted mt-1">Titik Parkir</div>
             </div>
@@ -99,7 +97,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-dark mx-auto mb-2"><i class="ri ri-road-map-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-dark mx-auto mb-2"><i class="ti tabler-road ti-md"></i></div>
                 <div class="quick-stat-value">{{ $totalRoadSections }}</div>
                 <div class="quick-stat-label text-muted mt-1">Ruas Jalan</div>
             </div>
@@ -108,7 +106,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-secondary mx-auto mb-2"><i class="ri ri-user-location-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-secondary mx-auto mb-2"><i class="ti tabler-user-pin ti-md"></i></div>
                 <div class="quick-stat-value">{{ $totalFieldCoordinators }}</div>
                 <div class="quick-stat-label text-muted mt-1">Korlap</div>
             </div>
@@ -121,7 +119,7 @@
     <div class="col-lg-8">
         <div class="card shadow-sm border-0 rounded-4 h-100">
             <div class="card-header bg-transparent border-0 pt-4 pb-0">
-                <h5 class="card-title fw-bold m-0"><i class="ri icon-base ri-bar-chart-grouped-line text-primary me-2"></i> Top 10 Ruas Jalan (by Titik Lokasi)</h5>
+                <h5 class="card-title fw-bold m-0"><i class="ri icon-base ti tabler-chart-bar text-primary me-2"></i> Top 10 Ruas Jalan (by Titik Lokasi)</h5>
             </div>
             <div class="card-body">
                 <div id="locations-per-road-chart" style="min-height: 350px;"></div>
@@ -131,7 +129,7 @@
     <div class="col-lg-4">
         <div class="card shadow-sm border-0 rounded-4 h-100">
             <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                <h6 class="card-title fw-bold mb-0 text-primary"><i class="ri ri-map-pin-2-line me-2"></i>Lokasi Terbaru</h6>
+                <h6 class="card-title fw-bold mb-0 text-primary"><i class="ti tabler-map-pin-2 me-2"></i>Lokasi Terbaru</h6>
                 @if ($totalParkingLocations > 10)
                     <a href="{{ route('masterdata.parking-locations.index') }}" class="badge bg-primary text-decoration-none">Lihat Semua</a>
                 @endif
@@ -165,7 +163,7 @@
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 rounded-4 h-100">
             <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                <h6 class="card-title fw-bold mb-0 text-info"><i class="ri ri-file-paper-2-line me-2"></i>PKS Terbaru</h6>
+                <h6 class="card-title fw-bold mb-0 text-info"><i class="ti tabler-file-description me-2"></i>PKS Terbaru</h6>
                 @if ($totalAgreements > 10)
                     <a href="{{ route('masterdata.agreements.index') }}" class="badge bg-info text-decoration-none">Lihat Semua</a>
                 @endif
@@ -194,7 +192,7 @@
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 rounded-4 h-100">
             <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                <h6 class="card-title fw-bold mb-0 text-warning"><i class="ri ri-error-warning-line me-2"></i>PKS Segera Berakhir</h6>
+                <h6 class="card-title fw-bold mb-0 text-warning"><i class="ti tabler-alert-triangle me-2"></i>PKS Segera Berakhir</h6>
             </div>
             <div class="table-responsive text-nowrap" style="max-height: 320px; overflow-y: auto;">
                 <table class="table table-hover table-sm premium-table">
@@ -210,7 +208,7 @@
                             <td class="text-end"><span class="badge {{ $daysLeft <= 7 ? 'bg-label-danger' : 'bg-label-warning' }}">{{ (int)$daysLeft }} hari</span></td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" class="text-center text-success p-3"><i class="ri ri-check-double-line me-1"></i>Semua PKS aman.</td></tr>
+                        <tr><td colspan="3" class="text-center text-success p-3"><i class="ti tabler-checks me-1"></i>Semua PKS aman.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -220,12 +218,12 @@
 </div>
 @endsection
 
-@push('vendors-js')
-<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-@endpush
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('vendor-script')
+<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}" defer></script>
+@endsection
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
         const barChartEl = document.querySelector("#locations-per-road-chart");
         if (barChartEl) {
             new ApexCharts(barChartEl, {
@@ -242,4 +240,4 @@
         }
     });
 </script>
-@endpush
+@endsection

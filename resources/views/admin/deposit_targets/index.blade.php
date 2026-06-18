@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Target Setoran Bulanan & Tahunan')
 
-@push('styles')
+@section('page-style')
     {{-- Load CSS ApexCharts bawaan template --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
 
@@ -53,12 +53,10 @@
             transition: all 0.3s ease-in-out;
         }
     </style>
-@endpush
+@endsection
 
 {{-- ✅ PANGGIL SKELETON LOADER DI SINI --}}
-@section('skeleton')
-    @include('layouts.partials._skeleton-deposit-targets')
-@endsection
+
 
 @section('content')
 
@@ -66,7 +64,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
             {{-- ✅ ICON DIPERBAIKI --}}
-            <h4 class="fw-bold mb-1"><i class="ri icon-base ri-line-chart-line me-2 text-primary ri-22px"></i> Target Pendapatan
+            <h4 class="fw-bold mb-1"><i class="ri icon-base ti tabler-chart me-2 text-primary ti-md"></i> Target Pendapatan
                 Setoran</h4>
             <p class="text-muted mb-0">Kelola dan proyeksikan target setoran bulanan dan tahunan UPT.</p>
         </div>
@@ -86,7 +84,7 @@
                     <div class="card-header bg-white border-bottom pb-3">
                         {{-- ✅ ICON DIPERBAIKI --}}
                         <h5 class="card-title mb-0"><i
-                                class="ri icon-base ri-bar-chart-grouped-line me-2 text-success ri-20px"></i> Grafik Proyeksi
+                                class="ri icon-base ti tabler-chart-bar me-2 text-success ti-md"></i> Grafik Proyeksi
                             Target (3 Tahun Terakhir)</h5>
                     </div>
                     <div class="card-body pt-4">
@@ -103,7 +101,7 @@
             <div class="card sticky-form-card shadow-sm border-0" id="formContainer">
                 <div class="card-header bg-primary text-white d-flex align-items-center rounded-top">
                     {{-- ✅ ICON DIPERBAIKI --}}
-                    <i class="ri ri-arrow-right-up-box-line me-2 icon-20spx"></i>
+                    <i class="ti tabler-arrow-right-up-box me-2 icon-20spx"></i>
                     <h5 class="card-title text-white mb-0">Set / Update Target</h5>
                 </div>
 
@@ -175,7 +173,7 @@
                     <div class="card-footer text-end border-top pt-3 pb-3">
                         <button type="button" class="btn btn-outline-secondary me-2" onclick="resetForm()">Batal</button>
                         {{-- ✅ ICON DIPERBAIKI --}}
-                        <button type="submit" class="btn btn-primary"><i class="ri icon-base ri-save-3-line me-1 ri-18px"></i>
+                        <button type="submit" class="btn btn-primary"><i class="ri icon-base ti tabler-device-floppy me-1 ti tabler-18px"></i>
                             Simpan</button>
                     </div>
                 </form>
@@ -210,7 +208,7 @@
                                             <div class="avatar avatar-md">
                                                 {{-- ✅ ICON DIPERBAIKI --}}
                                                 <span class="avatar-initial rounded-circle bg-label-primary"><i
-                                                        class="ri icon-base ri-calendar-2-line ri-24px"></i></span>
+                                                        class="ri icon-base ti tabler-calendar-2 ti-lg"></i></span>
                                             </div>
                                             <div>
                                                 <span class="text-muted mb-0 d-block" style="font-size: 0.8rem;">Tahun
@@ -252,12 +250,12 @@
                                                             Rp {{ number_format($monthly->target_amount, 0, ',', '.') }}
                                                         </td>
                                                         <td class="text-center">
-                                                            {{-- ✅ ICON DIPERBAIKI (icon-base ri-edit-box-line ri-18px) --}}
+                                                            {{-- ✅ ICON DIPERBAIKI (icon-base ti tabler-edit-box ti tabler-18px) --}}
                                                             <button type="button"
                                                                 class="btn btn-sm btn-label-primary btn-icon rounded-pill shadow-sm"
                                                                 onclick="editTarget({{ $yearly->year }}, {{ $monthly->month }}, {{ $monthly->target_amount }})"
                                                                 data-bs-toggle="tooltip" title="Edit Target Ini">
-                                                                <i class="ri icon-base ri-edit-box-line icon-18px"></i>
+                                                                <i class="ri icon-base ti tabler-edit-box icon-18px"></i>
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -282,9 +280,9 @@
 
 @endsection
 
-@push('scripts')
+@section('page-script')
     {{-- Load JS ApexCharts bawaan template --}}
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}" defer></script>
 
     {{-- Setup Data Chart dari Backend (Ambil 3 tahun terakhir agar grafiknya cantik) --}}
     @php
@@ -424,4 +422,4 @@
             @endif
         });
     </script>
-@endpush
+@endsection

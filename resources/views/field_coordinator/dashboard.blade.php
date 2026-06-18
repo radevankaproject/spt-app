@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Dashboard Mitra')
 
-@section('skeleton')
-@include('layouts.partials._skeleton-fc-dashboard')
-@endsection
 
-@push('styles')
+
+@section('page-style')
 <style>
     .avatar-fit {
         width: 48px;
@@ -44,7 +42,7 @@
         background-color: #f8f9fa !important;
     }
 </style>
-@endpush
+@endsection
 
 @section('content')
 
@@ -86,7 +84,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
     </div>
 </div>
 
-<h6 class="text-muted fw-bold text-uppercase mb-3"><i class="ri ri-government-line me-1"></i> Pejabat Dinas Saat Ini
+<h6 class="text-muted fw-bold text-uppercase mb-3"><i class="ti tabler-government me-1"></i> Pejabat Dinas Saat Ini
 </h6>
 <div class="row g-4 mb-4">
     <div class="col-md-6">
@@ -116,7 +114,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
     </div>
 </div>
 
-<h6 class="text-muted fw-bold text-uppercase mb-3"><i class="ri ri-dashboard-line me-1"></i> Ringkasan Kontrak</h6>
+<h6 class="text-muted fw-bold text-uppercase mb-3"><i class="ti tabler-layout-dashboard me-1"></i> Ringkasan Kontrak</h6>
 <div class="row g-4 mb-4">
 
     {{-- 1. STATUS PKS --}}
@@ -127,14 +125,14 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                     <div class="d-flex align-items-center">
                         <div
                             class="avatar avatar-sm me-2 bg-label-success rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="ri ri-file-paper-2-line"></i>
+                            <i class="ti tabler-file-description"></i>
                         </div>
                         <h6 class="mb-0 fw-bold">Kontrak PKS</h6>
                     </div>
                     @if($activeAgreement)
                     <button type="button" class="btn btn-xs btn-label-success rounded-pill" data-bs-toggle="modal"
                         data-bs-target="#modalPks">
-                        <i class="ri ri-eye-line me-1"></i> Lihat Dokumen
+                        <i class="ti tabler-eye me-1"></i> Lihat Dokumen
                     </button>
                     @endif
                 </div>
@@ -156,7 +154,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                 <div class="d-flex align-items-center mb-2">
                     <div
                         class="avatar avatar-sm me-2 bg-label-warning rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="ri ri-money-dollar-circle-line"></i>
+                        <i class="ti tabler-currency-dollar"></i>
                     </div>
                     <h6 class="mb-0 fw-bold">Target Setoran Harian</h6>
                 </div>
@@ -166,7 +164,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                 @if($isContractLunas)
                 <div class="mt-2 mb-3 box-estimasi bg-label-success p-3 rounded-3 border-dashed">
                     <div class="d-flex align-items-center mb-2 border-bottom border-success border-opacity-25 pb-2">
-                        <i class="ri ri-checkbox-circle-fill text-success ri-lg me-1"></i>
+                        <i class="ti tabler-circle-check-filled text-success ti tabler-lg me-1"></i>
                         <span class="text-success fw-bold" style="font-size: 0.8rem;">BULAN INI ({{
                             strtoupper($currentMonthName) }}) LUNAS</span>
                     </div>
@@ -187,7 +185,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                     <div
                         class="d-flex align-items-center justify-content-between mb-1 border-bottom border-primary border-opacity-25 pb-1">
                         <div>
-                            <i class="ri ri-checkbox-circle-fill text-success me-1"></i>
+                            <i class="ti tabler-circle-check-filled text-success me-1"></i>
                             <span class="text-success fw-bold" style="font-size: 0.7rem;">BULAN INI ({{
                                 strtoupper($currentMonthName) }}) LUNAS</span>
                         </div>
@@ -205,7 +203,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                     </div>
                 </div>
                 @else
-                <small class="text-danger d-block mb-3 fw-bold"><i class="ri ri-alert-line me-1"></i> Prabayar bulan {{
+                <small class="text-danger d-block mb-3 fw-bold"><i class="ti tabler-alert me-1"></i> Prabayar bulan {{
                     $currentMonthName }} belum dibayar!</small>
                 @endif
 
@@ -226,7 +224,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                             class="btn btn-sm btn-icon btn-outline-secondary rounded-circle btn-copy bg-white shadow-sm"
                             onclick="copyRekening('{{ $activeBankAccount->account_number }}', this)"
                             data-bs-toggle="tooltip" title="Salin Rekening">
-                            <i class="ri ri-file-copy-line"></i>
+                            <i class="ti tabler-file-copy"></i>
                         </button>
                     </div>
                     <small class="text-muted d-block mt-1 text-truncate" style="font-size: 0.7rem;"
@@ -247,7 +245,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                 <div class="d-flex align-items-center mb-2">
                     <div
                         class="avatar avatar-sm me-2 bg-label-info rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="ri ri-map-pin-user-line"></i>
+                        <i class="ti tabler-user-pin"></i>
                     </div>
                     <h6 class="mb-0 fw-bold">Titik Parkir Dikelola</h6>
                 </div>
@@ -255,7 +253,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                 </h3>
                 <div class="mt-auto text-end">
                     <a href="{{ route('field_coordinator.location-requests.create') }}"
-                        class="btn btn-sm btn-outline-info rounded-pill w-100"><i class="ri ri-add-line me-1"></i>
+                        class="btn btn-sm btn-outline-info rounded-pill w-100"><i class="ti tabler-plus me-1"></i>
                         Ajukan Perubahan Titik</a>
                 </div>
             </div>
@@ -268,7 +266,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
     <div class="col-lg-6">
         <div class="card h-100 shadow-sm border-0">
             <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center">
-                <h6 class="card-title fw-bold mb-0"><i class="ri ri-map-pin-line text-primary me-1"></i> Titik Parkir
+                <h6 class="card-title fw-bold mb-0"><i class="ti tabler-map-pin text-primary me-1"></i> Titik Parkir
                     Anda</h6>
             </div>
             <div class="table-responsive">
@@ -289,7 +287,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                         @empty
                         <tr>
                             <td colspan="2" class="text-center text-muted py-4">
-                                <i class="ri ri-map-pin-add-line ri-3x mb-2 text-muted opacity-50"></i><br>
+                                <i class="ti tabler-map-pin-plus ti-xl mb-2 text-muted opacity-50"></i><br>
                                 Belum ada titik parkir.
                             </td>
                         </tr>
@@ -303,7 +301,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
     <div class="col-lg-6">
         <div class="card h-100 shadow-sm border-0">
             <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center">
-                <h6 class="card-title fw-bold mb-0"><i class="ri ri-history-line text-warning me-1"></i> Status
+                <h6 class="card-title fw-bold mb-0"><i class="ti tabler-history text-warning me-1"></i> Status
                     Pengajuan Terakhir</h6>
                 <a href="{{ route('field_coordinator.location-requests.index') }}"
                     class="btn btn-xs btn-outline-secondary rounded-pill">Lihat Semua</a>
@@ -322,8 +320,8 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                         <tr>
                             <td>
                                 @if($req->request_type == 'add') <span class="badge bg-label-success"><i
-                                        class="ri ri-add-line me-1"></i> Penambahan</span>
-                                @else <span class="badge bg-label-danger"><i class="ri ri-subtract-line me-1"></i>
+                                        class="ti tabler-plus me-1"></i> Penambahan</span>
+                                @else <span class="badge bg-label-danger"><i class="ti tabler-subtract me-1"></i>
                                     Pencabutan</span> @endif
                             </td>
                             <td>
@@ -343,7 +341,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                         @empty
                         <tr>
                             <td colspan="3" class="text-center text-muted py-4">
-                                <i class="ri ri-file-list-3-line ri-3x mb-2 text-muted opacity-50"></i><br>
+                                <i class="ti tabler-file-text ti-xl mb-2 text-muted opacity-50"></i><br>
                                 Belum ada riwayat pengajuan.
                             </td>
                         </tr>
@@ -362,7 +360,7 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
         <div class="modal-content shadow-lg border-0 rounded-4">
             <div class="modal-header border-bottom bg-light">
                 <h5 class="modal-title fw-bold text-dark"><i
-                        class="ri ri-file-paper-2-line me-2 text-success"></i>Dokumen PKS Aktif</h5>
+                        class="ti tabler-file-description me-2 text-success"></i>Dokumen PKS Aktif</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
@@ -370,14 +368,14 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                     class="pdf-container"></iframe>
             </div>
             <div class="modal-footer border-top bg-white justify-content-between">
-                <p class="text-muted small mb-0"><i class="ri ri-information-line me-1"></i> Dokumen ini di-generate
+                <p class="text-muted small mb-0"><i class="ti tabler-info-circle me-1"></i> Dokumen ini di-generate
                     otomatis oleh sistem.</p>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-outline-secondary fw-bold rounded-pill"
                         data-bs-dismiss="modal">Tutup</button>
                     <a href="{{ route('masterdata.agreements.pdf', $activeAgreement->id) }}" target="_blank"
                         class="btn btn-success fw-bold rounded-pill">
-                        <i class="ri ri-external-link-line me-1"></i> Buka Fullscreen
+                        <i class="ti tabler-external-link me-1"></i> Buka Fullscreen
                     </a>
                 </div>
             </div>
@@ -388,9 +386,9 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
 
 @endsection
 
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
@@ -412,8 +410,8 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
         
         // Animasi icon centang hijau
         let icon = btn.querySelector('i');
-        icon.className = 'ri ri-check-double-line text-success';
-        setTimeout(() => { icon.className = 'ri ri-file-copy-line'; }, 2000);
+        icon.className = 'ti tabler-checks text-success';
+        setTimeout(() => { icon.className = 'ti tabler-file-copy'; }, 2000);
     }
 </script>
-@endpush
+@endsection

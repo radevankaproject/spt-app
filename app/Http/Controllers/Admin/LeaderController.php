@@ -77,6 +77,26 @@ class LeaderController extends Controller
             'status_jabatan' => 'required|in:tetap,plt,plh',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username ini sudah digunakan, silakan pilih yang lain.',
+            'username.regex' => 'Username hanya boleh berisi huruf kecil, angka, strip, atau underscore.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah terdaftar.',
+            'phone_number.numeric' => 'Nomor HP harus berupa angka.',
+            'phone_number.digits_between' => 'Nomor HP harus antara 10 hingga 14 digit.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'password.not_regex' => 'Kata sandi tidak boleh mengandung spasi.',
+            'img.image' => 'File harus berupa gambar.',
+            'img.max' => 'Ukuran gambar maksimal 5MB.',
+            'employee_number.required' => 'NIP wajib diisi.',
+            'employee_number.unique' => 'NIP ini sudah terdaftar.',
+            'status_jabatan.required' => 'Status jabatan wajib dipilih.',
+            'start_date.required' => 'Tanggal mulai menjabat wajib diisi.',
+            'end_date.after_or_equal' => 'Tanggal akhir harus sama dengan atau setelah tanggal mulai.',
         ]);
 
         DB::beginTransaction();
@@ -139,6 +159,25 @@ class LeaderController extends Controller
             'status_jabatan' => 'required|in:tetap,plt,plh',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username ini sudah digunakan, silakan pilih yang lain.',
+            'username.regex' => 'Username hanya boleh berisi huruf kecil, angka, strip, atau underscore.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah terdaftar.',
+            'phone_number.numeric' => 'Nomor HP harus berupa angka.',
+            'phone_number.digits_between' => 'Nomor HP harus antara 10 hingga 14 digit.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'password.not_regex' => 'Kata sandi tidak boleh mengandung spasi.',
+            'img.image' => 'File harus berupa gambar.',
+            'img.max' => 'Ukuran gambar maksimal 5MB.',
+            'employee_number.required' => 'NIP wajib diisi.',
+            'employee_number.unique' => 'NIP ini sudah terdaftar.',
+            'status_jabatan.required' => 'Status jabatan wajib dipilih.',
+            'start_date.required' => 'Tanggal mulai menjabat wajib diisi.',
+            'end_date.after_or_equal' => 'Tanggal akhir harus sama dengan atau setelah tanggal mulai.',
         ]);
 
         DB::beginTransaction();

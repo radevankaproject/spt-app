@@ -68,13 +68,13 @@
           <div class="container-xxl d-flex justify-content-between">
 
             <div class="navbar-brand d-flex align-items-center">
-              <i class="ri ri-car-line ri-2x text-primary me-2"></i>
+              <i class="ti tabler-car ti-lg text-primary me-2"></i>
               <span class="fw-bold fs-4 text-dark">SPKP <span class="fw-light">Pekanbaru</span></span>
             </div>
 
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
               data-bs-target="#navbarCollapse">
-              <i class="ri-menu-line ri-2x"></i>
+              <i class="ti tabler-menu-2 ti-lg"></i>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -82,21 +82,21 @@
                 <li class="nav-item">
                   <a class="nav-link {{ request()->routeIs('leader.dashboard', 'treasurer.dashboard') ? 'active' : '' }}"
                     href="{{ route('dashboard') }}">
-                    <i class="ri ri-dashboard-line me-1 align-bottom"></i> Dashboard
+                    <i class="ti tabler-layout-dashboard me-1 align-bottom"></i> Dashboard
                   </a>
                 </li>
                 @if(Auth::user()->role === 'treasurer')
                 <li class="nav-item">
                   <a class="nav-link {{ request()->routeIs('masterdata.deposit-transactions.*') ? 'active' : '' }}"
                     href="{{ route('masterdata.deposit-transactions.index') }}">
-                    <i class="ri ri-safe-2-line me-1 align-bottom"></i> Validasi Setoran
+                    <i class="ti tabler-safe-2 me-1 align-bottom"></i> Validasi Setoran
                   </a>
                 </li>
                 @endif
                 <li class="nav-item">
                   <a class="nav-link {{ request()->routeIs('masterdata.deposit-reports.*') ? 'active' : '' }}"
                     href="{{ route('masterdata.deposit-reports.index') }}">
-                    <i class="ri ri-file-chart-line me-1 align-bottom"></i> Laporan
+                    <i class="ti tabler-file-chart me-1 align-bottom"></i> Laporan
                   </a>
                 </li>
               </ul>
@@ -121,7 +121,7 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li>
                     <a class="dropdown-item" href="{{ route('profile.settings') }}">
-                      <i class="ri-user-settings-line me-2"></i><span class="align-middle">Pengaturan Profil</span>
+                      <i class="ti tabler-user-settings me-2"></i><span class="align-middle">Pengaturan Profil</span>
                     </a>
                   </li>
                   <li>
@@ -131,7 +131,7 @@
                     <form method="POST" action="{{ route('logout') }}">
                       @csrf
                       <button class="dropdown-item text-danger" type="submit">
-                        <i class="ri-logout-box-r-line me-2"></i><span class="align-middle">Log Out</span>
+                        <i class="ti tabler-logout me-2"></i><span class="align-middle">Log Out</span>
                       </button>
                     </form>
                   </li>

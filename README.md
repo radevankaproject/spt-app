@@ -11,6 +11,7 @@
   <img src="https://komarev.com/ghpvc/?username=bangameck&label=Profile%20Views&color=0A66C2&style=flat" />
   <img src="https://img.shields.io/badge/Maintained%20By-Bangameck-0A66C2?logo=github" />
   <img src="https://img.shields.io/badge/Status-Available%20for%20Project-success" />
+  <img src="https://img.shields.io/badge/Version-v2.0.0-blueviolet" />
   <img src="https://img.shields.io/badge/Brand-RadevankaProject-black" />
 </p>
 
@@ -25,7 +26,7 @@ Sistem Informasi Manajemen Perparkiran Terpadu (SiPKS) / SPT adalah aplikasi _en
 Aplikasi ini dibangun menggunakan arsitektur modern yang mengedepankan performa, estetika premium, serta standar keamanan tinggi:
 
 - **Core Backend:** Laravel 12 / PHP 8.4+
-- **UI/UX & Frontend:** Vuexy Premium Template, Bootstrap 5, Laravel Blade Engine
+- **UI/UX & Frontend:** Vuexy v10.11.1 (Full Version), Bootstrap 5, Laravel Blade Engine
 - **Database:** MySQL
 - **Mapping & Geolocation:** Leaflet.js terintegrasi dengan OpenStreetMap API
 - **Gateway & Notifikasi:** Fonnte API (Integrasi pengiriman OTP via WhatsApp)

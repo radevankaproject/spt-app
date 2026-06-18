@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Profil UPT Perparkiran')
 
-@push('styles')
+@section('page-style')
     {{-- CSS untuk Quill Editor --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/quill/typography.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/quill/katex.css') }}" />
@@ -38,12 +38,10 @@
             border-bottom-right-radius: 0.375rem;
         }
     </style>
-@endpush
+@endsection
 
 {{-- ✅ Panggil Skeleton Loader --}}
-@section('skeleton')
-    @include('layouts.partials._skeleton-upt-profile')
-@endsection
+
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -202,13 +200,13 @@
                              <div class="d-flex justify-content-center gap-3 mb-3">
                                 <label for="logo-upload" class="btn btn-primary btn-sm" tabindex="0">
                                     <span class="d-none d-sm-block">Pilih Logo</span>
-                                    <i class="icon-base ri-upload-2-line d-sm-none"></i>
+                                    <i class="icon-base ti tabler-upload d-sm-none"></i>
                                     <input type="file" id="logo-upload" name="logo" class="account-file-input" hidden
                                         accept="image/png, image/jpeg" />
                                 </label>
                                 <button type="button" class="btn btn-outline-secondary btn-sm account-image-reset" data-default="{{ $avatarSrc }}">
                                     <span class="d-none d-sm-block">Reset</span>
-                                     <i class="icon-base ri-refresh-line d-sm-none"></i>
+                                     <i class="icon-base ti tabler-refresh d-sm-none"></i>
                                 </button>
                             </div>
                             @endif
@@ -227,7 +225,7 @@
                     @if(Auth::user()->role !== 'leader')
                     <div class="card-footer text-center border-top">
                         <button type="submit" class="btn btn-success w-100">
-                            <i class="ri-save-line me-1"></i> Simpan Perubahan
+                            <i class="ti tabler-save me-1"></i> Simpan Perubahan
                         </button>
                     </div>
                     @endif
@@ -237,7 +235,7 @@
     </form>
 @endsection
 
-@push('scripts')
+@section('page-script')
     {{-- Scripts untuk Editor & Image Compression --}}
     <script src="{{ asset('assets/vendor/libs/quill/katex.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/quill/quill.js') }}"></script>
@@ -371,4 +369,4 @@
             }
         });
     </script>
-@endpush
+@endsection

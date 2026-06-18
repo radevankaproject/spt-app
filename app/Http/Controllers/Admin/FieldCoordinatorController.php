@@ -299,12 +299,23 @@ class FieldCoordinatorController extends Controller
 
         $user = $fieldCoordinator->user;
         
+        $messages = [
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username ini sudah digunakan, silakan pilih yang lain.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah terdaftar.',
+            'phone_number.required' => 'Nomor Telepon/HP wajib diisi.',
+            'phone_number.max' => 'Nomor HP maksimal 15 digit.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+        ];
+
         $validatedData = $request->validate([
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'phone_number' => 'required|string|max:15',
             'password' => 'nullable|string|min:8|confirmed',
-        ]);
+        ], $messages);
 
         $user->username = $validatedData['username'];
         $user->email = $validatedData['email'];

@@ -1,14 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 @section('title', 'Edit Transaksi Setoran')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-deposit-transaction-edit')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -34,7 +32,7 @@
             @if (!$depositTransaction->is_validated && (Auth::user()->isAdmin() || Auth::user()->isStaffKeu()))
                 <form action="{{ route('masterdata.deposit-transactions.validate', $depositTransaction->id) }}" method="POST" class="form-validate">
                     @csrf
-                    <button type="submit" class="btn btn-success btn-sm"><i class="ri ri-check-double-line me-1"></i> Validasi Setoran Ini</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="ti tabler-checks me-1"></i> Validasi Setoran Ini</button>
                 </form>
             @endif
         </div>
@@ -51,7 +49,7 @@
                                 </option>
                             @endif
                         </select>
-                        @if ($depositTransaction->is_validated) <div class="form-text text-warning"><i class="ri ri-lock-2-line me-1"></i> Setoran terkunci karena sudah divalidasi.</div> @endif
+                        @if ($depositTransaction->is_validated) <div class="form-text text-warning"><i class="ti tabler-lock-2 me-1"></i> Setoran terkunci karena sudah divalidasi.</div> @endif
                     </div>
 
                     <div class="col-md-6">
@@ -114,7 +112,7 @@
 
                                 @if (!$depositTransaction->is_validated)
                                     <label for="proof-upload" class="btn btn-sm btn-primary rounded-pill">
-                                        <i class="ri ri-upload-2-line me-1"></i> Ubah Gambar
+                                        <i class="ti tabler-upload me-1"></i> Ubah Gambar
                                         <input type="file" id="proof-upload" name="proof_of_transfer" class="account-file-input" hidden accept="image/png, image/jpeg" />
                                     </label>
                                     <div id="proof-error" class="mt-2 text-danger small"></div>
@@ -127,7 +125,7 @@
                 <div class="pt-5 text-end border-top mt-5">
                     <a href="{{ route('masterdata.deposit-transactions.index') }}" class="btn btn-outline-secondary me-2">Kembali</a>
                     @if (!$depositTransaction->is_validated)
-                        <button type="submit" class="btn btn-primary"><i class="ri ri-save-3-line me-1"></i> Simpan Perubahan</button>
+                        <button type="submit" class="btn btn-primary"><i class="ti tabler-device-floppy me-1"></i> Simpan Perubahan</button>
                     @endif
                 </div>
             </form>
@@ -135,11 +133,10 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+@section('page-script')
+    @vite(['resources/assets/vendor/libs/select2/select2.js', 'resources/assets/vendor/libs/sweetalert2/sweetalert2.js'])
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-    <script>
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             $(".form-validate").on("submit", function(e) {
                 e.preventDefault(); const t = this;
@@ -209,4 +206,4 @@
             @endif
         });
     </script>
-@endpush
+@endsection

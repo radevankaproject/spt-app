@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Dashboard Pimpinan')
 
-@push('styles')
+@section('page-style')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
@@ -19,11 +19,9 @@
         .select2-container--default .select2-selection--single { border: 1px solid #d9dee3; border-radius: 0.375rem; height: 38px; padding: 5px 15px; }
         .select2-container--default .select2-selection--single .select2-selection__arrow { height: 36px; right: 10px; }
     </style>
-@endpush
-
-@section('skeleton')
-    @include('layouts.partials._skeleton-leader-dashboard')
 @endsection
+
+
 
 @section('content')
 
@@ -35,7 +33,7 @@
                     <div class="row align-items-center relative z-2">
                         <div class="col-md-8 col-12 text-center text-md-start mb-4 mb-md-0">
                             <span class="badge bg-white text-primary rounded-pill mb-3 fw-bold px-3 py-2 shadow-sm">
-                                <i class="ri ri-calendar-todo-line me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                                <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
                             </span>
                             <h3 class="text-white fw-bold mb-2">Selamat Datang, {{ $currentLeader->user->name ?? 'Pimpinan' }}! 👑</h3>
                             <p class="mb-4 opacity-75" style="font-size: 1.05rem;">
@@ -43,14 +41,14 @@
                             </p>
                             <div class="d-inline-flex flex-wrap gap-3">
                                 <div class="glass-panel px-3 py-2 d-flex align-items-center">
-                                    <i class="ri ri-fingerprint-line ri-xl me-2 opacity-75"></i>
+                                    <i class="ti tabler-fingerprint ti tabler-xl me-2 opacity-75"></i>
                                     <div>
                                         <span class="d-block opacity-75 small fw-bold">NIP Pegawai</span>
                                         <span class="fw-bold">{{ $currentLeader->employee_number ?? '-' }}</span>
                                     </div>
                                 </div>
                                 <div class="glass-panel px-3 py-2 d-flex align-items-center">
-                                    <i class="ri ri-calendar-check-line ri-xl me-2 opacity-75"></i>
+                                    <i class="ti tabler-calendar-check ti tabler-xl me-2 opacity-75"></i>
                                     <div>
                                         <span class="d-block opacity-75 small fw-bold">Mulai Menjabat</span>
                                         <span class="fw-bold">{{ $currentLeader->start_date ? \Carbon\Carbon::parse($currentLeader->start_date)->translatedFormat('d M Y') : '-' }}</span>
@@ -65,7 +63,7 @@
                             </div>
                         </div>
                     </div>
-                    <i class="ri ri-bar-chart-box-line position-absolute text-white" style="font-size: 250px; left: -20px; bottom: -50px; opacity: 0.1; transform: rotate(-15deg);"></i>
+                    <i class="ti tabler-bar-chart-box position-absolute text-white" style="font-size: 250px; left: -20px; bottom: -50px; opacity: 0.1; transform: rotate(-15deg);"></i>
                 </div>
             </div>
         </div>
@@ -76,7 +74,7 @@
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card quick-stat-card shadow-sm h-100 bg-label-success">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-success text-white mx-auto mb-2 shadow-sm"><i class="ri ri-money-dollar-circle-line ri-20px"></i></div>
+                    <div class="stat-card-icon bg-success text-white mx-auto mb-2 shadow-sm"><i class="ti tabler-currency-dollar ti-md"></i></div>
                     <div class="quick-stat-value text-success" style="font-size: 1rem;">Rp {{ number_format($depositThisYear, 0, ',', '.') }}</div>
                     <div class="quick-stat-label text-success mt-1">Thn {{ now()->year }}</div>
                 </div>
@@ -85,7 +83,7 @@
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card quick-stat-card shadow-sm h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-info mx-auto mb-2"><i class="ri ri-wallet-3-line ri-20px"></i></div>
+                    <div class="stat-card-icon bg-label-info mx-auto mb-2"><i class="ti tabler-wallet ti-md"></i></div>
                     <div class="quick-stat-value text-info" style="font-size: 1rem;">Rp {{ number_format($depositThisMonth, 0, ',', '.') }}</div>
                     <div class="quick-stat-label text-muted mt-1">Bln Ini</div>
                 </div>
@@ -94,7 +92,7 @@
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card quick-stat-card shadow-sm h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-primary mx-auto mb-2"><i class="ri ri-file-text-line ri-20px"></i></div>
+                    <div class="stat-card-icon bg-label-primary mx-auto mb-2"><i class="ti tabler-file-text ti-md"></i></div>
                     <div class="quick-stat-value text-primary">{{ $totalAgreements }}</div>
                     <div class="quick-stat-label text-muted mt-1">PKS Aktif</div>
                 </div>
@@ -103,7 +101,7 @@
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card quick-stat-card shadow-sm h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-warning mx-auto mb-2"><i class="ri ri-map-pin-line ri-20px"></i></div>
+                    <div class="stat-card-icon bg-label-warning mx-auto mb-2"><i class="ti tabler-map-pin ti-md"></i></div>
                     <div class="quick-stat-value text-warning">{{ $totalParkingLocations }}</div>
                     <div class="quick-stat-label text-muted mt-1">Titik Parkir</div>
                 </div>
@@ -112,7 +110,7 @@
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card quick-stat-card shadow-sm h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-dark mx-auto mb-2"><i class="ri ri-road-map-line ri-20px"></i></div>
+                    <div class="stat-card-icon bg-label-dark mx-auto mb-2"><i class="ti tabler-road ti-md"></i></div>
                     <div class="quick-stat-value">{{ $totalRoadSections }}</div>
                     <div class="quick-stat-label text-muted mt-1">Ruas Jalan</div>
                 </div>
@@ -121,7 +119,7 @@
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card quick-stat-card shadow-sm h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-secondary mx-auto mb-2"><i class="ri ri-user-location-line ri-20px"></i></div>
+                    <div class="stat-card-icon bg-label-secondary mx-auto mb-2"><i class="ti tabler-user-pin ti-md"></i></div>
                     <div class="quick-stat-value">{{ $totalFieldCoordinators }}</div>
                     <div class="quick-stat-label text-muted mt-1">Korlap</div>
                 </div>
@@ -134,7 +132,7 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-header bg-transparent border-bottom py-3">
-                    <h6 class="mb-0 fw-bold"><i class="ri ri-search-eye-line me-2 text-primary"></i>Pencarian Data Cepat</h6>
+                    <h6 class="mb-0 fw-bold"><i class="ti tabler-zoom-in me-2 text-primary"></i>Pencarian Data Cepat</h6>
                 </div>
                 <div class="card-body pt-4">
                     <div class="row g-4">
@@ -162,10 +160,10 @@
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
                     <div>
-                        <h6 class="card-title mb-0 fw-bold"><i class="ri ri-map-pin-line text-danger me-2"></i>Peta Sampel Lokasi Parkir</h6>
+                        <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-map-pin text-danger me-2"></i>Peta Sampel Lokasi Parkir</h6>
                         <small class="text-muted">50 Titik Acak (Real-time)</small>
                     </div>
-                    <a href="{{ route('masterdata.parking-locations.map') }}" class="btn btn-sm btn-outline-danger rounded-pill">Lihat Peta Lengkap <i class="ri ri-arrow-right-line ms-1"></i></a>
+                    <a href="{{ route('masterdata.parking-locations.map') }}" class="btn btn-sm btn-outline-danger rounded-pill">Lihat Peta Lengkap <i class="ti tabler-arrow-right ms-1"></i></a>
                 </div>
                 <div class="card-body p-0">
                     <div id="leader-map" style="height: 400px; width: 100%; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; z-index: 1;"></div>
@@ -175,7 +173,7 @@
         <div class="col-xl-4 col-lg-5">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
-                    <h6 class="card-title mb-0 fw-bold"><i class="ri ri-map-pin-add-line text-warning me-2"></i>Lokasi Terbaru</h6>
+                    <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-map-pin-plus text-warning me-2"></i>Lokasi Terbaru</h6>
                     @if ($totalParkingLocations > 10)
                         <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-sm btn-outline-warning rounded-pill">Semua</a>
                     @endif
@@ -200,7 +198,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="2" class="text-center py-5 text-muted"><i class="ri ri-map-pin-off-line ri-2x opacity-50 mb-2 d-block"></i> Belum ada.</td></tr>
+                                <tr><td colspan="2" class="text-center py-5 text-muted"><i class="ti tabler-map-pin-off ti-lg opacity-50 mb-2 d-block"></i> Belum ada.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -218,7 +216,7 @@
                         <h6 class="card-title mb-0 fw-bold">Tren Setoran Tervalidasi</h6>
                         <small class="text-muted">Tahun {{ now()->year }}</small>
                     </div>
-                    <div class="badge bg-label-success rounded-pill px-3 py-2"><i class="ri ri-line-chart-line me-1"></i> Stabil</div>
+                    <div class="badge bg-label-success rounded-pill px-3 py-2"><i class="ti tabler-chart me-1"></i> Stabil</div>
                 </div>
                 <div class="card-body"><div id="deposit-chart"></div></div>
             </div>
@@ -239,7 +237,7 @@
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
-                    <h6 class="card-title mb-0 fw-bold"><i class="ri ri-file-list-3-line text-primary me-2"></i>Kontrak PKS Terbaru</h6>
+                    <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-file-text text-primary me-2"></i>Kontrak PKS Terbaru</h6>
                     @if ($totalAgreements > 10)
                         <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">Lihat Semua</a>
                     @endif
@@ -266,7 +264,7 @@
                                     <td class="text-end"><span class="fw-bold text-primary">Rp {{ number_format($pks->monthly_deposit_target, 0, ',', '.') }}</span></td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center py-5 text-muted"><i class="ri ri-inbox-2-line ri-3x opacity-50 mb-2 d-block"></i> Belum ada kontrak PKS.</td></tr>
+                                <tr><td colspan="4" class="text-center py-5 text-muted"><i class="ti tabler-inbox-2 ti-xl opacity-50 mb-2 d-block"></i> Belum ada kontrak PKS.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -277,7 +275,7 @@
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
-                    <h6 class="card-title mb-0 fw-bold"><i class="ri ri-error-warning-line text-warning me-2"></i>PKS Segera Berakhir</h6>
+                    <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-alert-triangle text-warning me-2"></i>PKS Segera Berakhir</h6>
                     <span class="badge bg-warning bg-opacity-10 text-warning fw-bold">30 Hari</span>
                 </div>
                 <div class="table-responsive text-nowrap" style="max-height: 320px;">
@@ -298,7 +296,7 @@
                                     <td class="text-end"><span class="badge {{ $daysLeft <= 7 ? 'bg-label-danger' : 'bg-label-warning' }} fw-bold">{{ (int)$daysLeft }} hari</span></td>
                                 </tr>
                             @empty
-                                <tr><td colspan="3" class="text-center py-5 text-success"><i class="ri ri-check-double-line ri-2x opacity-50 mb-2 d-block"></i> Semua PKS aman.</td></tr>
+                                <tr><td colspan="3" class="text-center py-5 text-success"><i class="ti tabler-checks ti-lg opacity-50 mb-2 d-block"></i> Semua PKS aman.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -308,21 +306,21 @@
     </div>
 @endsection
 
-@push('vendors-js')
+@section('vendor-script')
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-@endpush
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
+@endsection
 
-@push('scripts')
-    <script>
+@section('page-script')
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
 
             // 1. GRAFIK TREN SETORAN (AREA CHART)
             const depositChartEl = document.querySelector("#deposit-chart");
             if (depositChartEl) {
                 new ApexCharts(depositChartEl, {
-                    chart: { type: 'area', height: 320, parentHeightOffset: 0, toolbar: { show: false }, fontFamily: 'Outfit, sans-serif' },
+                    chart: { type: 'area', height: 320, parentHeightOffset: 0, toolbar: { show: false }, fontFamily: 'Public Sans, sans-serif' },
                     dataLabels: { enabled: false },
                     stroke: { show: true, curve: 'smooth', width: 3 },
                     fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
@@ -339,7 +337,7 @@
             const barChartEl = document.querySelector("#locations-per-road-chart");
             if (barChartEl) {
                 new ApexCharts(barChartEl, {
-                    chart: { type: 'bar', height: 320, parentHeightOffset: 0, toolbar: { show: false }, fontFamily: 'Outfit, sans-serif' },
+                    chart: { type: 'bar', height: 320, parentHeightOffset: 0, toolbar: { show: false }, fontFamily: 'Public Sans, sans-serif' },
                     plotOptions: { bar: { horizontal: true, barHeight: '60%', borderRadius: 4, distributed: true } },
                     dataLabels: { enabled: false },
                     series: [{ name: 'Jumlah Titik', data: @json($barChartData['data']) }],
@@ -389,7 +387,7 @@
                             const roadName = loc.road_section ? loc.road_section.name : 'Tanpa Ruas';
                             const zone = loc.road_section ? loc.road_section.zone : '-';
                             const url = `/masterdata/parking-locations/${loc.id}`;
-                            marker.bindPopup(`<div class="p-1"><h6 class="fw-bold mb-1">${loc.name}</h6><p class="small text-muted mb-2"><i class="ri ri-road-map-line align-middle"></i> ${roadName} (Zona ${zone})</p><a href="${url}" class="btn btn-xs btn-outline-secondary w-100">Detail</a></div>`);
+                            marker.bindPopup(`<div class="p-1"><h6 class="fw-bold mb-1">${loc.name}</h6><p class="small text-muted mb-2"><i class="ti tabler-road align-middle"></i> ${roadName} (Zona ${zone})</p><a href="${url}" class="btn btn-xs btn-outline-secondary w-100">Detail</a></div>`);
                             bounds.push([loc.latitude, loc.longitude]);
                         }
                     });
@@ -399,4 +397,4 @@
             }, 500);
         });
     </script>
-@endpush
+@endsection

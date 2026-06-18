@@ -36,7 +36,8 @@
         },
         "files": [
             "app/Helpers/NumberToWords.php",
-            "app/Helpers/NipIndoFormat.php"
+            "app/Helpers/NipIndoFormat.php",
+            "app/Helpers/Helpers.php"
         ]
     },
     "autoload-dev": {

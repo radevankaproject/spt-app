@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Laporan Titik Lokasi Parkir')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-parking-locations-report')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
@@ -66,12 +64,12 @@
             padding-top: 0.15em;
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">
-            <i class="ri ri-file-list-3-line text-primary me-2 align-middle" style="font-size: 1.5rem;"></i>
+            <i class="ti tabler-file-text text-primary me-2 align-middle" style="font-size: 1.5rem;"></i>
             Laporan Titik Lokasi Parkir
         </h4>
         <div class="d-flex align-items-center">
@@ -88,7 +86,7 @@
     <div class="card mb-4 border-0">
         <div class="card-header border-bottom bg-transparent pb-3 pt-4">
             <h5 class="mb-0 fw-bold d-flex align-items-center text-secondary">
-                <i class="ri ri-filter-3-fill me-2"></i> Filter Data Laporan
+                <i class="ti tabler-filter-filled me-2"></i> Filter Data Laporan
             </h5>
         </div>
         <div class="card-body pt-4">
@@ -97,7 +95,7 @@
                 <!-- Filter Zona -->
                 <div class="col-md-4 col-lg-3">
                     <label class="form-label fw-bold">
-                        <i class="ri ri-map-pin-range-line me-1 text-primary"></i> Zona
+                        <i class="ti tabler-map-pin-range me-1 text-primary"></i> Zona
                     </label>
                     <div class="btn-group w-100 shadow-sm" role="group" aria-label="Pilih Zona">
                         <input type="radio" class="btn-check zone-radio" name="zone" id="zone_all" value="" autocomplete="off" {{ request('zone') == '' ? 'checked' : '' }}>
@@ -113,7 +111,7 @@
                 <!-- Filter Ruas Jalan -->
                 <div class="col-md-8 col-lg-5">
                     <label for="road_section_id" class="form-label fw-bold">
-                        <i class="ri ri-road-map-line me-1 text-primary"></i> Ruas Jalan
+                        <i class="ti tabler-road me-1 text-primary"></i> Ruas Jalan
                     </label>
                     <select name="road_section_id[]" id="road_section_id" class="form-select select2 shadow-none" multiple="multiple" data-placeholder="-- Pilih Zona Terlebih Dahulu --" disabled>
                         <!-- Options dipopulate via JS -->
@@ -123,7 +121,7 @@
                 <!-- Filter Korlap -->
                 <div class="col-md-12 col-lg-4">
                     <label for="korlap_id" class="form-label fw-bold">
-                        <i class="ri ri-user-star-line me-1 text-primary"></i> Koordinator Lapangan
+                        <i class="ti tabler-user-star me-1 text-primary"></i> Koordinator Lapangan
                     </label>
                     <select name="korlap_id" id="korlap_id" class="form-select select2 shadow-none" data-placeholder="-- Pilih Ruas Jalan Dulu --" disabled>
                         <option value="">-- Semua Korlap --</option>
@@ -138,16 +136,16 @@
                     <div class="form-check custom-checkbox mb-3 mb-md-0 d-flex align-items-center">
                         <input type="checkbox" id="no_agreement" name="no_agreement" value="1" {{ request('no_agreement') == '1' ? 'checked' : '' }} class="form-check-input rounded border-gray-400 text-primary shadow-sm focus:ring-primary">
                         <label for="no_agreement" class="form-check-label ms-2 fw-semibold text-dark user-select-none">
-                            <span class="badge bg-label-warning px-2 py-1"><i class="ri ri-alert-line me-1"></i> Tampilkan Titik Tanpa Koordinator (Belum PKS)</span>
+                            <span class="badge bg-label-warning px-2 py-1"><i class="ti tabler-alert me-1"></i> Tampilkan Titik Tanpa Koordinator (Belum PKS)</span>
                         </label>
                     </div>
 
                     <div class="d-flex gap-2">
                         <a href="{{ route('admin.parking-locations.report') }}" class="btn btn-outline-secondary px-4">
-                            <i class="ri ri-refresh-line me-1"></i> Reset
+                            <i class="ti tabler-refresh me-1"></i> Reset
                         </a>
                         <button type="submit" class="btn btn-primary px-4 shadow-sm">
-                            <i class="ri ri-search-line me-1"></i> Terapkan Filter
+                            <i class="ti tabler-search me-1"></i> Terapkan Filter
                         </button>
                     </div>
                 </div>
@@ -159,14 +157,14 @@
     <div class="card border-0">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center border-bottom bg-transparent pb-3 pt-4">
             <h5 class="mb-0 fw-bold text-dark d-flex align-items-center">
-                <i class="ri ri-table-alt-line me-2 text-primary"></i> Hasil Laporan
+                <i class="ti tabler-table-alt me-2 text-primary"></i> Hasil Laporan
             </h5>
             <div class="d-flex gap-2 mt-3 mt-md-0">
                 <a href="{{ route('admin.parking-locations.report.export-pdf', request()->all()) }}" class="btn btn-danger shadow-sm px-3" data-bs-toggle="tooltip" title="Download PDF">
-                    <i class="ri ri-file-pdf-2-line me-2"></i> PDF
+                    <i class="ti tabler-file-pdf-2 me-2"></i> PDF
                 </a>
                 <a href="{{ route('admin.parking-locations.report.export-excel', request()->all()) }}" class="btn btn-success shadow-sm px-3" data-bs-toggle="tooltip" title="Download Excel">
-                    <i class="ri ri-file-excel-2-line me-2"></i> Excel
+                    <i class="ti tabler-file-excel-2 me-2"></i> Excel
                 </a>
             </div>
         </div>
@@ -176,12 +174,12 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center text-muted" width="5%">#</th>
-                            <th width="20%"><i class="ri ri-map-pin-line align-text-bottom me-1"></i> Titik Lokasi</th>
-                            <th width="20%"><i class="ri ri-road-map-line align-text-bottom me-1"></i> Ruas Jalan</th>
-                            <th class="text-center" width="10%"><i class="ri ri-map-pin-range-line align-text-bottom me-1"></i> Zona</th>
-                            <th width="20%"><i class="ri ri-user-star-line align-text-bottom me-1"></i> Koordinator</th>
-                            <th class="text-center" width="10%"><i class="ri ri-toggle-line align-text-bottom me-1"></i> Status</th>
-                            <th class="text-end" width="15%"><i class="ri ri-money-dollar-circle-line align-text-bottom me-1"></i> Setoran (Rp)</th>
+                            <th width="20%"><i class="ti tabler-map-pin align-text-bottom me-1"></i> Titik Lokasi</th>
+                            <th width="20%"><i class="ti tabler-road align-text-bottom me-1"></i> Ruas Jalan</th>
+                            <th class="text-center" width="10%"><i class="ti tabler-map-pin-range align-text-bottom me-1"></i> Zona</th>
+                            <th width="20%"><i class="ti tabler-user-star align-text-bottom me-1"></i> Koordinator</th>
+                            <th class="text-center" width="10%"><i class="ti tabler-toggle align-text-bottom me-1"></i> Status</th>
+                            <th class="text-end" width="15%"><i class="ti tabler-currency-dollar align-text-bottom me-1"></i> Setoran (Rp)</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
@@ -208,14 +206,14 @@
                                             <span class="fw-semibold text-primary">{{ $cName }}</span>
                                         </div>
                                     @else
-                                        <span class="text-muted fst-italic"><i class="ri ri-close-circle-line align-text-bottom me-1"></i>Belum Ada</span>
+                                        <span class="text-muted fst-italic"><i class="ti tabler-circle-x align-text-bottom me-1"></i>Belum Ada</span>
                                     @endif
                                 </td>
                                 <td class="text-center">
                                     @if($location->status == 'tersedia')
-                                        <span class="badge bg-label-success fw-bold"><i class="ri ri-checkbox-circle-line me-1"></i>Tersedia</span>
+                                        <span class="badge bg-label-success fw-bold"><i class="ti tabler-circle-check me-1"></i>Tersedia</span>
                                     @elseif($location->status == 'tidak_tersedia')
-                                        <span class="badge bg-label-secondary fw-bold"><i class="ri ri-close-circle-line me-1"></i>Tidak Tersedia</span>
+                                        <span class="badge bg-label-secondary fw-bold"><i class="ti tabler-circle-x me-1"></i>Tidak Tersedia</span>
                                     @endif
                                 </td>
                                 <td class="text-end fw-bold text-success font-monospace">
@@ -226,7 +224,7 @@
                             <tr>
                                 <td colspan="7" class="text-center py-5">
                                     <div class="d-flex flex-column justify-content-center align-items-center">
-                                        <i class="ri ri-file-search-line text-muted opacity-50 mb-3" style="font-size: 3rem;"></i>
+                                        <i class="ti tabler-file-search text-muted opacity-50 mb-3" style="font-size: 3rem;"></i>
                                         <h6 class="fw-bold text-dark mb-1">Tidak ada data titik lokasi parkir</h6>
                                         <p class="text-muted small mb-0">Coba sesuaikan filter untuk menemukan data.</p>
                                     </div>
@@ -247,9 +245,9 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-    <script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             if (jQuery().select2) {
                 $('.select2').select2({
@@ -330,4 +328,4 @@
             });
         });
     </script>
-@endpush
+@endsection

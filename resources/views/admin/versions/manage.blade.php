@@ -1,10 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Versi Aplikasi')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-versions-manage')
-@endsection
+
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -81,7 +79,7 @@
             @else
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center py-5">
-                     <i class="ri ri-lock-line ri-3x text-muted mb-3"></i>
+                     <i class="ti tabler-lock ti-xl text-muted mb-3"></i>
                      <h6>Akses Dibatasi</h6>
                      <p class="text-muted mb-0">Anda hanya dapat melihat riwayat versi aplikasi.</p>
                 </div>
@@ -104,7 +102,7 @@
                                     <small class="text-muted me-2">{{ $version->release_date->translatedFormat('d F Y') }}</small>
                                     @if(Auth::user()->role !== 'leader')
                                     <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill" onclick="editVersion({{ $version->id }}, '{{ $version->version }}', '{{ $version->release_date->format('Y-m-d') }}', `{{ str_replace('`', '\`', $version->changelog) }}`)" title="Edit Versi">
-                                        <i class="ri ri-edit-box-line ri-18px"></i>
+                                        <i class="ti tabler-edit-box ti tabler-18px"></i>
                                     </button>
                                     @endif
                                 </div>
@@ -126,7 +124,7 @@
     </div>
 @endsection
 
-@push('styles')
+@section('page-style')
 <style>
     .changelog-content ul {
         padding-left: 1.5rem;
@@ -137,9 +135,9 @@
         list-style-type: decimal;
     }
 </style>
-@endpush
+@endsection
 
-@push('scripts')
+@section('page-script')
 <script>
     const form = document.getElementById('versionForm');
     const formTitle = document.getElementById('formTitle');
@@ -183,4 +181,4 @@
         btnCancelEdit.classList.add('d-none');
     }
 </script>
-@endpush
+@endsection

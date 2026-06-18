@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Detail Perjanjian: ' . $agreement->agreement_number)
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-agreement-show')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
      <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/timeline.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
@@ -101,7 +99,7 @@
             font-size: 16px;
         }
     </style>
-@endpush
+@endsection
 
 @php
     // LOGIKA STATUS & MASA TENGGANG
@@ -187,11 +185,11 @@
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-outline-secondary">
-                <i class="ri ri-arrow-left-line me-1"></i> Kembali
+                <i class="ti tabler-arrow-left me-1"></i> Kembali
             </a>
             @if(Auth::user()->role !== 'leader' && $agreement->status !== 'expired')
             <a href="{{ route('masterdata.agreements.edit', $agreement->id) }}" class="btn btn-primary shadow-sm">
-                <i class="ri ri-pencil-line me-1"></i> Edit PKS
+                <i class="ti tabler-pencil me-1"></i> Edit PKS
             </a>
             @endif
         </div>
@@ -214,7 +212,7 @@
                             <div class="p-3 rounded-3 h-100">
                                 <div class="avatar mx-auto mb-2"><span
                                         class="avatar-initial rounded bg-primary bg-opacity-10 text-primary"><i
-                                            class="ri icon-base ri-map-pin-2-line ri-24px"></i></span></div>
+                                            class="ri icon-base ti tabler-map-pin-2 ti-lg"></i></span></div>
                                 <h5 class="mb-0 fw-bold">{{ $agreement->activeParkingLocations->count() }}</h5>
                                 <small class="text-muted">Titik Lokasi</small>
                             </div>
@@ -224,7 +222,7 @@
                                 {{-- ✅ FIX: Diubah ke warna Info agar tidak silau, dan angka jadi dinamis --}}
                                 <div class="avatar mx-auto mb-2"><span
                                         class="avatar-initial rounded bg-info bg-opacity-10 text-info"><i
-                                            class="ri icon-base ri-wallet-3-line ri-24px"></i></span></div>
+                                            class="ri icon-base ti tabler-wallet ti-lg"></i></span></div>
                                 <h5 class="mb-0 fw-bold text-info">Rp {{ $formattedDeposit }} {{ $depositSuffix }}</h5>
                                 <small class="text-muted">Setoran {{ now()->year }}</small>
                             </div>
@@ -235,35 +233,35 @@
                         Kontrak</h6>
                     <ul class="list-unstyled mb-4 mt-3">
                         <li class="d-flex align-items-center mb-3">
-                            <i class="ri ri-file-list-3-line text-primary me-2 ri-20px"></i>
+                            <i class="ti tabler-file-text text-primary me-2 ti-md"></i>
                             <div class="w-100 d-flex justify-content-between">
                                 <span class="fw-medium text-heading">No. PKS</span>
                                 <span class="fw-bold text-dark">{{ $agreement->agreement_number }}</span>
                             </div>
                         </li>
                         <li class="d-flex align-items-center mb-3">
-                            <i class="ri ri-checkbox-circle-line text-primary me-2 ri-20px"></i>
+                            <i class="ti tabler-circle-check text-primary me-2 ti-md"></i>
                             <div class="w-100 d-flex justify-content-between align-items-center">
                                 <span class="fw-medium text-heading">Status</span>
                                 <span class="badge bg-{{ $statusClass }} rounded-pill">{{ $statusText }}</span>
                             </div>
                         </li>
                         <li class="d-flex align-items-center mb-3">
-                            <i class="ri ri-file-list-line text-primary me-2 ri-20px"></i>
+                            <i class="ti tabler-file-list text-primary me-2 ti-md"></i>
                             <div class="w-100 d-flex justify-content-between">
                                 <span class="fw-medium text-heading">Jenis</span>
                                 <span class="badge bg-label-info rounded-pill">{{ ucfirst($agreement->jenis) }}</span>
                             </div>
                         </li>
                         <li class="d-flex align-items-center mb-3">
-                            <i class="ri ri-user-star-line text-primary me-2 ri-20px"></i>
+                            <i class="ti tabler-user-star text-primary me-2 ti-md"></i>
                             <div class="w-100 d-flex justify-content-between">
                                 <span class="fw-medium text-heading">Pimpinan</span>
                                 <span class="text-end">{{ Str::limit($agreement->leader->user->name ?? 'N/A', 15) }}</span>
                             </div>
                         </li>
                         <li class="d-flex align-items-start mb-2">
-                            <i class="ri ri-calendar-event-line text-primary me-2 ri-20px mt-1"></i>
+                            <i class="ti tabler-calendar-event text-primary me-2 ti-md mt-1"></i>
                             <div class="w-100 d-flex justify-content-between">
                                 <span class="fw-medium text-heading">Masa Berlaku</span>
                                 <div class="text-end">
@@ -277,7 +275,7 @@
 
                     @if ($isGracePeriod)
                         <div class="alert alert-warning d-flex align-items-center mb-4 shadow-sm" role="alert">
-                            <i class="ri ri-alert-line ri-24px me-3"></i>
+                            <i class="ti tabler-alert ti-lg me-3"></i>
                             <div>
                                 <h6 class="alert-heading mb-1 fw-bold">Perhatian!</h6>
                                 <p class="mb-0" style="font-size: 0.85rem;">PKS ini akan kedaluwarsa dalam
@@ -290,7 +288,7 @@
                     <div class="d-grid gap-2">
                         <a href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
                             class="btn btn-outline-danger">
-                            <i class="ri ri-printer-line me-1"></i> Cetak Dokumen PDF
+                            <i class="ti tabler-printer me-1"></i> Cetak Dokumen PDF
                         </a>
                     </div>
                     @endif
@@ -305,26 +303,26 @@
                     <li class="nav-item">
                         <button type="button" class="nav-link {{ $agreement->status !== 'expired' ? 'active' : '' }}" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-overview">
-                            <i class="ri ri-bar-chart-box-line me-1"></i> Setoran & Grafik
+                            <i class="ti tabler-bar-chart-box me-1"></i> Setoran & Grafik
                         </button>
                     </li>
                     <li class="nav-item">
                         <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-locations">
-                            <i class="ri ri-map-pin-line me-1"></i> Lokasi <span
+                            <i class="ti tabler-map-pin me-1"></i> Lokasi <span
                                 class="badge rounded-pill bg-danger ms-1">{{ $agreement->activeParkingLocations->count() }}</span>
                         </button>
                     </li>
                     <li class="nav-item">
                         <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-history">
-                            <i class="ri ri-history-line me-1"></i> Riwayat Aktivitas
+                            <i class="ti tabler-history me-1"></i> Riwayat Aktivitas
                         </button>
                     </li>
                     <li class="nav-item">
                         <button type="button" class="nav-link {{ $agreement->status === 'expired' ? 'active' : '' }}" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-pdf">
-                            <i class="ri ri-file-pdf-2-line me-1"></i> Arsip PKS
+                            <i class="ti tabler-file-pdf-2 me-1"></i> Arsip PKS
                         </button>
                     </li>
                 </ul>
@@ -342,7 +340,7 @@
                                     <div id="depositChart" style="min-height: 300px;"></div>
                                 @else
                                     <div class="text-center py-5">
-                                        <i class="ri icon-base ri-bar-chart-2-line text-muted mb-2"
+                                        <i class="ri icon-base ti tabler-bar-chart-2 text-muted mb-2"
                                             style="font-size: 3rem;"></i>
                                         <p class="text-muted">Belum ada data setoran yang tervalidasi di tahun ini.</p>
                                     </div>
@@ -370,27 +368,27 @@
                                     <tbody class="table-border-bottom-0">
                                         @forelse ($agreement->depositTransactions->sortByDesc('deposit_date') as $transaction)
                                             <tr>
-                                                <td><i class="ri icon-base ri-calendar-event-line text-primary me-2"></i>
+                                                <td><i class="ri icon-base ti tabler-calendar-event text-primary me-2"></i>
                                                     {{ $transaction->deposit_date->translatedFormat('d F Y') }}</td>
                                                 <td class="fw-bold text-primary">Rp
                                                     {{ number_format($transaction->amount, 0, ',', '.') }}</td>
                                                 <td>
                                                     @if ($transaction->is_validated)
                                                         <span class="badge bg-label-primary"><i
-                                                                class="ri icon-base ri-check-line me-1"></i> Valid</span>
+                                                                class="ri icon-base ti tabler-check me-1"></i> Valid</span>
                                                     @else
                                                         <span class="badge bg-label-warning"><i
-                                                                class="ri icon-base ri-time-line me-1"></i> Pending</span>
+                                                                class="ri icon-base ti tabler-clock me-1"></i> Pending</span>
                                                     @endif
                                                 </td>
                                                 <td>
                                                     @if ($transaction->is_validated)
                                                         <a href="{{ route('masterdata.deposit-transactions.pdf', $transaction->id) }}" target="_blank" class="btn btn-sm btn-icon btn-outline-primary rounded-pill shadow-sm" data-bs-toggle="tooltip" title="Cetak Invoice">
-                                                            <i class="ri ri-printer-line"></i>
+                                                            <i class="ti tabler-printer"></i>
                                                         </a>
                                                     @else
                                                         <button type="button" class="btn btn-sm btn-icon btn-outline-secondary rounded-pill shadow-sm" data-bs-toggle="tooltip" title="Menunggu Validasi" disabled>
-                                                            <i class="ri ri-printer-line"></i>
+                                                            <i class="ti tabler-printer"></i>
                                                         </button>
                                                     @endif
                                                 </td>
@@ -398,7 +396,7 @@
                                         @empty
                                             <tr>
                                                 <td colspan="4" class="text-center text-muted py-4"><i
-                                                        class="ri icon-base ri-wallet-3-fill me-1"></i> Belum ada riwayat setoran sama
+                                                        class="ri icon-base ti tabler-wallet-3-filled me-1"></i> Belum ada riwayat setoran sama
                                                     sekali.</td>
                                             </tr>
                                         @endforelse
@@ -412,7 +410,7 @@
                     <div class="tab-pane fade" id="tab-locations" role="tabpanel">
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header bg-transparent border-bottom">
-                                <h6 class="card-title fw-bold mb-0"><i class="ri ri-map-2-line text-primary me-2"></i>Peta Persebaran Lokasi Parkir</h6>
+                                <h6 class="card-title fw-bold mb-0"><i class="ti tabler-map-2 text-primary me-2"></i>Peta Persebaran Lokasi Parkir</h6>
                             </div>
                             <div class="card-body p-0">
                                 <div id="agreementLocationsMap" style="height: 400px; width: 100%; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; z-index: 1;"></div>
@@ -430,7 +428,7 @@
                                                 <button class="accordion-button collapsed fw-bold text-dark bg-light"
                                                     type="button" data-bs-toggle="collapse"
                                                     data-bs-target="#{{ $accordionId }}">
-                                                    <i class="ri ri-route-line text-primary me-2"></i>
+                                                    <i class="ti tabler-route text-primary me-2"></i>
                                                     {{ $roadSectionName ?? 'Tanpa Ruas Jalan' }}
                                                     <span
                                                         class="badge bg-primary rounded-pill ms-auto me-3">{{ count($locations) }}
@@ -447,7 +445,7 @@
                                                                 <div class="d-flex align-items-center">
                                                                     <div class="avatar avatar-sm me-3"><span
                                                                             class="avatar-initial rounded-circle bg-label-primary"><i
-                                                                                class="ri ri-map-pin-line"></i></span></div>
+                                                                                class="ti tabler-map-pin"></i></span></div>
                                                                     <a href="{{ route('masterdata.parking-locations.show', $location->id) }}"
                                                                         class="fw-medium text-dark text-decoration-none">{{ $location->name }}</a>
                                                                 </div>
@@ -461,7 +459,7 @@
                                         </div>
                                     @empty
                                         <div class="text-center py-5">
-                                            <i class="ri icon-base ri-map-pin-line text-muted mb-3"
+                                            <i class="ri icon-base ti tabler-map-pin text-muted mb-3"
                                                 style="font-size: 3rem;"></i>
                                             <p class="text-muted mb-0">Tidak ada lokasi parkir aktif yang terikat.</p>
                                         </div>
@@ -484,16 +482,16 @@
                                             @php
                                             $positionClass = $loop->odd ? 'timeline-item-left' : 'timeline-item-right';
                                                 // Styling Event (Mengikuti icon yang sudah antum fix)
-                                                $icon = 'ri-file-text-line'; $color = 'secondary'; $eventName = 'Aktivitas Sistem';
+                                                $icon = 'ti tabler-file-text'; $color = 'secondary'; $eventName = 'Aktivitas Sistem';
                                                 switch ($history->event_type) {
-                                                    case 'agreement_created': $icon = 'ri-file-add-line'; $color = 'primary'; $eventName = 'PKS Diterbitkan'; break;
-                                                    case 'location_added': $icon = 'ri-map-pin-add-line'; $color = 'success'; $eventName = 'Lokasi Ditambahkan'; break;
-                                                    case 'location_removed': $icon = 'ri-map-pin-5-line'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
-                                                    case 'deposit_changed': $icon = 'ri-money-dollar-circle-line'; $color = 'info'; $eventName = 'Perubahan Setoran'; break;
-                                                    case 'status_changed': $icon = 'ri-refresh-line'; $color = 'warning'; $eventName = 'Status Berubah'; break;
-                                                    case 'agreement_renewed': $icon = 'ri-loop-right-line'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
+                                                    case 'agreement_created': $icon = 'ti tabler-file-add'; $color = 'primary'; $eventName = 'PKS Diterbitkan'; break;
+                                                    case 'location_added': $icon = 'ti tabler-map-pin-plus'; $color = 'success'; $eventName = 'Lokasi Ditambahkan'; break;
+                                                    case 'location_removed': $icon = 'ti tabler-map-pin-5'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
+                                                    case 'deposit_changed': $icon = 'ti tabler-currency-dollar'; $color = 'info'; $eventName = 'Perubahan Setoran'; break;
+                                                    case 'status_changed': $icon = 'ti tabler-refresh'; $color = 'warning'; $eventName = 'Status Berubah'; break;
+                                                    case 'agreement_renewed': $icon = 'ti tabler-loop-right'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
                                                     case 'agreement_terminated':
-                                                    case 'agreement_expired': $icon = 'ri-pass-expired-line'; $color = 'dark'; $eventName = 'PKS Berakhir/Diputus'; break;
+                                                    case 'agreement_expired': $icon = 'ti tabler-user-off'; $color = 'dark'; $eventName = 'PKS Berakhir/Diputus'; break;
                                                 }
 
                                                 // Avatar Pembuat (Ditambahkan path storage/ agar aman)
@@ -527,7 +525,7 @@
                                                                     <div class="d-flex justify-content-between align-items-center w-100 cursor-pointer"
                                                                          data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">
                                                                         <span class="text-dark fw-medium">{{ $previewText }}</span>
-                                                                        <span class="badge bg-label-secondary rounded-pill ms-2"><i class="ri ri-arrow-down-wide-line"></i></span>
+                                                                        <span class="badge bg-label-secondary rounded-pill ms-2"><i class="ti tabler-arrow-down"></i></span>
                                                                     </div>
                                                                     <div class="collapse w-100 mt-2" id="{{ $collapseId }}">
                                                                         <div class="p-2 bg-lighter rounded-3">
@@ -535,7 +533,7 @@
                                                                                 <ul class="list-unstyled mb-0 ps-1">
                                                                                     @foreach($notesList as $note)
                                                                                         <li class="d-flex align-items-start mb-1 text-muted small">
-                                                                                            <i class="ri ri-arrow-right-s-fill text-primary me-1 mt-1"></i>
+                                                                                            <i class="ti tabler-arrow-right-s-filled text-primary me-1 mt-1"></i>
                                                                                             <span class="text-wrap" style="white-space: normal;">{{ $note }}</span>
                                                                                         </li>
                                                                                     @endforeach
@@ -565,7 +563,7 @@
                                             </li>
                                         @empty
                                             <div class="text-center py-5">
-                                                <i class="ri ri-history-line text-muted" style="font-size: 2rem;"></i>
+                                                <i class="ti tabler-history text-muted" style="font-size: 2rem;"></i>
                                                 <p class="text-muted mt-2">Belum ada riwayat tercatat untuk perjanjian ini.</p>
                                             </div>
                                         @endforelse
@@ -585,11 +583,11 @@
                                     @if($agreement->signed_document_path)
                                     <a href="{{ Storage::url($agreement->signed_document_path) }}" target="_blank"
                                         class="btn btn-sm btn-success rounded-pill"><i
-                                            class="ri ri-file-check-line me-1"></i> Scan Tertanda Tangan</a>
+                                            class="ti tabler-file-check me-1"></i> Scan Tertanda Tangan</a>
                                     @endif
                                     <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
                                         class="btn btn-sm btn-outline-primary rounded-pill"><i
-                                            class="ri ri-file-copy-2-line me-1"></i> Versi Sebelumnya</a>
+                                            class="ti tabler-file-copy-2 me-1"></i> Versi Sebelumnya</a>
                                 </div>
                             </div>
                             <div class="card-body pt-4">
@@ -613,12 +611,12 @@
                                                     {{-- Kiri: Ikon & Info Tanggal --}}
                                                     <div class="d-flex align-items-center gap-3">
                                                         <div class="avatar avatar-md rounded-circle bg-label-danger d-flex align-items-center justify-content-center flex-shrink-0">
-                                                            <i class="ri ri-file-pdf-2-fill fs-4"></i>
+                                                            <i class="ti tabler-file-pdf-2-filled fs-4"></i>
                                                         </div>
                                                         <div>
                                                             <h6 class="mb-1 fw-bold text-dark">Arsip PKS - {{ $history->created_at->translatedFormat('d M Y') }}</h6>
                                                             <div class="d-flex align-items-center text-muted" style="font-size: 0.85rem;">
-                                                                <i class="ri ri-time-line me-1"></i> {{ $history->created_at->format('H:i') }} WIB
+                                                                <i class="ti tabler-clock me-1"></i> {{ $history->created_at->format('H:i') }} WIB
                                                                 <span class="mx-2">•</span>
                                                                 <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle me-1" width="16" height="16" style="object-fit: cover;">
                                                                 Dibuat oleh {{ Str::limit($uName, 15) }}
@@ -630,11 +628,11 @@
                                                     <div class="d-flex gap-2 align-items-center">
                                                         <a href="{{ asset('storage/' . $history->file_path) }}" target="_blank"
                                                             class="btn btn-sm btn-outline-info rounded-pill fw-medium">
-                                                            <i class="ri ri-eye-line me-1"></i> Lihat
+                                                            <i class="ti tabler-eye me-1"></i> Lihat
                                                         </a>
                                                         <a href="{{ asset('storage/' . $history->file_path) }}" download
                                                             class="btn btn-sm btn-primary rounded-pill fw-medium shadow-sm">
-                                                            <i class="ri ri-download-cloud-2-line me-1"></i> Unduh
+                                                            <i class="ti tabler-cloud-download me-1"></i> Unduh
                                                         </a>
                                                     </div>
                                                 </div>
@@ -642,19 +640,19 @@
                                                 {{-- Bawah: Catatan Perubahan (Premium Box) --}}
                                                 <div class="mt-3 pt-3 border-top">
                                                     <div class="d-flex align-items-start gap-2">
-                                                        <i class="ri ri-message-3-line text-primary mt-1"></i>
+                                                        <i class="ti tabler-message-3 text-primary mt-1"></i>
                                                         <div class="w-100">
                                                             @if($hasMultiple)
                                                                 <div class="d-flex justify-content-between align-items-center cursor-pointer" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">
                                                                     <span class="text-dark fw-medium" style="font-size: 0.9rem;">Terdapat {{ count($notesList) }} catatan perubahan. <span class="text-primary">Lihat rincian</span></span>
-                                                                    <i class="ri ri-arrow-down-s-line text-muted"></i>
+                                                                    <i class="ti tabler-arrow-down-s text-muted"></i>
                                                                 </div>
                                                                 <div class="collapse mt-2" id="{{ $collapseId }}">
                                                                     <div class="bg-lighter p-3 rounded-3">
                                                                         <ul class="list-unstyled mb-0">
                                                                             @foreach($notesList as $note)
                                                                                 <li class="d-flex align-items-start mb-2 text-muted" style="font-size: 0.85rem;">
-                                                                                    <i class="ri ri-check-line text-success me-2 fs-6"></i>
+                                                                                    <i class="ti tabler-check text-success me-2 fs-6"></i>
                                                                                     <span style="line-height: 1.4;">{{ $note }}</span>
                                                                                 </li>
                                                                             @endforeach
@@ -671,7 +669,7 @@
                                         @empty
                                             <div class="text-center py-5 border rounded-4 bg-lighter" style="border-style: dashed !important; border-width: 2px !important;">
                                                 <div class="avatar avatar-xl mx-auto mb-3 bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center">
-                                                    <i class="ri ri-folder-open-line text-muted fs-2"></i>
+                                                    <i class="ti tabler-folder-open text-muted fs-2"></i>
                                                 </div>
                                                 <h6 class="fw-bold text-dark mb-1">Arsip Kosong</h6>
                                                 <p class="mb-0 text-muted">Belum ada dokumen PDF lama yang tersimpan.</p>
@@ -694,14 +692,14 @@
     </div>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+@section('vendor-script')
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}" defer></script>
     <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-@endpush
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+@endsection
 
-@push('scripts')
+@section('page-script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // 1. Inisialisasi Perfect Scrollbar untuk Timeline
@@ -870,7 +868,7 @@
 
                 const defaultIcon = L.divIcon({
                     className: 'custom-div-icon',
-                    html: `<div class="marker-pin"><i class="ri ri-map-pin-fill"></i></div>`,
+                    html: `<div class="marker-pin"><i class="ti tabler-map-pin-filled"></i></div>`,
                     iconSize: [36, 36],
                     iconAnchor: [0, 0],
                     popupAnchor: [0, -36]
@@ -884,15 +882,15 @@
                             <div class="p-3">
                                 <div class="d-flex align-items-center mb-3 pb-2 border-bottom">
                                     <div class="avatar avatar-sm me-3 bg-label-primary rounded-circle d-flex align-items-center justify-content-center">
-                                        <i class="ri ri-map-pin-line text-primary"></i>
+                                        <i class="ti tabler-map-pin text-primary"></i>
                                     </div>
                                     <h6 class="mb-0 fw-bold text-dark" style="font-size: 14px; line-height: 1.2;">${loc.name}</h6>
                                 </div>
                                 <div class="mb-2 text-muted" style="font-size: 13px;">
-                                    <i class="ri ri-route-line me-2"></i> ${loc.road_section}
+                                    <i class="ti tabler-route me-2"></i> ${loc.road_section}
                                 </div>
                                 <div class="fw-bold text-primary mb-3" style="font-size: 14px;">
-                                    <i class="ri ri-wallet-3-line me-2"></i> Rp ${loc.deposit} <span class="text-muted fw-normal" style="font-size: 12px;">/ hari</span>
+                                    <i class="ti tabler-wallet me-2"></i> Rp ${loc.deposit} <span class="text-muted fw-normal" style="font-size: 12px;">/ hari</span>
                                 </div>
                             </div>
                         `;
@@ -914,4 +912,4 @@
             }
         });
     </script>
-@endpush
+@endsection

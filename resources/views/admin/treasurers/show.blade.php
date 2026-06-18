@@ -1,19 +1,15 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Profil Bendahara: ' . ($treasurer->user->name ?? 'N/A'))
 
-@section('skeleton')
-    <div class="container-xxl flex-grow-1 container-p-y">
-        @include('layouts.partials._skeleton-field-coordinator-show')
-    </div>
-@endsection
 
-@push('styles')
+
+@section('page-style')
 <style>
     .hover-link { transition: all 0.2s ease; text-decoration: none; }
     .hover-link:hover { color: #696cff !important; transform: translateX(3px); display: inline-block;}
 </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -30,7 +26,7 @@
                 </nav>
             </div>
             <div>
-                <a href="{{ route('admin.treasurers.index') }}" class="btn btn-outline-secondary shadow-sm rounded-pill"><i class="ri ri-arrow-left-line me-1"></i> Kembali</a>
+                <a href="{{ route('admin.treasurers.index') }}" class="btn btn-outline-secondary shadow-sm rounded-pill"><i class="ti tabler-arrow-left me-1"></i> Kembali</a>
             </div>
         </div>
 
@@ -53,23 +49,23 @@
                             </div>
                             <h5 class="mt-3 mb-1 fw-bold {{ !$isActive ? 'text-muted' : 'text-dark' }}">{{ $uName }}</h5>
                             @if($isActive) 
-                                <span class="badge bg-label-primary rounded-pill px-3 py-2 mt-1"><i class="ri ri-vip-crown-line me-1"></i> Bendahara Aktif</span>
+                                <span class="badge bg-label-primary rounded-pill px-3 py-2 mt-1"><i class="ti tabler-crown me-1"></i> Bendahara Aktif</span>
                             @else 
-                                <span class="badge bg-label-danger rounded-pill px-3 py-2 mt-1"><i class="ri ri-history-line me-1"></i> Purna Tugas</span> 
+                                <span class="badge bg-label-danger rounded-pill px-3 py-2 mt-1"><i class="ti tabler-history me-1"></i> Purna Tugas</span> 
                             @endif
                         </div>
 
                         <h6 class="pb-2 border-bottom text-start mb-3 mt-4 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;">Informasi Personal</h6>
                         <ul class="list-unstyled mb-4 text-start small">
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-fingerprint-line text-primary me-3 ri-24px p-2 bg-lighter rounded"></i>
+                                <i class="ti tabler-fingerprint text-primary me-3 ti-lg p-2 bg-lighter rounded"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Nomor Induk Pegawai (NIP)</span>
                                     <span class="fw-bold text-dark">{{ formatNip($treasurer->employee_number) }}</span>
                                 </div>
                             </li>
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-mail-line text-primary me-3 ri-24px p-2 bg-lighter rounded"></i>
+                                <i class="ti tabler-mail text-primary me-3 ti-lg p-2 bg-lighter rounded"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Email (Username)</span>
                                     <span class="fw-bold text-dark">{{ $treasurer->user->email ?? '-' }}<br>({{ $treasurer->user->username ?? '-' }})</span>
@@ -81,14 +77,14 @@
                                 if($treasurer->status_jabatan == 'plh') $statusLabel = 'Pelaksana Harian (Plh)';
                             @endphp
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-briefcase-4-line text-primary me-3 ri-24px p-2 bg-lighter rounded"></i>
+                                <i class="ti tabler-briefcase-4 text-primary me-3 ti-lg p-2 bg-lighter rounded"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Status Jabatan</span>
                                     <span class="fw-bold text-primary">{{ $statusLabel }}</span>
                                 </div>
                             </li>
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-calendar-check-line text-primary me-3 ri-24px p-2 bg-lighter rounded"></i>
+                                <i class="ti tabler-calendar-check text-primary me-3 ti-lg p-2 bg-lighter rounded"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Mulai Menjabat</span>
                                     <span class="fw-bold text-dark">{{ $treasurer->start_date ? \Carbon\Carbon::parse($treasurer->start_date)->translatedFormat('d F Y') : '-' }}</span>
@@ -97,7 +93,7 @@
                         </ul>
 
                         @if($treasurer->histories->isNotEmpty())
-                            <h6 class="pb-2 border-bottom text-start mb-3 mt-5 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;"><i class="ri ri-history-line me-1"></i> Riwayat Jabatan</h6>
+                            <h6 class="pb-2 border-bottom text-start mb-3 mt-5 text-muted fw-bold text-uppercase" style="font-size: 0.75rem;"><i class="ti tabler-history me-1"></i> Riwayat Jabatan</h6>
                             <ul class="timeline mb-0 text-start ps-3" style="border-left: 2px solid #e1e4e8; list-style-type: none;">
                                 @foreach($treasurer->histories as $history)
                                     <li class="mb-3 position-relative" style="padding-left: 15px;">
@@ -109,7 +105,7 @@
                                                 @else Pelaksana Harian (Plh) @endif
                                             </span>
                                             <span class="text-muted" style="font-size: 0.75rem;">
-                                                {{ \Carbon\Carbon::parse($history->start_date)->translatedFormat('d M Y') }} <i class="ri ri-arrow-right-line align-middle mx-1"></i> {{ $history->end_date ? \Carbon\Carbon::parse($history->end_date)->translatedFormat('d M Y') : 'Sekarang' }}
+                                                {{ \Carbon\Carbon::parse($history->start_date)->translatedFormat('d M Y') }} <i class="ti tabler-arrow-right align-middle mx-1"></i> {{ $history->end_date ? \Carbon\Carbon::parse($history->end_date)->translatedFormat('d M Y') : 'Sekarang' }}
                                             </span>
                                         </div>
                                     </li>
@@ -133,7 +129,7 @@
                             <h3 class="mb-0 text-white fw-bold">Rp {{ number_format($totalValidatedAmount, 0, ',', '.') }}</h3>
                         </div>
                         <div class="avatar avatar-lg bg-white rounded p-2">
-                            <i class="ri icon-base ri-safe-2-line icon-22px text-primary"></i>
+                            <i class="ri icon-base ti tabler-safe-2 icon-22px text-primary"></i>
                         </div>
                     </div>
                 </div>
@@ -141,7 +137,7 @@
                 {{-- Tabel Histori Transaksi --}}
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-header border-bottom py-3 bg-transparent d-flex justify-content-between align-items-center">
-                        <h6 class="card-title mb-0 fw-bold"><i class="ri ri-file-list-3-line me-2 text-primary"></i>Jejak Audit Validasi Setoran</h6>
+                        <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-file-text me-2 text-primary"></i>Jejak Audit Validasi Setoran</h6>
                         <span class="badge bg-label-secondary rounded-pill">Total: {{ $deposits->total() }} Transaksi</span>
                     </div>
                     
@@ -170,9 +166,9 @@
                                                 @endphp
                                                 
                                                 <a href="{{ $detailRoute }}" class="fw-bold text-primary d-inline-block mb-1 hover-link" data-bs-toggle="tooltip" title="Lihat Detail Setoran">
-                                                    <i class="ri ri-file-paper-2-line align-bottom me-1"></i>{{ $refCode }}
+                                                    <i class="ti tabler-file-description align-bottom me-1"></i>{{ $refCode }}
                                                 </a>
-                                                <span class="d-block text-dark small"><i class="ri ri-calendar-line align-bottom me-1"></i>{{ \Carbon\Carbon::parse($deposit->deposit_date)->translatedFormat('d M Y') }}</span>
+                                                <span class="d-block text-dark small"><i class="ti tabler-calendar align-bottom me-1"></i>{{ \Carbon\Carbon::parse($deposit->deposit_date)->translatedFormat('d M Y') }}</span>
                                                 <small class="text-muted" style="font-size: 0.7rem;">Divalidasi: {{ $deposit->validation_date ? \Carbon\Carbon::parse($deposit->validation_date)->translatedFormat('d M, H:i') : '-' }}</small>
                                             </td>
                                             <td>
@@ -188,16 +184,16 @@
                                             </td>
                                             <td class="text-center">
                                                 @if($deposit->is_validated)
-                                                    <span class="badge bg-label-success rounded-pill px-3 py-1"><i class="ri ri-check-double-line me-1"></i> Sah</span>
+                                                    <span class="badge bg-label-success rounded-pill px-3 py-1"><i class="ti tabler-checks me-1"></i> Sah</span>
                                                 @else
-                                                    <span class="badge bg-label-warning rounded-pill px-3 py-1"><i class="ri ri-time-line me-1"></i> Pending</span>
+                                                    <span class="badge bg-label-warning rounded-pill px-3 py-1"><i class="ti tabler-clock me-1"></i> Pending</span>
                                                 @endif
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
                                             <td colspan="4" class="text-center py-5">
-                                                <i class="ri ri-file-search-line ri-3x text-muted opacity-50 d-block mb-2"></i>
+                                                <i class="ti tabler-file-search ti-xl text-muted opacity-50 d-block mb-2"></i>
                                                 <h6 class="fw-bold text-dark mb-1">Belum ada jejak transaksi</h6>
                                                 <span class="text-muted small">Bendahara ini belum melakukan validasi setoran apapun dari Korlap.</span>
                                             </td>
@@ -225,9 +221,9 @@
     </div>
 @endsection
 
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
         // Inisialisasi Tooltip
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -235,4 +231,4 @@
         });
     });
 </script>
-@endpush
+@endsection

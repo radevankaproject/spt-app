@@ -58,7 +58,7 @@
             <p class="mb-4 mx-2 text-muted" style="font-size: 1.15rem; max-width: 600px; line-height: 1.6;">@yield('message')</p>
             
             <a href="{{ url('/') }}" class="btn btn-primary btn-lg rounded-pill mt-3">
-                <i class="ri-home-4-line me-2"></i>Kembali ke Beranda
+                <i class="ti tabler-home-4 me-2"></i>Kembali ke Beranda
             </a>
             
             <div class="mt-5">

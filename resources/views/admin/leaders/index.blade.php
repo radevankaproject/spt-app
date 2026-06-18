@@ -1,20 +1,19 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Pimpinan (Leader)')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-users-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
     <style>
         .progress-container { display: none; height: 10px; margin-top: 10px; border-radius: 10px; }
         .progress-bar-custom { transition: width 0.2s ease; font-size: 10px; line-height: 10px; }
         .cursor-pointer { cursor: pointer; }
         .nav-tabs .nav-link.active { font-weight: 600; color: #696cff; border-bottom: 3px solid #696cff; }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -78,13 +77,13 @@
                     <input type="hidden" name="tab" value="{{ $currentTab }}">
                     <div class="input-group">
                         <input type="search" name="search" class="form-control" placeholder="Cari Nama/NIP..." value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="ri ri-search-line icon-20px"></i></button>
+                        <button class="btn btn-outline-primary" type="submit"><i class="ti tabler-search icon-20px"></i></button>
                     </div>
                 </form>
                 @if(Auth::user()->role !== 'leader')
                 {{-- Tombol Tambah --}}
                 <button type="button" class="btn btn-primary" id="btn-add-leader" data-bs-toggle="modal" data-bs-target="#leaderModal">
-                    <i class="ri ri-add-line me-1"></i> Tambah Pimpinan
+                    <i class="ti tabler-plus me-1"></i> Tambah Pimpinan
                 </button>
                 @endif
             </div>
@@ -146,7 +145,7 @@
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('admin.leaders.show', $leader->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
-                                            <i class="ri icon-base ri-eye-line icon-20px"></i>
+                                            <i class="ri icon-base ti tabler-eye icon-20px"></i>
                                         </a>
                                         @if(Auth::user()->role !== 'leader')
                                         {{-- Tombol Edit --}}
@@ -163,7 +162,7 @@
                                             data-avatar="{{ $uAvatar }}"
                                             data-bs-toggle="modal" data-bs-target="#leaderModal"
                                             data-bs-toggle="tooltip" title="Edit Pimpinan">
-                                            <i class="ri ri-pencil-line icon-20px"></i>
+                                            <i class="ti tabler-pencil icon-20px"></i>
                                         </button>
                                         @endif
 
@@ -172,20 +171,19 @@
                                         @if($isActive)
                                             <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-nonaktif"
                                                 data-id="{{ $leader->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalNonaktif" data-bs-toggle="tooltip" title="Purna Tugas (Nonaktif)">
-                                                                                                    <i class="ri ri-information-off-line icon-20px"></i>
-
+                                                <i class="ti tabler-fingerprint-off icon-20px"></i>
                                             </button>
                                         @else
                                             <button type="button" class="btn btn-sm btn-icon btn-text-success rounded-pill btn-aktif"
                                                 data-id="{{ $leader->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalAktif" data-bs-toggle="tooltip" title="Jabat Kembali (Aktif)">
-                                                <i class="ri ri-refresh-line icon-20px"></i>
+                                                <i class="ti tabler-refresh icon-20px"></i>
                                             </button>
 
                                             @if($leader->agreements->isEmpty())
                                                 <form action="{{ route('admin.leaders.destroy', $leader->id) }}" method="POST" class="form-delete d-inline">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Permanen">
-                                                        <i class="ri ri-delete-bin-line icon-20px"></i>
+                                                        <i class="ti tabler-trash icon-20px"></i>
                                                     </button>
                                                 </form>
                                             @endif
@@ -224,7 +222,7 @@
                         <div class="row g-5">
                             {{-- KOLOM KIRI --}}
                             <div class="col-lg-8">
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-user-settings-line me-1"></i> Informasi Akun Login</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-user-up me-3"></i> Informasi Akun Login</h6>
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
@@ -238,7 +236,7 @@
                                                 <input type="text" class="form-control" id="username" name="username" placeholder="Username" required />
                                                 <label for="username">Username</label>
                                             </div>
-                                            <button class="btn btn-outline-primary w-25 px-1" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ri ri-loop-left-line"></i></button>
+                                            <button class="btn btn-outline-primary w-25 px-1" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ti tabler-zoom-replace me-3 "></i></button>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -275,7 +273,7 @@
                                     </div>
                                 </div>
 
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-briefcase-line me-1"></i> Detail Pimpinan</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-briefcase me-3"></i> Detail Pimpinan</h6>
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
@@ -299,17 +297,17 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="date" class="form-control" id="start_date" name="start_date" required />
+                                            <input type="text" class="form-control flatpickr-date" id="start_date" name="start_date" required placeholder="YYYY-MM-DD" />
                                             <label for="start_date">Mulai Menjabat</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="input-group">
                                             <div class="form-floating form-floating-outline w-75">
-                                                <input type="date" class="form-control" id="end_date" name="end_date" />
+                                                <input type="text" class="form-control flatpickr-date" id="end_date" name="end_date" placeholder="YYYY-MM-DD" />
                                                 <label for="end_date">Akhir Menjabat (Opsional)</label>
                                             </div>
-                                            <button class="btn btn-outline-danger w-25 px-1" type="button" onclick="document.getElementById('end_date').value=''" data-bs-toggle="tooltip" title="Kosongkan Tanggal Akhir"><i class="ri ri-close-line"></i></button>
+                                            <button class="btn btn-outline-danger w-25 px-1" type="button" onclick="document.getElementById('end_date').value=''" data-bs-toggle="tooltip" title="Kosongkan Tanggal Akhir"><i class="ti tabler-x"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -317,12 +315,12 @@
 
                             {{-- KOLOM KANAN: Upload Foto --}}
                             <div class="col-lg-4 border-start">
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-image-add-line me-1"></i> Foto Profil</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-user-square-rounded me-1"></i> Foto Profil</h6>
                                 <div class="text-center mb-4 pt-4">
                                     <img src="{{ asset('assets/img/avatars/1.png') }}" id="avatar-preview" class="rounded-circle shadow-sm mb-3" style="width:140px; height:140px; object-fit:cover;">
                                     <div class="d-block mt-2">
                                         <label for="img-upload" class="btn btn-primary rounded-pill cursor-pointer">
-                                            <i class="ri ri-upload-2-line me-1"></i> Pilih Foto
+                                            <i class="ti tabler-upload me-1"></i> Pilih Foto
                                             <input type="file" id="img-upload" name="img" hidden accept="image/png, image/jpeg" />
                                         </label>
                                     </div>
@@ -339,7 +337,7 @@
                     <div class="modal-footer bg-light px-4 py-3 border-top">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary" id="btnSubmitModal">
-                            <i class="ri ri-save-3-line me-1"></i> Simpan Pimpinan
+                            <i class="ti tabler-device-floppy me-1"></i> Simpan Pimpinan
                         </button>
                     </div>
                 </form>
@@ -352,7 +350,7 @@
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-warning bg-opacity-10 border-bottom px-4 py-3">
-                    <h5 class="modal-title fw-bold text-warning"><i class="ri-power-line me-1"></i> Purna Tugas</h5>
+                    <h5 class="modal-title fw-bold text-warning"><i class="ti tabler-power me-3"></i> Purna Tugas</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="formNonaktif" method="POST">
@@ -360,7 +358,7 @@
                     <div class="modal-body px-4 py-4">
                         <p class="text-dark mb-3">Tentukan tanggal berakhirnya masa jabatan untuk: <strong id="namaNonaktif"></strong></p>
                         <div class="form-floating form-floating-outline">
-                            <input type="date" class="form-control" id="end_date" name="end_date" required />
+                            <input type="text" class="form-control flatpickr-date" id="end_date_nonaktif" name="end_date" required placeholder="YYYY-MM-DD" />
                             <label for="end_date">Tanggal Akhir Menjabat</label>
                         </div>
                     </div>
@@ -378,7 +376,7 @@
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-success bg-opacity-10 border-bottom px-4 py-3">
-                    <h5 class="modal-title fw-bold text-success"><i class="ri ri-refresh-line me-1"></i> Jabat Kembali</h5>
+                    <h5 class="modal-title fw-bold text-success"><i class="ti tabler-refresh me-3"></i> Jabat Kembali</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="formAktif" method="POST">
@@ -396,7 +394,7 @@
                         </div>
 
                         <div class="form-floating form-floating-outline">
-                            <input type="date" class="form-control" id="start_date" name="start_date" required />
+                            <input type="text" class="form-control flatpickr-date" id="start_date_aktif" name="start_date" required placeholder="YYYY-MM-DD" />
                             <label for="start_date">Tanggal Mulai Menjabat</label>
                         </div>
                     </div>
@@ -411,11 +409,12 @@
 
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
 
-    <script>
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
 
             // --- 1. FILTER INPUT & GENERATE USERNAME ---
@@ -473,7 +472,7 @@
                     modalTitle.innerText = 'Tambah Pimpinan Baru';
                     formLeader.action = "{{ route('admin.leaders.store') }}";
                     methodContainer.innerHTML = '';
-                    btnSubmitModal.innerHTML = '<i class="ri-save-3-line me-1"></i> Simpan Pimpinan';
+                    btnSubmitModal.innerHTML = '<i class="ti tabler-device-floppy me-1"></i> Simpan Pimpinan';
                     formLeader.reset();
                     document.getElementById('avatar-preview').src = defaultAvatar;
 
@@ -498,7 +497,7 @@
                     formLeader.action = urlAction.replace(':id', this.dataset.id);
 
                     methodContainer.innerHTML = '@method("PATCH")';
-                    btnSubmitModal.innerHTML = '<i class="ri-save-3-line me-1"></i> Simpan Perubahan';
+                    btnSubmitModal.innerHTML = '<i class="ti tabler-device-floppy me-1"></i> Simpan Perubahan';
 
                     document.getElementById('name').value = this.dataset.name;
                     document.getElementById('username').value = this.dataset.username;
@@ -673,6 +672,15 @@
             // Aktifkan Tooltips
             const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltips.map(t => new bootstrap.Tooltip(t));
+
+            // Init flatpickr
+            const flatpickrDates = document.querySelectorAll('.flatpickr-date');
+            if (flatpickrDates) {
+                flatpickr('.flatpickr-date', {
+                    monthSelectorType: 'static',
+                    dateFormat: "Y-m-d"
+                });
+            }
         });
     </script>
-@endpush
+@endsection

@@ -1,20 +1,19 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Bendahara Penerimaan')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-users-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
     <style>
         .progress-container { display: none; height: 10px; margin-top: 10px; border-radius: 10px; }
         .progress-bar-custom { transition: width 0.2s ease; font-size: 10px; line-height: 10px; }
         .cursor-pointer { cursor: pointer; }
         .nav-tabs .nav-link.active { font-weight: 600; color: #696cff; border-bottom: 3px solid #696cff; }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -71,12 +70,12 @@
                     <input type="hidden" name="tab" value="{{ $currentTab }}">
                     <div class="input-group">
                         <input type="search" name="search" class="form-control" placeholder="Cari Nama/NIP..." value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="ri ri-search-line"></i></button>
+                        <button class="btn btn-outline-primary" type="submit"><i class="ti tabler-search"></i></button>
                     </div>
                 </form>
                 @if(Auth::user()->role !== 'leader')
                 <button type="button" class="btn btn-primary" id="btn-add-treasurer" data-bs-toggle="modal" data-bs-target="#treasurerModal">
-                    <i class="ri ri-add-line me-1"></i> Tambah Bendahara
+                    <i class="ti tabler-plus me-1"></i> Tambah Bendahara
                 </button>
                 @endif
             </div>
@@ -127,38 +126,44 @@
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('admin.treasurers.show', $treasurer->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
-                                            <i class="ri ri-eye-line ri-20px"></i>
+                                            <i class="ti tabler-eye icon-20px"></i>
                                         </a>
                                         @if(Auth::user()->role !== 'leader')
+                                        {{-- Tombol Edit --}}
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill btn-edit-treasurer"
-                                            data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-username="{{ $treasurer->user->username }}"
-                                            data-email="{{ $treasurer->user->email }}" data-phone_number="{{ $treasurer->user->phone_number ?? '' }}" data-nip="{{ $treasurer->employee_number }}"
+                                            data-id="{{ $treasurer->id }}"
+                                            data-name="{{ $uName }}"
+                                            data-username="{{ $treasurer->user->username }}"
+                                            data-email="{{ $treasurer->user->email }}"
+                                            data-nip="{{ $treasurer->employee_number }}"
                                             data-startdate="{{ $treasurer->start_date ? \Carbon\Carbon::parse($treasurer->start_date)->format('Y-m-d') : '' }}"
                                             data-enddate="{{ $treasurer->end_date ? \Carbon\Carbon::parse($treasurer->end_date)->format('Y-m-d') : '' }}"
-                                            data-avatar="{{ $uAvatar }}" data-bs-toggle="modal" data-bs-target="#treasurerModal" data-bs-toggle="tooltip" title="Edit Bendahara">
-                                            <i class="ri ri-pencil-line ri-20px"></i>
+                                            data-statusjabatan="{{ $treasurer->status_jabatan }}"
+                                            data-avatar="{{ $uAvatar }}"
+                                            data-bs-toggle="modal" data-bs-target="#treasurerModal"
+                                            data-bs-toggle="tooltip" title="Edit Bendahara">
+                                            <i class="ti tabler-pencil icon-20px"></i>
                                         </button>
                                         @endif
 
                                         @if(Auth::user()->role !== 'leader')
                                         @if($isActive)
                                             <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-nonaktif"
-                                                data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalNonaktif" data-bs-toggle="tooltip" title="Purna Tugas (Nonaktif)">
-                                                <i class="ri ri-power-line ri-20px"></i>
+                                                data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalNonaktif" data-bs-toggle="tooltip" title="Nonaktifkan (Purna Tugas)">
+                                                <i class="ti tabler-fingerprint-off icon-20px"></i>
                                             </button>
                                         @else
                                             <button type="button" class="btn btn-sm btn-icon btn-text-success rounded-pill btn-aktif"
-                                                data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalAktif" data-bs-toggle="tooltip" title="Jabat Kembali (Aktif)">
-                                                <i class="ri ri-refresh-line ri-20px"></i>
+                                                data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalAktif" data-bs-toggle="tooltip" title="Aktifkan Kembali">
+                                                <i class="ti tabler-refresh icon-20px"></i>
                                             </button>
-                                            @if($treasurer->histories->isEmpty())
-                                                <form action="{{ route('admin.treasurers.destroy', $treasurer->id) }}" method="POST" class="form-delete d-inline">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Permanen">
-                                                        <i class="ri ri-delete-bin-line ri-20px"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
+
+                                            <form action="{{ route('admin.treasurers.destroy', $treasurer->id) }}" method="POST" class="form-delete d-inline">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Permanen">
+                                                    <i class="ti tabler-trash icon-20px"></i>
+                                                </button>
+                                            </form>
                                         @endif
                                         @endif
                                     </div>
@@ -187,7 +192,7 @@
                     <div class="modal-body px-4 py-4">
                         <div class="row g-5">
                             <div class="col-lg-8">
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-user-settings-line me-1"></i> Informasi Akun Login</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-user-up me-3"></i> Informasi Akun Login</h6>
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
@@ -201,7 +206,7 @@
                                                 <input type="text" class="form-control" id="username" name="username" placeholder="Username" required />
                                                 <label for="username">Username</label>
                                             </div>
-                                            <button class="btn btn-outline-primary w-25 px-1" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ri ri-loop-left-line"></i></button>
+                                            <button class="btn btn-outline-primary w-25 px-1" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ti tabler-zoom-replace me-3"></i></button>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -237,7 +242,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-briefcase-line me-1"></i> Detail Bendahara</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-briefcase me-3"></i> Detail Bendahara</h6>
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
@@ -248,28 +253,28 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="date" class="form-control" id="start_date" name="start_date" required />
+                                            <input type="text" class="form-control flatpickr-date" id="start_date" name="start_date" required placeholder="YYYY-MM-DD" />
                                             <label for="start_date">Mulai Menjabat</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="input-group">
                                             <div class="form-floating form-floating-outline w-75">
-                                                <input type="date" class="form-control" id="end_date" name="end_date" />
+                                                <input type="text" class="form-control flatpickr-date" id="end_date" name="end_date" placeholder="YYYY-MM-DD" />
                                                 <label for="end_date">Akhir Menjabat (Opsional)</label>
                                             </div>
-                                            <button class="btn btn-outline-danger w-25 px-1" type="button" onclick="document.getElementById('end_date').value=''" data-bs-toggle="tooltip" title="Kosongkan Tanggal Akhir"><i class="ri ri-close-line"></i></button>
+                                            <button class="btn btn-outline-danger w-25 px-1" type="button" onclick="document.getElementById('end_date').value=''" data-bs-toggle="tooltip" title="Kosongkan Tanggal Akhir"><i class="ti tabler-x"></i></button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-4 border-start">
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-image-add-line me-1"></i> Foto Profil</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-user-square-rounded me-3"></i> Foto Profil</h6>
                                 <div class="text-center mb-4 pt-4">
                                     <img src="{{ asset('assets/img/avatars/1.png') }}" id="avatar-preview" class="rounded-circle shadow-sm mb-3" style="width:140px; height:140px; object-fit:cover;">
                                     <div class="d-block mt-2">
                                         <label for="img-upload" class="btn btn-primary rounded-pill cursor-pointer">
-                                            <i class="ri ri-upload-2-line me-1"></i> Pilih Foto
+                                            <i class="ti tabler-upload me-1"></i> Pilih Foto
                                             <input type="file" id="img-upload" name="img" hidden accept="image/png, image/jpeg" />
                                         </label>
                                     </div>
@@ -283,7 +288,7 @@
                     </div>
                     <div class="modal-footer bg-light px-4 py-3 border-top">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary" id="btnSubmitModal"><i class="ri ri-save-3-line me-1"></i> Simpan Bendahara</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitModal"><i class="ti tabler-device-floppy me-1"></i> Simpan Bendahara</button>
                     </div>
                 </form>
             </div>
@@ -295,7 +300,7 @@
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-warning bg-opacity-10 border-bottom px-4 py-3">
-                    <h5 class="modal-title fw-bold text-warning"><i class="ri ri-power-line me-1"></i> Purna Tugas</h5>
+                    <h5 class="modal-title fw-bold text-warning"><i class="ti tabler-power me-1"></i> Purna Tugas</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="formNonaktif" method="POST">
@@ -303,7 +308,7 @@
                     <div class="modal-body px-4 py-4">
                         <p class="text-dark mb-3">Tentukan tanggal berakhirnya masa jabatan untuk: <strong id="namaNonaktif"></strong></p>
                         <div class="form-floating form-floating-outline">
-                            <input type="date" class="form-control" id="end_date_nonaktif" name="end_date" required />
+                            <input type="text" class="form-control flatpickr-date" id="end_date_nonaktif" name="end_date" required placeholder="YYYY-MM-DD" />
                             <label for="end_date_nonaktif">Tanggal Akhir Menjabat</label>
                         </div>
                     </div>
@@ -320,7 +325,7 @@
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-success bg-opacity-10 border-bottom px-4 py-3">
-                    <h5 class="modal-title fw-bold text-success"><i class="ri ri-refresh-line me-1"></i> Jabat Kembali</h5>
+                    <h5 class="modal-title fw-bold text-success"><i class="ti tabler-refresh me-1"></i> Jabat Kembali</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="formAktif" method="POST">
@@ -336,7 +341,7 @@
                             <label for="status_jabatan">Status Jabatan Baru</label>
                         </div>
                         <div class="form-floating form-floating-outline">
-                            <input type="date" class="form-control" id="start_date_aktif" name="start_date" required />
+                            <input type="text" class="form-control flatpickr-date" id="start_date_aktif" name="start_date" required placeholder="YYYY-MM-DD" />
                             <label for="start_date_aktif">Tanggal Mulai Menjabat</label>
                         </div>
                     </div>
@@ -350,10 +355,11 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-    <script>
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             const nameInput = document.getElementById('name');
             const usernameInput = document.getElementById('username');
@@ -403,7 +409,7 @@
                     modalTitle.innerText = 'Tambah Bendahara Baru';
                     formTreasurer.action = "{{ route('admin.treasurers.store') }}";
                     methodContainer.innerHTML = '';
-                    btnSubmitModal.innerHTML = '<i class="ri ri-save-3-line me-1"></i> Simpan Bendahara';
+                    btnSubmitModal.innerHTML = '<i class="ti tabler-device-floppy me-1"></i> Simpan Bendahara';
                     formTreasurer.reset();
                     document.getElementById('avatar-preview').src = defaultAvatar;
                     nipDisplay.value = ''; nipHidden.value = '';
@@ -419,12 +425,11 @@
                     let urlAction = "{{ route('admin.treasurers.update', ':id') }}";
                     formTreasurer.action = urlAction.replace(':id', this.dataset.id);
                     methodContainer.innerHTML = '@method("PATCH")';
-                    btnSubmitModal.innerHTML = '<i class="ri ri-save-3-line me-1"></i> Simpan Perubahan';
+                    btnSubmitModal.innerHTML = '<i class="ti tabler-device-floppy me-1"></i> Simpan Perubahan';
 
                     document.getElementById('name').value = this.dataset.name;
                     document.getElementById('username').value = this.dataset.username;
                     document.getElementById('email').value = this.dataset.email;
-                    document.getElementById('phone_number').value = this.dataset.phone_number || '';
                     document.getElementById('start_date').value = this.dataset.startdate;
                     document.getElementById('end_date').value = this.dataset.enddate;
 
@@ -519,8 +524,18 @@
                 });
             });
 
+            // Aktifkan Tooltips
             const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltips.map(t => new bootstrap.Tooltip(t));
+
+            // Init flatpickr
+            const flatpickrDates = document.querySelectorAll('.flatpickr-date');
+            if (flatpickrDates) {
+                flatpickr('.flatpickr-date', {
+                    monthSelectorType: 'static',
+                    dateFormat: "Y-m-d"
+                });
+            }
         });
     </script>
-@endpush
+@endsection

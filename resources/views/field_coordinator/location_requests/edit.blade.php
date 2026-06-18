@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Edit Pengajuan Titik')
 
-@section('skeleton')
-@include('layouts.partials._skeleton-fc-lr-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -39,20 +37,20 @@
         z-index: 2;
     }
 </style>
-@endpush
+@endsection
 
 @section('content')
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><span class="text-muted fw-light">Pengajuan Titik /</span> Edit</h4>
     <a href="{{ route('field_coordinator.location-requests.index') }}" class="btn btn-outline-secondary shadow-sm">
-        <i class="ri ri-arrow-left-line me-1"></i> Kembali
+        <i class="ti tabler-arrow-left me-1"></i> Kembali
     </a>
 </div>
 
 <div class="card border-0 shadow-sm">
     <div class="card-header border-bottom pb-3 bg-white">
         <h5 class="card-title mb-0 fw-bold">Edit Formulir Pengajuan</h5>
-        <small class="text-warning"><i class="ri ri-information-line me-1"></i>Hanya pengajuan berstatus Pending yang
+        <small class="text-warning"><i class="ti tabler-info-circle me-1"></i>Hanya pengajuan berstatus Pending yang
             dapat diedit.</small>
     </div>
     <div class="card-body pt-4 bg-white">
@@ -67,7 +65,7 @@
                     <div class="alert alert-{{ $locationRequest->request_type == 'add' ? 'success' : 'danger' }} d-flex align-items-center mb-0 border-0 shadow-sm"
                         role="alert">
                         <i
-                            class="ri {{ $locationRequest->request_type == 'add' ? 'ri-add-circle-fill' : 'ri-delete-bin-fill' }} ri-2x me-3"></i>
+                            class="ri {{ $locationRequest->request_type == 'add' ? 'ti tabler-add-circle-filled' : 'ti tabler-delete-bin-filled' }} ti-lg me-3"></i>
                         <div>
                             <h6 class="alert-heading fw-bold mb-1">
                                 Tipe Pengajuan: {{ $locationRequest->request_type == 'add' ? 'Penambahan Titik Baru' :
@@ -100,7 +98,7 @@
                     <div class="row g-4 p-4 bg-white rounded-4 border shadow-sm">
 
                         <div class="col-12">
-                            <h6 class="fw-bold text-primary mb-0"><i class="ri ri-profile-line me-1"></i> Informasi
+                            <h6 class="fw-bold text-primary mb-0"><i class="ti tabler-id me-1"></i> Informasi
                                 Dasar</h6>
                         </div>
 
@@ -130,7 +128,7 @@
                             <hr class="my-3 border-secondary opacity-25">
                         </div>
                         <div class="col-12">
-                            <h6 class="fw-bold text-primary mb-0"><i class="ri ri-map-pin-user-line me-1"></i> Pemetaan
+                            <h6 class="fw-bold text-primary mb-0"><i class="ti tabler-user-pin me-1"></i> Pemetaan
                                 & Visualisasi</h6>
                         </div>
 
@@ -138,11 +136,11 @@
                             <label class="form-label fw-bold">Koordinat Map (Latitude, Longitude)</label>
                             <div class="input-group mb-3 shadow-sm">
                                 <span class="input-group-text bg-white text-primary"><i
-                                        class="ri ri-map-pin-2-line"></i></span>
+                                        class="ti tabler-map-pin-2"></i></span>
                                 <input type="text" class="form-control border-start-0" id="koordinat_gabungan"
                                     name="koordinat_gabungan" placeholder="Misal: 0.507, 101.447">
                                 <button class="btn btn-primary" type="button" id="btn-my-location"><i
-                                        class="ri ri-focus-3-line"></i> Titik Saya</button>
+                                        class="ti tabler-focus-3"></i> Titik Saya</button>
                             </div>
                             <div id="map"></div>
                             <input type="hidden" name="latitude" id="latitude" value="{{ $locationRequest->latitude }}">
@@ -158,7 +156,7 @@
                                 style="display: none;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <small class="fw-bold text-primary" id="compression-status"><i
-                                            class="ri ri-loader-4-line ri-spin me-1"></i> Mengompresi...</small>
+                                            class="ti tabler-loader-4 ti tabler-spin me-1"></i> Mengompresi...</small>
                                     <small class="fw-bold text-dark" id="compression-size"></small>
                                 </div>
                                 <div class="progress rounded-pill" style="height: 8px;">
@@ -175,7 +173,7 @@
                                         src="{{ $locationRequest->image ? asset('storage/'.$locationRequest->image) : '' }}"
                                         alt="Preview">
                                     <span class="badge bg-success image-preview-badge p-2 rounded-circle shadow"><i
-                                            class="ri ri-check-double-line"></i></span>
+                                            class="ti tabler-checks"></i></span>
                                 </div>
                                 @if($locationRequest->image)
                                 <small class="text-muted d-block mt-2" id="preview-text">Menampilkan foto tersimpan saat
@@ -190,12 +188,12 @@
                             @if($locationRequest->proposal_document)
                             <div class="d-flex align-items-center mt-3 p-3 border rounded bg-white shadow-sm">
                                 <div class="avatar avatar-sm bg-label-info me-3 rounded"><i
-                                        class="ri ri-file-text-line fs-4"></i></div>
+                                        class="ti tabler-file-text fs-4"></i></div>
                                 <div>
                                     <span class="text-dark fw-bold d-block mb-1">Dokumen Lama Tersimpan</span>
                                     <a href="{{ asset('storage/' . $locationRequest->proposal_document) }}"
                                         target="_blank" class="btn btn-xs btn-outline-info"><i
-                                            class="ri ri-external-link-line me-1"></i> Buka File</a>
+                                            class="ti tabler-external-link me-1"></i> Buka File</a>
                                 </div>
                             </div>
                             @endif
@@ -214,23 +212,23 @@
 
             <div class="pt-4 mt-4 border-top text-end">
                 <button type="submit" id="submit-btn" class="btn btn-primary btn-lg px-5 shadow"><i
-                        class="ri ri-save-line me-1"></i> Simpan Perubahan</button>
+                        class="ti tabler-save me-1"></i> Simpan Perubahan</button>
             </div>
         </form>
     </div>
 </div>
 @endsection
 
-@push('vendors-js')
-<script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+@vite(["resources/assets/vendor/libs/select2/select2.js"])
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript"
     src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
             if ($('.select2').length) {
                 $('.select2').each(function() {
                     $(this).wrap('<div class="position-relative"></div>').select2({ placeholder: '-- Pilih Titik Parkir --', dropdownParent: $(this).parent() });
@@ -274,9 +272,9 @@
 
                 document.getElementById('btn-my-location').addEventListener('click', function() {
                     if (navigator.geolocation) {
-                        this.innerHTML = '<i class="ri ri-loader-4-line ri-spin"></i>';
+                        this.innerHTML = '<i class="ti tabler-loader-4 ti tabler-spin"></i>';
                         navigator.geolocation.getCurrentPosition(pos => updateMapData(pos.coords.latitude, pos.coords.longitude));
-                        setTimeout(() => this.innerHTML = '<i class="ri ri-focus-3-line"></i> Titik Saya', 1500);
+                        setTimeout(() => this.innerHTML = '<i class="ti tabler-focus-3"></i> Titik Saya', 1500);
                     }
                 });
 
@@ -302,7 +300,7 @@
                     if(previewText) previewText.innerText = 'Preview foto baru.';
 
                     compWrapper.style.display = 'block';
-                    compStatus.innerHTML = '<i class="ri ri-loader-4-line ri-spin me-1"></i> Mengompresi...';
+                    compStatus.innerHTML = '<i class="ti tabler-loader-4 ti tabler-spin me-1"></i> Mengompresi...';
                     compStatus.className = 'fw-bold text-primary';
                     compProgress.style.width = '10%';
                     compProgress.className = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
@@ -320,12 +318,12 @@
                         imageInput.files = dataTransfer.files;
 
                         compProgress.className = 'progress-bar bg-success';
-                        compStatus.innerHTML = '<i class="ri ri-check-double-line me-1"></i> Selesai!';
+                        compStatus.innerHTML = '<i class="ti tabler-checks me-1"></i> Selesai!';
                         compStatus.className = 'fw-bold text-success';
                         compSize.innerHTML = `Asli: ${(file.size/1024/1024).toFixed(2)}MB ➔ <b>Hasil: ${(compressedFile.size/1024/1024).toFixed(2)}MB</b>`;
                         submitBtn.disabled = false;
                     } catch (error) {
-                        compStatus.innerHTML = '<i class="ri ri-error-warning-line me-1"></i> Gagal';
+                        compStatus.innerHTML = '<i class="ti tabler-alert-triangle me-1"></i> Gagal';
                         compStatus.className = 'fw-bold text-danger';
                         compProgress.className = 'progress-bar bg-danger';
                         submitBtn.disabled = false;
@@ -334,4 +332,4 @@
             @endif
         });
 </script>
-@endpush
+@endsection

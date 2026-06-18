@@ -1,10 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Tambah Rekening BLUD Baru')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-blud-bank-form')
-@endsection
+
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}

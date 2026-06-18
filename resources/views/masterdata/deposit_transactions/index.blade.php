@@ -1,13 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 @section('title', 'Daftar Transaksi Setoran')
-@section('skeleton')
-    @include('layouts.partials._skeleton-deposit-transactions-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -24,7 +22,7 @@
         <ul class="nav nav-pills mb-3" role="tablist">
             <li class="nav-item">
                 <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'jatuh_tempo'])) }}" class="nav-link {{ request('status', 'jatuh_tempo') === 'jatuh_tempo' ? 'active bg-danger text-white' : 'text-danger' }}">
-                    <i class="ri ri-alarm-warning-line me-1"></i> Jatuh Tempo
+                    <i class="ti tabler-alert-triangle me-1"></i> Jatuh Tempo
                     @php 
                         $jatuhTempoCount = isset($arrears) ? $arrears->count() : 0; 
                     @endphp
@@ -35,12 +33,12 @@
             </li>
             <li class="nav-item">
                 <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'all'])) }}" class="nav-link {{ request('status') === 'all' ? 'active' : '' }}">
-                    <i class="ri ri-list-check me-1"></i> Semua Setoran
+                    <i class="ti tabler-list-check me-1"></i> Semua Setoran
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'pending'])) }}" class="nav-link {{ request('status') === 'pending' ? 'active' : '' }}">
-                    <i class="ri ri-time-line me-1"></i> Menunggu Validasi
+                    <i class="ti tabler-clock me-1"></i> Menunggu Validasi
                     @php $pendingCount = \App\Models\DepositTransaction::where('is_validated', 0)->count(); @endphp
                     @if($pendingCount > 0)
                         <span class="badge rounded-pill badge-center h-px-20 w-px-20 bg-danger ms-1">{{ $pendingCount }}</span>
@@ -49,7 +47,7 @@
             </li>
             <li class="nav-item">
                 <a href="{{ route('masterdata.deposit-transactions.index', array_merge(request()->query(), ['status' => 'validated'])) }}" class="nav-link {{ request('status') === 'validated' ? 'active' : '' }}">
-                    <i class="ri ri-checkbox-circle-line me-1"></i> Tervalidasi
+                    <i class="ti tabler-circle-check me-1"></i> Tervalidasi
                 </a>
             </li>
         </ul>
@@ -57,7 +55,7 @@
 
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header border-bottom pb-2">
-            <h6 class="card-title mb-0"><i class="ri ri-filter-3-line me-1"></i> Filter Lanjutan</h6>
+            <h6 class="card-title mb-0"><i class="ti tabler-filter me-1"></i> Filter Lanjutan</h6>
         </div>
         <div class="card-body pt-3">
             <form action="{{ route('masterdata.deposit-transactions.index') }}" method="GET">
@@ -67,7 +65,7 @@
                         <div class="col-md-3">
                             <label class="form-label">Tanggal Spesifik</label>
                             <div class="input-group input-group-merge">
-                                <span class="input-group-text"><i class="ri ri-calendar-event-line"></i></span>
+                                <span class="input-group-text"><i class="ti tabler-calendar-event"></i></span>
                                 <input type="text" name="search_date" id="search_date" class="form-control" placeholder="YYYY-MM-DD" value="{{ $searchDate ?? '' }}">
                             </div>
                         </div>
@@ -97,14 +95,14 @@
                     @endif
                     <div class="col-12 mt-2">
                         <div class="input-group input-group-merge">
-                            <span class="input-group-text"><i class="ri ri-search-line"></i></span>
+                            <span class="input-group-text"><i class="ti tabler-search"></i></span>
                             <input type="text" name="search" class="form-control" placeholder="Cari No PKS, Nama Korlap..." value="{{ $search ?? '' }}">
                         </div>
                     </div>
                 </div>
                 <div class="pt-3 text-end">
                     <a href="{{ route('masterdata.deposit-transactions.index') }}" class="btn btn-sm btn-outline-secondary me-2">Reset</a>
-                    <button type="submit" class="btn btn-sm btn-primary"><i class="ri ri-filter-3-fill me-1"></i> Terapkan Filter</button>
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="ti tabler-filter-filled me-1"></i> Terapkan Filter</button>
                 </div>
             </form>
         </div>
@@ -114,7 +112,7 @@
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3">
             <div>
                 @if(request('status', 'jatuh_tempo') === 'jatuh_tempo')
-                    <h5 class="mb-0 text-danger"><i class="ri ri-alarm-warning-fill me-1"></i> Daftar PKS Jatuh Tempo</h5>
+                    <h5 class="mb-0 text-danger"><i class="ti tabler-alert-triangle-filled me-1"></i> Daftar PKS Jatuh Tempo</h5>
                     <small class="text-muted">Total {{ $arrears->count() }} PKS memiliki tunggakan/jatuh tempo.</small>
                 @else
                     <h5 class="mb-0">Daftar Transaksi</h5>
@@ -123,7 +121,7 @@
             </div>
             @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu') || Auth::user()->hasRole('treasurer'))
                 <a href="{{ route('masterdata.deposit-transactions.create') }}" class="btn btn-primary">
-                    <i class="ri ri-add-line me-1"></i> Catat Setoran
+                    <i class="ti tabler-plus me-1"></i> Catat Setoran
                 </a>
             @endif
         </div>
@@ -147,18 +145,18 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar avatar-sm me-2">
-                                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="ri ri-user-line"></i></span>
+                                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="ti tabler-user"></i></span>
                                         </div>
                                         <span class="fw-medium">{{ $arr->agreement->fieldCoordinator->user->name ?? '-' }}</span>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-label-danger"><i class="ri ri-calendar-line me-1"></i> {{ $arr->month_label }}</span>
+                                    <span class="badge bg-label-danger"><i class="ti tabler-calendar me-1"></i> {{ $arr->month_label }}</span>
                                 </td>
                                 <td><span class="fw-bold text-danger">Rp {{ number_format($arr->amount, 0, ',', '.') }}</span></td>
                                 <td class="text-center">
                                     <a href="{{ route('masterdata.deposit-transactions.create', ['target_agreement_id' => $arr->agreement->id]) }}" class="btn btn-sm btn-danger rounded-pill shadow-sm">
-                                        <i class="ri ri-money-dollar-circle-line me-1"></i> Bayar Sekarang
+                                        <i class="ti tabler-currency-dollar me-1"></i> Bayar Sekarang
                                     </a>
                                 </td>
                             </tr>
@@ -166,7 +164,7 @@
                             <tr>
                                 <td colspan="5" class="text-center py-5">
                                     <div class="empty-state">
-                                        <i class="ri ri-checkbox-circle-fill text-success ri-3x mb-2"></i>
+                                        <i class="ti tabler-circle-check-filled text-success ti-xl mb-2"></i>
                                         <h6 class="text-dark fw-bold">Tidak ada tunggakan!</h6>
                                         <p class="text-muted mb-0">Semua PKS sudah membayar tagihannya tepat waktu.</p>
                                     </div>
@@ -194,7 +192,7 @@
                                 <td>{{ $transaction->agreement->fieldCoordinator->user->name ?? 'N/A' }}</td>
                                 <td>
                                     <div class="fw-medium text-dark">{{ $transaction->deposit_date->format('d M Y') }}</div>
-                                    <small class="text-muted"><i class="ri ri-calendar-check-line align-bottom"></i> {{ $transaction->transaction_month ? $transaction->transaction_month->translatedFormat('F Y') : '-' }}</small>
+                                    <small class="text-muted"><i class="ti tabler-calendar-check align-bottom"></i> {{ $transaction->transaction_month ? $transaction->transaction_month->translatedFormat('F Y') : '-' }}</small>
                                 </td>
                                 <td><span class="fw-medium text-success">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</span></td>
                                 <td>
@@ -204,7 +202,7 @@
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('masterdata.deposit-transactions.show', $transaction->id) }}" data-bs-toggle="tooltip" title="Lihat Detail">
-                                            <i class="ri ri-eye-line ri-20px"></i>
+                                            <i class="ti tabler-eye ti-md"></i>
                                         </a>
 
                                         @if (!$transaction->is_validated)
@@ -212,11 +210,11 @@
                                                 <form action="{{ route('masterdata.deposit-transactions.validate', $transaction->id) }}" method="POST" class="form-validate d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-icon btn-text-success rounded-pill" data-bs-toggle="tooltip" title="Validasi">
-                                                        <i class="ri ri-check-double-line ri-20px"></i>
+                                                        <i class="ti tabler-checks ti-md"></i>
                                                     </button>
                                                 </form>
                                                 <a class="btn btn-sm btn-icon btn-text-primary rounded-pill" href="{{ route('masterdata.deposit-transactions.edit', $transaction->id) }}" data-bs-toggle="tooltip" title="Edit">
-                                                    <i class="ri ri-pencil-line ri-20px"></i>
+                                                    <i class="ti tabler-pencil ti-md"></i>
                                                 </a>
                                             @endif
                                         @endif
@@ -225,7 +223,7 @@
                                             <form action="{{ route('masterdata.deposit-transactions.destroy', $transaction->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus">
-                                                    <i class="ri ri-delete-bin-line ri-20px"></i>
+                                                    <i class="ti tabler-trash ti-md"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -234,7 +232,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4"><i class="ri ri-inbox-line me-1"></i> Belum ada data transaksi setoran.</td>
+                                <td colspan="6" class="text-center text-muted py-4"><i class="ti tabler-inbox me-1"></i> Belum ada data transaksi setoran.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -250,13 +248,13 @@
     </div>
 @endsection
 
-@push('vendors-js')
+@section('vendor-script')
     <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-@endpush
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+@endsection
 
-@push('scripts')
-    <script>
+@section('page-script')
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             flatpickr("#search_date", { dateFormat: "Y-m-d" });
             flatpickr("#start_date_range", { dateFormat: "Y-m-d" });
@@ -286,4 +284,4 @@
             tooltips.map(t => new bootstrap.Tooltip(t));
         });
     </script>
-@endpush
+@endsection

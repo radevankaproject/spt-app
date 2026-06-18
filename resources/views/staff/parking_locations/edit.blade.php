@@ -1,19 +1,17 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Edit Lokasi Parkir')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-parking-locations-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         .dropzone-area { border: 2px dashed #696cff; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: #f8f8ff; }
         .dropzone-area:hover { background: #e0e0ff; }
     </style>
-@endpush
+@endsection
 
 @php
     $isTersedia = $parkingLocation->status === 'tersedia';
@@ -139,7 +137,7 @@
                         <div class="dropzone-area" id="dropzoneBox" onclick="document.getElementById('image-upload').click()">
                             <img src="{{ $parkingLocation->image ? asset('storage/' . $parkingLocation->image) : asset('assets/img/map.png') }}" id="image-preview" class="d-block mx-auto mb-2" style="max-height: 100px; object-fit: cover; border-radius: 6px;" />
                             <div id="upload-placeholder" style="{{ $parkingLocation->image ? 'display: none;' : '' }}">
-                                <i class="ri icon-base ri-upload-cloud-2-line ri-22px" style="font-size: 2rem;"></i>
+                                <i class="ri icon-base ti tabler-upload-cloud-2 ti-md" style="font-size: 2rem;"></i>
                                 <p class="mb-0 mt-1">Tarik foto baru kesini</p>
                             </div>
                             <input type="file" id="image-upload" name="image" hidden accept="image/png, image/jpeg" />
@@ -150,21 +148,21 @@
                     <div class="col-md-4">
                         <label for="proposal_document" class="form-label fw-bold">PDF Pengajuan</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="ri icon-base ri-file-pdf-line ri-22px"></i></span>
+                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-pdf ti-md"></i></span>
                             <input class="form-control" type="file" id="proposal_document" name="proposal_document" accept=".pdf">
                         </div>
                         @if ($parkingLocation->proposal_document)
-                            <a href="{{ asset('storage/' . $parkingLocation->proposal_document) }}" target="_blank" class="form-text text-primary mt-1 d-block"><i class="ri-external-link-line"></i> Lihat file saat ini</a>
+                            <a href="{{ asset('storage/' . $parkingLocation->proposal_document) }}" target="_blank" class="form-text text-primary mt-1 d-block"><i class="ti tabler-external-link"></i> Lihat file saat ini</a>
                         @endif
                     </div>
                     <div class="col-md-4">
                         <label for="official_report_document" class="form-label fw-bold">PDF Berita Acara</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="ri icon-base ri-file-pdf-line ri-22px"></i></span>
+                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-pdf ti-md"></i></span>
                             <input class="form-control" type="file" id="official_report_document" name="official_report_document" accept=".pdf">
                         </div>
                         @if ($parkingLocation->official_report_document)
-                            <a href="{{ asset('storage/' . $parkingLocation->official_report_document) }}" target="_blank" class="form-text text-primary mt-1 d-block"><i class="ri-external-link-line"></i> Lihat file saat ini</a>
+                            <a href="{{ asset('storage/' . $parkingLocation->official_report_document) }}" target="_blank" class="form-text text-primary mt-1 d-block"><i class="ti tabler-external-link"></i> Lihat file saat ini</a>
                         @endif
                     </div>
                 </div>
@@ -178,14 +176,14 @@
     </div>
 @endsection
 
-@push('vendors-js')
+@section('vendor-script')
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
+@section('page-script')
 <script>
     $(function() {
         // --- Setup Select2 ---
@@ -312,4 +310,4 @@
         });
     });
 </script>
-@endpush
+@endsection

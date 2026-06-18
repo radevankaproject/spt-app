@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Detail Transaksi Setoran')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-deposit-transaction-show')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <style>
         .premium-card {
@@ -133,7 +131,7 @@
             border-radius: 0.375rem;
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -157,16 +155,16 @@
                                 <div class="fs-5 fw-bold text-dark mb-2">{{ $depositTransaction->referral_code }}</div>
                                 <div class="d-flex align-items-center justify-content-md-end gap-3 mt-3">
                                     <div class="text-muted" style="font-size: 0.9rem;">
-                                        <i class="ri ri-calendar-line text-primary"></i> {{ $depositTransaction->deposit_date->translatedFormat('d F Y') }}
+                                        <i class="ti tabler-calendar text-primary"></i> {{ $depositTransaction->deposit_date->translatedFormat('d F Y') }}
                                     </div>
                                     <div>
                                         @if ($depositTransaction->is_validated)
                                             <span class="badge bg-success bg-opacity-10 text-success badge-premium border border-success border-opacity-25">
-                                                <i class="ri ri-check-double-line me-1"></i> Tervalidasi
+                                                <i class="ti tabler-checks me-1"></i> Tervalidasi
                                             </span>
                                         @else
                                             <span class="badge bg-warning bg-opacity-10 text-warning badge-premium border border-warning border-opacity-50 text-dark">
-                                                <i class="ri ri-time-line me-1"></i> Pending
+                                                <i class="ti tabler-clock me-1"></i> Pending
                                             </span>
                                         @endif
                                     </div>
@@ -181,7 +179,7 @@
                         <div class="row g-4 mb-5">
                             <div class="col-md-6">
                                 <div class="info-section">
-                                    <div class="text-label mb-3"><i class="ri ri-file-paper-2-line text-primary me-1"></i> Informasi Perjanjian</div>
+                                    <div class="text-label mb-3"><i class="ti tabler-file-description text-primary me-1"></i> Informasi Perjanjian</div>
                                     <div class="info-grid">
                                         <div class="label">No. PKS</div>
                                         <div class="colon">:</div>
@@ -199,7 +197,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="info-section">
-                                    <div class="text-label mb-3"><i class="ri ri-shield-check-line text-primary me-1"></i> Jejak Audit</div>
+                                    <div class="text-label mb-3"><i class="ti tabler-shield-check text-primary me-1"></i> Jejak Audit</div>
                                     <div class="info-grid">
                                         <div class="label">Dicatat Oleh</div>
                                         <div class="colon">:</div>
@@ -216,7 +214,7 @@
                                             <div class="label pt-2">Divalidasi Oleh</div>
                                             <div class="colon pt-2">:</div>
                                             <div class="value pt-2 text-success">
-                                                <i class="ri ri-verified-badge-fill me-1"></i> {{ $depositTransaction->validator->name ?? 'N/A' }}
+                                                <i class="ti tabler-verified-badge-filled me-1"></i> {{ $depositTransaction->validator->name ?? 'N/A' }}
                                                 <div class="text-muted fw-normal mt-1" style="font-size: 0.75rem;">{{ \Carbon\Carbon::parse($depositTransaction->validation_date)->translatedFormat('d M Y, H:i') }}</div>
                                             </div>
                                         @endif
@@ -225,7 +223,7 @@
                                             <div class="label pt-2">Diskon Oleh</div>
                                             <div class="colon pt-2">:</div>
                                             <div class="value pt-2 text-danger">
-                                                <i class="ri ri-shield-star-fill me-1"></i> {{ $depositTransaction->discountApprover->name ?? 'N/A' }}
+                                                <i class="ti tabler-shield-star-filled me-1"></i> {{ $depositTransaction->discountApprover->name ?? 'N/A' }}
                                             </div>
                                         @endif
                                     </div>
@@ -258,7 +256,7 @@
                                         @if ($depositTransaction->discount_amount > 0)
                                         <tr>
                                             <td colspan="3" class="text-end text-danger fw-bold">
-                                                <i class="ri ri-price-tag-3-line me-1"></i> Potongan / Keringanan
+                                                <i class="ti tabler-price-tag-3 me-1"></i> Potongan / Keringanan
                                             </td>
                                             <td class="text-end fw-bold text-danger fs-6">- Rp {{ number_format($depositTransaction->discount_amount, 0, ',', '.') }}</td>
                                         </tr>
@@ -273,7 +271,7 @@
                             <div class="col-md-7 d-flex flex-column gap-4">
                                 {{-- Notes --}}
                                 <div>
-                                    <div class="text-label mb-2"><i class="ri ri-sticky-note-line me-1"></i> Catatan Tambahan</div>
+                                    <div class="text-label mb-2"><i class="ti tabler-sticky-note me-1"></i> Catatan Tambahan</div>
                                     <div class="bg-light rounded p-3 text-muted fst-italic" style="font-size: 0.9rem; border-left: 3px solid #dee2e6;">
                                         {{ $depositTransaction->notes ?? 'Tidak ada catatan yang dilampirkan.' }}
                                     </div>
@@ -281,7 +279,7 @@
                                 
                                 @if ($depositTransaction->discount_amount > 0)
                                 <div>
-                                    <div class="text-label text-danger mb-2"><i class="ri ri-error-warning-line me-1"></i> Alasan Potongan</div>
+                                    <div class="text-label text-danger mb-2"><i class="ti tabler-alert-triangle me-1"></i> Alasan Potongan</div>
                                     <div class="bg-danger bg-opacity-10 text-danger rounded p-3 fst-italic" style="font-size: 0.9rem; border-left: 3px solid #dc3545;">
                                         {{ $depositTransaction->discount_notes ?? '-' }}
                                     </div>
@@ -291,11 +289,11 @@
                                 {{-- Image --}}
                                 @if ($depositTransaction->proof_of_transfer)
                                 <div>
-                                    <div class="text-label mb-2"><i class="ri ri-image-line me-1"></i> Bukti Transfer</div>
+                                    <div class="text-label mb-2"><i class="ti tabler-image me-1"></i> Bukti Transfer</div>
                                     <div class="d-inline-block position-relative" data-bs-toggle="modal" data-bs-target="#proofModal">
                                         <img src="{{ asset('storage/' . $depositTransaction->proof_of_transfer) }}" alt="Bukti Transfer" class="proof-img img-fluid bg-light p-1">
                                         <div class="position-absolute bottom-0 start-0 w-100 p-2 text-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.7)); border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">
-                                            <small class="text-white"><i class="ri ri-zoom-in-line"></i> Perbesar</small>
+                                            <small class="text-white"><i class="ti tabler-zoom-in"></i> Perbesar</small>
                                         </div>
                                     </div>
                                 </div>
@@ -325,25 +323,25 @@
                             <form action="{{ route('masterdata.deposit-transactions.validate', $depositTransaction->id) }}" method="POST" class="form-validate mb-3">
                                 @csrf
                                 <button type="submit" class="btn btn-success btn-premium w-100 shadow-sm">
-                                    <i class="ri ri-check-double-line fs-5"></i> Validasi Setoran
+                                    <i class="ti tabler-checks fs-5"></i> Validasi Setoran
                                 </button>
                             </form>
                         @endif
 
                         <a href="{{ route('masterdata.deposit-transactions.pdf', $depositTransaction->id) }}" target="_blank" class="btn btn-primary btn-premium w-100 mb-3 shadow-sm">
-                            <i class="ri ri-printer-line fs-5"></i> Cetak Struk
+                            <i class="ti tabler-printer fs-5"></i> Cetak Struk
                         </a>
 
                         @if (!$depositTransaction->is_validated && (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu') || Auth::user()->hasRole('treasurer')))
                             <a href="{{ route('masterdata.deposit-transactions.edit', $depositTransaction->id) }}" class="btn btn-outline-primary btn-premium w-100 mb-4 bg-white">
-                                <i class="ri ri-pencil-line"></i> Edit Data
+                                <i class="ti tabler-pencil"></i> Edit Data
                             </a>
                         @endif
 
                         <hr class="my-4 border-light">
 
                         <a href="{{ route('masterdata.deposit-transactions.index') }}" class="btn btn-light btn-premium w-100 text-dark border">
-                            <i class="ri ri-arrow-left-line"></i> Kembali
+                            <i class="ti tabler-arrow-left"></i> Kembali
                         </a>
                     </div>
                 </div>
@@ -368,9 +366,9 @@
     @endif
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-    <script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             $('.form-validate').on('submit', function(event) {
                 event.preventDefault();
@@ -380,7 +378,7 @@
                     text: "Tindakan ini akan mengesahkan setoran ke sistem kas.",
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: '<i class="ri ri-check-double-line me-1"></i> Ya, Validasi!',
+                    confirmButtonText: '<i class="ti tabler-checks me-1"></i> Ya, Validasi!',
                     cancelButtonText: 'Batal',
                     customClass: {
                         confirmButton: 'btn btn-success me-3 shadow-sm px-4',
@@ -395,4 +393,4 @@
             });
         });
     </script>
-@endpush
+@endsection

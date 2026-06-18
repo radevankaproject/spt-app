@@ -2,6 +2,24 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v2.0.0] - 2026-06-18
+
+**_"The Vuexy 10.11.1 Evolution & Ultimate M3 Preloader"_**
+
+Pembaruan masif dan lompatan arsitektur antarmuka terbesar dalam sejarah aplikasi. Peningkatan dari versi dasar ke versi teranyar Vuexy dengan perombakan total pada sistem pemuatan (*loading*).
+
+- **Full Vuexy v10.11.1 Migration:** 
+    - Melakukan sinkronisasi dan migrasi menyeluruh dari seluruh kerangka kerja (*layouting*), aset, hingga komponen dasar ke **Vuexy versi 10.11.1 (Full Version Bootstrap 5)**.
+    - Halaman otentikasi (Login, Register, Forgot Password, Reset Password, OTP) sepenuhnya diganti menggunakan struktur modern `auth-login-basic` dari Vuexy 10.11.1 dengan visual yang jauh lebih *clean* dan elegan.
+- **Pemusnahan Sistem Skeleton Klasik:**
+    - Menghapus 49+ file dan *script* `_skeleton-*.blade.php` lama secara permanen. Menghilangkan beban *render* HTML berganda pada setiap halaman (*page load*), sehingga ukuran DOM jauh lebih ringan dan cepat.
+- **Inovasi Material 3 (M3) Squiggly Preloader:**
+    - Memperkenalkan *Global Premium Preloader* berteknologi tinggi di `commonMaster.blade.php`. 
+    - Menggunakan *requestAnimationFrame* dan perhitungan fungsi *Sine/Cosine* presisi untuk merender *SVG Squiggly Line* ala **Material 3 (Android 13+/Flutter M3)** yang memutar secara meliuk-liuk (bergerigi lembut) mengelilingi logo SiPKS.
+    - Disempurnakan dengan animasi *stroke-dasharray* murni via CSS yang akan berhenti secara presisi (*indeterminate spinner*) tepat di *milisecond* ketika `window.onload` menyatakan seluruh gambar dan halaman siap.
+- **Pembersihan Modul (*Housekeeping*):**
+    - Menghapus sisa-sisa tata letak bawaan Laravel Breeze (`app.blade.php`, `guest.blade.php`) dan file-file `*copy.php` cadangan yang sudah menjadi *clutter* di ruang *server*.
+
 ## [v1.5.0] - 2026-06-13
 
 **_"Premium Profile & Master Data Auditing"_**

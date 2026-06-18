@@ -1,15 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Tambah User Baru')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-users-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     {{-- CSS untuk SweetAlert2 jika belum ada di layout utama --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -93,7 +91,7 @@
                                             <label for="password">Password</label>
                                         </div>
                                         <span class="input-group-text cursor-pointer"><i
-                                                class="icon-base ri ri-eye-off-line"></i></span>
+                                                class="icon-base ti tabler-eye-off"></i></span>
                                     </div>
                                 </div>
                             </div>
@@ -109,7 +107,7 @@
                                             <label for="password_confirmation">Ulangi Password</label>
                                         </div>
                                         <span class="input-group-text cursor-pointer"><i
-                                                class="icon-base ri ri-eye-off-line"></i></span>
+                                                class="icon-base ti tabler-eye-off"></i></span>
                                     </div>
                                 </div>
                             </div>
@@ -155,12 +153,12 @@
                             <div class="d-flex justify-content-center gap-3 mb-3">
                                 <label for="img-upload" class="btn btn-primary" tabindex="0">
                                     <span class="d-none d-sm-block">Pilih Foto</span>
-                                    <i class="icon-base ri-upload-2-line d-sm-none"></i>
+                                    <i class="icon-base ti tabler-upload d-sm-none"></i>
                                     <input type="file" id="img-upload" name="img" class="account-file-input"
                                         hidden accept="image/png, image/jpeg" />
                                 </label>
                                 <button type="button" class="btn btn-outline-secondary account-image-reset">
-                                    <i class="icon-base ri-refresh-line d-block d-sm-none"></i>
+                                    <i class="icon-base ti tabler-refresh d-block d-sm-none"></i>
                                     <span class="d-none d-sm-block">Reset</span>
                                 </button>
                             </div>
@@ -181,11 +179,11 @@
     </form>
 @endsection
 
-@push('scripts')
+@section('page-script')
     {{-- Library kompresi gambar --}}
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
 
-    <script>
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // --- Logika untuk generate dan validasi username ---
             const nameInput = document.getElementById('name');
@@ -267,4 +265,4 @@
             }
         });
     </script>
-@endpush
+@endsection

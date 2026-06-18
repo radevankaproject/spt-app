@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 @section('title', 'Dashboard Staff PKS')
 
 @section('content')
@@ -107,8 +107,8 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+@section('page-script')
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}" defer></script>
     <script>
         var options = {
             chart: {
@@ -125,4 +125,4 @@
         };
         new ApexCharts(document.querySelector("#locations-bar-chart"), options).render();
     </script>
-@endpush
+@endsection

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Pengaturan Profil')
 
@@ -126,7 +126,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('page-script')
     <script>
         function previewImage(event) {
             var reader = new FileReader();
@@ -137,4 +137,4 @@
             reader.readAsDataURL(event.target.files[0]);
         }
     </script>
-@endpush
+@endsection

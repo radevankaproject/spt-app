@@ -1,15 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen User')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-users-index')
-@endsection
+
 
 {{-- 1. Tambahkan CSS SweetAlert2 --}}
-@push('styles')
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -37,11 +35,11 @@
                         value="{{ request('search') }}">
                 </form>
                 <a href="{{ route('admin.users.trashed') }}" class="btn btn-outline-secondary">
-                    <i class="icon-base ri ri-archive-line me-2"></i>Lihat Arsip
+                    <i class="icon-base ti tabler-archive me-2"></i>Lihat Arsip
                 </a>
                 @if(Auth::user()->role !== 'leader')
                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
-                    <i class="icon-base ri ri-add-line me-2"></i>Tambah User
+                    <i class="icon-base ti tabler-plus me-2"></i>Tambah User
                 </a>
                 @endif
             </div>
@@ -94,7 +92,7 @@
                                         @if(Auth::user()->role !== 'leader')
                                         <a class="btn btn-sm btn-icon" href="{{ route('admin.users.edit', $user->id) }}"
                                             data-bs-toggle="tooltip" title="Edit User">
-                                            <i class="icon-base ri ri-pencil-line icon-22px"></i>
+                                            <i class="icon-base ti tabler-pencil icon-22px"></i>
                                         </a>
                                         {{-- ✅ PERUBAHAN 2: Tambahkan class 'form-delete' --}}
                                         <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
@@ -103,7 +101,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-icon" data-bs-toggle="tooltip"
                                                 title="Hapus User">
-                                                <i class="icon-base ri ri-delete-bin-line icon-22px"></i>
+                                                <i class="icon-base ti tabler-trash icon-22px"></i>
                                             </button>
                                         </form>
                                         @endif
@@ -125,10 +123,10 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('page-script')
     {{-- ✅ PERUBAHAN 3: Tambahkan JS SweetAlert2 dan logika pemicunya --}}
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-    <script>
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // Notifikasi Sukses setelah Create/Update
             @if (session('success'))
@@ -165,4 +163,4 @@
             });
         });
     </script>
-@endpush
+@endsection

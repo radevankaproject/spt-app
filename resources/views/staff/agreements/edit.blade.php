@@ -1,15 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Edit Perjanjian: ' . $agreement->agreement_number)
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-agreements-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -76,7 +74,7 @@
                                         readonly style="pointer-events: none;" />
                                     {{-- ✅ Input hidden untuk mengirimkan data leader_id saat form disubmit --}}
                                     <input type="hidden" name="leader_id" value="{{ $agreement->leader_id }}">
-                                    <label>Pimpinan (Pihak Pertama) <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                    <label>Pimpinan (Pihak Pertama) <i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
                                 </div>
                             </div>
 
@@ -86,7 +84,7 @@
                                         value="{{ $agreement->fieldCoordinator->user->name ?? 'N/A' }}"
                                         readonly style="pointer-events: none;" />
                                     <input type="hidden" name="field_coordinator_id" value="{{ $agreement->field_coordinator_id }}">
-                                    <label>Koordinator Lapangan <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                    <label>Koordinator Lapangan <i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
                                 </div>
                             </div>
                             {{-- ✅ FIX: Semua tanggal dikunci (readonly & pointer-events: none) --}}
@@ -94,21 +92,21 @@
                                 <div class="form-floating form-floating-outline">
                                     <input type="text" class="form-control bg-lighter text-muted" id="start_date" name="start_date"
                                         value="{{ old('start_date', $agreement->start_date->format('Y-m-d')) }}" readonly style="pointer-events: none;" />
-                                    <label for="start_date">Tanggal Mulai Berlaku <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                    <label for="start_date">Tanggal Mulai Berlaku <i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input type="text" class="form-control bg-lighter text-muted" id="end_date" name="end_date"
                                         value="{{ old('end_date', $agreement->end_date->format('Y-m-d')) }}" readonly style="pointer-events: none;" />
-                                    <label for="end_date">Tanggal Selesai Berlaku <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                    <label for="end_date">Tanggal Selesai Berlaku <i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input type="text" class="form-control bg-lighter text-muted" id="signed_date" name="signed_date"
                                         value="{{ old('signed_date', $agreement->signed_date->format('Y-m-d')) }}" readonly style="pointer-events: none;" />
-                                    <label for="signed_date">Tanggal TTD <i class="ri ri-lock-line text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                    <label for="signed_date">Tanggal TTD <i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
                                 </div>
                             </div>
 
@@ -139,7 +137,7 @@
                                     </select>
                                     <label for="status">Status Perjanjian</label>
                                 </div>
-                                <div class="form-text text-warning"><i class="ri ri-error-warning-line"></i> Status dapat diubah sesuai kondisi PKS.</div>
+                                <div class="form-text text-warning"><i class="ti tabler-alert-triangle"></i> Status dapat diubah sesuai kondisi PKS.</div>
                             </div>
 
                             {{-- Kalkulasi Setoran --}}
@@ -196,9 +194,9 @@
 
                             {{-- Keterangan dinamis di bawah radio button --}}
                             @if($isStatusLocked)
-                                <div class="form-text text-danger"><i class="ri-lock-line"></i> Zona terkunci karena status PKS sudah tidak aktif.</div>
+                                <div class="form-text text-danger"><i class="ti tabler-lock"></i> Zona terkunci karena status PKS sudah tidak aktif.</div>
                             @endif
-                            <div id="zona_lock_info" class="form-text text-danger" style="display: none;"><i class="ri-lock-line"></i> Zona terkunci per zona karena jenis Rilis.</div>
+                            <div id="zona_lock_info" class="form-text text-danger" style="display: none;"><i class="ti tabler-lock"></i> Zona terkunci per zona karena jenis Rilis.</div>
                         </div>
 
                         <div class="mb-3">
@@ -257,13 +255,13 @@
     </form>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
     <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
-@endpush
+@endsection
 
-@push('scripts')
+@section('page-script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- Inisialisasi Awal ---
@@ -321,7 +319,7 @@
                             <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
                         </div>
                         <button type="button" class="btn btn-icon btn-sm btn-danger remove-location-btn" data-id="${loc.id}">
-                            <i class="ri ri-close-line"></i>
+                            <i class="ti tabler-x"></i>
                         </button>
                     </div>`;
                     summaryContainer.append(itemHtml);
@@ -569,4 +567,4 @@
             updateDailyDepositTotal();
         });
     </script>
-@endpush
+@endsection

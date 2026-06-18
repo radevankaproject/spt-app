@@ -1,19 +1,17 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Tambah Lokasi Parkir Baru')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-parking-locations-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         .dropzone-area { border: 2px dashed #696cff; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; background: #f8f8ff; }
         .dropzone-area:hover { background: #e0e0ff; }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -130,7 +128,7 @@
                         <div class="dropzone-area" id="dropzoneBox" onclick="document.getElementById('image-upload').click()">
                             <img src="{{ asset('assets/img/map.png') }}" alt="preview" id="image-preview" class="d-block mx-auto mb-2" style="max-height: 100px; object-fit: cover; border-radius: 6px; display: none;" />
                             <div id="upload-placeholder">
-                                <i class="ri icon-base ri-upload-cloud-2-line ri-22px" style="font-size: 2rem;"></i>
+                                <i class="ri icon-base ti tabler-upload-cloud-2 ti-md" style="font-size: 2rem;"></i>
                                 <p class="mb-0 mt-1">Tarik foto ke sini atau klik</p>
                             </div>
                             <input type="file" id="image-upload" name="image" hidden accept="image/png, image/jpeg" />
@@ -141,7 +139,7 @@
                     <div class="col-md-4">
                         <label for="proposal_document" class="form-label fw-bold">PDF Pengajuan</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="ri icon-base ri-file-pdf-line ri-22px"></i></span>
+                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-pdf ti-md"></i></span>
                             <input class="form-control" type="file" id="proposal_document" name="proposal_document" accept=".pdf">
                         </div>
                         <small class="text-muted">Otomatis di-rename saat disimpan.</small>
@@ -149,7 +147,7 @@
                     <div class="col-md-4">
                         <label for="official_report_document" class="form-label fw-bold">PDF Berita Acara</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="ri icon-base ri-file-pdf-line ri-22px"></i></span>
+                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-pdf ti-md"></i></span>
                             <input class="form-control" type="file" id="official_report_document" name="official_report_document" accept=".pdf">
                         </div>
                     </div>
@@ -164,14 +162,14 @@
     </div>
 @endsection
 
-@push('vendors-js')
+@section('vendor-script')
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
+@section('page-script')
 <script>
     $(function() {
         // --- Setup Ruas Jalan (AJAX) ---
@@ -303,4 +301,4 @@
         });
     });
 </script>
-@endpush
+@endsection

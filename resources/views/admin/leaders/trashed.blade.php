@@ -1,4 +1,4 @@
-    @extends('layouts.app')
+    @extends('layouts.contentNavbarLayout')
 
     @section('title', 'Arsip Pimpinan')
 
@@ -24,7 +24,7 @@
                 </div>
                 <div class="d-flex justify-content-md-end align-items-center">
                     <a href="{{ route('admin.leaders.index') }}" class="btn btn-outline-secondary">
-                        <i class="ri-arrow-left-line me-2"></i>Kembali ke Daftar Pimpinan
+                        <i class="ti tabler-arrow-left me-2"></i>Kembali ke Daftar Pimpinan
                     </a>
                 </div>
             </div>
@@ -69,7 +69,7 @@
                                             @method('PATCH')
                                             <button type="submit" class="btn btn-sm btn-success" data-bs-toggle="tooltip"
                                                 title="Pulihkan Data">
-                                                <i class="icon-base ri ri-history-line me-1"></i>Restore
+                                                <i class="icon-base ti tabler-history me-1"></i>Restore
                                             </button>
                                         </form>
                                     </td>

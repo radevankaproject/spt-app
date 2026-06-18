@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Detail Lokasi Parkir: ' . $parkingLocation->name)
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-parking-locations-show')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     {{-- CSS untuk Leaflet Map & Perfect Scrollbar --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
@@ -60,7 +58,7 @@
             border-bottom: 1px solid #d9dee3;
         }
     </style>
-@endpush
+@endsection
 
 @php
     function formatHistoryValue($key, $value) {
@@ -87,7 +85,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center">
                 <div class="avatar avatar-lg bg-label-primary rounded-3 me-3 d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="ri icon-base ri-map-pin-user-line ri-30px"></i>
+                    <i class="ri icon-base ti tabler-user-pin ti tabler-30px"></i>
                 </div>
                 <div>
                     <h4 class="fw-bold mb-1">Detail Lokasi: {{ $parkingLocation->name }}</h4>
@@ -102,7 +100,7 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-outline-secondary">
-                    <i class="ri icon-base ri-arrow-left-line me-1"></i> Kembali
+                    <i class="ri icon-base ti tabler-arrow-left me-1"></i> Kembali
                 </a>
             </div>
         </div>
@@ -122,22 +120,22 @@
                             </a>
                         @else
                             <div class="bg-label-secondary d-flex align-items-center justify-content-center mt-3 mb-3 rounded" style="width: 140px; height: 140px;">
-                                <i class="ri icon-base ri-image-line text-secondary" style="font-size: 4.5rem;"></i>
+                                <i class="ri icon-base ti tabler-image text-secondary" style="font-size: 4.5rem;"></i>
                             </div>
                         @endif
                         <div class="user-info text-center">
                             <h5 class="mb-2">{{ $parkingLocation->name }}</h5>
                             @if ($parkingLocation->status == 'tersedia')
-                                <span class="badge bg-label-success rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ri-check-line me-1"></i> TERSEDIA</span>
+                                <span class="badge bg-label-success rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ti tabler-check me-1"></i> TERSEDIA</span>
                             @else
-                                <span class="badge bg-label-secondary rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ri-lock-line me-1"></i> TERIKAT PKS</span>
+                                <span class="badge bg-label-secondary rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ti tabler-lock me-1"></i> TERIKAT PKS</span>
                             @endif
 
                             @if(!$parkingLocation->is_active)
                                 <br>
-                                <span class="badge bg-label-danger rounded-pill px-3 mb-2 mt-1 d-inline-block"><i class="ri icon-base ri-close-circle-line me-1"></i> NONAKTIF / TUTUP</span>
+                                <span class="badge bg-label-danger rounded-pill px-3 mb-2 mt-1 d-inline-block"><i class="ri icon-base ti tabler-circle-x me-1"></i> NONAKTIF / TUTUP</span>
                                 <div class="mt-2 text-start p-3 bg-danger bg-opacity-10 rounded border border-danger border-opacity-25" style="font-size: 0.85rem;">
-                                    <span class="fw-bold text-danger"><i class="ri-information-line me-1"></i>Keterangan Tutup:</span><br>
+                                    <span class="fw-bold text-danger"><i class="ti tabler-info-circle me-1"></i>Keterangan Tutup:</span><br>
                                     <span class="text-dark">{{ $parkingLocation->keterangan ?? '-' }}</span>
                                 </div>
                             @endif
@@ -147,7 +145,7 @@
                 
                 <div class="d-flex justify-content-center flex-wrap mt-4 pt-3 pb-4 border-bottom">
                     <div class="d-flex align-items-start mt-3 gap-3">
-                        <span class="badge bg-label-success p-3 rounded"><i class='ri icon-base ri-money-dollar-circle-line ri-24px'></i></span>
+                        <span class="badge bg-label-success p-3 rounded"><i class='ri icon-base ti tabler-currency-dollar ti-lg'></i></span>
                         <div>
                             <p class="mb-0 fw-medium fs-5">Rp {{ number_format($parkingLocation->daily_deposit, 0, ',', '.') }}</p>
                             <small class="text-muted">Setoran Harian</small>
@@ -159,22 +157,22 @@
                 <div class="info-container">
                     <ul class="list-unstyled mb-4">
                         <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ri-qr-code-line text-primary me-2 ri-20px"></i>
+                            <i class="ri icon-base ti tabler-qr-code text-primary me-2 ti-md"></i>
                             <span class="fw-medium text-heading me-2">Kode ID:</span>
                             <span>#LOC-{{ str_pad($parkingLocation->id, 4, '0', STR_PAD_LEFT) }}</span>
                         </li>
                         <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ri-route-line text-info me-2 ri-20px"></i>
+                            <i class="ri icon-base ti tabler-route text-info me-2 ti-md"></i>
                             <span class="fw-medium text-heading me-2">Ruas Jalan:</span>
                             <span>{{ $parkingLocation->roadSection->name ?? '-' }}</span>
                         </li>
                         <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ri-focus-2-line text-warning me-2 ri-20px"></i>
+                            <i class="ri icon-base ti tabler-focus-2 text-warning me-2 ti-md"></i>
                             <span class="fw-medium text-heading me-2">Zona:</span>
                             <span>{{ $parkingLocation->roadSection->zone ?? '-' }}</span>
                         </li>
                         <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ri-map-pin-line text-danger me-2 ri-20px"></i>
+                            <i class="ri icon-base ti tabler-map-pin text-danger me-2 ti-md"></i>
                             <span class="fw-medium text-heading me-2">Koordinat:</span>
                             @if($parkingLocation->latitude && $parkingLocation->longitude)
                                 <span class="text-truncate">{{ $parkingLocation->latitude }}, {{ $parkingLocation->longitude }}</span>
@@ -188,7 +186,7 @@
                     <div class="row g-3 mb-4">
                         <div class="col-12">
                             <div class="d-flex align-items-center">
-                                <span class="badge bg-label-info p-2 rounded me-3"><i class="ri icon-base ri-ruler-2-line ri-20px"></i></span>
+                                <span class="badge bg-label-info p-2 rounded me-3"><i class="ri icon-base ti tabler-ruler-2 ti-md"></i></span>
                                 <div>
                                     <small class="text-muted d-block">Luas Wilayah</small>
                                     <span class="fw-semibold">{{ $parkingLocation->estimated_area ? number_format($parkingLocation->estimated_area, 2, ',', '.') . ' m²' : '-' }}</span>
@@ -197,7 +195,7 @@
                         </div>
                         <div class="col-6">
                             <div class="d-flex align-items-center">
-                                <span class="badge bg-label-warning p-2 rounded me-3"><i class="ri icon-base ri-motorbike-line ri-20px"></i></span>
+                                <span class="badge bg-label-warning p-2 rounded me-3"><i class="ri icon-base ti tabler-motorbike ti-md"></i></span>
                                 <div>
                                     <small class="text-muted d-block">SRP R2</small>
                                     <span class="fw-semibold">{{ $parkingLocation->estimated_srp_r2 ?? '-' }}</span>
@@ -206,7 +204,7 @@
                         </div>
                         <div class="col-6">
                             <div class="d-flex align-items-center">
-                                <span class="badge bg-label-primary p-2 rounded me-3"><i class="ri icon-base ri-car-line ri-20px"></i></span>
+                                <span class="badge bg-label-primary p-2 rounded me-3"><i class="ri icon-base ti tabler-car ti-md"></i></span>
                                 <div>
                                     <small class="text-muted d-block">SRP R4</small>
                                     <span class="fw-semibold">{{ $parkingLocation->estimated_srp_r4 ?? '-' }}</span>
@@ -217,7 +215,7 @@
 
                     <div class="alert alert-info small mb-4 border-0" role="alert">
                         <div class="d-flex align-items-start">
-                            <i class="ri icon-base ri-information-line me-2 mt-1 ri-18px"></i>
+                            <i class="ri icon-base ti tabler-info-circle me-2 mt-1 ti tabler-18px"></i>
                             <span>Jumlah Setoran <strong>tidak bergantung</strong> pada luas wilayah parkir maupun jumlah SRP R2/R4.</span>
                         </div>
                     </div>
@@ -225,7 +223,7 @@
                     @if(Auth::user()->role !== 'leader')
                     <div class="d-flex justify-content-center pt-3">
                         <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-primary w-100 shadow-sm">
-                            <i class="ri icon-base ri-pencil-line me-2"></i> Edit Data Lokasi
+                            <i class="ri icon-base ti tabler-pencil me-2"></i> Edit Data Lokasi
                         </a>
                     </div>
                     @endif
@@ -241,22 +239,22 @@
             <ul class="nav nav-pills flex-column flex-md-row mb-4 gap-2" role="tablist">
                 <li class="nav-item">
                     <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pks" aria-controls="navs-pks" aria-selected="true">
-                        <i class="ri icon-base ri-file-paper-2-line me-1"></i> Perjanjian Aktif
+                        <i class="ri icon-base ti tabler-file-description me-1"></i> Perjanjian Aktif
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-map" aria-controls="navs-map" aria-selected="false">
-                        <i class="ri icon-base ri-map-2-line me-1"></i> Peta Posisi
+                        <i class="ri icon-base ti tabler-map-2 me-1"></i> Peta Posisi
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-docs" aria-controls="navs-docs" aria-selected="false">
-                        <i class="ri icon-base ri-folder-zip-line me-1"></i> Dokumen Digital
+                        <i class="ri icon-base ti tabler-folder-zip me-1"></i> Dokumen Digital
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-history" aria-controls="navs-history" aria-selected="false">
-                        <i class="ri icon-base ri-history-line me-1"></i> Riwayat
+                        <i class="ri icon-base ti tabler-history me-1"></i> Riwayat
                     </button>
                 </li>
             </ul>
@@ -307,7 +305,7 @@
                                 </a>
                             @else
                                 <div class="text-center py-5">
-                                    <i class="ri icon-base ri-link-unlink-m text-muted" style="font-size: 3rem;"></i>
+                                    <i class="ri icon-base ti tabler-link-unlink-m text-muted" style="font-size: 3rem;"></i>
                                     <p class="text-muted mt-2 mb-0">Lokasi ini <strong>Tersedia</strong> dan belum terikat PKS aktif manapun.</p>
                                 </div>
                             @endif
@@ -329,7 +327,7 @@
                                 <div id="map"></div>
                             @else
                                 <div class="text-center py-5 bg-light m-4 rounded-3 border-dashed">
-                                    <i class="ri icon-base ri-map-pin-add-line text-muted mb-2" style="font-size: 3rem;"></i>
+                                    <i class="ri icon-base ti tabler-map-pin-plus text-muted mb-2" style="font-size: 3rem;"></i>
                                     <p class="text-muted mb-0">Titik koordinat belum ditambahkan di peta.</p>
                                     @if(Auth::user()->role !== 'leader')
                                     <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-sm btn-outline-secondary mt-3">Set Koordinat Sekarang</a>
@@ -352,7 +350,7 @@
                                     @if ($parkingLocation->proposal_document)
                                         <div class="col-md-6">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="fw-semibold text-dark"><i class="ri icon-base ri-file-pdf-2-line text-danger"></i> PDF Pengajuan</span>
+                                                <span class="fw-semibold text-dark"><i class="ri icon-base ti tabler-file-pdf-2 text-danger"></i> PDF Pengajuan</span>
                                                 <a href="{{ asset('storage/' . $parkingLocation->proposal_document) }}" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill">Buka Penuh</a>
                                             </div>
                                             <div class="pdf-viewer-wrapper shadow-sm">
@@ -363,7 +361,7 @@
                                     @if ($parkingLocation->official_report_document)
                                         <div class="col-md-6">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="fw-semibold text-dark"><i class="ri icon-base ri-file-pdf-2-line text-danger"></i> PDF Berita Acara</span>
+                                                <span class="fw-semibold text-dark"><i class="ri icon-base ti tabler-file-pdf-2 text-danger"></i> PDF Berita Acara</span>
                                                 <a href="{{ asset('storage/' . $parkingLocation->official_report_document) }}" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill">Buka Penuh</a>
                                             </div>
                                             <div class="pdf-viewer-wrapper shadow-sm">
@@ -374,7 +372,7 @@
                                 </div>
                             @else
                                 <div class="text-center py-5">
-                                    <i class="ri icon-base ri-folder-open-line text-muted" style="font-size: 3rem;"></i>
+                                    <i class="ri icon-base ti tabler-folder-open text-muted" style="font-size: 3rem;"></i>
                                     <p class="text-muted mt-2 mb-0">Belum ada dokumen yang diunggah untuk lokasi ini.</p>
                                 </div>
                             @endif
@@ -394,11 +392,11 @@
                                     @forelse($parkingLocation->histories as $history)
                                         @php
                                             $color = 'primary';
-                                            $icon = 'ri-record-circle-fill';
-                                            if($history->action == 'created') { $color = 'success'; $icon = 'ri-add-circle-fill'; }
-                                            elseif($history->action == 'updated') { $color = 'warning'; $icon = 'ri-edit-circle-fill'; }
-                                            elseif($history->action == 'owner_changed') { $color = 'info'; $icon = 'ri-exchange-box-fill'; }
-                                            elseif($history->action == 'deleted') { $color = 'danger'; $icon = 'ri-delete-bin-fill'; }
+                                            $icon = 'ti tabler-record-circle-filled';
+                                            if($history->action == 'created') { $color = 'success'; $icon = 'ti tabler-add-circle-filled'; }
+                                            elseif($history->action == 'updated') { $color = 'warning'; $icon = 'ti tabler-edit-circle-filled'; }
+                                            elseif($history->action == 'owner_changed') { $color = 'info'; $icon = 'ti tabler-exchange-box-filled'; }
+                                            elseif($history->action == 'deleted') { $color = 'danger'; $icon = 'ti tabler-delete-bin-filled'; }
                                         @endphp
         
                                         <li class="timeline-item timeline-item-{{ $color }} mb-4">
@@ -425,7 +423,7 @@
                                                                 <li class="mb-1 text-truncate" title="{{ $displayOld }} ➔ {{ $displayNew }}">
                                                                     <span class="fw-semibold text-muted">{{ $fieldName }}:</span>
                                                                     <span class="text-danger text-decoration-line-through mx-1">{{ $displayOld }}</span>
-                                                                    <i class="ri icon-base ri-arrow-right-line ri-22px text-primary mx-1"></i>
+                                                                    <i class="ri icon-base ti tabler-arrow-right ti-md text-primary mx-1"></i>
                                                                     <span class="text-warning fw-medium">{{ $displayNew }}</span>
                                                                 </li>
                                                             @endforeach
@@ -447,14 +445,14 @@
                                         </li>
                                     @empty
                                         <div class="text-center py-5">
-                                            <i class="ri icon-base ri-history-line text-muted" style="font-size: 2rem;"></i>
+                                            <i class="ri icon-base ti tabler-history text-muted" style="font-size: 2rem;"></i>
                                             <p class="text-muted mt-2">Belum ada riwayat aktivitas yang tercatat.</p>
                                         </div>
                                     @endforelse
         
                                     @if($parkingLocation->histories->isNotEmpty())
                                         <li class="timeline-item timeline-item-transparent border-0">
-                                            <span class="timeline-indicator timeline-indicator-secondary"><i class="ri icon-base ri-checkbox-blank-circle-line"></i></span>
+                                            <span class="timeline-indicator timeline-indicator-secondary"><i class="ri icon-base ti tabler-checkbox-blank-circle"></i></span>
                                             <div class="timeline-event pb-0">
                                                 <small class="text-muted text-uppercase fw-bold">Awal Rekaman</small>
                                             </div>
@@ -489,11 +487,11 @@
 
 @endsection
 
-@push('vendors-js')
+@section('vendor-script')
     <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
-@endpush
+@endsection
 
-@push('scripts')
+@section('page-script')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
@@ -529,7 +527,7 @@
                             <img src="{{ asset('storage/' . $parkingLocation->image) }}" alt="Lokasi" class="popup-image shadow-sm">
                         @else
                             <div class="bg-label-secondary rounded-3 d-flex align-items-center justify-content-center mb-2 mx-auto" style="width: 100%; height: 100px;">
-                                <i class="ri icon-base ri-image-line text-secondary" style="font-size: 2.5rem;"></i>
+                                <i class="ri icon-base ti tabler-image text-secondary" style="font-size: 2.5rem;"></i>
                             </div>
                         @endif
                         <h6 class="mb-1 fw-bold text-primary mt-2">{{ $parkingLocation->name }}</h6>
@@ -557,4 +555,4 @@
             @endif
         });
     </script>
-@endpush
+@endsection

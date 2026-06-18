@@ -1,14 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Laporan Transaksi Setoran')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-deposit-report-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -26,7 +24,7 @@
     {{-- Filter Card --}}
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header border-bottom pb-3">
-            <h5 class="card-title mb-0"><i class="ri ri-filter-3-line me-1"></i> Filter Laporan Keuangan</h5>
+            <h5 class="card-title mb-0"><i class="ti tabler-filter me-1"></i> Filter Laporan Keuangan</h5>
         </div>
         <div class="card-body pt-4">
             <form action="{{ route('masterdata.deposit-reports.index') }}" method="GET">
@@ -58,7 +56,7 @@
                     <div class="col-md-3">
                         <label for="search" class="form-label fw-medium">Cari No. PKS</label>
                         <div class="input-group input-group-merge">
-                            <span class="input-group-text"><i class="ri ri-search-line"></i></span>
+                            <span class="input-group-text"><i class="ti tabler-search"></i></span>
                             <input type="text" name="search" placeholder="Contoh: PKS/01..." class="form-control" value="{{ $search ?? '' }}">
                         </div>
                     </div>
@@ -75,9 +73,9 @@
                 </div>
 
                 <div class="pt-4 text-end border-top mt-4">
-                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary me-2"><i class="ri ri-refresh-line me-1"></i> Reset</a>
-                    <button type="submit" class="btn btn-primary me-2"><i class="ri ri-search-eye-line me-1"></i> Tampilkan</button>
-                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-danger"><i class="ri ri-file-pdf-2-line me-1"></i> Cetak PDF</button>
+                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary me-2"><i class="ti tabler-refresh me-1"></i> Reset</a>
+                    <button type="submit" class="btn btn-primary me-2"><i class="ti tabler-zoom-in me-1"></i> Tampilkan</button>
+                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-danger"><i class="ti tabler-file-pdf-2 me-1"></i> Cetak PDF</button>
                 </div>
             </form>
         </div>
@@ -91,8 +89,8 @@
 
         <div class="card-body border-bottom pt-4 pb-4 bg-lighter">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold text-dark mb-0"><i class="ri ri-line-chart-line me-1"></i> {{ $chartTitle }}</h6>
-                <span class="badge bg-label-primary px-3 py-2"><i class="ri ri-calendar-todo-line me-1"></i> Periode: {{ $reportType == 'yearly' ? 'Tahunan' : 'Bulanan' }}</span>
+                <h6 class="fw-bold text-dark mb-0"><i class="ti tabler-chart me-1"></i> {{ $chartTitle }}</h6>
+                <span class="badge bg-label-primary px-3 py-2"><i class="ti tabler-calendar-event me-1"></i> Periode: {{ $reportType == 'yearly' ? 'Tahunan' : 'Bulanan' }}</span>
             </div>
             <div style="height: 350px; width: 100%;">
                 <canvas id="reportChart"></canvas>
@@ -120,16 +118,16 @@
                                 <td class="text-end fw-medium text-success">{{ number_format($report->amount, 0, ',', '.') }}</td>
                                 <td class="text-center">
                                     @if ($report->is_validated)
-                                        <span class="badge rounded-pill bg-label-success px-3"><i class="ri ri-check-double-line me-1"></i> Sah</span>
+                                        <span class="badge rounded-pill bg-label-success px-3"><i class="ti tabler-checks me-1"></i> Sah</span>
                                     @else
-                                        <span class="badge rounded-pill bg-label-warning px-3"><i class="ri ri-time-line me-1"></i> Pending</span>
+                                        <span class="badge rounded-pill bg-label-warning px-3"><i class="ti tabler-clock me-1"></i> Pending</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="ri ri-inbox-2-line ri-3x mb-2 d-block"></i> Tidak ada data setoran.
+                                    <i class="ti tabler-inbox-2 ti-xl mb-2 d-block"></i> Tidak ada data setoran.
                                 </td>
                             </tr>
                         @endforelse
@@ -145,7 +143,7 @@
                             <td class="text-end fw-bold fs-4 text-primary">Rp {{ number_format($totalAmount, 0, ',', '.') }}</td>
                             <td class="text-center fw-bold fs-5 {{ $percentage >= 100 ? 'text-success' : 'text-danger' }}">
                                 {{ $percentage }}%
-                                <i class="ri {{ $percentage >= 100 ? 'ri-arrow-up-line text-success' : 'ri-arrow-down-line text-danger' }}"></i>
+                                <i class="ri {{ $percentage >= 100 ? 'ti tabler-arrow-up text-success' : 'ti tabler-arrow-down text-danger' }}"></i>
                             </td>
                         </tr>
                     </tfoot>
@@ -155,13 +153,13 @@
     </div>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
-    <script>
+@section('page-script')
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             $('.select2').each(function() {
                 $(this).wrap('<div class="position-relative"></div>').select2({ placeholder: '-- Cari atau Pilih Korlap --', allowClear: true, dropdownParent: $(this).parent() });
@@ -246,9 +244,9 @@
                         }
                     });
                 } else {
-                    ctx.parentElement.innerHTML = '<div class="d-flex h-100 align-items-center justify-content-center text-muted"><div class="text-center"><i class="ri ri-bar-chart-2-line ri-3x mb-2"></i><br>Belum ada data setoran yang tervalidasi atau Target belum diatur</div></div>';
+                    ctx.parentElement.innerHTML = '<div class="d-flex h-100 align-items-center justify-content-center text-muted"><div class="text-center"><i class="ti tabler-bar-chart-2 ti-xl mb-2"></i><br>Belum ada data setoran yang tervalidasi atau Target belum diatur</div></div>';
                 }
             }
         });
     </script>
-@endpush
+@endsection

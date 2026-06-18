@@ -1,11 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 @section('title', 'Catat Setoran Baru')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-deposit-transaction-create')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
         .select2-container .select2-selection--single { height: 58px !important; padding: 0.5rem 0.75rem; display: flex; align-items: center; }
@@ -104,7 +102,7 @@
             box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -129,12 +127,12 @@
         <div id="payment-exists-modal" class="disabled-overlay d-flex justify-content-center align-items-center">
             <div class="premium-lock-modal">
                 <div class="modal-icon-container">
-                    <i class="tf-icons ri ri-time-fill" id="modal-icon"></i>
+                    <i class="tf-icons ti tabler-clock-filled" id="modal-icon"></i>
                 </div>
                 <h4 class="modal-title" id="modal-title">Belum Saatnya Membayar</h4>
                 <p class="modal-message" id="modal-message"></p>
                 <button type="button" class="btn btn-primary btn-premium mt-2" id="modal-action-btn">
-                    <i class="tf-icons ri ri-refresh-line me-2"></i> Pilih PKS Lain
+                    <i class="tf-icons ti tabler-refresh me-2"></i> Pilih PKS Lain
                 </button>
             </div>
         </div>
@@ -161,7 +159,7 @@
                                 <small class="text-muted">NIP. {{ formatNip($activeTreasurer->employee_number) }}</small>
                             </div>
                             <div class="ms-auto">
-                                <i class="ri ri-shield-check-fill text-success ri-2x" data-bs-toggle="tooltip" title="Sistem Keamanan & Audit Aktif"></i>
+                                <i class="ti tabler-shield-check-filled text-success ti-lg" data-bs-toggle="tooltip" title="Sistem Keamanan & Audit Aktif"></i>
                             </div>
                         </div>
                     </div>
@@ -234,7 +232,7 @@
                                 <div class="card border border-dashed shadow-none">
                                     <div class="card-body text-center py-4">
                                         <img src="{{ asset('assets/img/transaksi.png') }}" class="d-block rounded-3 mx-auto mb-3" id="proof-preview" style="height: 120px; object-fit:contain;" />
-                                        <label for="proof-upload" class="btn btn-sm btn-primary rounded-pill"><i class="ri ri-upload-2-line me-1"></i>Pilih Gambar
+                                        <label for="proof-upload" class="btn btn-sm btn-primary rounded-pill"><i class="ti tabler-upload me-1"></i>Pilih Gambar
                                             <input type="file" id="proof-upload" name="proof_of_transfer" hidden accept="image/png, image/jpeg" required/>
                                         </label>
                                         <div id="proof-error" class="mt-2 text-danger small"></div>
@@ -245,7 +243,7 @@
                         </div>
                         <div class="pt-5 text-end border-top mt-5">
                             <a href="{{ route('masterdata.deposit-transactions.index') }}" class="btn btn-outline-secondary me-2">Batal</a>
-                            <button type="submit" class="btn btn-primary"><i class="ri ri-save-3-line me-1"></i> Simpan Setoran</button>
+                            <button type="submit" class="btn btn-primary"><i class="ti tabler-device-floppy me-1"></i> Simpan Setoran</button>
                         </div>
                     </fieldset>
                 </div>
@@ -254,13 +252,13 @@
     </div>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+    @vite(['resources/assets/vendor/libs/select2/select2.js'])
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
-    <script>
+@section('page-script')
+    <script type="module">
         $(document).ready(function() {
             const agreementSelect = $('#agreement_id');
             const formFields = $('#deposit-form-fields');
@@ -310,9 +308,9 @@
                     success: function(response) {
                         if (!response.can_pay) {
                             $('#modal-title').html('Belum Saatnya Membayar');
-                            $('#modal-icon').attr('class', 'tf-icons ri ri-time-fill');
+                            $('#modal-icon').attr('class', 'tf-icons ti tabler-clock-filled');
                             $('#modal-message').html(response.message);
-                            $('#modal-action-btn').html('<i class="tf-icons ri ri-refresh-line me-2"></i> Pilih PKS Lain')
+                            $('#modal-action-btn').html('<i class="tf-icons ti tabler-refresh me-2"></i> Pilih PKS Lain')
                                 .removeClass('btn-danger').addClass('btn-primary')
                                 .off('click').on('click', function() { location.reload(); });
                             
@@ -344,10 +342,10 @@
                                     if (selectedMonthVal !== firstAvailableMonthVal) {
                                         const firstMonthLabel = availableMonthsData[0].label;
                                         $('#modal-title').html('Tunggakan Harus Dilunasi');
-                                        $('#modal-icon').attr('class', 'tf-icons ri ri-error-warning-fill text-danger');
+                                        $('#modal-icon').attr('class', 'tf-icons ti tabler-alert-triangle-filled text-danger');
                                         $('#modal-message').html(`Sistem mendeteksi adanya tagihan tertunggak.<br><br>Anda <strong>wajib</strong> melunasi tagihan <strong>${firstMonthLabel}</strong> terlebih dahulu sebelum dapat membayar tagihan yang baru.`);
                                         
-                                        $('#modal-action-btn').html('<i class="tf-icons ri ri-check-line me-2"></i> Mengerti, Saya Bayar Itu Dulu')
+                                        $('#modal-action-btn').html('<i class="tf-icons ti tabler-check me-2"></i> Mengerti, Saya Bayar Itu Dulu')
                                             .removeClass('btn-primary')
                                             .addClass('btn-danger')
                                             .off('click').on('click', function() {
@@ -380,7 +378,7 @@
                                 const selectedMonth = availableMonthsData.find(m => m.date === selectedOption.val());
                                 if (selectedMonth) {
                                     const dAmount = selectedMonth.daily_amount || response.daily_amount;
-                                    const infoText = `<i class="ri ri-information-line me-1"></i> Setoran bulan <strong>${selectedMonth.label}</strong> (Tarif Harian ${formatRupiah(dAmount)} &times; ${selectedMonth.days} hari).`;
+                                    const infoText = `<i class="ti tabler-info-circle me-1"></i> Setoran bulan <strong>${selectedMonth.label}</strong> (Tarif Harian ${formatRupiah(dAmount)} &times; ${selectedMonth.days} hari).`;
                                     
                                     amountCalculationInfo.html(infoText);
                                     amountCalculationInfoContainer.show();
@@ -494,4 +492,4 @@
             @endif
         });
     </script>
-@endpush
+@endsection

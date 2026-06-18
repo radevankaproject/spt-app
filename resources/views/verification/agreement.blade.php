@@ -279,7 +279,7 @@
                     <div class="locations-wrapper">
                         <button type="button" class="toggle-button" id="toggle-locations-btn">
                             <span>Daftar Lokasi Parkir ({{ $agreement->activeParkingLocations->count() }})</span>
-                            <i class="ri-arrow-down-s-line"></i>
+                            <i class="ti tabler-arrow-down-s"></i>
                         </button>
                         <div class="locations-table-container" id="locations-table">
                             <div class="table-responsive">
@@ -288,7 +288,7 @@
                                         @forelse ($agreement->activeParkingLocations as $location)
                                             <tr>
                                                 <td><i
-                                                        class="ri-map-pin-2-fill text-primary me-2"></i>{{ $location->name }}
+                                                        class="ti tabler-map-pin-2-filled text-primary me-2"></i>{{ $location->name }}
                                                 </td>
                                                 <td><span
                                                         class="text-muted">{{ $location->roadSection->name ?? 'N/A' }}</span>
@@ -335,12 +335,12 @@
                         const icon = this.querySelector('i');
                         if (locationsTable.style.display === 'block') {
                             locationsTable.style.display = 'none';
-                            icon.classList.remove('ri-arrow-up-s-line');
-                            icon.classList.add('ri-arrow-down-s-line');
+                            icon.classList.remove('ti tabler-arrow-up-s');
+                            icon.classList.add('ti tabler-arrow-down-s');
                         } else {
                             locationsTable.style.display = 'block';
-                            icon.classList.remove('ri-arrow-down-s-line');
-                            icon.classList.add('ri-arrow-up-s-line');
+                            icon.classList.remove('ti tabler-arrow-down-s');
+                            icon.classList.add('ti tabler-arrow-up-s');
                         }
                     });
                 }

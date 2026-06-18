@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 @section('title', 'Dashboard Staff Keuangan')
 
-@push('styles')
+@section('page-style')
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
 <style>
     .hero-card-keu { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
@@ -13,11 +13,9 @@
     .premium-table tbody tr { transition: all 0.2s ease; }
     .premium-table tbody tr:hover { background-color: rgba(16, 185, 129, 0.05); }
 </style>
-@endpush
-
-@section('skeleton')
-    @include('layouts.partials._skeleton-staff-keu-dashboard')
 @endsection
+
+
 
 @section('content')
 
@@ -41,11 +39,11 @@
                 <div class="row w-100 align-items-center position-relative z-1">
                     <div class="col-md-8 text-md-start text-center mb-4 mb-md-0">
                         <span class="badge bg-white text-success rounded-pill mb-3 fw-bold px-3 py-2 shadow-sm">
-                            <i class="ri ri-calendar-todo-line me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                            <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
                         </span>
                         <h2 class="text-white fw-bold mb-2" style="letter-spacing: -0.5px;">{{ $greeting }}, {{ explode(' ', $staffName)[0] }}! 👋</h2>
                         <div class="badge border border-white text-white rounded-pill px-3 py-2 mb-3">
-                           <i class="ri ri-profile-line me-1 align-middle"></i> NIP: {{ $staffNip }}
+                           <i class="ti tabler-id me-1 align-middle"></i> NIP: {{ $staffNip }}
                         </div>
                         <p class="mb-0 opacity-75 fs-6" style="max-width: 500px;">
                             Pusat pantauan data penerimaan setoran pendapatan parkir. Berikut adalah statistik kinerja keuangan terkini.
@@ -57,7 +55,7 @@
                         </div>
                     </div>
                 </div>
-                <i class="ri ri-wallet-3-line position-absolute text-white" style="font-size: 220px; right: -20px; bottom: -40px; opacity: 0.1; transform: rotate(-10deg);"></i>
+                <i class="ti tabler-wallet position-absolute text-white" style="font-size: 220px; right: -20px; bottom: -40px; opacity: 0.1; transform: rotate(-10deg);"></i>
             </div>
         </div>
     </div>
@@ -68,7 +66,7 @@
             <div class="col-12 h-50 pb-2">
                 <div class="card border-0 shadow-sm rounded-4 h-100 quick-stat-card">
                     <div class="card-body d-flex flex-column justify-content-center text-center">
-                        <h6 class="text-sm fw-medium text-muted mb-2"><i class="ri ri-calendar-check-line text-success me-1"></i> SETORAN BULAN INI</h6>
+                        <h6 class="text-sm fw-medium text-muted mb-2"><i class="ti tabler-calendar-check text-success me-1"></i> SETORAN BULAN INI</h6>
                         <h3 class="fw-bold text-success mb-0">Rp {{ number_format($depositThisMonth, 0, ',', '.') }}</h3>
                     </div>
                 </div>
@@ -76,7 +74,7 @@
             <div class="col-12 h-50 pt-2">
                 <div class="card border-0 shadow-sm rounded-4 h-100 quick-stat-card">
                     <div class="card-body d-flex flex-column justify-content-center text-center">
-                        <h6 class="text-sm fw-medium text-muted mb-2"><i class="ri ri-bar-chart-box-line text-primary me-1"></i> TOTAL TAHUN {{ now()->year }}</h6>
+                        <h6 class="text-sm fw-medium text-muted mb-2"><i class="ti tabler-bar-chart-box text-primary me-1"></i> TOTAL TAHUN {{ now()->year }}</h6>
                         <h3 class="fw-bold text-primary mb-0">Rp {{ number_format($depositThisYear, 0, ',', '.') }}</h3>
                     </div>
                 </div>
@@ -90,7 +88,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-primary mx-auto mb-2"><i class="ri ri-file-text-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-primary mx-auto mb-2"><i class="ti tabler-file-text ti-md"></i></div>
                 <div class="quick-stat-value text-primary">{{ $totalActiveAgreements }}</div>
                 <div class="quick-stat-label text-muted mt-1">PKS Aktif</div>
             </div>
@@ -99,7 +97,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-success mx-auto mb-2"><i class="ri ri-checkbox-circle-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-success mx-auto mb-2"><i class="ti tabler-circle-check ti-md"></i></div>
                 <div class="quick-stat-value text-success">{{ $paidCount }}</div>
                 <div class="quick-stat-label text-muted mt-1">Sudah Setor</div>
             </div>
@@ -108,7 +106,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-danger mx-auto mb-2"><i class="ri ri-close-circle-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-danger mx-auto mb-2"><i class="ti tabler-circle-x ti-md"></i></div>
                 <div class="quick-stat-value text-danger">{{ $unpaidCount }}</div>
                 <div class="quick-stat-label text-muted mt-1">Belum Setor</div>
             </div>
@@ -117,7 +115,7 @@
     <div class="col-xl-3 col-md-6 col-6">
         <div class="card quick-stat-card shadow-sm h-100">
             <div class="card-body p-3 text-center">
-                <div class="stat-card-icon bg-label-warning mx-auto mb-2"><i class="ri ri-time-line ri-20px"></i></div>
+                <div class="stat-card-icon bg-label-warning mx-auto mb-2"><i class="ti tabler-clock ti-md"></i></div>
                 <div class="quick-stat-value text-warning">{{ $pendingValidationsCount }}</div>
                 <div class="quick-stat-label text-muted mt-1">Pending</div>
             </div>
@@ -130,7 +128,7 @@
     <div class="col-lg-12">
         <div class="card shadow-sm border-0 rounded-4">
             <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
-                <h5 class="card-title fw-bold m-0"><i class="ri icon-base ri-line-chart-line text-primary me-2"></i> Grafik Setoran Tervalidasi ({{ now()->year }})</h5>
+                <h5 class="card-title fw-bold m-0"><i class="ri icon-base ti tabler-chart text-primary me-2"></i> Grafik Setoran Tervalidasi ({{ now()->year }})</h5>
                 <span class="badge bg-success bg-opacity-10 text-success fw-bold">Tahun {{ now()->year }}</span>
             </div>
             <div class="card-body">
@@ -145,7 +143,7 @@
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 rounded-4 h-100 border-start border-4 border-success">
             <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                <h5 class="card-title fw-bold text-success mb-0"><i class="ri ri-checkbox-circle-fill me-2"></i> Sudah Setor (Bulan Ini)</h5>
+                <h5 class="card-title fw-bold text-success mb-0"><i class="ti tabler-circle-check-filled me-2"></i> Sudah Setor (Bulan Ini)</h5>
                 <span class="badge bg-success rounded-pill">{{ $paidCount }}</span>
             </div>
             <div class="table-responsive text-nowrap" style="max-height: 400px; overflow-y: auto;">
@@ -171,7 +169,7 @@
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 rounded-4 h-100 border-start border-4 border-danger">
             <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                <h5 class="card-title fw-bold text-danger mb-0"><i class="ri ri-close-circle-fill me-2"></i> Belum Setor (Bulan Ini)</h5>
+                <h5 class="card-title fw-bold text-danger mb-0"><i class="ti tabler-close-circle-filled me-2"></i> Belum Setor (Bulan Ini)</h5>
                 <span class="badge bg-danger rounded-pill">{{ $unpaidCount }}</span>
             </div>
             <div class="table-responsive text-nowrap" style="max-height: 400px; overflow-y: auto;">
@@ -186,7 +184,7 @@
                             <td>{{$pks->fieldCoordinator->user->name ?? 'N/A'}}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="2" class="text-center p-4 text-success fw-medium"><i class="ri ri-check-double-line me-1"></i> Luar Biasa! Semua PKS sudah menyetor.</td></tr>
+                        <tr><td colspan="2" class="text-center p-4 text-success fw-medium"><i class="ti tabler-checks me-1"></i> Luar Biasa! Semua PKS sudah menyetor.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -196,12 +194,12 @@
 </div>
 @endsection
 
-@push('vendors-js')
-<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-@endpush
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('vendor-script')
+<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}" defer></script>
+@endsection
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
         const chartEl = document.querySelector("#deposit-chart");
         if (chartEl) {
             new ApexCharts(chartEl, {
@@ -218,4 +216,4 @@
         }
     });
 </script>
-@endpush
+@endsection

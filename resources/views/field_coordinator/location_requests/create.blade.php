@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Buat Pengajuan Titik Baru')
 
-@section('skeleton')
-@include('layouts.partials._skeleton-fc-lr-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -39,7 +37,7 @@
         z-index: 2;
     }
 </style>
-@endpush
+@endsection
 
 @section('content')
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -48,7 +46,7 @@
     </h4>
     <a href="{{ route('field_coordinator.location-requests.index') }}"
         class="btn btn-outline-secondary mt-3 mt-md-0 shadow-sm">
-        <i class="ri ri-arrow-left-line me-1"></i> Kembali
+        <i class="ti tabler-arrow-left me-1"></i> Kembali
     </a>
 </div>
 
@@ -74,7 +72,7 @@
                             <div class="form-check custom-option custom-option-icon shadow-sm">
                                 <label class="form-check-label custom-option-content bg-white" for="typeAdd">
                                     <span class="custom-option-body">
-                                        <i class="ri ri-add-circle-line ri-24px text-success mb-2"></i>
+                                        <i class="ti tabler-add-circle ti-lg text-success mb-2"></i>
                                         <span class="custom-option-title fw-bold fs-6">Penambahan Titik Baru</span>
                                         <small>Ajukan lokasi baru untuk dikelola.</small>
                                     </span>
@@ -87,7 +85,7 @@
                             <div class="form-check custom-option custom-option-icon shadow-sm">
                                 <label class="form-check-label custom-option-content bg-white" for="typeRemove">
                                     <span class="custom-option-body">
-                                        <i class="ri ri-delete-bin-line ri-24px text-danger mb-2"></i>
+                                        <i class="ti tabler-trash ti-lg text-danger mb-2"></i>
                                         <span class="custom-option-title fw-bold fs-6">Pencabutan Titik</span>
                                         <small>Berhenti mengelola titik yang sudah ada.</small>
                                     </span>
@@ -119,7 +117,7 @@
                     <div class="row g-4 p-4 bg-white rounded-4 border shadow-sm">
 
                         <div class="col-12">
-                            <h6 class="fw-bold text-primary mb-0"><i class="ri ri-profile-line me-1"></i> Informasi
+                            <h6 class="fw-bold text-primary mb-0"><i class="ti tabler-id me-1"></i> Informasi
                                 Dasar</h6>
                         </div>
 
@@ -143,7 +141,7 @@
                                 <input type="number" class="form-control form-control-lg border-start-0"
                                     id="offered_daily_deposit" name="offered_daily_deposit" placeholder="0" min="0">
                             </div>
-                            <small class="text-muted mt-1 d-block"><i class="ri ri-information-line"></i> Angka ini akan
+                            <small class="text-muted mt-1 d-block"><i class="ti tabler-info-circle"></i> Angka ini akan
                                 dinegosiasikan dengan petugas Dinas.</small>
                         </div>
 
@@ -151,7 +149,7 @@
                             <hr class="my-3 border-secondary opacity-25">
                         </div>
                         <div class="col-12">
-                            <h6 class="fw-bold text-primary mb-0"><i class="ri ri-map-pin-user-line me-1"></i> Pemetaan
+                            <h6 class="fw-bold text-primary mb-0"><i class="ti tabler-user-pin me-1"></i> Pemetaan
                                 & Visualisasi</h6>
                         </div>
 
@@ -159,13 +157,13 @@
                             <label class="form-label fw-bold">Koordinat Map (Latitude, Longitude)</label>
                             <div class="input-group mb-3 shadow-sm">
                                 <span class="input-group-text bg-white text-primary"><i
-                                        class="ri ri-map-pin-2-line"></i></span>
+                                        class="ti tabler-map-pin-2"></i></span>
                                 <input type="text" class="form-control border-start-0" id="koordinat_gabungan"
                                     name="koordinat_gabungan"
                                     placeholder="Paste koordinat G-Maps di sini (Misal: 0.507, 101.447)">
                                 <button class="btn btn-primary" type="button" id="btn-my-location"
                                     data-bs-toggle="tooltip" title="Gunakan GPS HP Anda">
-                                    <i class="ri ri-focus-3-line"></i> Titik Saya
+                                    <i class="ti tabler-focus-3"></i> Titik Saya
                                 </button>
                             </div>
                             <small class="text-muted d-block mb-3">Ketikan/Paste koordinat, atau <b>klik langsung pada
@@ -183,7 +181,7 @@
                                 style="display: none;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <small class="fw-bold text-primary" id="compression-status"><i
-                                            class="ri ri-loader-4-line ri-spin me-1"></i> Mengompresi gambar...</small>
+                                            class="ti tabler-loader-4 ti tabler-spin me-1"></i> Mengompresi gambar...</small>
                                     <small class="fw-bold text-dark" id="compression-size"></small>
                                 </div>
                                 <div class="progress rounded-pill" style="height: 8px;">
@@ -197,7 +195,7 @@
                                 <div class="image-preview-wrapper">
                                     <img id="image_preview" src="" alt="Preview">
                                     <span class="badge bg-success image-preview-badge p-2 rounded-circle shadow"><i
-                                            class="ri ri-check-double-line"></i></span>
+                                            class="ti tabler-checks"></i></span>
                                 </div>
                             </div>
                         </div>
@@ -222,23 +220,23 @@
 
             <div class="pt-4 mt-4 border-top text-end">
                 <button type="submit" id="submit-btn" class="btn btn-primary btn-lg px-5 shadow"><i
-                        class="ri ri-send-plane-fill me-1"></i> Kirim Pengajuan</button>
+                        class="ti tabler-send-plane-filled me-1"></i> Kirim Pengajuan</button>
             </div>
         </form>
     </div>
 </div>
 @endsection
 
-@push('vendors-js')
-<script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+@vite(["resources/assets/vendor/libs/select2/select2.js"])
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="text/javascript"
     src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
             $('.select2').each(function() {
                 $(this).wrap('<div class="position-relative"></div>').select2({
                     placeholder: '-- Pilih Titik Parkir --', dropdownParent: $(this).parent()
@@ -281,13 +279,13 @@
 
             document.getElementById('btn-my-location').addEventListener('click', function() {
                 if (navigator.geolocation) {
-                    this.innerHTML = '<i class="ri ri-loader-4-line ri-spin"></i> Mencari...';
+                    this.innerHTML = '<i class="ti tabler-loader-4 ti tabler-spin"></i> Mencari...';
                     navigator.geolocation.getCurrentPosition(function(position) {
                         updateMapData(position.coords.latitude, position.coords.longitude);
-                        document.getElementById('btn-my-location').innerHTML = '<i class="ri ri-focus-3-line"></i> Titik Saya';
+                        document.getElementById('btn-my-location').innerHTML = '<i class="ti tabler-focus-3"></i> Titik Saya';
                     }, function() {
                         alert("Gagal mengambil lokasi GPS Anda.");
-                        document.getElementById('btn-my-location').innerHTML = '<i class="ri ri-focus-3-line"></i> Titik Saya';
+                        document.getElementById('btn-my-location').innerHTML = '<i class="ti tabler-focus-3"></i> Titik Saya';
                     });
                 }
             });
@@ -312,7 +310,7 @@
                 reader.readAsDataURL(file);
 
                 compWrapper.style.display = 'block';
-                compStatus.innerHTML = '<i class="ri ri-loader-4-line ri-spin me-1"></i> Mengompresi gambar...';
+                compStatus.innerHTML = '<i class="ti tabler-loader-4 ti tabler-spin me-1"></i> Mengompresi gambar...';
                 compStatus.className = 'fw-bold text-primary';
                 compProgress.style.width = '10%';
                 compProgress.className = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
@@ -332,13 +330,13 @@
                     imageInput.files = dataTransfer.files;
 
                     compProgress.className = 'progress-bar bg-success';
-                    compStatus.innerHTML = '<i class="ri ri-check-double-line me-1"></i> Kompresi Selesai!';
+                    compStatus.innerHTML = '<i class="ti tabler-checks me-1"></i> Kompresi Selesai!';
                     compStatus.className = 'fw-bold text-success';
                     compSize.innerHTML = `Asli: ${(file.size/1024/1024).toFixed(2)} MB ➔ <b>Hasil: ${(compressedFile.size/1024/1024).toFixed(2)} MB</b>`;
                     submitBtn.disabled = false;
                 } catch (error) {
                     console.error(error);
-                    compStatus.innerHTML = '<i class="ri ri-error-warning-line me-1"></i> Gagal Mengompresi';
+                    compStatus.innerHTML = '<i class="ti tabler-alert-triangle me-1"></i> Gagal Mengompresi';
                     compStatus.className = 'fw-bold text-danger';
                     compProgress.className = 'progress-bar bg-danger';
                     submitBtn.disabled = false;
@@ -368,4 +366,4 @@
             toggleForms();
         });
 </script>
-@endpush
+@endsection

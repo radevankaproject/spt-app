@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Lokasi Parkir')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-road-sections-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
@@ -23,7 +21,7 @@
             .filter-container > * { flex: 1 1 100%; }
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -75,13 +73,13 @@
                     {{-- 3. Search Input --}}
                     <div class="input-group filter-item shadow-sm" style="min-width: 250px;">
                         <input type="search" name="search" class="form-control" placeholder="Cari nama lokasi..." value="{{ request('search') }}">
-                        <button class="btn btn-primary" type="submit"><i class="ri icon-base ri-search-line"></i></button>
+                        <button class="btn btn-primary" type="submit"><i class="ri icon-base ti tabler-search"></i></button>
                     </div>
                     
                     {{-- 4. Tombol Reset (Muncul jika ada filter aktif) --}}
                     @if(request('search') || request('road_section_id') || request('status'))
                         <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-outline-danger filter-item shadow-sm" data-bs-toggle="tooltip" title="Reset Semua Filter">
-                            <i class="ri icon-base ri-refresh-line icon-22px"></i> Reset Seluruh Filter
+                            <i class="ri icon-base ti tabler-refresh icon-22px"></i> Reset Seluruh Filter
                         </a>
                     @endif
                 </form>
@@ -95,15 +93,15 @@
                         @method('DELETE')
                         <input type="hidden" name="selected_ids" id="selected_ids" value="">
                         <button type="button" class="btn btn-danger shadow-sm d-none" id="btn-bulk-delete" onclick="confirmBulkDelete()">
-                            <i class="ri icon-base ri-delete-bin-7-line me-1"></i> Hapus Terpilih (<span id="selected-count">0</span>)
+                            <i class="ri icon-base ti tabler-delete-bin-7 me-1"></i> Hapus Terpilih (<span id="selected-count">0</span>)
                         </button>
                     </form>
 
                     <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary shadow-sm">
-                        <i class="ri icon-base ri-upload-cloud-line me-1"></i> Impor
+                        <i class="ri icon-base ti tabler-upload-cloud me-1"></i> Impor
                     </a>
                     <a href="{{ route('masterdata.parking-locations.create') }}" class="btn btn-primary shadow-sm">
-                        <i class="ri icon-base ri-add-line me-1"></i> Tambah
+                        <i class="ri icon-base ti tabler-plus me-1"></i> Tambah
                     </a>
                     @endif
                 </div>
@@ -113,7 +111,7 @@
         <div class="card-body pt-3 p-0">
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fw-bold m-3" role="alert">
-                    <i class="ri-error-warning-line me-1"></i> {{ session('error') }}
+                    <i class="ti tabler-alert-triangle me-1"></i> {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -148,11 +146,11 @@
                                     <small class="text-muted d-block mb-1">Rp {{ number_format($location->daily_deposit, 0, ',', '.') }} / hari</small>
                                     @if($location->latitude && $location->longitude)
                                         <a href="https://www.google.com/maps?q={{ $location->latitude }},{{ $location->longitude }}" target="_blank" class="badge bg-label-info text-decoration-none" data-bs-toggle="tooltip" title="Lihat di Peta">
-                                            <i class="ri-map-pin-fill me-1"></i> Buka Peta
+                                            <i class="ti tabler-map-pin-filled me-1"></i> Buka Peta
                                         </a>
                                     @else
                                         <span class="badge bg-label-warning text-dark">
-                                            <i class="ri-map-pin-add-line me-1"></i> Koordinat belum diatur
+                                            <i class="ti tabler-map-pin-plus me-1"></i> Koordinat belum diatur
                                         </span>
                                     @endif
                                 </td>
@@ -169,7 +167,7 @@
                                     </span>
                                     @if(!$location->is_active)
                                         <span class="badge rounded-pill bg-label-danger fw-bold d-inline-block mt-1" data-bs-toggle="tooltip" title="{{ $location->keterangan }}">
-                                            <i class="ri-close-circle-line me-1"></i>TUTUP/NONAKTIF
+                                            <i class="ti tabler-circle-x me-1"></i>TUTUP/NONAKTIF
                                         </span>
                                     @endif
                                 </td>
@@ -200,14 +198,14 @@
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
                                             href="{{ route('masterdata.parking-locations.show', $location->id) }}"
                                             data-bs-toggle="tooltip" title="Detail Lokasi">
-                                            <i class="ri icon-base ri-eye-line ri-22px"></i>
+                                            <i class="ri icon-base ti tabler-eye ti-md"></i>
                                         </a>
 
                                         @if(Auth::user()->role !== 'leader')
                                             <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                                 href="{{ route('masterdata.parking-locations.edit', $location->id) }}"
                                                 data-bs-toggle="tooltip" title="Edit Lokasi">
-                                                <i class="ri icon-base ri-pencil-line ri-22px"></i>
+                                                <i class="ri icon-base ti tabler-pencil ti-md"></i>
                                             </a>
                                         @endif
 
@@ -215,14 +213,14 @@
                                         @if ($location->status == 'tidak_tersedia')
                                             <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
                                                 data-bs-toggle="tooltip" title="Tidak dapat dihapus, sedang terikat PKS!">
-                                                <i class="ri icon-base ri-delete-bin-7-line ri-22px opacity-50"></i>
+                                                <i class="ri icon-base ti tabler-delete-bin-7 ti-md opacity-50"></i>
                                             </button>
                                         @else
                                             <form action="{{ route('masterdata.parking-locations.destroy', $location->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Lokasi">
-                                                    <i class="ri icon-base ri-delete-bin-7-line ri-22px"></i>
+                                                    <i class="ri icon-base ti tabler-delete-bin-7 ti-md"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -233,7 +231,7 @@
                         @empty
                             <tr>
                                 <td colspan="7" class="text-center py-5">
-                                    <i class="ri ri-map-pin-time-line icon-32px text-muted opacity-50 mb-2"></i>
+                                    <i class="ti tabler-map-pin-time icon-32px text-muted opacity-50 mb-2"></i>
                                     <h6 class="fw-bold text-dark mb-1">Tidak ada data dengan keyword <span class="text-muted text-primary">"{{ request('search') }}"</span> ditemukan</h6>
                                     <p class="text-muted small">Coba ubah filter pencarian, ruas jalan, atau status.</p>
                                 </td>
@@ -254,10 +252,10 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-    <script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // Aktifkan Select2
             if (jQuery().select2) {
@@ -304,7 +302,7 @@
                     title: 'Akses Ditolak!',
                     html: '<p class="text-muted fs-6 mt-2">' + errorMessage + '</p>',
                     showConfirmButton: true,
-                    confirmButtonText: '<i class="ri-check-line me-1"></i> Mengerti',
+                    confirmButtonText: '<i class="ti tabler-check me-1"></i> Mengerti',
                     customClass: { confirmButton: 'btn btn-primary waves-effect waves-light rounded-pill px-4' },
                     buttonsStyling: false,
                     backdrop: `rgba(0,0,0,0.4)`
@@ -377,4 +375,4 @@
             })
         }
     </script>
-@endpush
+@endsection

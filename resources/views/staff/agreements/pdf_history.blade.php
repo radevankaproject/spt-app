@@ -1,10 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Histori PDF: ' . $agreement->agreement_number)
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-pdf-history')
-@endsection
+
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -22,7 +20,7 @@
         </div>
         <div>
             <a href="{{ route('masterdata.agreements.show', $agreement->id) }}" class="btn btn-outline-secondary shadow-sm">
-                <i class="ri-arrow-left-line me-1"></i> Kembali ke Detail
+                <i class="ti tabler-arrow-left me-1"></i> Kembali ke Detail
             </a>
         </div>
     </div>
@@ -52,12 +50,12 @@
                             {{-- Kiri: Ikon & Info Tanggal --}}
                             <div class="d-flex align-items-center gap-3">
                                 <div class="avatar avatar-md rounded-circle bg-label-danger d-flex align-items-center justify-content-center flex-shrink-0">
-                                    <i class="ri ri-file-pdf-2-fill fs-4"></i>
+                                    <i class="ti tabler-file-pdf-2-filled fs-4"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-1 fw-bold text-dark">Arsip PKS - {{ $history->created_at->translatedFormat('d M Y') }}</h6>
                                     <div class="d-flex align-items-center text-muted" style="font-size: 0.85rem;">
-                                        <i class="ri ri-time-line me-1"></i> {{ $history->created_at->format('H:i') }} WIB
+                                        <i class="ti tabler-clock me-1"></i> {{ $history->created_at->format('H:i') }} WIB
                                         <span class="mx-2">•</span>
                                         <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle me-1" width="16" height="16" style="object-fit: cover;">
                                         Dibuat oleh {{ Str::limit($uName, 15) }}
@@ -69,11 +67,11 @@
                             <div class="d-flex gap-2 align-items-center">
                                 <a href="{{ asset('storage/' . $history->file_path) }}" target="_blank"
                                     class="btn btn-sm btn-outline-info rounded-pill fw-medium">
-                                    <i class="ri ri-eye-line me-1"></i> Lihat
+                                    <i class="ti tabler-eye me-1"></i> Lihat
                                 </a>
                                 <a href="{{ asset('storage/' . $history->file_path) }}" download
                                     class="btn btn-sm btn-primary rounded-pill fw-medium shadow-sm">
-                                    <i class="ri ri-download-cloud-2-line me-1"></i> Unduh
+                                    <i class="ti tabler-cloud-download me-1"></i> Unduh
                                 </a>
                             </div>
                         </div>
@@ -81,19 +79,19 @@
                         {{-- Bawah: Catatan Perubahan (Premium Box) --}}
                         <div class="mt-3 pt-3 border-top">
                             <div class="d-flex align-items-start gap-2">
-                                <i class="ri ri-message-3-line text-primary mt-1"></i>
+                                <i class="ti tabler-message-3 text-primary mt-1"></i>
                                 <div class="w-100">
                                     @if($hasMultiple)
                                         <div class="d-flex justify-content-between align-items-center cursor-pointer" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">
                                             <span class="text-dark fw-medium" style="font-size: 0.9rem;">Terdapat {{ count($notesList) }} catatan perubahan. <span class="text-primary">Lihat rincian</span></span>
-                                            <i class="ri ri-arrow-down-s-line text-muted"></i>
+                                            <i class="ti tabler-arrow-down-s text-muted"></i>
                                         </div>
                                         <div class="collapse mt-2" id="{{ $collapseId }}">
                                             <div class="bg-lighter p-3 rounded-3">
                                                 <ul class="list-unstyled mb-0">
                                                     @foreach($notesList as $note)
                                                         <li class="d-flex align-items-start mb-2 text-muted" style="font-size: 0.85rem;">
-                                                            <i class="ri ri-check-line text-success me-2 fs-6"></i>
+                                                            <i class="ti tabler-check text-success me-2 fs-6"></i>
                                                             <span style="line-height: 1.4;">{{ $note }}</span>
                                                         </li>
                                                     @endforeach
@@ -110,7 +108,7 @@
                 @empty
                     <div class="text-center py-5 border rounded-4 bg-lighter" style="border-style: dashed !important; border-width: 2px !important;">
                         <div class="avatar avatar-xl mx-auto mb-3 bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="ri ri-folder-open-line text-muted fs-2"></i>
+                            <i class="ti tabler-folder-open text-muted fs-2"></i>
                         </div>
                         <h6 class="fw-bold text-dark mb-1">Arsip Kosong</h6>
                         <p class="mb-0 text-muted">Belum ada dokumen PDF lama yang tersimpan.</p>
@@ -126,7 +124,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('page-script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Aktifkan Tooltips Bootstrap untuk text yang terpotong dan tombol aksi
@@ -136,4 +134,4 @@
             });
         });
     </script>
-@endpush
+@endsection

@@ -1,10 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Tambah Koordinator Lapangan Baru')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-field-coordinators-form')
-@endsection
+
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -95,7 +93,7 @@
                         <img src="{{ asset('assets/img/avatars/1.png') }}" alt="user-avatar"
                             class="d-block w-px-120 h-px-120 rounded-circle mx-auto mb-4" id="avatar-preview" />
                         <label for="img-upload" class="btn btn-primary">
-                            <i class="icon-base ri-upload-2-line me-2"></i>Pilih Foto
+                            <i class="icon-base ti tabler-upload me-2"></i>Pilih Foto
                             <input type="file" id="img-upload" name="img" class="account-file-input" hidden
                                 accept="image/png, image/jpeg" />
                         </label>
@@ -110,7 +108,7 @@
                         <img src="{{ asset('assets/img/ktp.png') }}" alt="id-card-placeholder"
                             class="d-block rounded-3 mx-auto mb-4" id="idcard-preview" style="max-height: 120px;" />
                         <label for="idcard-upload" class="btn btn-primary">
-                            <i class="icon-base ri-upload-2-line me-2"></i>Pilih Foto KTP
+                            <i class="icon-base ti tabler-upload me-2"></i>Pilih Foto KTP
                             <input type="file" id="idcard-upload" name="id_card_img" class="account-file-input" hidden
                                 accept="image/png, image/jpeg"/>
                         </label>
@@ -128,9 +126,9 @@
     </form>
 @endsection
 
-@push('scripts')
+@section('page-script')
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-    <script>
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // --- Logika untuk validasi input ---
             const idCardInput = document.getElementById('id_card_number');
@@ -196,4 +194,4 @@
                 "{{ asset('assets/img/ktp.png') }}");
         });
     </script>
-@endpush
+@endsection

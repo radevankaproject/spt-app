@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Detail Pengajuan Titik')
 
-@push('styles')
+@section('page-style')
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -141,13 +141,13 @@
         transform: translateX(3px);
     }
 </style>
-@endpush
+@endsection
 
 @section('content')
 <div id="dynamicIsland" class="dynamic-island">
     <div class="bg-success rounded-circle d-flex align-items-center justify-content-center"
         style="width: 24px; height: 24px;">
-        <i class="ri ri-check-line text-dark"></i>
+        <i class="ti tabler-check text-dark"></i>
     </div>
     <span>Link Maps Berhasil Disalin!</span>
 </div>
@@ -160,19 +160,19 @@
     </div>
     <a href="{{ route('masterdata.location-requests.index') }}"
         class="btn btn-outline-secondary shadow-sm mt-3 mt-md-0">
-        <i class="ri ri-arrow-left-line me-1"></i> Kembali ke Daftar
+        <i class="ti tabler-arrow-left me-1"></i> Kembali ke Daftar
     </a>
 </div>
 
 @if (session('success'))
 <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-    <i class="ri ri-checkbox-circle-line me-2"></i> {{ session('success') }}
+    <i class="ti tabler-circle-check me-2"></i> {{ session('success') }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 @endif
 @if (session('error'))
 <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-    <i class="ri ri-error-warning-line me-2"></i> {{ session('error') }}
+    <i class="ti tabler-alert-triangle me-2"></i> {{ session('error') }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 @endif
@@ -187,7 +187,7 @@
                     <div class="d-flex align-items-center">
                         <div class="avatar avatar-lg me-3 bg-label-primary rounded p-2">
                             <i
-                                class="ri {{ $locationRequest->request_type == 'add' ? 'ri-map-pin-add-line' : 'ri-delete-bin-line' }} ri-2x text-primary"></i>
+                                class="ri {{ $locationRequest->request_type == 'add' ? 'ti tabler-map-pin-plus' : 'ti tabler-trash' }} ti-lg text-primary"></i>
                         </div>
                         <div>
                             <h5 class="fw-bold mb-1">{{ $locationRequest->request_type == 'add' ? 'Penambahan Titik
@@ -198,12 +198,12 @@
                     </div>
                     <div>
                         @if($locationRequest->status == 'pending') <span class="badge bg-label-warning fs-6"><i
-                                class="ri ri-time-line me-1"></i> Pending</span>
+                                class="ti tabler-clock me-1"></i> Pending</span>
                         @elseif($locationRequest->status == 'surveyed') <span class="badge bg-label-info fs-6"><i
-                                class="ri ri-clipboard-line me-1"></i> Disurvey</span>
+                                class="ti tabler-clipboard me-1"></i> Disurvey</span>
                         @elseif($locationRequest->status == 'approved') <span class="badge bg-label-success fs-6"><i
-                                class="ri ri-check-double-line me-1"></i> Disetujui</span>
-                        @else <span class="badge bg-label-danger fs-6"><i class="ri ri-close-circle-line me-1"></i>
+                                class="ti tabler-checks me-1"></i> Disetujui</span>
+                        @else <span class="badge bg-label-danger fs-6"><i class="ti tabler-circle-x me-1"></i>
                             Ditolak</span> @endif
                     </div>
                 </div>
@@ -234,7 +234,7 @@
                                 data-bs-toggle="tooltip" title="Buka Detail PKS">
                                 <span class="fw-bold text-primary fs-6">{{ $locationRequest->agreement->agreement_number
                                     }}</span>
-                                <i class="ri ri-external-link-line ms-1 text-primary"></i>
+                                <i class="ti tabler-external-link ms-1 text-primary"></i>
                             </a>
                         </div>
 
@@ -288,10 +288,10 @@
             <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">
                     @if($similarLocations->count() > 0)
-                    <i class="ri ri-alert-line me-2 text-warning"></i> Cek Duplikasi Lokasi (Ada {{
+                    <i class="ti tabler-alert me-2 text-warning"></i> Cek Duplikasi Lokasi (Ada {{
                     $similarLocations->count() }} Kemiripan)
                     @else
-                    <i class="ri ri-shield-check-line me-2 text-success"></i> Aman dari Duplikasi
+                    <i class="ti tabler-shield-check me-2 text-success"></i> Aman dari Duplikasi
                     @endif
                 </h6>
             </div>
@@ -299,7 +299,7 @@
             <div class="card-body p-4 bg-white">
                 @if($similarLocations->count() > 0)
                 <div class="alert alert-warning d-flex align-items-start mb-4 border-0 shadow-sm" role="alert">
-                    <i class="ri ri-error-warning-fill ri-xl me-3 mt-1"></i>
+                    <i class="ti tabler-alert-triangle-filled ti tabler-xl me-3 mt-1"></i>
                     <div>
                         <h6 class="alert-heading fw-bold mb-1">Perhatian!</h6>
                         <p class="mb-0 small">Sistem mendeteksi ada <strong>{{ $similarLocations->count() }} titik
@@ -327,7 +327,7 @@
                                     {{-- ✅ TOMBOL BUKA MODAL POP-UP --}}
                                     <button type="button" class="btn btn-xs btn-primary rounded-pill shadow-sm"
                                         data-bs-toggle="modal" data-bs-target="#modalSimLoc{{ $simLoc->id }}">
-                                        <i class="ri ri-eye-line me-1"></i> Intip Detail
+                                        <i class="ti tabler-eye me-1"></i> Intip Detail
                                     </button>
                                 </td>
                             </tr>
@@ -339,7 +339,7 @@
                 <div class="d-flex align-items-center">
                     <div
                         class="avatar avatar-md bg-label-success rounded-circle me-3 d-flex align-items-center justify-content-center">
-                        <i class="ri ri-check-double-line ri-xl"></i>
+                        <i class="ti tabler-checks ti tabler-xl"></i>
                     </div>
                     <div>
                         <h6 class="mb-1 fw-bold text-success">Aman dari Duplikasi Nama</h6>
@@ -358,7 +358,7 @@
         {{-- CARD 2: MAP & FOTO --}}
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header border-bottom py-3 bg-transparent">
-                <h6 class="mb-0 fw-bold"><i class="ri ri-camera-lens-line me-2 text-info"></i>Visual & Lokasi Geografis
+                <h6 class="mb-0 fw-bold"><i class="ti tabler-camera-lens me-2 text-info"></i>Visual & Lokasi Geografis
                 </h6>
             </div>
             <div class="card-body p-4">
@@ -369,7 +369,7 @@
                             @if($locationRequest->latitude && $locationRequest->longitude)
                             <button type="button" class="btn btn-xs btn-outline-primary rounded-pill"
                                 onclick="copyToClipboard('https://www.google.com/maps?q={{ $locationRequest->latitude }},{{ $locationRequest->longitude }}')">
-                                <i class="ri ri-file-copy-line me-1"></i> Salin Link
+                                <i class="ti tabler-file-copy me-1"></i> Salin Link
                             </button>
                             @endif
                         </div>
@@ -378,11 +378,11 @@
                         <div id="map" class="mb-3 shadow-sm"></div>
                         <a href="https://www.google.com/maps?q={{ $locationRequest->latitude }},{{ $locationRequest->longitude }}"
                             target="_blank" class="btn btn-sm btn-primary w-100 shadow-sm">
-                            <i class="ri ri-google-fill me-1"></i> Buka di Google Maps
+                            <i class="ti tabler-google-filled me-1"></i> Buka di Google Maps
                         </a>
                         @else
                         <div class="alert bg-lighter text-center py-5 border-dashed rounded-3">
-                            <i class="ri ri-map-pin-off-line ri-3x text-muted opacity-50 mb-2 d-block"></i>
+                            <i class="ti tabler-map-pin-off ti-xl text-muted opacity-50 mb-2 d-block"></i>
                             <span class="text-muted">Koordinat tidak dilampirkan oleh Mitra.</span>
                         </div>
                         @endif
@@ -395,16 +395,16 @@
                             <img src="{{ asset('storage/'.$locationRequest->image) }}" alt="Kondisi Lapangan">
                             <div class="img-overlay">
                                 <div class="bg-white rounded-circle p-3 shadow text-primary">
-                                    <i class="ri ri-zoom-in-line ri-2x"></i>
+                                    <i class="ti tabler-zoom-in ti-lg"></i>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-center mt-2 text-muted small"><i class="ri ri-drag-move-line me-1"></i> Klik
+                        <div class="text-center mt-2 text-muted small"><i class="ti tabler-drag-move me-1"></i> Klik
                             gambar untuk memperbesar</div>
                         @else
                         <div
                             class="alert bg-lighter text-center py-5 border-dashed rounded-3 h-100 d-flex flex-column justify-content-center">
-                            <i class="ri ri-image-line ri-3x text-muted opacity-50 mb-2"></i>
+                            <i class="ti tabler-image ti-xl text-muted opacity-50 mb-2"></i>
                             <span class="text-muted">Tidak ada foto terlampir.</span>
                         </div>
                         @endif
@@ -417,12 +417,12 @@
         <div class="card border-0 shadow-sm">
             <div
                 class="card-header border-bottom py-3 bg-transparent d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold"><i class="ri ri-file-pdf-2-line me-2 text-danger"></i>Dokumen Proposal /
+                <h6 class="mb-0 fw-bold"><i class="ti tabler-file-pdf-2 me-2 text-danger"></i>Dokumen Proposal /
                     Permohonan</h6>
                 @if($locationRequest->proposal_document)
                 <a href="{{ asset('storage/'.$locationRequest->proposal_document) }}" download
                     class="btn btn-sm btn-outline-danger rounded-pill">
-                    <i class="ri ri-download-cloud-2-line me-1"></i> Unduh Asli
+                    <i class="ti tabler-cloud-download me-1"></i> Unduh Asli
                 </a>
                 @endif
             </div>
@@ -440,7 +440,7 @@
                 </div>
                 @else
                 <div class="text-center py-5 bg-lighter border-dashed rounded-3">
-                    <i class="ri ri-file-warning-line ri-3x text-muted opacity-50 mb-2 d-block"></i>
+                    <i class="ti tabler-file-warning ti-xl text-muted opacity-50 mb-2 d-block"></i>
                     <span class="text-muted">Dokumen proposal tidak dilampirkan.</span>
                 </div>
                 @endif
@@ -454,7 +454,7 @@
 
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body pt-4">
-                <h6 class="fw-bold text-uppercase text-muted mb-4"><i class="ri ri-guide-line me-1"></i> Status Proses
+                <h6 class="fw-bold text-uppercase text-muted mb-4"><i class="ti tabler-guide me-1"></i> Status Proses
                 </h6>
                 <div class="status-timeline">
                     <div class="timeline-item">
@@ -495,24 +495,24 @@
         @if(in_array($locationRequest->status, ['pending', 'surveyed']) && Auth::user()->role !== 'leader')
         <div class="card border-0 shadow-sm border-start border-4 border-warning mb-4">
             <div class="card-header pb-2 bg-transparent">
-                <h5 class="card-title mb-0 fw-bold text-warning"><i class="ri ri-alarm-warning-line me-1"></i> Tindakan
+                <h5 class="card-title mb-0 fw-bold text-warning"><i class="ti tabler-alert-triangle me-1"></i> Tindakan
                     Pengajuan</h5>
             </div>
             <div class="card-body p-4">
 
                 @if($locationRequest->request_type == 'add' && $locationRequest->status == 'pending')
                 <div class="alert alert-info p-3 small mb-4 shadow-sm border-0">
-                    <i class="ri ri-information-line me-1 ri-lg"></i> Silakan input <b>Hasil Survey</b> di bawah untuk
+                    <i class="ti tabler-info-circle me-1 ti tabler-lg"></i> Silakan input <b>Hasil Survey</b> di bawah untuk
                     menyetujui pengajuan ini. Atau klik <b>Tolak</b> jika data tidak valid.
                 </div>
                 @elseif($locationRequest->request_type == 'add' && $locationRequest->status == 'surveyed')
                 <div class="alert alert-success p-3 small mb-4 shadow-sm border-0">
-                    <i class="ri ri-check-line me-1 ri-lg"></i> Survey selesai. Silakan Setujui untuk memetakan lokasi
+                    <i class="ti tabler-check me-1 ti tabler-lg"></i> Survey selesai. Silakan Setujui untuk memetakan lokasi
                     ini ke Ruas Jalan.
                 </div>
                 @else
                 <div class="alert alert-danger p-3 small mb-4 shadow-sm border-0">
-                    <i class="ri ri-error-warning-line me-1 ri-lg"></i> <strong>Awas!</strong> Menyetujui ini akan
+                    <i class="ti tabler-alert-triangle me-1 ti tabler-lg"></i> <strong>Awas!</strong> Menyetujui ini akan
                     langsung <b>mencabut</b> titik parkir & mengurangi setoran.
                 </div>
                 @endif
@@ -523,14 +523,14 @@
                     $locationRequest->status == 'surveyed'))
                     <button type="button" class="btn btn-success fw-bold py-2 shadow-sm" data-bs-toggle="modal"
                         data-bs-target="#approveModal">
-                        <i class="ri ri-check-fill me-1"></i> Setujui & Update PKS
+                        <i class="ti tabler-check-filled me-1"></i> Setujui & Update PKS
                     </button>
                     @endif
 
                     {{-- ✅ Tombol Tolak selalu standby! --}}
                     <button type="button" class="btn btn-outline-danger fw-bold" data-bs-toggle="modal"
                         data-bs-target="#rejectModal">
-                        <i class="ri ri-close-line me-1"></i> Tolak Pengajuan
+                        <i class="ti tabler-x me-1"></i> Tolak Pengajuan
                     </button>
                 </div>
             </div>
@@ -540,12 +540,12 @@
         @if($locationRequest->review)
         <div class="card border-0 shadow-sm mb-4 border-start border-4 border-info">
             <div class="card-header pb-2 bg-transparent d-flex justify-content-between align-items-center">
-                <h6 class="card-title mb-0 fw-bold text-info"><i class="ri ri-file-search-line me-1"></i> Keputusan
+                <h6 class="card-title mb-0 fw-bold text-info"><i class="ti tabler-file-search me-1"></i> Keputusan
                     Survey</h6>
                 @if($locationRequest->review->report_document)
                 <button type="button" class="btn btn-xs btn-outline-info rounded-pill" data-bs-toggle="modal"
                     data-bs-target="#surveyDocModal" title="Lihat Dokumen Hasil Survey/BA">
-                    <i class="ri ri-file-text-line"></i> B.A Survey
+                    <i class="ti tabler-file-text"></i> B.A Survey
                 </button>
                 @endif
             </div>
@@ -579,7 +579,7 @@
         @if($locationRequest->status == 'pending' && $locationRequest->request_type == 'add' && Auth::user()->role !== 'leader')
         <div class="card border-0 shadow-sm mb-4 border-start border-4 border-primary">
             <div class="card-header pb-2 bg-transparent">
-                <h6 class="card-title mb-0 fw-bold text-primary"><i class="ri ri-map-pin-time-line me-1"></i> Input
+                <h6 class="card-title mb-0 fw-bold text-primary"><i class="ti tabler-map-pin-time me-1"></i> Input
                     Hasil Survey</h6>
             </div>
             <div class="card-body p-4">
@@ -619,7 +619,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
-                        <i class="ri ri-save-line me-1"></i> Simpan Hasil Survey
+                        <i class="ti tabler-save me-1"></i> Simpan Hasil Survey
                     </button>
                 </form>
             </div>
@@ -633,13 +633,13 @@
             <div class="card-body text-center p-5">
                 @if($locationRequest->status == 'approved')
                 <div class="avatar avatar-xl mx-auto bg-label-success rounded-circle mb-3"><i
-                        class="ri ri-check-double-line ri-3x"></i></div>
+                        class="ti tabler-checks ti-xl"></i></div>
                 <h4 class="fw-bold text-success mb-2">Telah Disetujui</h4>
                 <p class="text-muted small mb-0">Sistem telah memproses titik parkir dan mengupdate nilai setoran pada
                     PKS secara otomatis.</p>
                 @else
                 <div class="avatar avatar-xl mx-auto bg-label-danger rounded-circle mb-3"><i
-                        class="ri ri-close-line ri-3x"></i></div>
+                        class="ti tabler-x ti-xl"></i></div>
                 <h4 class="fw-bold text-danger mb-2">Telah Ditolak</h4>
                 <p class="text-muted small mb-0">Alasan: "{{ $locationRequest->admin_note }}"</p>
                 @endif
@@ -669,7 +669,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-bottom bg-light py-3">
                 <h5 class="modal-title fw-bold text-dark"><i
-                        class="ri ri-map-pin-user-line me-2 text-primary"></i>Detail Titik Serupa</h5>
+                        class="ti tabler-user-pin me-2 text-primary"></i>Detail Titik Serupa</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
@@ -698,7 +698,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
 
                 <div class="bg-label-primary p-3 rounded-3 mb-4">
                     <h6 class="fw-bold text-primary mb-2" style="font-size: 0.8rem;"><i
-                            class="ri ri-file-paper-2-line me-1"></i> Informasi Pengelola Saat Ini</h6>
+                            class="ti tabler-file-description me-1"></i> Informasi Pengelola Saat Ini</h6>
                     <div class="d-flex justify-content-between mb-1">
                         <span class="text-dark small">Korlap/Mitra:</span>
                         <span class="fw-bold text-primary small">{{ $pemilik }}</span>
@@ -710,13 +710,13 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
                 </div>
 
                 @if($hasMap)
-                <h6 class="fw-bold text-dark mb-2" style="font-size: 0.8rem;"><i class="ri ri-map-2-line me-1"></i>
+                <h6 class="fw-bold text-dark mb-2" style="font-size: 0.8rem;"><i class="ti tabler-map-2 me-1"></i>
                     Titik Koordinat Peta</h6>
                 <div id="map-simloc-{{ $simLoc->id }}" style="height: 180px; border-radius: 8px; z-index: 1;"
                     class="border shadow-sm"></div>
                 @else
                 <div class="alert alert-secondary mb-0 py-2 small d-flex align-items-center"><i
-                        class="ri ri-information-line me-2"></i> Titik koordinat peta tidak didaftarkan pada Master
+                        class="ti tabler-info-circle me-2"></i> Titik koordinat peta tidak didaftarkan pada Master
                     Data.</div>
                 @endif
 
@@ -725,7 +725,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
                 <button type="button" class="btn btn-sm btn-outline-secondary fw-bold rounded-pill"
                     data-bs-dismiss="modal">Tutup</button>
                 <a href="{{ route('masterdata.parking-locations.show', $simLoc->id) }}" target="_blank"
-                    class="btn btn-sm btn-primary fw-bold rounded-pill"><i class="ri ri-external-link-line me-1"></i>
+                    class="btn btn-sm btn-primary fw-bold rounded-pill"><i class="ti tabler-external-link me-1"></i>
                     Buka Full Halaman</a>
             </div>
         </div>
@@ -740,7 +740,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
         <div class="modal-content bg-transparent border-0 shadow-none">
             <div class="modal-header border-0 pb-2 justify-content-end">
                 <button type="button" class="btn btn-icon btn-light rounded-circle shadow" data-bs-dismiss="modal"
-                    aria-label="Close"><i class="ri ri-close-line fs-4"></i></button>
+                    aria-label="Close"><i class="ti tabler-x fs-4"></i></button>
             </div>
             <div class="modal-body text-center p-0">
                 @if($locationRequest->image)
@@ -758,7 +758,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <div class="modal-header bg-light border-0 pb-3">
-                <h5 class="modal-title fw-bold text-dark"><i class="ri ri-file-text-line me-2 text-info"></i>Preview
+                <h5 class="modal-title fw-bold text-dark"><i class="ti tabler-file-text me-2 text-info"></i>Preview
                     Dokumen B.A Survey</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -778,7 +778,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
                 <small class="text-muted">Dokumen resmi Berita Acara Survey Lapangan.</small>
                 <a href="{{ asset('storage/'.$locationRequest->review->report_document) }}" download
                     class="btn btn-info fw-bold rounded-pill">
-                    <i class="ri ri-download-line me-1"></i> Unduh Dokumen
+                    <i class="ti tabler-download me-1"></i> Unduh Dokumen
                 </a>
             </div>
         </div>
@@ -792,7 +792,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title text-white fw-bold"><i class="ri ri-check-double-line me-1"></i> Konfirmasi
+                <h5 class="modal-title text-white fw-bold"><i class="ti tabler-checks me-1"></i> Konfirmasi
                     Persetujuan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
@@ -824,7 +824,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
                 <div class="modal-footer bg-lighter border-0">
                     <button type="button" class="btn btn-outline-secondary fw-bold"
                         data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success fw-bold"><i class="ri ri-whatsapp-line me-1"></i>
+                    <button type="submit" class="btn btn-success fw-bold"><i class="ti tabler-whatsapp me-1"></i>
                         Setujui & Beritahu Korlap</button>
                 </div>
             </form>
@@ -837,7 +837,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title text-white fw-bold"><i class="ri ri-close-circle-line me-1"></i> Konfirmasi
+                <h5 class="modal-title text-white fw-bold"><i class="ti tabler-circle-x me-1"></i> Konfirmasi
                     Penolakan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
@@ -857,7 +857,7 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
                 <div class="modal-footer bg-lighter border-0">
                     <button type="button" class="btn btn-outline-secondary fw-bold"
                         data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger fw-bold"><i class="ri ri-whatsapp-line me-1"></i> Tolak
+                    <button type="submit" class="btn btn-danger fw-bold"><i class="ti tabler-whatsapp me-1"></i> Tolak
                         & Beritahu Korlap</button>
                 </div>
             </form>
@@ -868,14 +868,14 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
 
 @endsection
 
-@push('vendors-js')
-<script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+@vite(["resources/assets/vendor/libs/select2/select2.js"])
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
         // Select2 (Dalam Modal harus punya dropdownParent)
         if ($('.select2').length) {
             $('#approveModal').on('shown.bs.modal', function () {
@@ -952,4 +952,4 @@ $hasMap = $simLoc->latitude && $simLoc->longitude;
         }, 2500);
     }
 </script>
-@endpush
+@endsection

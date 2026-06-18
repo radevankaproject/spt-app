@@ -1,15 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Perpanjang PKS')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-agreements-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -28,7 +26,7 @@
     @endif
 
     <div class="alert alert-info alert-dismissible fw-bold" role="alert">
-        <i class="ri ri-information-line me-1"></i> Anda sedang memperpanjang PKS nomor <strong>{{ $agreement->agreement_number }}</strong>. PKS lama akan diubah statusnya menjadi Expired.
+        <i class="ti tabler-info-circle me-1"></i> Anda sedang memperpanjang PKS nomor <strong>{{ $agreement->agreement_number }}</strong>. PKS lama akan diubah statusnya menjadi Expired.
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
@@ -202,19 +200,19 @@
             </div>
             <div class="col-12 text-end position-sticky bottom-0 bg-white p-3 border-top shadow z-3 rounded">
                 <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-outline-secondary me-2">Batal</a>
-                <button type="submit" class="btn btn-primary"><i class="ri ri-loop-right-line me-1"></i> Perpanjang PKS</button>
+                <button type="submit" class="btn btn-primary"><i class="ti tabler-loop-right me-1"></i> Perpanjang PKS</button>
             </div>
         </div>
     </form>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
     <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
-@endpush
+@endsection
 
-@push('scripts')
+@section('page-script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             $('.select2').select2({
@@ -273,7 +271,7 @@
                         <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
                     </div>
                     <button type="button" class="btn btn-icon btn-sm btn-danger remove-location-btn" data-id="${loc.id}">
-                        <i class="ri ri-close-line"></i>
+                        <i class="ti tabler-x"></i>
                     </button>
                 </div>
             `;
@@ -505,4 +503,4 @@
             });
         });
     </script>
-@endpush
+@endsection

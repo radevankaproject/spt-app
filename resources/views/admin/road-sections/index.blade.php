@@ -1,14 +1,12 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Ruas Jalan')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-road-sections-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -38,14 +36,14 @@
                         <input type="search" name="search" class="form-control" placeholder="Cari nama ruas..."
                             value="{{ request('search') }}">
                         <button class="btn btn-outline-primary" type="submit"><i
-                                class="ri icon-base ri-search-line"></i></button>
+                                class="ri icon-base ti tabler-search"></i></button>
                     </div>
                 </form>
                 @if(Auth::user()->role !== 'leader')
                 {{-- Tombol Panggil Modal Create --}}
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                     data-bs-target="#createRoadSectionModal">
-                    <i class="ri icon-base ri-add-line me-1"></i> Tambah
+                    <i class="ri icon-base ti tabler-plus me-1"></i> Tambah
                 </button>
                 @endif
             </div>
@@ -54,7 +52,7 @@
         <div class="card-body pt-3">
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fw-bold" role="alert">
-                    <i class="ri-error-warning-line me-1"></i> {{ session('error') }}
+                    <i class="ti tabler-alert-triangle me-1"></i> {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -110,7 +108,7 @@
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                             data-bs-toggle="modal" data-bs-target="#editModal{{ $roadSection->id }}"
                                             data-bs-placement="top" title="Edit">
-                                            <i class="ri icon-base ri-pencil-line ri-20px"></i>
+                                            <i class="ri icon-base ti tabler-pencil ti-md"></i>
                                         </button>
 
                                         {{-- ✅ Logika Disable Hapus --}}
@@ -118,7 +116,7 @@
                                             <button type="button"
                                                 class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
                                                 data-bs-toggle="tooltip" title="Tidak dapat dihapus, sedang digunakan!">
-                                                <i class="ri icon-base ri-delete-bin-7-line ri-20px opacity-50"></i>
+                                                <i class="ri icon-base ti tabler-delete-bin-7 ti-md opacity-50"></i>
                                             </button>
                                         @else
                                             <form
@@ -130,7 +128,7 @@
                                                     class="btn btn-sm btn-icon btn-text-danger rounded-pill"
                                                     onclick="confirmDelete({{ $roadSection->id }}, '{{ addslashes($roadSection->name) }}')"
                                                     data-bs-toggle="tooltip" title="Hapus">
-                                                    <i class="ri icon-base ri-delete-bin-7-line ri-20px"></i>
+                                                    <i class="ri icon-base ti tabler-delete-bin-7 ti-md"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -158,7 +156,7 @@
                                                 @if ($inUse)
                                                     <div class="alert alert-warning d-flex align-items-center p-2 mb-4"
                                                         role="alert">
-                                                        <i class="ri-information-line me-2"></i>
+                                                        <i class="ti tabler-info-circle me-2"></i>
                                                         <small>Zona tidak dapat diubah karena sudah memiliki titik parkir
                                                             terdaftar.</small>
                                                     </div>
@@ -204,7 +202,7 @@
                                                                 placeholder="Contoh: 0.5333, 101.4500" value="{{ $roadSection->latitude && $roadSection->longitude ? $roadSection->latitude . ', ' . $roadSection->longitude : '' }}" />
                                                             <label>Koordinat Titik Tengah (Latitude, Longitude)</label>
                                                         </div>
-                                                        <small class="text-muted"><i class="ri-information-line"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
+                                                        <small class="text-muted"><i class="ti tabler-info-circle"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -242,7 +240,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title text-white fw-bold"><i class="ri-add-circle-line me-1"></i> Tambah Ruas Baru
+                    <h5 class="modal-title text-white fw-bold"><i class="ti tabler-add-circle me-1"></i> Tambah Ruas Baru
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
@@ -279,7 +277,7 @@
                                         placeholder="Contoh: 0.5333, 101.4500" value="{{ old('coordinates') }}" />
                                     <label>Koordinat Titik Tengah (Latitude, Longitude)</label>
                                 </div>
-                                <small class="text-muted"><i class="ri-information-line"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
+                                <small class="text-muted"><i class="ti tabler-info-circle"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
                             </div>
                         </div>
                     </div>
@@ -293,9 +291,9 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-    <script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // 1. Aktifkan Tooltips Bootstrap
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -333,4 +331,4 @@
             });
         }
     </script>
-@endpush
+@endsection

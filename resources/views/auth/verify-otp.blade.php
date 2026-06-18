@@ -1,94 +1,14 @@
+@php
+$customizerHidden = 'customizer-hide';
+@endphp
+
 @extends('layouts.guest')
 
-@section('title', 'Verifikasi OTP')
+@section('title', 'Verifikasi OTP - SiPKS Pekanbaru')
 
-@push('styles')
+@section('page-style')
+@vite(['resources/assets/vendor/scss/pages/page-auth.scss'])
 <style>
-    body {
-        background: #f8fafc !important; /* Soft off-white */
-        color: #334155;
-        position: relative;
-        overflow-x: hidden;
-    }
-    
-    .bg-blob-1 {
-        position: absolute;
-        top: -10%;
-        left: -5%;
-        width: 50vw;
-        height: 50vw;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(99,102,241,0.05) 0%, rgba(255,255,255,0) 70%);
-        z-index: -1;
-        animation: floatLight 15s ease-in-out infinite;
-    }
-    .bg-blob-2 {
-        position: absolute;
-        bottom: -20%;
-        right: -10%;
-        width: 60vw;
-        height: 60vw;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(168,85,247,0.05) 0%, rgba(255,255,255,0) 70%);
-        z-index: -1;
-        animation: floatLight 18s ease-in-out infinite reverse;
-    }
-    
-    @keyframes floatLight {
-        0%, 100% { transform: translateY(0) scale(1); }
-        50% { transform: translateY(-30px) scale(1.05); }
-    }
-
-    .premium-card {
-        background: #ffffff !important;
-        border: 1px solid rgba(0, 0, 0, 0.03) !important;
-        border-radius: 24px !important;
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05) !important;
-        overflow: hidden;
-        position: relative;
-        padding: 1rem;
-    }
-    
-    .premium-card h4 {
-        color: #1e293b !important;
-        font-weight: 700;
-    }
-    .text-muted-custom {
-        color: #64748b !important;
-    }
-
-    .btn-premium {
-        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-        border: none !important;
-        color: white !important;
-        font-weight: 600;
-        font-size: 1.05rem;
-        letter-spacing: 0.5px;
-        border-radius: 12px;
-        padding: 14px;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        z-index: 1;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    }
-    .btn-premium::after {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
-        opacity: 0;
-        z-index: -1;
-        transition: opacity 0.3s ease;
-    }
-    .btn-premium:hover::after {
-        opacity: 1;
-    }
-    .btn-premium:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.5);
-    }
-
     .otp-input {
         width: 3rem;
         height: 3rem;
@@ -99,93 +19,85 @@
         border: 1px solid #cbd5e1;
     }
     .otp-input:focus {
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        border-color: #7367f0; /* Vuexy Primary Color */
+        box-shadow: 0 0 0 2px rgba(115, 103, 240, 0.2);
         outline: none;
     }
 </style>
-@endpush
-
-@section('content')
-    <div class="bg-blob-1"></div>
-    <div class="bg-blob-2"></div>
-
-    <div class="card premium-card animate__animated animate__fadeInUp animate__fast">
-        <div class="card-body p-sm-5 p-4">
-
-            <div class="app-brand justify-content-center mb-4 mt-2">
-                <a href="{{ url('/') }}" class="app-brand-link gap-3">
-                    <span class="app-brand-logo demo logo-wrapper">
-                        <img src="{{ asset('logo.png') }}" alt="Logo SiPKS" class="logo-glow" style="height: 55px;">
-                    </span>
-                </a>
-            </div>
-            
-            <div class="text-center mb-5">
-                 <h4 class="mb-2 fw-bold" style="letter-spacing: 0.5px;">Verifikasi OTP 📱</h4>
-                 <p class="text-muted-custom mb-0">Masukkan 6 digit kode yang telah kami kirimkan ke nomor</p>
-                 <p class="text-dark fw-bold mb-0 mt-1">{{ session('reset_phone_number') ?? request('phone_number') }}</p>
-            </div>
-
-            @if (session('status'))
-                <div class="alert alert-success mb-4" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-danger mb-4">
-                    <ul class="mb-0 ps-3">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form id="formAuthentication" action="{{ route('password.otp.verify') }}" method="POST">
-                @csrf
-                <input type="hidden" name="phone_number" value="{{ session('reset_phone_number') ?? request('phone_number') }}">
-                
-                <div class="d-flex justify-content-center gap-2 mb-4">
-                    <input type="text" class="otp-input form-control text-center" maxlength="1" id="otp-1" autofocus>
-                    <input type="text" class="otp-input form-control text-center" maxlength="1" id="otp-2">
-                    <input type="text" class="otp-input form-control text-center" maxlength="1" id="otp-3">
-                    <input type="text" class="otp-input form-control text-center" maxlength="1" id="otp-4">
-                    <input type="text" class="otp-input form-control text-center" maxlength="1" id="otp-5">
-                    <input type="text" class="otp-input form-control text-center" maxlength="1" id="otp-6">
-                </div>
-                <input type="hidden" name="otp_code" id="otp_code">
-
-                <div class="mb-2 mt-4">
-                    <button class="btn btn-premium d-grid w-100" type="submit">
-                        <span class="d-flex align-items-center justify-content-center">
-                            Verifikasi <i class="ri-check-line ms-2"></i>
-                        </span>
-                    </button>
-                </div>
-            </form>
-
-            <form action="{{ route('password.otp.send') }}" method="POST" class="text-center mt-3" id="resendForm">
-                @csrf
-                <input type="hidden" name="phone_number" value="{{ session('reset_phone_number') ?? request('phone_number') }}">
-                <p class="text-muted-custom">Belum menerima kode? 
-                    <button type="submit" class="btn btn-link p-0 m-0 align-baseline text-primary fw-medium" id="resendBtn">Kirim Ulang</button>
-                    <span id="countdownText" class="d-none text-muted">dalam <span id="timer">60</span>s</span>
-                </p>
-            </form>
-
-            <div class="text-center mt-4">
-                <a href="{{ route('login') }}" class="d-flex justify-content-center align-items-center text-decoration-none">
-                    <i class="ri-arrow-left-s-line scaleX-n1-rtl me-1"></i>
-                    Kembali ke Login
-                </a>
-            </div>
-        </div>
-    </div>
 @endsection
 
-@push('scripts')
+@section('content')
+<!-- Verify OTP -->
+<div class="card">
+  <div class="card-body">
+    <!-- Logo -->
+    <div class="app-brand justify-content-center mb-6">
+      <a href="{{ url('/') }}" class="app-brand-link">
+        <span class="app-brand-logo demo">
+            <img src="{{ asset('logo.png') }}" alt="Logo SiPKS" style="height: 40px;">
+        </span>
+        <span class="app-brand-text demo text-heading fw-bold">SiPKS</span>
+      </a>
+    </div>
+    <!-- /Logo -->
+    <h4 class="mb-1">Verifikasi OTP 📱</h4>
+    <p class="mb-6">Masukkan 6 digit kode yang telah kami kirimkan ke nomor <br><span class="fw-bold text-heading">{{ session('reset_phone_number') ?? request('phone_number') }}</span></p>
+
+    @if (session('status'))
+        <div class="alert alert-success mb-4">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger mb-4">
+            <ul class="mb-0 ps-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form id="formAuthentication" class="mb-4" action="{{ route('password.otp.verify') }}" method="POST">
+      @csrf
+      <input type="hidden" name="phone_number" value="{{ session('reset_phone_number') ?? request('phone_number') }}">
+      
+      <div class="d-flex justify-content-between gap-2 mb-6">
+          <input type="text" class="otp-input form-control text-center px-0" maxlength="1" id="otp-1" autofocus>
+          <input type="text" class="otp-input form-control text-center px-0" maxlength="1" id="otp-2">
+          <input type="text" class="otp-input form-control text-center px-0" maxlength="1" id="otp-3">
+          <input type="text" class="otp-input form-control text-center px-0" maxlength="1" id="otp-4">
+          <input type="text" class="otp-input form-control text-center px-0" maxlength="1" id="otp-5">
+          <input type="text" class="otp-input form-control text-center px-0" maxlength="1" id="otp-6">
+      </div>
+      <input type="hidden" name="otp_code" id="otp_code">
+
+      <button class="btn btn-primary d-grid w-100" type="submit">Verifikasi</button>
+    </form>
+
+    <form action="{{ route('password.otp.send') }}" method="POST" class="text-center mt-4" id="resendForm">
+        @csrf
+        <input type="hidden" name="phone_number" value="{{ session('reset_phone_number') ?? request('phone_number') }}">
+        <p class="text-center">Belum menerima kode? 
+            <button type="submit" class="btn btn-link p-0 m-0 align-baseline text-primary fw-medium" id="resendBtn">Kirim Ulang</button>
+            <span id="countdownText" class="d-none text-muted">dalam <span id="timer">60</span>s</span>
+        </p>
+    </form>
+
+    <div class="text-center">
+      <a href="{{ route('login') }}" class="d-flex align-items-center justify-content-center">
+        <i class="icon-base ti tabler-chevron-left scaleX-n1-rtl me-1_5"></i>
+        Kembali ke Login
+      </a>
+    </div>
+
+  </div>
+</div>
+<!-- /Verify OTP -->
+@endsection
+
+@section('page-script')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const inputs = document.querySelectorAll('.otp-input');
@@ -229,6 +141,8 @@
 
         // Set hidden input value before submit
         form.addEventListener('submit', function(e) {
+            if (e.target.id === 'resendForm') return;
+
             let otp = '';
             inputs.forEach(input => {
                 otp += input.value;
@@ -246,7 +160,6 @@
         const countdownText = document.getElementById('countdownText');
         const timerSpan = document.getElementById('timer');
         
-        // Disable resend button initially and start countdown
         let timeLeft = 60; // 60 seconds
         resendBtn.disabled = true;
         resendBtn.classList.add('text-muted');
@@ -267,4 +180,4 @@
         }, 1000);
     });
 </script>
-@endpush
+@endsection

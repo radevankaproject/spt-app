@@ -1,14 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Profil Pimpinan: ' . ($leader->user->name ?? 'N/A'))
 
-@section('skeleton')
-    <div class="container-xxl flex-grow-1 container-p-y">
-        @include('layouts.partials._skeleton-field-coordinator-show')
-    </div>
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <style>
         .timeline-card { transition: all 0.3s ease; }
         .timeline-card:hover { transform: translateY(-3px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important; }
@@ -22,7 +18,7 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -45,13 +41,13 @@
                         <li class="nav-item me-2">
                             <a class="nav-link py-2 {{ $year == $selectedYear ? 'active shadow-sm' : 'bg-white border' }}"
                                href="{{ route('admin.leaders.show', ['leader' => $leader->id, 'year' => $year]) }}">
-                               <i class="ri ri-calendar-line me-1"></i> Tahun {{ $year }}
+                               <i class="ti tabler-calendar me-1"></i> Tahun {{ $year }}
                             </a>
                         </li>
                     @endforeach
                 </ul>
                 <a href="{{ route('admin.leaders.index') }}" class="btn btn-outline-secondary shadow-sm">
-                    <i class="ri ri-arrow-left-line"></i>
+                    <i class="ti tabler-arrow-left"></i>
                 </a>
             </div>
         </div>
@@ -86,15 +82,15 @@
                             <h5 class="mt-3 mb-1 fw-bold {{ !$isActive ? 'text-muted' : 'text-dark' }}">{{ $uName }}</h5>
 
                             @if($isActive)
-                                <span class="badge bg-label-primary rounded-pill px-3 py-2 mt-1"><i class="ri ri-vip-crown-line me-1"></i> Pimpinan Aktif</span>
+                                <span class="badge bg-label-primary rounded-pill px-3 py-2 mt-1"><i class="ti tabler-crown me-1"></i> Pimpinan Aktif</span>
                             @else
-                                <span class="badge bg-label-danger rounded-pill px-3 py-2 mt-1"><i class="ri ri-history-line me-1"></i> Purna Tugas</span>
+                                <span class="badge bg-label-danger rounded-pill px-3 py-2 mt-1"><i class="ti tabler-history me-1"></i> Purna Tugas</span>
                             @endif
                         </div>
 
                         {{-- STATISTIK KONTRAK (Berdasarkan Tahun) --}}
                         <div class="bg-lighter rounded-3 p-3 mb-4 text-start border {{ !$isActive ? 'border-danger border-opacity-25 bg-danger bg-opacity-10' : 'border-primary border-opacity-10' }}">
-                            <h6 class="fw-bold mb-3 {{ !$isActive ? 'text-danger' : 'text-primary' }}"><i class="ri ri-bar-chart-box-line me-1"></i> Statistik Pengesahan ({{ $selectedYear }})</h6>
+                            <h6 class="fw-bold mb-3 {{ !$isActive ? 'text-danger' : 'text-primary' }}"><i class="ti tabler-bar-chart-box me-1"></i> Statistik Pengesahan ({{ $selectedYear }})</h6>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Total PKS Ditandatangani</span>
                                 <span class="fw-bold text-dark">{{ $totalAgreementsCount }} Dokumen</span>
@@ -108,14 +104,14 @@
                         <h6 class="pb-2 border-bottom text-start mb-3">Informasi Personal</h6>
                         <ul class="list-unstyled mb-4 text-start small">
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-fingerprint-line text-muted me-2 ri-20px"></i>
+                                <i class="ti tabler-fingerprint text-muted me-2 ti-md"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Nomor Induk Pegawai (NIP)</span>
                                     <span class="fw-medium text-dark">{{ formatNip($leader->employee_number) }}</span>
                                 </div>
                             </li>
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-mail-line text-muted me-2 ri-20px"></i>
+                                <i class="ti tabler-mail text-muted me-2 ti-md"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Email (Username)</span>
                                     <span class="fw-medium text-dark">{{ $leader->user->email ?? '-' }} ({{ $leader->user->username ?? '-' }})</span>
@@ -129,7 +125,7 @@
                                 if($leader->status_jabatan == 'plh') $statusLabel = 'Pelaksana Harian (Plh)';
                             @endphp
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-briefcase-4-line text-muted me-2 ri-20px"></i>
+                                <i class="ti tabler-briefcase-4 text-muted me-2 ti-md"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Status Jabatan</span>
                                     <span class="fw-medium text-primary">{{ $statusLabel }}</span>
@@ -137,14 +133,14 @@
                             </li>
 
                             <li class="mb-3 d-flex align-items-center">
-                                <i class="ri ri-calendar-check-line text-muted me-2 ri-20px"></i>
+                                <i class="ti tabler-calendar-check text-muted me-2 ti-md"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Mulai Menjabat</span>
                                     <span class="fw-medium text-dark">{{ $leader->start_date ? \Carbon\Carbon::parse($leader->start_date)->translatedFormat('d F Y') : '-' }}</span>
                                 </div>
                             </li>
                             <li class="d-flex align-items-center">
-                                <i class="ri ri-calendar-close-line text-muted me-2 ri-20px"></i>
+                                <i class="ti tabler-calendar-close text-muted me-2 ti-md"></i>
                                 <div>
                                     <span class="d-block text-muted" style="font-size: 0.7rem;">Akhir Menjabat</span>
                                     <span class="fw-medium {{ $leader->end_date ? 'text-danger' : 'text-success' }}">
@@ -156,7 +152,7 @@
 
                         {{-- ✅ RIWAYAT MASA JABATAN (MESIN WAKTU) --}}
                         @if($leader->histories->isNotEmpty())
-                            <h6 class="pb-2 border-bottom text-start mb-3 mt-5"><i class="ri ri-history-line me-1"></i> Jejak Riwayat Jabatan</h6>
+                            <h6 class="pb-2 border-bottom text-start mb-3 mt-5"><i class="ti tabler-history me-1"></i> Jejak Riwayat Jabatan</h6>
                             <ul class="timeline mb-0 text-start ps-3" style="border-left: 2px solid #e1e4e8; list-style-type: none;">
                                 @foreach($leader->histories as $history)
                                     <li class="mb-3 position-relative" style="padding-left: 15px;">
@@ -175,7 +171,7 @@
                                             </span>
                                             <span class="text-muted" style="font-size: 0.75rem;">
                                                 {{ \Carbon\Carbon::parse($history->start_date)->translatedFormat('d M Y') }}
-                                                <i class="ri ri-arrow-right-line align-middle mx-1"></i>
+                                                <i class="ti tabler-arrow-right align-middle mx-1"></i>
                                                 {{ $history->end_date ? \Carbon\Carbon::parse($history->end_date)->translatedFormat('d M Y') : 'Sekarang' }}
                                             </span>
                                         </div>
@@ -191,7 +187,7 @@
             <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
 
                 {{-- 1. PKS SEDANG BERJALAN (AKTIF) --}}
-                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ri ri-file-paper-2-line text-primary me-2"></i> PKS Aktif (Tahun {{ $selectedYear }})</h5>
+                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ti tabler-file-description text-primary me-2"></i> PKS Aktif (Tahun {{ $selectedYear }})</h5>
 
                 {{-- ✅ BUNGKUS DENGAN CUSTOM SCROLL --}}
                 <div class="custom-scroll mb-5 pe-2">
@@ -206,7 +202,7 @@
                             <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center py-3">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="avatar avatar-sm">
-                                        <span class="avatar-initial rounded bg-primary"><i class="ri ri-file-list-3-line"></i></span>
+                                        <span class="avatar-initial rounded bg-primary"><i class="ti tabler-file-text"></i></span>
                                     </div>
                                     <div>
                                         <h6 class="mb-0 fw-bold text-primary">{{ $pks->agreement_number }}</h6>
@@ -225,7 +221,7 @@
                                         <span class="fw-medium text-dark">{{ $cName }}</span>
                                     </div>
                                     <div>
-                                        <a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="btn btn-sm btn-primary rounded-pill"><i class="ri ri-eye-line me-1"></i> Detail PKS</a>
+                                        <a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="btn btn-sm btn-primary rounded-pill"><i class="ti tabler-eye me-1"></i> Detail PKS</a>
                                     </div>
                                 </div>
                             </div>
@@ -234,7 +230,7 @@
                         <div class="card border-0 shadow-sm bg-lighter">
                             <div class="card-body text-center py-5">
                                 <div class="avatar avatar-xl mx-auto mb-3">
-                                    <span class="avatar-initial rounded-circle bg-label-secondary"><i class="ri ri-folder-forbid-line ri-2x"></i></span>
+                                    <span class="avatar-initial rounded-circle bg-label-secondary"><i class="ti tabler-folder-off ti-lg"></i></span>
                                 </div>
                                 <h6 class="fw-bold text-dark">Tidak ada Kontrak Aktif</h6>
                                 <p class="text-muted mb-0">Belum ada dokumen PKS aktif di tahun {{ $selectedYear }}.</p>
@@ -244,7 +240,7 @@
                 </div>
 
                 {{-- 2. ARSIP PKS (KEDALUWARSA/DIPUTUS) --}}
-                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ri ri-archive-drawer-line text-secondary me-2"></i> Riwayat Pengesahan Selesai ({{ $selectedYear }})</h5>
+                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ti tabler-archive-drawer text-secondary me-2"></i> Riwayat Pengesahan Selesai ({{ $selectedYear }})</h5>
                 <div class="card border-0 shadow-sm mb-4">
                     {{-- ✅ TABEL DIBUNGKUS CUSTOM SCROLL --}}
                     <div class="table-responsive text-nowrap custom-scroll" style="max-height: 400px;">
@@ -274,7 +270,7 @@
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('masterdata.agreements.show', $history->id) }}" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Lihat Histori PKS">
-                                                <i class="ri ri-arrow-right-circle-line icon-20px"></i>
+                                                <i class="ti tabler-arrow-right-circle icon-20px"></i>
                                             </a>
                                         </td>
                                     </tr>
@@ -294,7 +290,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('page-script')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -303,4 +299,4 @@
         });
     });
 </script>
-@endpush
+@endsection

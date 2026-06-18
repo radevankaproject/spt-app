@@ -1,15 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Rekening BLUD')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-users-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     {{-- CSS untuk SweetAlert2 --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -35,7 +33,7 @@
             <div class="d-flex justify-content-md-end align-items-center">
                 @if(Auth::user()->role !== 'leader')
                 <a href="{{ route('admin.blud-bank-accounts.create') }}" class="btn btn-primary">
-                    <i class="icon-base ri-add-line me-2"></i>Tambah Rekening
+                    <i class="icon-base ti tabler-plus me-2"></i>Tambah Rekening
                 </a>
                 @endif
             </div>
@@ -76,7 +74,7 @@
                                         <a class="btn btn-sm btn-icon"
                                             href="{{ route('admin.blud-bank-accounts.edit', $account->id) }}"
                                             data-bs-toggle="tooltip" title="Edit Rekening">
-                                            <i class="icon-base ri ri-pencil-line icon-22px"></i>
+                                            <i class="icon-base ti tabler-pencil icon-22px"></i>
                                         </a>
                                         {{-- ✅ PERUBAHAN: Tombol hapus hanya muncul jika rekening tidak aktif --}}
                                         @if (!$account->is_active)
@@ -86,7 +84,7 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon" data-bs-toggle="tooltip"
                                                     title="Hapus Rekening">
-                                                    <i class="icon-base ri ri-delete-bin-line icon-22px"></i>
+                                                    <i class="icon-base ti tabler-trash icon-22px"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -109,9 +107,9 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-    <script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // Notifikasi Sukses
             @if (session('success'))
@@ -146,4 +144,4 @@
             });
         });
     </script>
-@endpush
+@endsection

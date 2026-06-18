@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Profil Saya')
 
-@push('styles')
+@section('page-style')
 <style>
     .profile-hero {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -88,11 +88,9 @@
         background-color: rgba(105, 108, 255, 0.04);
     }
 </style>
-@endpush
-
-@section('skeleton')
-    @include('layouts.partials._skeleton-profile')
 @endsection
+
+
 
 @section('content')
     {{-- Breadcrumb --}}
@@ -102,7 +100,7 @@
         </div>
         <div class="mt-2 mt-md-0">
             <a href="{{ route('profile.settings') }}" class="btn btn-primary rounded-pill shadow-sm px-4">
-                <i class="ri icon-base ri-settings-4-line me-1"></i> Edit Profil & Sandi
+                <i class="ri icon-base ti tabler-settings me-1"></i> Edit Profil & Sandi
             </a>
         </div>
     </div>
@@ -112,14 +110,14 @@
         $initials = strtoupper(substr($nameParts[0], 0, 1) . (isset($nameParts[1]) ? substr($nameParts[1], 0, 1) : ''));
 
         $roleLabels = [
-            'admin' => ['text' => 'Administrator Sistem', 'icon' => 'ri-shield-keyhole-line'],
-            'leader' => ['text' => 'Kepala UPT / Pimpinan', 'icon' => 'ri-vip-crown-line'],
-            'staff_pks' => ['text' => 'Staff Administrasi PKS', 'icon' => 'ri-file-list-3-line'],
-            'staff_keu' => ['text' => 'Staff Keuangan', 'icon' => 'ri-money-dollar-circle-line'],
-            'treasurer' => ['text' => 'Bendahara Penerimaan', 'icon' => 'ri-wallet-3-line'],
-            'field_coordinator' => ['text' => 'Koordinator Lapangan', 'icon' => 'ri-map-pin-user-line'],
+            'admin' => ['text' => 'Administrator Sistem', 'icon' => 'ti tabler-shield-keyhole'],
+            'leader' => ['text' => 'Kepala UPT / Pimpinan', 'icon' => 'ti tabler-crown'],
+            'staff_pks' => ['text' => 'Staff Administrasi PKS', 'icon' => 'ti tabler-file-text'],
+            'staff_keu' => ['text' => 'Staff Keuangan', 'icon' => 'ti tabler-currency-dollar'],
+            'treasurer' => ['text' => 'Bendahara Penerimaan', 'icon' => 'ti tabler-wallet'],
+            'field_coordinator' => ['text' => 'Koordinator Lapangan', 'icon' => 'ti tabler-user-pin'],
         ];
-        $currentRole = $roleLabels[$user->role] ?? ['text' => ucfirst($user->role), 'icon' => 'ri-user-line'];
+        $currentRole = $roleLabels[$user->role] ?? ['text' => ucfirst($user->role), 'icon' => 'ti tabler-user'];
     @endphp
 
     {{-- HERO CARD --}}
@@ -140,10 +138,10 @@
                     </span>
                 </div>
                 <p class="mb-0 opacity-75 small">
-                    <i class="ri icon-base ri-mail-line me-1"></i> {{ $user->email }}
+                    <i class="ri icon-base ti tabler-mail me-1"></i> {{ $user->email }}
                     @if($user->phone_number)
                         <span class="mx-2">·</span>
-                        <i class="ri icon-base ri-phone-line me-1"></i> {{ $user->phone_number }}
+                        <i class="ri icon-base ti tabler-phone me-1"></i> {{ $user->phone_number }}
                     @endif
                 </p>
             </div>
@@ -156,7 +154,7 @@
         <div class="col-xl-4 col-lg-5">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-header bg-transparent border-bottom py-3">
-                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ri-user-3-line me-2 text-primary"></i>Detail Informasi</h6>
+                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ti tabler-user me-2 text-primary"></i>Detail Informasi</h6>
                 </div>
                 <div class="card-body py-2">
                     <div class="info-item">
@@ -216,10 +214,10 @@
                                         <h3 class="fw-bold mb-0">{{ $stats['korlapCount'] ?? 0 }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-label-primary"><i class="ri icon-base ri-user-settings-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-label-primary"><i class="ri icon-base ti tabler-user-settings ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg"><i class="ri icon-base ri-team-line"></i></span>
+                                <span class="stat-icon-bg"><i class="ri icon-base ti tabler-team"></i></span>
                             </div>
                         </div>
                     </div>
@@ -232,10 +230,10 @@
                                         <h3 class="fw-bold mb-0">{{ $stats['roadSectionCount'] ?? 0 }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-label-success"><i class="ri icon-base ri-route-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-label-success"><i class="ri icon-base ti tabler-route ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg"><i class="ri icon-base ri-route-line"></i></span>
+                                <span class="stat-icon-bg"><i class="ri icon-base ti tabler-route"></i></span>
                             </div>
                         </div>
                     </div>
@@ -248,10 +246,10 @@
                                         <h3 class="fw-bold mb-0">{{ $stats['agreementPdfCount'] ?? 0 }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-label-info"><i class="ri icon-base ri-file-text-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-label-info"><i class="ri icon-base ti tabler-file-text ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg"><i class="ri icon-base ri-file-text-line"></i></span>
+                                <span class="stat-icon-bg"><i class="ri icon-base ti tabler-file-text"></i></span>
                             </div>
                         </div>
                     </div>
@@ -266,10 +264,10 @@
                                         <h3 class="fw-bold mb-0 text-white">Rp {{ number_format($stats['validatedDepositsAmount'] ?? 0, 0, ',', '.') }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-white text-success"><i class="ri icon-base ri-money-dollar-circle-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-white text-success"><i class="ri icon-base ti tabler-currency-dollar ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg text-white"><i class="ri icon-base ri-wallet-3-line"></i></span>
+                                <span class="stat-icon-bg text-white"><i class="ri icon-base ti tabler-wallet"></i></span>
                             </div>
                         </div>
                     </div>
@@ -282,10 +280,10 @@
                                         <h3 class="fw-bold mb-0">{{ $stats['validatedDepositsCount'] ?? 0 }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-label-primary"><i class="ri icon-base ri-check-double-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-label-primary"><i class="ri icon-base ti tabler-checks ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg"><i class="ri icon-base ri-bank-card-line"></i></span>
+                                <span class="stat-icon-bg"><i class="ri icon-base ti tabler-credit-card"></i></span>
                             </div>
                         </div>
                     </div>
@@ -300,10 +298,10 @@
                                         <h3 class="fw-bold mb-0 text-white">Rp {{ number_format($stats['termDepositsAmount'] ?? 0, 0, ',', '.') }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-white text-danger"><i class="ri icon-base ri-wallet-3-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-white text-danger"><i class="ri icon-base ti tabler-wallet ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg text-white"><i class="ri icon-base ri-safe-2-line"></i></span>
+                                <span class="stat-icon-bg text-white"><i class="ri icon-base ti tabler-safe-2"></i></span>
                             </div>
                         </div>
                     </div>
@@ -316,10 +314,10 @@
                                         <h3 class="fw-bold mb-0">{{ $stats['termDepositsCount'] ?? 0 }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-label-warning"><i class="ri icon-base ri-exchange-funds-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-label-warning"><i class="ri icon-base ti tabler-exchange-funds ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg"><i class="ri icon-base ri-exchange-funds-line"></i></span>
+                                <span class="stat-icon-bg"><i class="ri icon-base ti tabler-exchange-funds"></i></span>
                             </div>
                         </div>
                     </div>
@@ -334,10 +332,10 @@
                                         <h3 class="fw-bold mb-0 text-white">{{ $stats['signedAgreementsCount'] ?? 0 }}</h3>
                                     </div>
                                     <div class="avatar">
-                                        <span class="avatar-initial rounded-3 bg-white text-primary"><i class="ri icon-base ri-quill-pen-line ri-24px"></i></span>
+                                        <span class="avatar-initial rounded-3 bg-white text-primary"><i class="ri icon-base ti tabler-quill-pen ti-lg"></i></span>
                                     </div>
                                 </div>
-                                <span class="stat-icon-bg text-white"><i class="ri icon-base ri-draft-line"></i></span>
+                                <span class="stat-icon-bg text-white"><i class="ri icon-base ti tabler-draft"></i></span>
                             </div>
                         </div>
                     </div>
@@ -349,11 +347,11 @@
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-header bg-transparent border-bottom py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
                         <div class="d-flex align-items-center">
-                            <h6 class="mb-0 fw-bold"><i class="ri icon-base ri-history-line me-2 text-primary"></i>Aktivitas Terakhir</h6>
+                            <h6 class="mb-0 fw-bold"><i class="ri icon-base ti tabler-history me-2 text-primary"></i>Aktivitas Terakhir</h6>
                             <span class="badge bg-label-secondary rounded-pill px-3 ms-2">10 Terakhir</span>
                         </div>
                         <div class="input-group input-group-sm" style="max-width: 250px;">
-                            <span class="input-group-text bg-transparent border-end-0"><i class="ri icon-base ri-search-line text-muted"></i></span>
+                            <span class="input-group-text bg-transparent border-end-0"><i class="ri icon-base ti tabler-search text-muted"></i></span>
                             <input type="text" class="form-control border-start-0 ps-0" id="searchActivity" placeholder="Cari aktivitas...">
                         </div>
                     </div>
@@ -380,7 +378,7 @@
                                                 <td class="py-3 ps-4">
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar avatar-sm me-3">
-                                                            <span class="avatar-initial rounded bg-label-primary"><i class="ri icon-base ri-map-pin-line"></i></span>
+                                                            <span class="avatar-initial rounded bg-label-primary"><i class="ri icon-base ti tabler-map-pin"></i></span>
                                                         </div>
                                                         <div>
                                                             <h6 class="mb-0 fw-semibold">{{ $activity->parkingLocation->name ?? 'Lokasi Dihapus' }}</h6>
@@ -391,11 +389,11 @@
                                                 <td class="py-3">
                                                     @php $action = strtolower($activity->action ?? ''); @endphp
                                                     @if(str_contains($action, 'create'))
-                                                        <span class="badge bg-label-success rounded-pill px-3"><i class="ri icon-base ri-add-line me-1"></i>Dibuat</span>
+                                                        <span class="badge bg-label-success rounded-pill px-3"><i class="ri icon-base ti tabler-plus me-1"></i>Dibuat</span>
                                                     @elseif(str_contains($action, 'update'))
-                                                        <span class="badge bg-label-warning rounded-pill px-3"><i class="ri icon-base ri-pencil-line me-1"></i>Diperbarui</span>
+                                                        <span class="badge bg-label-warning rounded-pill px-3"><i class="ri icon-base ti tabler-pencil me-1"></i>Diperbarui</span>
                                                     @elseif(str_contains($action, 'delete'))
-                                                        <span class="badge bg-label-danger rounded-pill px-3"><i class="ri icon-base ri-delete-bin-line me-1"></i>Dihapus</span>
+                                                        <span class="badge bg-label-danger rounded-pill px-3"><i class="ri icon-base ti tabler-trash me-1"></i>Dihapus</span>
                                                     @else
                                                         <span class="badge bg-label-secondary rounded-pill px-3">{{ $activity->action }}</span>
                                                     @endif
@@ -407,7 +405,7 @@
                                                 <td class="py-3 ps-4">
                                                     <div class="d-flex align-items-center">
                                                         <div class="avatar avatar-sm me-3">
-                                                            <span class="avatar-initial rounded bg-label-info"><i class="ri icon-base ri-file-list-3-line"></i></span>
+                                                            <span class="avatar-initial rounded bg-label-info"><i class="ri icon-base ti tabler-file-text"></i></span>
                                                         </div>
                                                         <span class="fw-semibold">{{ $activity->agreement->agreement_number ?? '-' }}</span>
                                                     </div>
@@ -423,7 +421,7 @@
                                     @empty
                                         <tr id="emptyRow">
                                             <td colspan="3" class="text-center py-5">
-                                                <i class="ri icon-base ri-inbox-line ri-3x text-muted opacity-50 d-block mb-2"></i>
+                                                <i class="ri icon-base ti tabler-inbox ti-xl text-muted opacity-50 d-block mb-2"></i>
                                                 <p class="text-muted mb-0">Belum ada aktivitas yang tercatat.</p>
                                             </td>
                                         </tr>
@@ -431,7 +429,7 @@
                                     {{-- Hidden row for search not found --}}
                                     <tr id="notFoundRow" style="display: none;">
                                         <td colspan="3" class="text-center py-5">
-                                            <i class="ri icon-base ri-search-eye-line ri-3x text-muted opacity-50 d-block mb-2"></i>
+                                            <i class="ri icon-base ti tabler-zoom-in ti-xl text-muted opacity-50 d-block mb-2"></i>
                                             <p class="text-muted mb-0">Pencarian tidak ditemukan.</p>
                                         </td>
                                     </tr>
@@ -445,7 +443,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('page-script')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('searchActivity');
@@ -473,4 +471,4 @@
         }
     });
 </script>
-@endpush
+@endsection

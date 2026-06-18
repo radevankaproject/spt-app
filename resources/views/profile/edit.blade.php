@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Edit Profil')
 
-@push('styles')
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/animate-css/animate.css') }}" />
     <style>
         .profile-hero-edit {
@@ -58,11 +58,9 @@
             overflow: hidden;
         }
     </style>
-@endpush
-
-@section('skeleton')
-    @include('layouts.partials._skeleton-profile-edit')
 @endsection
+
+
 
 @section('content')
     @php
@@ -72,14 +70,14 @@
         $defaultAvatar = 'data:image/svg+xml;base64,' . base64_encode($svg);
 
         $roleLabels = [
-            'admin' => ['text' => 'Administrator Sistem', 'color' => 'bg-label-danger', 'icon' => 'ri-shield-keyhole-line'],
-            'leader' => ['text' => 'Kepala UPT / Pimpinan', 'color' => 'bg-label-primary', 'icon' => 'ri-vip-crown-line'],
-            'staff_pks' => ['text' => 'Staff Administrasi PKS', 'color' => 'bg-label-info', 'icon' => 'ri-file-list-3-line'],
-            'staff_keu' => ['text' => 'Staff Keuangan', 'color' => 'bg-label-warning', 'icon' => 'ri-money-dollar-circle-line'],
-            'treasurer' => ['text' => 'Bendahara Penerimaan', 'color' => 'bg-label-warning', 'icon' => 'ri-wallet-3-line'],
-            'field_coordinator' => ['text' => 'Koordinator Lapangan (Mitra)', 'color' => 'bg-label-success', 'icon' => 'ri-map-pin-user-line'],
+            'admin' => ['text' => 'Administrator Sistem', 'color' => 'bg-label-danger', 'icon' => 'ti tabler-shield-keyhole'],
+            'leader' => ['text' => 'Kepala UPT / Pimpinan', 'color' => 'bg-label-primary', 'icon' => 'ti tabler-crown'],
+            'staff_pks' => ['text' => 'Staff Administrasi PKS', 'color' => 'bg-label-info', 'icon' => 'ti tabler-file-text'],
+            'staff_keu' => ['text' => 'Staff Keuangan', 'color' => 'bg-label-warning', 'icon' => 'ti tabler-currency-dollar'],
+            'treasurer' => ['text' => 'Bendahara Penerimaan', 'color' => 'bg-label-warning', 'icon' => 'ti tabler-wallet'],
+            'field_coordinator' => ['text' => 'Koordinator Lapangan (Mitra)', 'color' => 'bg-label-success', 'icon' => 'ti tabler-user-pin'],
         ];
-        $currentRole = $roleLabels[$user->role] ?? ['text' => strtoupper($user->role), 'color' => 'bg-label-secondary', 'icon' => 'ri-user-line'];
+        $currentRole = $roleLabels[$user->role] ?? ['text' => strtoupper($user->role), 'color' => 'bg-label-secondary', 'icon' => 'ti tabler-user'];
     @endphp
 
     {{-- Breadcrumb --}}
@@ -89,7 +87,7 @@
         </div>
         <div class="mt-2 mt-md-0">
             <a href="{{ route('profile.index') }}" class="btn btn-outline-primary rounded-pill px-4">
-                <i class="ri icon-base ri-arrow-left-line me-1"></i> Kembali ke Profil
+                <i class="ri icon-base ti tabler-arrow-left me-1"></i> Kembali ke Profil
             </a>
         </div>
     </div>
@@ -97,7 +95,7 @@
     {{-- Notifikasi --}}
     @if (session('status') || session('error'))
         <div class="alert {{ session('error') ? 'alert-danger' : 'alert-success' }} d-flex align-items-center border-0 shadow-sm rounded-3 mb-4" role="alert">
-            <i class="ri icon-base {{ session('error') ? 'ri-close-circle-line' : 'ri-check-line' }} me-2 ri-20px"></i>
+            <i class="ri icon-base {{ session('error') ? 'ti tabler-circle-x' : 'ti tabler-check' }} me-2 ti-md"></i>
             @if (session('status') === 'profile-updated')
                 Profil berhasil diperbarui.
             @elseif (session('status') === 'password-updated')
@@ -128,15 +126,15 @@
                     </span>
                     <div class="d-flex flex-wrap gap-2 mt-2 justify-content-center justify-content-sm-start">
                         <label for="upload" class="btn btn-sm btn-light rounded-pill shadow-sm px-3 mb-0" style="cursor:pointer;">
-                            <i class="ri icon-base ri-camera-line me-1"></i> <span class="d-none d-sm-inline">Ganti Foto</span><span class="d-inline d-sm-none">Foto</span>
+                            <i class="ri icon-base ti tabler-camera me-1"></i> <span class="d-none d-sm-inline">Ganti Foto</span><span class="d-inline d-sm-none">Foto</span>
                             <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg" name="img" />
                         </label>
                         <button type="button" id="resetButton" class="btn btn-sm btn-outline-light rounded-pill px-3 mb-0">
-                            <i class="ri icon-base ri-refresh-line me-1"></i> Reset
+                            <i class="ri icon-base ti tabler-refresh me-1"></i> Reset
                         </button>
                         @if ($user->img)
                             <button type="button" id="deleteImageButton" class="btn btn-sm btn-outline-light rounded-pill px-3 mb-0">
-                                <i class="ri icon-base ri-delete-bin-line me-1"></i> Hapus
+                                <i class="ri icon-base ti tabler-trash me-1"></i> Hapus
                             </button>
                         @endif
                     </div>
@@ -152,7 +150,7 @@
         <div class="col-xl-8 col-lg-7">
             <div class="card form-card shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-transparent border-bottom py-3">
-                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ri-user-settings-line me-2 text-primary"></i>Informasi Dasar</h6>
+                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ti tabler-user-settings me-2 text-primary"></i>Informasi Dasar</h6>
                 </div>
                 <div class="card-body pt-4">
                     <form id="send-verification" method="post" action="{{ route('verification.send') }}">@csrf</form>
@@ -196,7 +194,7 @@
                         </div>
                         
                         <div class="mt-4 d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="ri icon-base ri-save-3-line me-1"></i> Simpan Profil</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="ri icon-base ti tabler-device-floppy me-1"></i> Simpan Profil</button>
                         </div>
                     </form>
                 </div>
@@ -210,7 +208,7 @@
             @if($user->role !== 'admin')
                 <div class="card form-card shadow-sm rounded-4 mb-4 border-start border-4 border-info">
                     <div class="card-header bg-transparent border-bottom py-3">
-                        <h6 class="mb-0 fw-bold text-info"><i class="ri icon-base ri-profile-line me-2"></i>Informasi Spesifik</h6>
+                        <h6 class="mb-0 fw-bold text-info"><i class="ri icon-base ti tabler-id me-2"></i>Informasi Spesifik</h6>
                     </div>
                     <div class="card-body pt-4">
                         
@@ -228,7 +226,7 @@
                                 <textarea class="form-control readonly-field form-control-sm" rows="2" readonly>{{ $user->fieldCoordinator->address ?? '-' }}</textarea>
                             </div>
                             <div class="alert alert-warning mb-0 py-2 small">
-                                <i class="ri icon-base ri-information-line"></i> Hubungi Admin Dinas jika ingin mengubah data spesifik ini.
+                                <i class="ri icon-base ti tabler-info-circle"></i> Hubungi Admin Dinas jika ingin mengubah data spesifik ini.
                             </div>
                         
                         @elseif(in_array($user->role, ['leader', 'treasurer', 'staff_keu', 'staff_pks']))
@@ -255,14 +253,14 @@
                             </div>
                             @endif
                             <div class="alert alert-warning mb-0 py-2 small text-center">
-                                <i class="ri icon-base ri-information-line mb-1 d-block" style="font-size: 1.5rem;"></i> 
+                                <i class="ri icon-base ti tabler-info-circle mb-1 d-block" style="font-size: 1.5rem;"></i> 
                                 Hubungi Admin jika ada perubahan NIP / Jabatan.
                                 @if(!empty($uptProfile->phone_number_admin))
                                     @php
                                         $waAdmin = preg_replace('/^0/', '62', $uptProfile->phone_number_admin);
                                     @endphp
                                     <a href="https://wa.me/{{ $waAdmin }}" target="_blank" class="btn btn-success btn-sm w-100 mt-2 rounded-pill">
-                                        <i class="ri icon-base ri-whatsapp-line me-1"></i> Chat Admin
+                                        <i class="ri icon-base ti tabler-whatsapp me-1"></i> Chat Admin
                                     </a>
                                 @endif
                             </div>
@@ -275,7 +273,7 @@
             {{-- Card Ubah Password --}}
             <div class="card form-card shadow-sm rounded-4">
                 <div class="card-header bg-transparent border-bottom py-3">
-                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ri-lock-password-line me-2 text-danger"></i>Ubah Kata Sandi</h6>
+                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ti tabler-lock-password me-2 text-danger"></i>Ubah Kata Sandi</h6>
                 </div>
                 <div class="card-body pt-4">
                     <form method="post" action="{{ route('password.update.custom') }}" id="passwordForm">
@@ -286,7 +284,7 @@
                             <label class="text-muted small fw-bold" for="current_password">Kata Sandi Saat Ini</label>
                             <div class="input-group input-group-merge">
                                 <input class="form-control form-control-sm @error('current_password', 'updatePassword') is-invalid @enderror" type="password" name="current_password" id="current_password" required />
-                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ri-eye-off-line"></i></span>
+                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ti tabler-eye-off"></i></span>
                             </div>
                         </div>
 
@@ -294,7 +292,7 @@
                             <label class="text-muted small fw-bold" for="password">Kata Sandi Baru</label>
                             <div class="input-group input-group-merge">
                                 <input class="form-control form-control-sm @error('password', 'updatePassword') is-invalid @enderror" type="password" id="password" name="password" required />
-                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ri-eye-off-line"></i></span>
+                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ti tabler-eye-off"></i></span>
                             </div>
                         </div>
 
@@ -304,10 +302,10 @@
                                 <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
                             </div>
                             <ul id="password-rules-list" class="list-unstyled mt-2 mb-0" style="font-size: 0.7rem;">
-                                <li id="rule-length" class="text-danger"><i class="ri icon-base ri-close-circle-line me-1"></i>Min. 8 karakter</li>
-                                <li id="rule-mixed-case" class="text-danger"><i class="ri icon-base ri-close-circle-line me-1"></i>Huruf besar & kecil</li>
-                                <li id="rule-numbers" class="text-danger"><i class="ri icon-base ri-close-circle-line me-1"></i>Min. satu angka</li>
-                                <li id="rule-symbols" class="text-danger"><i class="ri icon-base ri-close-circle-line me-1"></i>Min. satu simbol</li>
+                                <li id="rule-length" class="text-danger"><i class="ri icon-base ti tabler-circle-x me-1"></i>Min. 8 karakter</li>
+                                <li id="rule-mixed-case" class="text-danger"><i class="ri icon-base ti tabler-circle-x me-1"></i>Huruf besar & kecil</li>
+                                <li id="rule-numbers" class="text-danger"><i class="ri icon-base ti tabler-circle-x me-1"></i>Min. satu angka</li>
+                                <li id="rule-symbols" class="text-danger"><i class="ri icon-base ti tabler-circle-x me-1"></i>Min. satu simbol</li>
                             </ul>
                         </div>
 
@@ -315,7 +313,7 @@
                             <label class="text-muted small fw-bold" for="password_confirmation">Konfirmasi Kata Sandi Baru</label>
                             <div class="input-group input-group-merge">
                                 <input class="form-control form-control-sm" type="password" name="password_confirmation" id="password_confirmation" required />
-                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ri-eye-off-line"></i></span>
+                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ti tabler-eye-off"></i></span>
                             </div>
                             <div id="password-match-message" class="small mt-1"></div>
                         </div>
@@ -329,8 +327,8 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 
     <script>
@@ -389,7 +387,7 @@
                     const el = document.getElementById(id);
                     if(!el) return;
                     el.className = valid ? 'text-success' : 'text-danger';
-                    el.querySelector('i').className = valid ? 'ri icon-base ri-check-line me-1' : 'ri icon-base ri-close-circle-line me-1';
+                    el.querySelector('i').className = valid ? 'ri icon-base ti tabler-check me-1' : 'ri icon-base ti tabler-circle-x me-1';
                 };
 
                 newPass.addEventListener('input', () => {
@@ -430,4 +428,4 @@
             }
         });
     </script>
-@endpush
+@endsection

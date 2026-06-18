@@ -1,13 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Impor Data Lokasi Parkir')
 
 {{-- Skeleton loading akan dieksekusi saat halaman dimuat --}}
-@section('skeleton')
-    @include('layouts.partials._skeleton-import-parking-location')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <style>
@@ -126,7 +124,7 @@
             top: 0.85rem !important;
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -159,7 +157,7 @@
                 </div>
                 {{-- [ICON UPDATE] --}}
                 <a href="#" onclick="downloadTemplate(event)" class="btn btn-outline-secondary btn-sm">
-                    <i class="icon-base ri ri-download-2-line me-2"></i> Download Template
+                    <i class="icon-base ti tabler-download-2 me-2"></i> Download Template
                 </a>
             </div>
 
@@ -175,16 +173,16 @@
                             <label class="zone-radio-label w-50">
                                 <input name="zone_filter" type="radio" value="Zona 2" id="zone2" required />
                                 <div class="zone-radio-card text-center d-flex flex-column justify-content-center align-items-center py-3">
-                                    <i class="ri ri-map-pin-2-line fs-3 mb-2 text-muted icon-unselected"></i>
-                                    <i class="ri ri-map-pin-2-fill fs-3 mb-2 text-primary icon-selected d-none"></i>
+                                    <i class="ti tabler-map-pin-2 fs-3 mb-2 text-muted icon-unselected"></i>
+                                    <i class="ti tabler-map-pin-2-filled fs-3 mb-2 text-primary icon-selected d-none"></i>
                                     <span class="fw-semibold text-muted">Zona 2</span>
                                 </div>
                             </label>
                             <label class="zone-radio-label w-50">
                                 <input name="zone_filter" type="radio" value="Zona 3" id="zone3" required />
                                 <div class="zone-radio-card text-center d-flex flex-column justify-content-center align-items-center py-3">
-                                    <i class="ri ri-map-pin-user-line fs-3 mb-2 text-muted icon-unselected"></i>
-                                    <i class="ri ri-map-pin-user-fill fs-3 mb-2 text-primary icon-selected d-none"></i>
+                                    <i class="ti tabler-user-pin fs-3 mb-2 text-muted icon-unselected"></i>
+                                    <i class="ti tabler-map-pin-user-filled fs-3 mb-2 text-primary icon-selected d-none"></i>
                                     <span class="fw-semibold text-muted">Zona 3</span>
                                 </div>
                             </label>
@@ -216,14 +214,14 @@
                                 required>
                             <div id="uploadText">
                                 <div class="file-icon-wrapper">
-                                    <i class="ri ri-file-excel-2-line file-icon"></i>
+                                    <i class="ti tabler-file-excel-2 file-icon"></i>
                                 </div>
                                 <h5 class="fw-bold mb-1">Klik atau Seret File ke Sini</h5>
                                 <p class="text-muted mb-0">Support format CSV, XLSX, XLS (Max 10MB)</p>
                             </div>
                             <div id="fileInfo" class="d-none">
                                 <div class="file-icon-wrapper bg-success bg-opacity-10 text-success">
-                                    <i class="ri ri-file-check-line file-icon text-success"></i>
+                                    <i class="ti tabler-file-check file-icon text-success"></i>
                                 </div>
                                 <h5 id="fileName" class="fw-bold text-dark mb-1">filename.csv</h5>
                                 <p class="text-muted mb-0">Klik untuk mengganti file</p>
@@ -235,7 +233,7 @@
                     {{-- Tombol Aksi --}}
                     <div class="col-12 d-flex gap-3 pt-3">
                         <button type="submit" class="btn btn-primary btn-lg shadow-sm" id="btnSubmit">
-                            <i class="ri ri-upload-cloud-2-line me-2"></i> Mulai Proses Impor
+                            <i class="ti tabler-upload-cloud-2 me-2"></i> Mulai Proses Impor
                         </button>
                         <a href="{{ route('masterdata.parking-locations.index') }}"
                             class="btn btn-label-secondary btn-lg">Batal</a>
@@ -252,7 +250,7 @@
                                 <div class="spinner-border text-primary me-3" role="status" id="progressSpinner" style="width: 2rem; height: 2rem;">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <i class="ri ri-checkbox-circle-fill text-success d-none" id="progressSuccessIcon" style="font-size: 2.5rem; margin-right: 1rem;"></i>
+                                <i class="ti tabler-circle-check-filled text-success d-none" id="progressSuccessIcon" style="font-size: 2.5rem; margin-right: 1rem;"></i>
                                 <div>
                                     <h5 class="mb-1 fw-bold text-primary" id="progressTitle">Mengunggah File...</h5>
                                     <p class="mb-0 text-muted" id="progressSubtitle">Mohon jangan tutup halaman ini.</p>
@@ -274,9 +272,9 @@
     </script>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script>
@@ -355,11 +353,11 @@
                 // [ICON UPDATE] Logika di JS untuk ganti icon
                 const icon = fileInfo.querySelector('i');
                 if (name.endsWith('.csv')) {
-                    icon.className = 'icon-base ri ri-file-text-line file-icon text-success';
+                    icon.className = 'icon-base ti tabler-file-text file-icon text-success';
                 } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
-                    icon.className = 'icon-base ri ri-file-excel-2-line file-icon text-success';
+                    icon.className = 'icon-base ti tabler-file-excel-2 file-icon text-success';
                 } else {
-                    icon.className = 'icon-base ri ri-file-check-line file-icon text-success';
+                    icon.className = 'icon-base ti tabler-file-check file-icon text-success';
                 }
             }
 
@@ -496,4 +494,4 @@
             document.body.removeChild(link);
         }
     </script>
-@endpush
+@endsection

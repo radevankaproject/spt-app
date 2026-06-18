@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RoadSection extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -19,7 +18,7 @@ class RoadSection extends Model
         'last_updated_by',
     ];
 
-    //Relaso ParkingLocation
+    // Relaso ParkingLocation
     // public function ParkingLocation()
     // {
     //     return $this->hasMany(ParkingLocation::class);

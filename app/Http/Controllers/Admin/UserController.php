@@ -74,9 +74,23 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username|regex:/^[a-z0-9_-]+$/',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed|not_regex:/\s/',
-            'role' => 'required|string|in:admin,leader,field_coordinator,staff_keu,staff_pks', // Tambahkan validasi role
+            'role' => 'required|string|in:admin,leader,field_coordinator,staff_keu,staff_pks',
             'employee_number' => 'nullable|string|max:50',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:300',
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username ini sudah digunakan, silakan pilih yang lain.',
+            'username.regex' => 'Username hanya boleh berisi huruf kecil, angka, strip, atau underscore.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah terdaftar.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'password.not_regex' => 'Kata sandi tidak boleh mengandung spasi.',
+            'role.required' => 'Peran (Role) wajib dipilih.',
+            'img.image' => 'File harus berupa gambar.',
+            'img.max' => 'Ukuran gambar maksimal 300KB.',
         ]);
 
         $user = User::create([
@@ -103,8 +117,7 @@ class UserController extends Controller
         }
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Pengguna '.$user->name.' berhasil ditambahkan!')
-            ->with('user_name', $user->name); // Kirim nama user untuk popup
+            ->with('success', 'Pengguna '.$user->name.' berhasil ditambahkan!');
     }
 
     /**
@@ -153,6 +166,21 @@ class UserController extends Controller
             'role' => 'required|string|in:admin,leader,field_coordinator,staff_pks,staff_keu',
             'employee_number' => 'nullable|string|max:50',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:300',
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username ini sudah digunakan, silakan pilih yang lain.',
+            'username.regex' => 'Username hanya boleh berisi huruf kecil, angka, strip, atau underscore.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.unique' => 'Alamat email ini sudah terdaftar.',
+            'phone_number.numeric' => 'Nomor HP harus berupa angka.',
+            'phone_number.digits_between' => 'Nomor HP harus antara 10 hingga 14 digit.',
+            'password.min' => 'Kata sandi minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'password.not_regex' => 'Kata sandi tidak boleh mengandung spasi.',
+            'role.required' => 'Peran (Role) wajib dipilih.',
+            'img.image' => 'File harus berupa gambar.',
+            'img.max' => 'Ukuran gambar maksimal 300KB.',
         ]);
 
         $user->name = $validatedData['name'];
@@ -185,8 +213,7 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Data pengguna '.$user->name.' berhasil diperbarui!')
-            ->with('user_name', $user->name);
+            ->with('success', 'Data pengguna '.$user->name.' berhasil diperbarui!');
     }
 
     /**

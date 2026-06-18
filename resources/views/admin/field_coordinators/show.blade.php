@@ -1,12 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Portofolio Koordinator: ' . $fieldCoordinator->user->name)
 
-@section('skeleton')
-    <div class="container-xxl flex-grow-1 container-p-y">
-        @include('layouts.partials._skeleton-field-coordinator-show')
-    </div>
-@endsection
+
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
@@ -23,7 +19,7 @@
                         <li class="nav-item me-2">
                             <a class="nav-link {{ $year == $selectedYear ? 'active shadow-sm' : 'bg-white border' }}"
                                href="{{ route('admin.field-coordinators.show', ['field_coordinator' => $fieldCoordinator->id, 'year' => $year]) }}">
-                               <i class="ri ri-calendar-line me-1"></i> Tahun {{ $year }}
+                               <i class="ti tabler-calendar me-1"></i> Tahun {{ $year }}
                             </a>
                         </li>
                     @endforeach
@@ -54,7 +50,7 @@
 
                         {{-- ✅ STATISTIK BERDASARKAN TAHUN --}}
                         <div class="bg-lighter rounded-3 p-3 mb-4 text-start">
-                            <h6 class="fw-bold text-primary mb-3"><i class="ri ri-bar-chart-box-line me-1"></i> Statistik Tahun {{ $selectedYear }}</h6>
+                            <h6 class="fw-bold text-primary mb-3"><i class="ti tabler-bar-chart-box me-1"></i> Statistik Tahun {{ $selectedYear }}</h6>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Total Kontrak (PKS)</span>
                                 <span class="fw-bold text-dark">{{ $totalAgreementsCount }}</span>
@@ -71,10 +67,10 @@
 
                         <h6 class="pb-2 border-bottom text-start mb-3">Informasi Personal</h6>
                         <ul class="list-unstyled mb-4 text-start small">
-                            <li class="mb-2 d-flex align-items-center"><i class="ri ri-mail-line text-muted me-2"></i> <span>{{ $fieldCoordinator->user->email }}</span></li>
-                            <li class="mb-2 d-flex align-items-center"><i class="ri ri-phone-line text-muted me-2"></i> <span>{{ $fieldCoordinator->phone_number }}</span></li>
-                            <li class="mb-2 d-flex align-items-center"><i class="ri ri-id-card-line text-muted me-2"></i> <span>{{ $fieldCoordinator->id_card_number }}</span></li>
-                            <li class="d-flex align-items-start"><i class="ri ri-map-pin-line text-muted me-2 mt-1"></i> <span>{{ $fieldCoordinator->address }}</span></li>
+                            <li class="mb-2 d-flex align-items-center"><i class="ti tabler-mail text-muted me-2"></i> <span>{{ $fieldCoordinator->user->email }}</span></li>
+                            <li class="mb-2 d-flex align-items-center"><i class="ti tabler-phone text-muted me-2"></i> <span>{{ $fieldCoordinator->phone_number }}</span></li>
+                            <li class="mb-2 d-flex align-items-center"><i class="ti tabler-id-card text-muted me-2"></i> <span>{{ $fieldCoordinator->id_card_number }}</span></li>
+                            <li class="d-flex align-items-start"><i class="ti tabler-map-pin text-muted me-2 mt-1"></i> <span>{{ $fieldCoordinator->address }}</span></li>
                         </ul>
                         <div class="d-grid gap-2 mt-4">
                             {{-- Edit buttons moved to index --}}
@@ -85,7 +81,7 @@
                 {{-- KARTU KTP --}}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h6 class="pb-2 border-bottom mb-3"><i class="ri ri-pass-valid-line me-1"></i> Dokumen KTP</h6>
+                        <h6 class="pb-2 border-bottom mb-3"><i class="ti tabler-user-check me-1"></i> Dokumen KTP</h6>
                         @if ($fieldCoordinator->id_card_img)
                             <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#ktpModal">
                                 <img src="{{ asset('storage/'.$fieldCoordinator->id_card_img) }}" alt="Foto KTP"
@@ -93,7 +89,7 @@
                             </a>
                         @else
                             <div class="text-center py-4 bg-lighter rounded-3">
-                                <i class="icon-base ri ri-image-line icon-22px"></i>
+                                <i class="icon-base ti tabler-image icon-22px"></i>
                                 <small class="text-muted">Belum ada KTP</small>
                             </div>
                         @endif
@@ -105,7 +101,7 @@
             <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
 
                 {{-- 1. PKS SEDANG BERJALAN (AKTIF) --}}
-                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ri ri-play-circle-line text-primary me-2"></i> Kontrak Berjalan (Tahun {{ $selectedYear }})</h5>
+                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ti tabler-play-circle text-primary me-2"></i> Kontrak Berjalan (Tahun {{ $selectedYear }})</h5>
                 @forelse ($activeAgreements as $pks)
                     <div class="card mb-4 border-primary border-opacity-25 shadow-sm">
                         <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center py-3">
@@ -121,7 +117,7 @@
                             <div class="row g-3">
                                 <div class="col-sm-6">
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-info"><i class="ri ri-map-pin-user-line"></i></span></div>
+                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-info"><i class="ti tabler-user-pin"></i></span></div>
                                         <div>
                                             <p class="mb-0 fw-medium text-dark">{{ $pks->activeParkingLocations->count() }} Lokasi</p>
                                             <small class="text-muted">Dikelola saat ini</small>
@@ -130,7 +126,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-success"><i class="ri ri-money-dollar-circle-line"></i></span></div>
+                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-success"><i class="ti tabler-currency-dollar"></i></span></div>
                                         <div>
                                             <p class="mb-0 fw-medium text-dark">Rp {{ number_format($pks->total_deposit ?? 0, 0, ',', '.') }}</p>
                                             <small class="text-muted">Setoran Masuk</small>
@@ -140,16 +136,16 @@
                             </div>
                             <div class="mt-4 pt-3 border-top text-end">
                                 @if($pks->signed_document_path)
-                                <a href="{{ Storage::url($pks->signed_document_path) }}" target="_blank" class="btn btn-sm btn-outline-success me-2"><i class="ri ri-file-check-line me-1"></i> File Scan Asli</a>
+                                <a href="{{ Storage::url($pks->signed_document_path) }}" target="_blank" class="btn btn-sm btn-outline-success me-2"><i class="ti tabler-file-check me-1"></i> File Scan Asli</a>
                                 @endif
-                                <a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="btn btn-sm btn-primary shadow-sm"><i class="ri ri-eye-line me-1"></i> Buka Detail PKS</a>
+                                <a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="btn btn-sm btn-primary shadow-sm"><i class="ti tabler-eye me-1"></i> Buka Detail PKS</a>
                             </div>
                         </div>
                     </div>
                 @empty
                     <div class="card mb-5 border-0 shadow-sm bg-lighter">
                         <div class="card-body text-center py-5">
-                            <i class="ri ri-folder-forbid-line" style="font-size: 3rem;"></i>
+                            <i class="ti tabler-folder-off" style="font-size: 3rem;"></i>
                             <h6 class="fw-bold text-dark">Tidak ada Kontrak Aktif</h6>
                             <p class="text-muted mb-0">Koordinator ini tidak memiliki PKS yang sedang berjalan di tahun {{ $selectedYear }}.</p>
                         </div>
@@ -157,7 +153,7 @@
                 @endforelse
 
                 {{-- 2. ARSIP PKS (KEDALUWARSA/DIPUTUS) --}}
-                <h5 class="fw-bold mb-3 mt-5 d-flex align-items-center"><i class="ri ri-archive-drawer-line text-secondary me-2"></i> Riwayat Kontrak Selesai</h5>
+                <h5 class="fw-bold mb-3 mt-5 d-flex align-items-center"><i class="ti tabler-archive-drawer text-secondary me-2"></i> Riwayat Kontrak Selesai</h5>
                 <div class="card border-0 shadow-sm">
                     <div class="table-responsive text-nowrap">
                         <table class="table table-hover mb-0">
@@ -187,11 +183,11 @@
                                         <td class="text-center">
                                             @if($history->signed_document_path)
                                             <a href="{{ Storage::url($history->signed_document_path) }}" target="_blank" class="btn btn-sm btn-icon btn-text-success rounded-pill me-1" data-bs-toggle="tooltip" title="File Scan Asli">
-                                                <i class="ri ri-file-check-line icon-22px"></i>
+                                                <i class="ti tabler-file-check icon-22px"></i>
                                             </a>
                                             @endif
                                             <a href="{{ route('masterdata.agreements.show', $history->id) }}" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Lihat Histori">
-                                                <i class="ri ri-arrow-right-circle-line icon-22px"></i>
+                                                <i class="ti tabler-arrow-right-circle icon-22px"></i>
                                             </a>
                                         </td>
                                     </tr>
@@ -224,7 +220,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('page-script')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Hide scrollbar class untuk nav-pills tahun agar rapi di mobile
@@ -242,4 +238,4 @@
         });
     });
 </script>
-@endpush
+@endsection

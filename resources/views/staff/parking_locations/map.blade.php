@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Peta Wilayah Parkir')
 
-@push('styles')
+@section('page-style')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="" />
@@ -112,11 +112,9 @@
         color: white !important;
     }
 </style>
-@endpush
-
-@section('skeleton')
-    @include('layouts.partials._skeleton-parking-locations-map')
 @endsection
+
+
 
 @section('content')
 
@@ -130,7 +128,7 @@
                     <span class="small text-white-50">Total Seluruh Lokasi Parkir</span>
                 </div>
                 <div class="avatar avatar-md bg-white text-primary rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="ri icon-base ri-map-pin-line fs-4"></i>
+                    <i class="ri icon-base ti tabler-map-pin fs-4"></i>
                 </div>
             </div>
         </div>
@@ -143,7 +141,7 @@
                     <span class="small text-white-50">Lokasi Dengan Koordinat</span>
                 </div>
                 <div class="avatar avatar-md bg-white text-success rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="ri icon-base ri-earth-line fs-4"></i>
+                    <i class="ri icon-base ti tabler-live-view fs-4"></i>
                 </div>
             </div>
         </div>
@@ -156,7 +154,7 @@
                     <span class="small text-white-50">Lokasi Belum Terpetakan</span>
                 </div>
                 <div class="avatar avatar-md bg-white text-info rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="ri icon-base ri-map-pin-add-line fs-4"></i>
+                    <i class="ri icon-base ti tabler-map-pin-minus fs-4"></i>
                 </div>
             </div>
         </div>
@@ -170,23 +168,23 @@
             <div class="card-body">
                 <form id="filterForm" class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label fw-medium"><i class="ri icon-base ri-search-line me-1"></i> Cari Nama Lokasi</label>
+                        <label class="form-label fw-medium"><i class="ri icon-base ti tabler-search me-1"></i> Cari Nama Lokasi</label>
                         <input type="text" id="filterName" class="form-control" placeholder="Ketik nama lokasi parkir...">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-medium"><i class="ri icon-base ri-map-pin-2-line me-1"></i> Filter Zona</label>
+                        <label class="form-label fw-medium"><i class="ri icon-base ti tabler-map-pin-2 me-1"></i> Filter Zona</label>
                         <select id="filterZone" class="form-select select2">
                             <option value="">-- Semua Zona --</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-medium"><i class="ri icon-base ri-route-line me-1"></i> Filter Ruas Jalan</label>
+                        <label class="form-label fw-medium"><i class="ri icon-base ti tabler-route me-1"></i> Filter Ruas Jalan</label>
                         <select id="filterRoad" class="form-select select2">
                             <option value="">-- Semua Ruas Jalan --</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-medium"><i class="ri icon-base ri-user-star-line me-1"></i> Filter Koordinator</label>
+                        <label class="form-label fw-medium"><i class="ri icon-base ti tabler-user-star me-1"></i> Filter Koordinator</label>
                         <select id="filterCoordinator" class="form-select select2">
                             <option value="">-- Semua Koordinator --</option>
                         </select>
@@ -202,11 +200,11 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-bottom">
                 <div>
-                    <h5 class="card-title mb-1"><i class="ri icon-base ri-map-pin-line text-primary me-2"></i>Peta Wilayah Parkir Kota Pekanbaru</h5>
+                    <h5 class="card-title mb-1"><i class="ri icon-base ti tabler-map-pin text-primary me-2"></i>Peta Wilayah Parkir Kota Pekanbaru</h5>
                     <p class="text-muted mb-0 small">Menampilkan seluruh titik parkir yang terdata beserta status kerjasamanya.</p>
                 </div>
                 <div>
-                    <span class="badge bg-danger rounded-pill px-3 py-2 text-white shadow-sm" id="resultCount"><i class="ri icon-base ri-map-pin-fill me-1"></i> Memuat Data...</span>
+                    <span class="badge bg-danger rounded-pill px-3 py-2 text-white shadow-sm" id="resultCount"><i class="ri icon-base ti tabler-map-pin-filled me-1"></i> Memuat Data...</span>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -217,10 +215,10 @@
 </div>
 @endsection
 
-@push('vendors-js')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
-<script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin="" defer></script>
+@vite(["resources/assets/vendor/libs/select2/select2.js"])
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         
@@ -231,13 +229,11 @@
         // Populate Filter Options
         function populateFilters() {
             let zones = new Set();
-            let roads = new Set();
             let coordinators = new Set();
 
             allParkingData.forEach(loc => {
-                if (loc.road_section) {
-                    if (loc.road_section.zone) zones.add(loc.road_section.zone);
-                    if (loc.road_section.name) roads.add(loc.road_section.name);
+                if (loc.road_section && loc.road_section.zone) {
+                    zones.add(loc.road_section.zone);
                 }
                 
                 if (loc.agreements && loc.agreements.length > 0 && loc.agreements[0].field_coordinator && loc.agreements[0].field_coordinator.user) {
@@ -246,11 +242,9 @@
             });
 
             const zoneSelect = $('#filterZone');
-            const roadSelect = $('#filterRoad');
             const coordSelect = $('#filterCoordinator');
 
             Array.from(zones).sort().forEach(z => zoneSelect.append(new Option(z, z)));
-            Array.from(roads).sort().forEach(r => roadSelect.append(new Option(r, r)));
             Array.from(coordinators).sort().forEach(c => coordSelect.append(new Option(c, c)));
 
             // Init Select2
@@ -258,6 +252,27 @@
                 placeholder: 'Pilih salah satu',
                 allowClear: true
             });
+            
+            populateRoads();
+        }
+
+        function populateRoads() {
+            const roadSelect = $('#filterRoad');
+            const selectedZone = $('#filterZone').val();
+            
+            roadSelect.empty();
+            roadSelect.append(new Option('-- Semua Ruas Jalan --', ''));
+            
+            let roads = new Set();
+            allParkingData.forEach(loc => {
+                if (loc.road_section && loc.road_section.name) {
+                    if (!selectedZone || loc.road_section.zone === selectedZone) {
+                        roads.add(loc.road_section.name);
+                    }
+                }
+            });
+            
+            Array.from(roads).sort().forEach(r => roadSelect.append(new Option(r, r)));
         }
 
         // Initialize Map
@@ -294,6 +309,7 @@
 
         // Render Markers based on data
         function renderMarkers(data) {
+            if (!markersCluster) return;
             markersCluster.clearLayers();
 
             const activeIcon = L.icon({
@@ -323,8 +339,8 @@
                     let hasActiveAgreement = location.agreements && location.agreements.length > 0;
                     let icon = hasActiveAgreement ? activeIcon : inactiveIcon;
                     let statusBadge = hasActiveAgreement 
-                        ? `<span class="badge badge-status rounded-pill"><i class="ri icon-base ri-check-line me-1"></i>PKS Aktif</span>` 
-                        : `<span class="badge badge-status rounded-pill" style="background-color: rgba(0,0,0,0.3); border-color: transparent;"><i class="ri icon-base ri-close-line me-1"></i>Belum PKS</span>`;
+                        ? `<span class="badge badge-status rounded-pill"><i class="ri icon-base ti tabler-check me-1"></i>PKS Aktif</span>` 
+                        : `<span class="badge badge-status rounded-pill" style="background-color: rgba(0,0,0,0.3); border-color: transparent;"><i class="ri icon-base ti tabler-x me-1"></i>Belum PKS</span>`;
                     
                     let coordinatorName = hasActiveAgreement && location.agreements[0].field_coordinator && location.agreements[0].field_coordinator.user
                         ? location.agreements[0].field_coordinator.user.name 
@@ -348,7 +364,7 @@
                             </div>
                             <div class="popup-body">
                                 <div class="info-item">
-                                    <i class="ri icon-base ri-map-pin-range-line"></i>
+                                    <i class="ri icon-base ti tabler-map-pin-range"></i>
                                     <div class="info-content">
                                         <p>Zona & Ruas Jalan</p>
                                         <span class="text-truncate" style="max-width: 200px;" title="${zoneName} - ${roadName}">${zoneName} &bull; ${roadName}</span>
@@ -356,7 +372,7 @@
                                 </div>
                                 
                                 <div class="info-item">
-                                    <i class="ri icon-base ri-user-star-line"></i>
+                                    <i class="ri icon-base ti tabler-user-star"></i>
                                     <div class="info-content">
                                         <p>Koordinator Lapangan</p>
                                         <span class="text-truncate" style="max-width: 200px;" title="${coordinatorName}">${coordinatorName}</span>
@@ -364,7 +380,7 @@
                                 </div>
                                 
                                 <div class="info-item">
-                                    <i class="ri icon-base ri-money-dollar-circle-line"></i>
+                                    <i class="ri icon-base ti tabler-currency-dollar"></i>
                                     <div class="info-content">
                                         <p>Potensi Setoran / Hari</p>
                                         <span class="text-success">Rp ${new Intl.NumberFormat('id-ID').format(location.daily_target_revenue || 0)}</span>
@@ -373,7 +389,7 @@
 
                                 <div class="d-grid mt-4">
                                     <a href="/masterdata/parking-locations/${location.id}" class="btn btn-primary rounded-pill shadow-sm">
-                                        <i class="ri icon-base ri-eye-line me-1"></i> Detail Lokasi
+                                        <i class="ri icon-base ti tabler-eye me-1"></i> Detail Lokasi
                                     </a>
                                 </div>
                             </div>
@@ -387,7 +403,7 @@
                 }
             });
 
-            document.getElementById('resultCount').innerHTML = `<i class="ri icon-base ri-map-pin-fill me-1"></i> ${count} Titik Ditemukan`;
+            document.getElementById('resultCount').innerHTML = `<i class="ri icon-base ti tabler-map-pin-filled me-1"></i> ${count} Titik Ditemukan`;
         }
 
         // Apply Filters
@@ -425,7 +441,12 @@
 
         // Event Listeners for Filters
         document.getElementById('filterName').addEventListener('input', applyFilters);
-        $('#filterZone, #filterCoordinator').on('change', applyFilters);
+        $('#filterCoordinator').on('change', applyFilters);
+
+        $('#filterZone').on('change', function() {
+            populateRoads();
+            applyFilters();
+        });
 
         $('#filterRoad').on('change', function() {
             applyFilters();
@@ -467,4 +488,4 @@
         });
     });
 </script>
-@endpush
+@endsection

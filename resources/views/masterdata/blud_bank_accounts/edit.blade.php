@@ -1,10 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Edit Rekening BLUD')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-blud-bank-form')
-@endsection
+
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -100,7 +98,7 @@
                 </div>
                 <div class="col-12 mt-4">
                     <div class="alert alert-warning d-flex align-items-center" role="alert">
-                        <span class="alert-icon rounded-3"><i class="icon-base ri ri-alert-line ri-22px"></i></span>
+                        <span class="alert-icon rounded-3"><i class="icon-base ti tabler-alert ti-md"></i></span>
                         <div class="alert-text">
                             Mengaktifkan rekening ini akan menonaktifkan rekening aktif lainnya secara otomatis.
                         </div>
@@ -117,7 +115,7 @@
     </div>
 @endsection
 
-@push('scripts')
+@section('page-script')
     <script>
         // Script khusus untuk form ini (jika ada di masa depan)
         document.addEventListener("DOMContentLoaded", function() {
@@ -133,4 +131,4 @@
             hiddenInput.disabled = isActiveSwitch.checked;
         });
     </script>
-@endpush
+@endsection

@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Staff Dashboard')
 
-@push('styles')
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
     {{-- Style tambahan untuk perfect-scrollbar --}}
     <style>
@@ -12,7 +12,7 @@
             /* Atur tinggi maksimal tabel */
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
     {{-- ✅ PERUBAHAN DI SINI: Form Pencarian dengan Tombol --}}
@@ -25,7 +25,7 @@
                     <input type="search" id="search-agreement" name="agreement_number" class="form-control"
                         placeholder="Masukkan Nomor PKS..." required>
                     <button class="btn btn-primary" type="submit" id="button-addon2">
-                        <i class="icon-base ri ri-search-line"></i>
+                        <i class="icon-base ti tabler-search"></i>
                     </button>
                 </div>
                 @if (session('error'))
@@ -92,7 +92,7 @@
                                     </div>
                                     <div class="avatar">
                                         <span class="avatar-initial rounded-3 bg-label-secondary"><i
-                                                class="icon-base ri-bank-line ri-22px"></i></span>
+                                                class="icon-base ti tabler-bank ti-md"></i></span>
                                     </div>
                                 </div>
                             @else
@@ -242,12 +242,12 @@
     </div>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-@endpush
+@section('vendor-script')
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}" defer></script>
+@endsection
 
-@push('scripts')
-    <script>
+@section('page-script')
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // ... (script untuk grafik tidak berubah) ...
             const primaryColor = config.colors.primary;
@@ -399,4 +399,4 @@
             }
         });
     </script>
-@endpush
+@endsection

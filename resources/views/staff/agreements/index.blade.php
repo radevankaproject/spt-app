@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Perjanjian Kerjasama')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-road-sections-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
@@ -20,7 +18,7 @@
             background-color: rgba(255, 171, 0, 0.05) !important;
         }
     </style>
-@endpush
+@endsection
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -93,13 +91,13 @@
 
                     <div class="input-group">
                         <input type="search" name="search" class="form-control" placeholder="Cari No PKS/Korlap..." value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="icon-base ri ri-search-line icon-20px"></i></button>
+                        <button class="btn btn-outline-primary" type="submit"><i class="icon-base ti tabler-search icon-20px"></i></button>
                     </div>
                 </form>
                 {{-- Tombol Tambah --}}
                 @if(Auth::user()->role !== 'leader')
                 <a href="{{ route('masterdata.agreements.create') }}" class="btn btn-primary">
-                    <i class="icon-base ri ri-add-line me-1"></i> Tambah PKS
+                    <i class="icon-base ti tabler-plus me-1"></i> Tambah PKS
                 </a>
                 @endif
             </div>
@@ -107,7 +105,7 @@
         <div class="card-body pt-3">
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fw-bold" role="alert">
-                    <i class="ri ri-error-warning-line me-1"></i> {{ session('error') }}
+                    <i class="ti tabler-alert-triangle me-1"></i> {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
@@ -166,7 +164,7 @@
                                         {{-- ✅ INDIKATOR MASA TENGGANG --}}
                                         @if($isGracePeriod)
                                             <span class="badge bg-label-warning bg-opacity-20 text-warning ms-3 rounded-pill" data-bs-toggle="tooltip" title="Tersisa {{ $daysRemaining }} hari lagi!">
-                                                <i class="ri ri-alert-line icon-20px"></i> PKS dalam masa Tenggang
+                                                <i class="ti tabler-alert icon-20px"></i> PKS dalam masa Tenggang
                                             </span>
                                         @endif
                                     </div>
@@ -188,13 +186,13 @@
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
                                             href="{{ route('masterdata.agreements.show', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Lihat Detail">
-                                            <i class="icon-base ri ri-eye-line icon-20px"></i>
+                                            <i class="icon-base ti tabler-eye icon-20px"></i>
                                         </a>
                                         @if(Auth::user()->role !== 'leader' && $agreement->status !== 'expired')
                                         <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                             href="{{ route('masterdata.agreements.edit', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Edit PKS">
-                                            <i class="icon-base ri ri-pencil-line icon-20px"></i>
+                                            <i class="icon-base ti tabler-pencil icon-20px"></i>
                                         </a>
                                         @endif
                                         
@@ -202,14 +200,14 @@
                                         <a class="btn btn-sm btn-icon btn-text-secondary rounded-pill"
                                             href="{{ route('masterdata.agreements.pdf', $agreement->id) }}" target="_blank"
                                             data-bs-toggle="tooltip" title="Cetak Dokumen PKS">
-                                            <i class="icon-base ri ri-printer-line icon-20px"></i>
+                                            <i class="icon-base ti tabler-printer icon-20px"></i>
                                         </a>
                                         @endif
                                         @if(Auth::user()->role !== 'leader')
                                         @if($agreement->status === 'expired' && $agreement->signed_document_path)
                                         <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
                                             data-bs-toggle="tooltip" title="PKS Expired dan sudah memiliki file scan">
-                                            <i class="icon-base ri ri-file-check-line icon-20px opacity-50"></i>
+                                            <i class="icon-base ti tabler-file-check icon-20px opacity-50"></i>
                                         </button>
                                         @else
                                         <button type="button" class="btn btn-sm btn-icon {{ $agreement->signed_document_path ? 'btn-text-success' : 'btn-text-warning' }} rounded-pill btn-upload-scan"
@@ -217,7 +215,7 @@
                                             data-number="{{ $agreement->agreement_number }}"
                                             data-has-scan="{{ $agreement->signed_document_path ? '1' : '0' }}"
                                             data-bs-toggle="tooltip" title="{{ $agreement->signed_document_path ? 'Update File Scan (Sudah Ada)' : 'Upload File Scan PKS' }}">
-                                            <i class="icon-base ri {{ $agreement->signed_document_path ? 'ri-file-check-line' : 'ri-file-upload-line' }} icon-20px"></i>
+                                            <i class="icon-base {{ $agreement->signed_document_path ? 'ti tabler-file-check' : 'ti tabler-file-upload' }} icon-20px"></i>
                                         </button>
                                         @endif
                                         @endif
@@ -226,7 +224,7 @@
                                         <a class="btn btn-sm btn-icon btn-text-warning rounded-pill"
                                             href="{{ route('masterdata.agreements.renew', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Perpanjang PKS">
-                                            <i class="icon-base ri ri-loop-right-line icon-20px"></i>
+                                            <i class="icon-base ti tabler-loop-right icon-20px"></i>
                                         </a>
                                         @endif
                                         <form action="{{ route('masterdata.agreements.destroy', $agreement->id) }}"
@@ -235,7 +233,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip"
                                                 title="Hapus PKS">
-                                                <i class="icon-base ri ri-delete-bin-line icon-20px"></i>
+                                                <i class="icon-base ti tabler-trash icon-20px"></i>
                                             </button>
                                         </form>
                                         @endif
@@ -265,7 +263,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-light border-bottom px-4 py-3">
-                    <h5 class="modal-title fw-bold text-primary"><i class="ri ri-file-upload-line me-1"></i> Upload Scan PKS</h5>
+                    <h5 class="modal-title fw-bold text-primary"><i class="ti tabler-file-upload me-1"></i> Upload Scan PKS</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body px-4 py-4">
@@ -277,7 +275,7 @@
                         
                         {{-- DRAG & DROP AREA --}}
                         <div id="drop-area" class="border rounded-3 p-4 text-center cursor-pointer mb-3" style="border: 2px dashed #696cff !important; background-color: rgba(105, 108, 255, 0.05); transition: all 0.3s ease;">
-                            <i class="ri ri-upload-cloud-2-line text-primary mb-2" style="font-size: 3rem;"></i>
+                            <i class="ti tabler-upload-cloud-2 text-primary mb-2" style="font-size: 3rem;"></i>
                             <h6 class="fw-bold mb-1">Drag & Drop file PDF di sini</h6>
                             <p class="text-muted small mb-3">Atau klik untuk memilih file dari komputer</p>
                             <input type="file" id="signed_document" name="signed_document" class="d-none" accept=".pdf" required>
@@ -285,14 +283,14 @@
                         </div>
                         <div id="file-info" class="d-none mb-3 p-3 bg-light rounded-3 d-flex justify-content-between align-items-center border">
                             <div class="d-flex align-items-center">
-                                <i class="ri ri-file-pdf-line text-danger fs-3 me-2"></i>
+                                <i class="ti tabler-file-pdf text-danger fs-3 me-2"></i>
                                 <div>
                                     <span id="file-name" class="fw-bold text-dark d-block" style="font-size: 0.9rem;"></span>
                                     <small id="file-size" class="text-muted"></small>
                                 </div>
                             </div>
                             <button type="button" class="btn btn-sm btn-icon btn-text-danger rounded-pill" id="btn-remove-file">
-                                <i class="ri ri-close-line"></i>
+                                <i class="ti tabler-x"></i>
                             </button>
                         </div>
 
@@ -314,7 +312,7 @@
                 <div class="modal-footer bg-light px-4 py-3 border-top">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="btn-cancel-upload">Batal</button>
                     <button type="button" class="btn btn-primary" id="btn-submit-upload" disabled>
-                        <i class="ri ri-upload-2-line me-1"></i> Upload & Kompresi
+                        <i class="ti tabler-upload me-1"></i> Upload & Kompresi
                     </button>
                 </div>
             </div>
@@ -322,13 +320,13 @@
     </div>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-@endpush
+@section('vendor-script')
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
+@endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-    <script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // Aktifkan Tooltips Bootstrap
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -608,4 +606,4 @@
             });
         });
     </script>
-@endpush
+@endsection

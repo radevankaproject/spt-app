@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Detail Pengajuan Titik')
 
-@push('styles')
+@section('page-style')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         #map { height: 320px; border-radius: 12px; border: 1px solid #e5e7eb; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
@@ -31,14 +31,14 @@
         }
         .dynamic-island.show { transform: translateX(-50%) translateY(0); }
     </style>
-@endpush
+@endsection
 
 @section('content')
 
 {{-- ✅ DYNAMIC ISLAND COMPONENT --}}
 <div id="dynamicIsland" class="dynamic-island">
     <div class="bg-success rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
-        <i class="ri ri-check-line text-dark"></i>
+        <i class="ti tabler-check text-dark"></i>
     </div>
     <span>Tersalin ke Papan Klip!</span>
 </div>
@@ -49,7 +49,7 @@
         <span class="text-muted small">Nomor Tiket: #REQ-{{ str_pad($locationRequest->id, 5, '0', STR_PAD_LEFT) }}</span>
     </div>
     <a href="{{ route('field_coordinator.location-requests.index') }}" class="btn btn-outline-secondary shadow-sm mt-3 mt-md-0 rounded-pill px-4">
-        <i class="ri ri-arrow-left-line me-1"></i> Kembali
+        <i class="ti tabler-arrow-left me-1"></i> Kembali
     </a>
 </div>
 
@@ -61,11 +61,11 @@
         {{-- CARD 1: INFORMASI UMUM --}}
         <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
             <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold"><i class="ri ri-information-line me-2 text-primary"></i>Informasi Pengajuan</h6>
-                @if($locationRequest->status == 'pending') <span class="badge bg-label-warning rounded-pill px-3 py-2"><i class="ri ri-time-line me-1"></i> Menunggu Review Dinas</span>
-                @elseif($locationRequest->status == 'surveyed') <span class="badge bg-label-info rounded-pill px-3 py-2"><i class="ri ri-clipboard-line me-1"></i> Telah Disurvey</span>
-                @elseif($locationRequest->status == 'approved') <span class="badge bg-label-success rounded-pill px-3 py-2"><i class="ri ri-check-double-line me-1"></i> Disetujui</span>
-                @else <span class="badge bg-label-danger rounded-pill px-3 py-2"><i class="ri ri-close-circle-line me-1"></i> Ditolak</span> @endif
+                <h6 class="mb-0 fw-bold"><i class="ti tabler-info-circle me-2 text-primary"></i>Informasi Pengajuan</h6>
+                @if($locationRequest->status == 'pending') <span class="badge bg-label-warning rounded-pill px-3 py-2"><i class="ti tabler-clock me-1"></i> Menunggu Review Dinas</span>
+                @elseif($locationRequest->status == 'surveyed') <span class="badge bg-label-info rounded-pill px-3 py-2"><i class="ti tabler-clipboard me-1"></i> Telah Disurvey</span>
+                @elseif($locationRequest->status == 'approved') <span class="badge bg-label-success rounded-pill px-3 py-2"><i class="ti tabler-checks me-1"></i> Disetujui</span>
+                @else <span class="badge bg-label-danger rounded-pill px-3 py-2"><i class="ti tabler-circle-x me-1"></i> Ditolak</span> @endif
             </div>
             
             <div class="card-body p-4 bg-white">
@@ -74,11 +74,11 @@
                         <small class="text-muted fw-bold text-uppercase d-block mb-2">Tipe Permohonan</small>
                         @if($locationRequest->request_type == 'add')
                             <span class="d-inline-flex align-items-center px-3 py-2 rounded-3 bg-lighter fw-bold text-success border border-success-subtle">
-                                <i class="ri ri-add-circle-line ri-xl me-2"></i> Penambahan Titik Baru
+                                <i class="ti tabler-add-circle ti tabler-xl me-2"></i> Penambahan Titik Baru
                             </span>
                         @else
                             <span class="d-inline-flex align-items-center px-3 py-2 rounded-3 bg-lighter fw-bold text-danger border border-danger-subtle">
-                                <i class="ri ri-delete-bin-line ri-xl me-2"></i> Pencabutan Titik
+                                <i class="ti tabler-trash ti tabler-xl me-2"></i> Pencabutan Titik
                             </span>
                         @endif
                     </div>
@@ -125,10 +125,10 @@
         {{-- CARD 2: PETA & GAMBAR (PREMIUM) --}}
         <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
             <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold"><i class="ri ri-map-2-line me-2 text-primary"></i>Visualisasi Lokasi</h6>
+                <h6 class="mb-0 fw-bold"><i class="ti tabler-map-2 me-2 text-primary"></i>Visualisasi Lokasi</h6>
                 @if($locationRequest->latitude && $locationRequest->longitude)
                     <button type="button" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm" onclick="copyToClipboard('https://www.google.com/maps?q={{ $locationRequest->latitude }},{{ $locationRequest->longitude }}')">
-                        <i class="ri ri-links-line me-1"></i> Salin Link G-Maps
+                        <i class="ti tabler-links me-1"></i> Salin Link G-Maps
                     </button>
                 @endif
             </div>
@@ -138,10 +138,10 @@
                     <div class="col-md-6">
                         @if($locationRequest->latitude && $locationRequest->longitude)
                             <div id="map" class="mb-3"></div>
-                            <div class="text-center text-muted small"><i class="ri ri-map-pin-2-fill text-danger"></i> {{ $locationRequest->latitude }}, {{ $locationRequest->longitude }}</div>
+                            <div class="text-center text-muted small"><i class="ti tabler-map-pin-2-filled text-danger"></i> {{ $locationRequest->latitude }}, {{ $locationRequest->longitude }}</div>
                         @else
                             <div class="alert bg-lighter text-center py-5 border-dashed rounded-3 h-100 d-flex flex-column justify-content-center">
-                                <i class="ri ri-map-pin-off-line ri-3x text-muted opacity-50 mb-2"></i>
+                                <i class="ti tabler-map-pin-off ti-xl text-muted opacity-50 mb-2"></i>
                                 <span class="text-muted">Anda tidak melampirkan koordinat peta.</span>
                             </div>
                         @endif
@@ -154,14 +154,14 @@
                                 <img src="{{ asset('storage/'.$locationRequest->image) }}" alt="Foto Lapangan">
                                 <div class="img-overlay">
                                     <div class="bg-white rounded-circle p-3 shadow text-primary">
-                                        <i class="ri ri-zoom-in-line ri-2x"></i>
+                                        <i class="ti tabler-zoom-in ti-lg"></i>
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-center mt-3 text-muted small"><i class="ri ri-drag-move-line align-middle"></i> Klik untuk memperbesar</div>
+                            <div class="text-center mt-3 text-muted small"><i class="ti tabler-drag-move align-middle"></i> Klik untuk memperbesar</div>
                         @else
                             <div class="alert bg-lighter text-center py-5 border-dashed rounded-3 h-100 d-flex flex-column justify-content-center">
-                                <i class="ri ri-image-line ri-3x text-muted opacity-50 mb-2"></i>
+                                <i class="ti tabler-image ti-xl text-muted opacity-50 mb-2"></i>
                                 <span class="text-muted">Anda tidak melampirkan foto.</span>
                             </div>
                         @endif
@@ -174,9 +174,9 @@
         @if($locationRequest->proposal_document)
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
             <div class="card-header border-bottom py-3 px-4 bg-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold"><i class="ri ri-file-text-line me-2 text-primary"></i>Dokumen Proposal Anda</h6>
+                <h6 class="mb-0 fw-bold"><i class="ti tabler-file-text me-2 text-primary"></i>Dokumen Proposal Anda</h6>
                 <a href="{{ asset('storage/'.$locationRequest->proposal_document) }}" download class="btn btn-sm btn-primary rounded-pill shadow-sm">
-                    <i class="ri ri-download-cloud-2-line me-1"></i> Unduh File
+                    <i class="ti tabler-cloud-download me-1"></i> Unduh File
                 </a>
             </div>
             <div class="card-body p-4 bg-white">
@@ -202,11 +202,11 @@
         {{-- CARD: STATUS TIMELINE --}}
         <div class="card border-0 shadow-sm mb-4 rounded-4">
             <div class="card-body p-4">
-                <h6 class="fw-bold text-uppercase text-muted mb-4"><i class="ri ri-guide-line me-1"></i> Pelacakan Pengajuan</h6>
+                <h6 class="fw-bold text-uppercase text-muted mb-4"><i class="ti tabler-guide me-1"></i> Pelacakan Pengajuan</h6>
                 <div class="status-timeline">
                     {{-- 1. Diajukan --}}
                     <div class="timeline-item">
-                        <div class="timeline-indicator bg-primary text-white"><i class="ri ri-check-line text-white"></i></div>
+                        <div class="timeline-indicator bg-primary text-white"><i class="ti tabler-check text-white"></i></div>
                         <h6 class="mb-0 fw-bold text-primary">Pengajuan Diterima</h6>
                         <small class="text-muted">{{ $locationRequest->created_at->format('d M Y, H:i') }}</small>
                     </div>
@@ -217,7 +217,7 @@
                             @php 
                                 $isSurveyed = $locationRequest->review ? true : false; 
                                 $sColor = $isSurveyed ? 'bg-info' : 'bg-lighter border-secondary opacity-50';
-                                $sIcon = $isSurveyed ? '<i class="ri ri-check-line text-white"></i>' : '<i class="ri ri-time-line text-muted"></i>';
+                                $sIcon = $isSurveyed ? '<i class="ti tabler-check text-white"></i>' : '<i class="ti tabler-clock text-muted"></i>';
                             @endphp
                             <div class="timeline-indicator {{ $sColor }}">{!! $sIcon !!}</div>
                             <h6 class="mb-0 fw-bold {{ $isSurveyed ? 'text-info' : 'text-muted' }}">Survey Dinas</h6>
@@ -228,9 +228,9 @@
                     {{-- 3. Finalisasi --}}
                     <div class="timeline-item mb-0">
                         @php
-                            $fColor = 'bg-lighter border-secondary opacity-50'; $fText = 'Menunggu Keputusan'; $fIcon = '<i class="ri ri-time-line text-muted"></i>';
-                            if($locationRequest->status == 'approved') { $fColor = 'bg-success text-white'; $fText = 'Disetujui'; $fIcon = '<i class="ri ri-check-double-line text-white"></i>'; }
-                            if($locationRequest->status == 'rejected') { $fColor = 'bg-danger text-white'; $fText = 'Ditolak'; $fIcon = '<i class="ri ri-close-line text-white"></i>'; }
+                            $fColor = 'bg-lighter border-secondary opacity-50'; $fText = 'Menunggu Keputusan'; $fIcon = '<i class="ti tabler-clock text-muted"></i>';
+                            if($locationRequest->status == 'approved') { $fColor = 'bg-success text-white'; $fText = 'Disetujui'; $fIcon = '<i class="ti tabler-checks text-white"></i>'; }
+                            if($locationRequest->status == 'rejected') { $fColor = 'bg-danger text-white'; $fText = 'Ditolak'; $fIcon = '<i class="ti tabler-x text-white"></i>'; }
                         @endphp
                         <div class="timeline-indicator {{ $fColor }}">{!! $fIcon !!}</div>
                         <h6 class="mb-0 fw-bold {{ str_replace('bg-', 'text-', str_replace(' opacity-50', '', str_replace(' text-white', '', $fColor))) }}">{{ $fText }}</h6>
@@ -243,10 +243,10 @@
         @if($locationRequest->review)
             <div class="card border-0 shadow-sm mb-4 rounded-4 border-start border-4 border-info">
                 <div class="card-header bg-white border-bottom pb-2 pt-3 px-4 d-flex justify-content-between align-items-center">
-                    <h6 class="card-title mb-0 fw-bold text-info"><i class="ri ri-clipboard-line me-1"></i> Hasil Survey Dinas</h6>
+                    <h6 class="card-title mb-0 fw-bold text-info"><i class="ti tabler-clipboard me-1"></i> Hasil Survey Dinas</h6>
                     @if($locationRequest->review->report_document)
                         <button type="button" class="btn btn-xs btn-info rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#surveyDocModal" title="Lihat B.A">
-                            <i class="ri ri-file-list-3-line"></i> Dokumen B.A
+                            <i class="ti tabler-file-text"></i> Dokumen B.A
                         </button>
                     @endif
                 </div>
@@ -280,11 +280,11 @@
                 <div class="card-body p-4 bg-white">
                     <div class="text-center mb-3">
                         @if($locationRequest->status == 'approved')
-                            <div class="avatar avatar-xl mx-auto bg-label-success rounded-circle mb-3"><i class="ri ri-check-double-line ri-3x"></i></div>
+                            <div class="avatar avatar-xl mx-auto bg-label-success rounded-circle mb-3"><i class="ti tabler-checks ti-xl"></i></div>
                             <h5 class="fw-bold text-success mb-1">Pengajuan Disetujui!</h5>
                             <p class="text-muted small">Data PKS Anda telah diperbarui secara otomatis di sistem.</p>
                         @else
-                            <div class="avatar avatar-xl mx-auto bg-label-danger rounded-circle mb-3"><i class="ri ri-close-line ri-3x"></i></div>
+                            <div class="avatar avatar-xl mx-auto bg-label-danger rounded-circle mb-3"><i class="ti tabler-x ti-xl"></i></div>
                             <h5 class="fw-bold text-danger mb-1">Pengajuan Ditolak</h5>
                         @endif
                     </div>
@@ -311,7 +311,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content bg-transparent border-0 shadow-none">
             <div class="modal-header border-0 pb-2 justify-content-end">
-                <button type="button" class="btn btn-icon btn-light rounded-circle shadow" data-bs-dismiss="modal" aria-label="Close"><i class="ri ri-close-line fs-4"></i></button>
+                <button type="button" class="btn btn-icon btn-light rounded-circle shadow" data-bs-dismiss="modal" aria-label="Close"><i class="ti tabler-x fs-4"></i></button>
             </div>
             <div class="modal-body text-center p-0">
                 @if($locationRequest->image)
@@ -328,7 +328,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <div class="modal-header bg-light border-0 pb-3">
-                <h5 class="modal-title fw-bold text-dark"><i class="ri ri-file-text-line me-2 text-info"></i>Berita Acara (B.A) Survey Lapangan</h5>
+                <h5 class="modal-title fw-bold text-dark"><i class="ti tabler-file-text me-2 text-info"></i>Berita Acara (B.A) Survey Lapangan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0 bg-lighter" style="height: 75vh;">
@@ -342,7 +342,7 @@
             <div class="modal-footer border-0 bg-white justify-content-between">
                 <small class="text-muted">Diunggah oleh Petugas UPT Perparkiran.</small>
                 <a href="{{ asset('storage/'.$locationRequest->review->report_document) }}" download class="btn btn-info fw-bold rounded-pill px-4">
-                    <i class="ri ri-download-line me-1"></i> Unduh Arsip
+                    <i class="ti tabler-download me-1"></i> Unduh Arsip
                 </a>
             </div>
         </div>
@@ -352,12 +352,12 @@
 
 @endsection
 
-@push('vendors-js')
+@section('vendor-script')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-@endpush
+@endsection
 
-@push('scripts')
-    <script>
+@section('page-script')
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
             // Leaflet Map Init (Hanya jalan jika ada koordinat)
             @if($locationRequest->request_type == 'add' && $locationRequest->latitude && $locationRequest->longitude)
@@ -400,4 +400,4 @@
             }, 3000);
         }
     </script>
-@endpush
+@endsection

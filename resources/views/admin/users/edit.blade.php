@@ -1,10 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Edit User: ' . $user->name)
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-users-form')
-@endsection
+
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -86,7 +84,7 @@
                                             <label for="password">Kosongkan jika tidak diubah</label>
                                         </div>
                                         <span class="input-group-text cursor-pointer"><i
-                                                class="icon-base ri ri-eye-off-line"></i></span>
+                                                class="icon-base ti tabler-eye-off"></i></span>
                                     </div>
                                 </div>
                             </div>
@@ -101,7 +99,7 @@
                                             <label for="password_confirmation">Ulangi Password Baru</label>
                                         </div>
                                         <span class="input-group-text cursor-pointer"><i
-                                                class="icon-base ri ri-eye-off-line"></i></span>
+                                                class="icon-base ti tabler-eye-off"></i></span>
                                     </div>
                                 </div>
                             </div>
@@ -154,12 +152,12 @@
                             <div class="d-flex justify-content-center gap-3 mb-3">
                                 <label for="img-upload" class="btn btn-primary" tabindex="0">
                                     <span class="d-none d-sm-block">Ubah Foto</span>
-                                    <i class="icon-base ri-upload-2-line d-sm-none"></i>
+                                    <i class="icon-base ti tabler-upload d-sm-none"></i>
                                     <input type="file" id="img-upload" name="img" class="account-file-input"
                                         hidden accept="image/png, image/jpeg" />
                                 </label>
                                 <button type="button" class="btn btn-outline-secondary account-image-reset">
-                                    <i class="icon-base ri-refresh-line d-block d-sm-none"></i>
+                                    <i class="icon-base ti tabler-refresh d-block d-sm-none"></i>
                                     <span class="d-none d-sm-block">Reset</span>
                                 </button>
                             </div>
@@ -180,7 +178,7 @@
     </form>
 @endsection
 
-@push('scripts')
+@section('page-script')
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
     <script>
         // Kode JavaScript yang sama persis dengan halaman create
@@ -249,15 +247,15 @@
             //         const iconElement = icon.querySelector('i');
             //         if (input.type === 'password') {
             //             input.type = 'text';
-            //             iconElement.classList.remove('ri-eye-off-line');
-            //             iconElement.classList.add('ri-eye-line');
+            //             iconElement.classList.remove('ti tabler-eye-off');
+            //             iconElement.classList.add('ti tabler-eye');
             //         } else {
             //             input.type = 'password';
-            //             iconElement.classList.remove('ri-eye-line');
-            //             iconElement.classList.add('ri-eye-off-line');
+            //             iconElement.classList.remove('ti tabler-eye');
+            //             iconElement.classList.add('ti tabler-eye-off');
             //         }
             //     });
             // });
         });
     </script>
-@endpush
+@endsection

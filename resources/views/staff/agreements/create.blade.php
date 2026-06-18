@@ -1,15 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Tambah Perjanjian Baru')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-agreements-form')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
-@endpush
+@endsection
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -201,13 +199,13 @@
     </form>
 @endsection
 
-@push('vendors-js')
-    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+@section('vendor-script')
+    @vite(["resources/assets/vendor/libs/select2/select2.js"])
     <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/moment/moment.js') }}"></script>
-@endpush
+@endsection
 
-@push('scripts')
+@section('page-script')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             $('.select2').select2({
@@ -266,7 +264,7 @@
                         <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
                     </div>
                     <button type="button" class="btn btn-icon btn-sm btn-danger remove-location-btn" data-id="${loc.id}">
-                        <i class="ri ri-close-line"></i>
+                        <i class="ti tabler-x"></i>
                     </button>
                 </div>
             `;
@@ -499,4 +497,4 @@
             });
         });
     </script>
-@endpush
+@endsection

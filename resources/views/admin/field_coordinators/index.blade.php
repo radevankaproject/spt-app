@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Manajemen Koordinator Lapangan')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-users-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <style>
         .progress-container { display: none; height: 10px; margin-top: 10px; border-radius: 10px; }
@@ -14,7 +12,7 @@
         .cursor-pointer { cursor: pointer; }
         .nav-tabs .nav-link.active { font-weight: 600; color: #696cff; border-bottom: 3px solid #696cff; }
     </style>
-@endpush
+@endsection
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
@@ -82,12 +80,12 @@
                     <input type="hidden" name="tab" value="{{ $currentTab }}">
                     <div class="input-group">
                         <input type="search" name="search" class="form-control" placeholder="Cari nama/NIK..." value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="ri icon-base ri-search-line"></i></button>
+                        <button class="btn btn-outline-primary" type="submit"><i class="ri icon-base ti tabler-search"></i></button>
                     </div>
                 </form>
                 @if(Auth::user()->role !== 'leader')
                 <button type="button" class="btn btn-primary" id="btn-add-korlap" data-bs-toggle="modal" data-bs-target="#korlapModal">
-                    <i class="ri icon-base ri-add-line me-1"></i> Tambah Korlap
+                    <i class="ri icon-base ti tabler-plus me-1"></i> Tambah Korlap
                 </button>
                 @endif
             </div>
@@ -149,7 +147,7 @@
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('admin.field-coordinators.show', $coordinator->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
-                                            <i class="ri icon-base ri-eye-line icon-20px"></i>
+                                            <i class="ri icon-base ti tabler-eye icon-20px"></i>
                                         </a>
 
                                         @if(Auth::user()->role !== 'leader')
@@ -164,7 +162,7 @@
                                             data-ktpimg="{{ $ktpImg }}"
                                             data-bs-toggle="modal" data-bs-target="#korlapModal"
                                             data-bs-toggle="tooltip" title="Edit Koordinator">
-                                            <i class="ri icon-base ri-pencil-line icon-20px"></i>
+                                            <i class="ri icon-base ti tabler-pencil icon-20px"></i>
                                         </button>
                                         @endif
 
@@ -176,7 +174,7 @@
                                             data-phone="{{ $coordinator->phone_number ?? '' }}"
                                             data-bs-toggle="modal" data-bs-target="#editLoginModal"
                                             data-bs-toggle="tooltip" title="Edit Data Login">
-                                            <i class="ri icon-base ri-key-line icon-20px"></i>
+                                            <i class="ri icon-base ti tabler-key icon-20px"></i>
                                         </button>
                                         @endif
 
@@ -189,7 +187,7 @@
                                                 <form action="{{ route('admin.field-coordinators.toggle-status', $coordinator->id) }}" method="POST" class="d-inline form-toggle">
                                                     @csrf @method('PATCH')
                                                     <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-toggle" data-bs-toggle="tooltip" title="Nonaktifkan Akses">
-                                                        <i class="ri icon-base ri-information-off-line icon-20px"></i>
+                                                        <i class="ri icon-base ti tabler-fingerprint-off icon-20px"></i>
                                                     </button>
                                                 </form>
                                             @endif
@@ -201,7 +199,7 @@
                                             <form action="{{ route('admin.field-coordinators.toggle-status', $coordinator->id) }}" method="POST" class="d-inline form-toggle">
                                                 @csrf @method('PATCH')
                                                 <button type="button" class="btn btn-sm btn-icon btn-text-success rounded-pill btn-toggle" data-bs-toggle="tooltip" title="Aktifkan Kembali">
-                                                    <i class="ri icon-base ri-refresh-line icon-20px"></i>
+                                                    <i class="ri icon-base ti tabler-refresh icon-20px"></i>
                                                 </button>
                                             </form>
 
@@ -209,7 +207,7 @@
                                             <form action="{{ route('admin.field-coordinators.destroy', $coordinator->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Permanen">
-                                                    <i class="ri icon-base ri-delete-bin-line icon-20px"></i>
+                                                    <i class="ri icon-base ti tabler-trash icon-20px"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -248,7 +246,7 @@
                         <div class="row g-5">
                             {{-- KOLOM KIRI: Data Text --}}
                             <div class="col-lg-8">
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-user-settings-line me-1"></i> Informasi Pribadi</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-user-up me-3"></i> Informasi Pribadi</h6>
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <div class="form-floating form-floating-outline">
@@ -285,7 +283,7 @@
 
                             {{-- KOLOM KANAN: Upload Foto Cerdas --}}
                             <div class="col-lg-4 border-start">
-                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ri ri-image-add-line me-1"></i> Dokumen Foto</h6>
+                                <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="ti tabler-user-square-rounded me-3"></i> Dokumen Foto</h6>
 
                                 {{-- Avatar Upload --}}
                                 <div class="text-center mb-4">
@@ -293,7 +291,7 @@
                                     <img src="{{ asset('assets/img/avatars/1.png') }}" id="avatar-preview" class="rounded-circle shadow-sm mb-2" style="width:100px; height:100px; object-fit:cover;">
                                     <div class="d-block mt-2">
                                         <label for="img-upload" class="btn btn-sm btn-outline-primary rounded-pill cursor-pointer">
-                                            <i class="ri ri-upload-2-line me-1"></i> Pilih Foto
+                                            <i class="ti tabler-upload me-3"></i> Pilih Foto
                                             <input type="file" id="img-upload" name="img" hidden accept="image/png, image/jpeg" />
                                         </label>
                                     </div>
@@ -309,7 +307,7 @@
                                     <img src="{{ asset('assets/img/ktp.png') }}" id="idcard-preview" class="rounded-3 shadow-sm mb-2" style="height:100px; object-fit:cover; max-width: 100%;">
                                     <div class="d-block mt-2">
                                         <label for="idcard-upload" class="btn btn-sm btn-outline-primary rounded-pill cursor-pointer">
-                                            <i class="ri ri-upload-2-line me-1"></i> Pilih KTP
+                                            <i class="ti tabler-upload me-1"></i> Pilih KTP
                                             <input type="file" id="idcard-upload" name="id_card_img" hidden accept="image/png, image/jpeg" />
                                         </label>
                                     </div>
@@ -325,7 +323,7 @@
                     <div class="modal-footer bg-light px-4 py-3 border-top">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary" id="btnSubmitModal">
-                            <i class="ri ri-save-3-line me-1"></i> Simpan Data
+                            <i class="ti tabler-device-floppy me-1"></i> Simpan Data
                         </button>
                     </div>
                 </form>
@@ -339,7 +337,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-light border-bottom">
-                    <h5 class="modal-title fw-bold text-primary"><i class="ri ri-shield-keyhole-line me-2"></i>Edit Data Login</h5>
+                    <h5 class="modal-title fw-bold text-primary"><i class="ti tabler-shield-keyhole me-2"></i>Edit Data Login</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="formLoginModal" action="" method="POST">
@@ -347,7 +345,7 @@
                     @method('PATCH')
                     <div class="modal-body p-4">
                         <div class="alert alert-warning small mb-4">
-                            <i class="ri ri-error-warning-line me-1"></i> Data di bawah ini digunakan oleh koordinator untuk masuk ke dalam sistem aplikasi.
+                            <i class="ti tabler-alert-triangle me-1"></i> Data di bawah ini digunakan oleh koordinator untuk masuk ke dalam sistem aplikasi.
                         </div>
 
                         <div class="form-floating form-floating-outline mb-3">
@@ -376,7 +374,7 @@
                                     <input type="password" class="form-control" id="password" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
                                     <label for="password">Password Baru</label>
                                 </div>
-                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ri-eye-off-line"></i></span>
+                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ti tabler-eye-off"></i></span>
                             </div>
                         </div>
 
@@ -386,13 +384,13 @@
                                     <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
                                     <label for="password_confirmation">Konfirmasi Password</label>
                                 </div>
-                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ri-eye-off-line"></i></span>
+                                <span class="input-group-text cursor-pointer"><i class="ri icon-base ti tabler-eye-off"></i></span>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer bg-light px-4 py-3 border-top">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary"><i class="ri ri-save-3-line me-1"></i> Simpan Akses</button>
+                        <button type="submit" class="btn btn-primary"><i class="ti tabler-device-floppy me-1"></i> Simpan Akses</button>
                     </div>
                 </form>
             </div>
@@ -402,11 +400,11 @@
 
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+@section('page-script')
+    @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
 
-    <script>
+    <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
 
             // --- 1. FILTER INPUT ANGKA ---
@@ -431,7 +429,7 @@
                     modalTitle.innerText = 'Tambah Koordinator Baru';
                     formKorlap.action = "{{ route('admin.field-coordinators.store') }}";
                     methodContainer.innerHTML = '';
-                    btnSubmitModal.innerHTML = '<i class="ri-save-3-line me-1"></i> Simpan Data';
+                    btnSubmitModal.innerHTML = '<i class="ti tabler-device-floppy me-1"></i> Simpan Data';
                     
                     document.getElementById('name').value = '';
                     document.getElementById('id_card_number').value = '';
@@ -453,7 +451,7 @@
                     modalTitle.innerText = 'Edit Koordinator: ' + this.dataset.name;
                     formKorlap.action = `/admin/field-coordinators/${this.dataset.id}`;
                     methodContainer.innerHTML = '@method("PATCH")';
-                    btnSubmitModal.innerHTML = '<i class="ri-save-3-line me-1"></i> Simpan Perubahan';
+                    btnSubmitModal.innerHTML = '<i class="ti tabler-device-floppy me-1"></i> Simpan Perubahan';
 
                     document.getElementById('name').value = this.dataset.name;
                     document.getElementById('id_card_number').value = this.dataset.ktp;
@@ -645,4 +643,4 @@
             tooltips.map(t => new bootstrap.Tooltip(t));
         });
     </script>
-@endpush
+@endsection

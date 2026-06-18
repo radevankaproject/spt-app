@@ -1,12 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.contentNavbarLayout')
 
 @section('title', 'Riwayat Pengajuan Titik Parkir')
 
-@section('skeleton')
-    @include('layouts.partials._skeleton-fc-lr-index')
-@endsection
 
-@push('styles')
+
+@section('page-style')
     <style>
         .table-premium { border-collapse: separate; border-spacing: 0; min-width: 900px; }
         .table-premium th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb !important; color: #6b7280; padding-bottom: 1rem; }
@@ -31,17 +29,17 @@
         /* Custom Filter Dropdown */
         .filter-dropdown { min-width: 300px; padding: 1.5rem; border-radius: 1rem; border: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     </style>
-@endpush
+@endsection
 
 @section('content')
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="fw-bold mb-1"><i class="ri ri-map-pin-time-line me-2 text-primary"></i>Pengajuan Titik Parkir</h4>
+        <h4 class="fw-bold mb-1"><i class="ti tabler-map-pin-time me-2 text-primary"></i>Pengajuan Titik Parkir</h4>
         <p class="text-muted small mb-0">Pantau status penambahan atau pencabutan titik kelolaan Anda.</p>
     </div>
     <div class="d-flex align-items-center mt-3 mt-md-0">
         <a href="{{ route('field_coordinator.location-requests.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4">
-            <i class="ri ri-add-line me-1"></i> Buat Pengajuan Baru
+            <i class="ti tabler-plus me-1"></i> Buat Pengajuan Baru
         </a>
     </div>
 </div>
@@ -49,7 +47,7 @@
 {{-- PENGUMUMAN AUTO-CLEANUP 60 HARI --}}
 <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 d-flex align-items-start rounded-4 p-4 mb-4" role="alert">
     <div class="avatar avatar-md bg-warning rounded-circle me-3 d-flex flex-shrink-0 align-items-center justify-content-center text-white shadow-sm">
-        <i class="ri ri-hard-drive-2-line ri-xl"></i>
+        <i class="ti tabler-hard-drive-2 ti tabler-xl"></i>
     </div>
     <div>
         <h6 class="alert-heading fw-bold mb-1 text-dark">Informasi Penyimpanan File</h6>
@@ -71,7 +69,7 @@
                 {{-- TOMBOL FILTER TANGGAL (DROPDOWN) --}}
                 <div class="dropdown">
                     <button class="btn {{ request('start_date') || request('end_date') ? 'btn-primary' : 'btn-outline-secondary' }} rounded-pill" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                        <i class="ri ri-filter-3-line me-1"></i> 
+                        <i class="ti tabler-filter me-1"></i> 
                         {{ request('start_date') ? 'Tgl Difilter' : 'Filter Tgl' }}
                     </button>
                     <div class="dropdown-menu dropdown-menu-end filter-dropdown" aria-labelledby="filterDropdown">
@@ -94,11 +92,11 @@
                 {{-- SEARCH BAR --}}
                 <div class="search-bar">
                     <div class="input-group input-group-merge rounded-pill shadow-sm border">
-                        <span class="input-group-text bg-transparent border-0 text-muted ps-3"><i class="ri ri-search-line"></i></span>
+                        <span class="input-group-text bg-transparent border-0 text-muted ps-3"><i class="ti tabler-search"></i></span>
                         <input type="text" name="search" class="form-control border-0 px-2" placeholder="Cari nama, jalan..." value="{{ request('search') }}">
                         @if(request('search') || request('start_date') || request('end_date'))
                             <a href="{{ route('field_coordinator.location-requests.index') }}" class="input-group-text bg-transparent border-0 text-danger" data-bs-toggle="tooltip" title="Hapus Semua Filter">
-                                <i class="ri ri-close-circle-fill"></i>
+                                <i class="ti tabler-close-circle-filled"></i>
                             </a>
                         @endif
                         <button type="submit" class="btn btn-primary rounded-pill m-1 px-3 d-none d-md-block">Cari</button>
@@ -131,23 +129,23 @@
                             </td>
                             <td>
                                 @if($request->request_type == 'add')
-                                    <span class="badge bg-label-success badge-modern"><i class="ri ri-add-circle-line"></i> Penambahan</span>
+                                    <span class="badge bg-label-success badge-modern"><i class="ti tabler-add-circle"></i> Penambahan</span>
                                 @else
-                                    <span class="badge bg-label-danger badge-modern"><i class="ri ri-delete-bin-line"></i> Pencabutan</span>
+                                    <span class="badge bg-label-danger badge-modern"><i class="ti tabler-trash"></i> Pencabutan</span>
                                 @endif
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar avatar-sm me-3 bg-lighter rounded d-flex align-items-center justify-content-center text-primary">
-                                        <i class="ri ri-map-pin-user-line"></i>
+                                        <i class="ti tabler-user-pin"></i>
                                     </div>
                                     <div>
                                         @if($request->request_type == 'add')
                                             <span class="fw-bold text-dark d-block text-truncate" style="max-width: 200px;" title="{{ $request->name }}">{{ $request->name }}</span>
-                                            <small class="text-muted"><i class="ri ri-road-map-line align-middle"></i> Jl. {{ Str::limit($request->road_section_name, 15) }}</small>
+                                            <small class="text-muted"><i class="ti tabler-road align-middle"></i> Jl. {{ Str::limit($request->road_section_name, 15) }}</small>
                                         @else
                                             <span class="fw-bold text-dark d-block text-truncate" style="max-width: 200px;" title="{{ $request->parkingLocation->name ?? 'Titik Tidak Diketahui' }}">{{ $request->parkingLocation->name ?? 'Titik Tidak Diketahui' }}</span>
-                                            <small class="text-muted"><i class="ri ri-road-map-line align-middle"></i> ID Ruas: {{ $request->parkingLocation->roadSection->name ?? '-' }}</small>
+                                            <small class="text-muted"><i class="ti tabler-road align-middle"></i> ID Ruas: {{ $request->parkingLocation->roadSection->name ?? '-' }}</small>
                                         @endif
                                     </div>
                                 </div>
@@ -159,19 +157,19 @@
                             </td>
                             <td class="text-center">
                                 @if($request->status == 'pending')
-                                    <span class="badge bg-label-warning badge-modern"><i class="ri ri-time-line"></i> Pending</span>
+                                    <span class="badge bg-label-warning badge-modern"><i class="ti tabler-clock"></i> Pending</span>
                                 @elseif($request->status == 'surveyed')
-                                    <span class="badge bg-label-info badge-modern"><i class="ri ri-clipboard-line"></i> Disurvey</span>
+                                    <span class="badge bg-label-info badge-modern"><i class="ti tabler-clipboard"></i> Disurvey</span>
                                 @elseif($request->status == 'approved')
-                                    <span class="badge bg-label-success badge-modern"><i class="ri ri-check-double-line"></i> Disetujui</span>
+                                    <span class="badge bg-label-success badge-modern"><i class="ti tabler-checks"></i> Disetujui</span>
                                 @else
-                                    <span class="badge bg-label-danger badge-modern"><i class="ri ri-close-circle-line"></i> Ditolak</span>
+                                    <span class="badge bg-label-danger badge-modern"><i class="ti tabler-circle-x"></i> Ditolak</span>
                                 @endif
                             </td>
                             <td>
                                 @if($request->admin_note)
                                     <div class="d-flex align-items-start">
-                                        <i class="ri ri-message-3-line text-muted me-2 mt-1"></i>
+                                        <i class="ti tabler-message-3 text-muted me-2 mt-1"></i>
                                         <span class="d-inline-block text-truncate text-dark small fw-medium" style="max-width: 150px;" title="{{ $request->admin_note }}">
                                             {{ $request->admin_note }}
                                         </span>
@@ -187,21 +185,21 @@
                                     <a href="{{ route('field_coordinator.location-requests.show', $request->id) }}"
                                        class="btn btn-sm btn-icon btn-label-info btn-action"
                                        data-bs-toggle="tooltip" title="Lihat Detail Progress">
-                                        <i class="ri ri-eye-line"></i>
+                                        <i class="ti tabler-eye"></i>
                                     </a>
 
                                     @if($request->status == 'pending')
                                         <a href="{{ route('field_coordinator.location-requests.edit', $request->id) }}"
                                            class="btn btn-sm btn-icon btn-label-primary btn-action"
                                            data-bs-toggle="tooltip" title="Edit Pengajuan">
-                                            <i class="ri ri-pencil-line"></i>
+                                            <i class="ti tabler-pencil"></i>
                                         </a>
 
                                         <button type="button"
                                                 class="btn btn-sm btn-icon btn-label-danger btn-action"
                                                 data-bs-toggle="tooltip" title="Batalkan Pengajuan"
                                                 onclick="openDeleteModal('{{ route('field_coordinator.location-requests.destroy', $request->id) }}')">
-                                            <i class="ri ri-delete-bin-line"></i>
+                                            <i class="ti tabler-trash"></i>
                                         </button>
                                     @endif
                                 </div>
@@ -212,18 +210,18 @@
                             <td colspan="7" class="text-center py-5">
                                 <div class="empty-state-container d-flex flex-column align-items-center justify-content-center">
                                     <div class="avatar avatar-xl bg-lighter rounded-circle mb-3 d-flex align-items-center justify-content-center">
-                                        <i class="ri ri-search-eye-line ri-3x text-muted opacity-50"></i>
+                                        <i class="ti tabler-zoom-in ti-xl text-muted opacity-50"></i>
                                     </div>
                                     <h6 class="fw-bold text-dark mb-1">Data Tidak Ditemukan</h6>
                                     @if(request('search') || request('start_date') || request('end_date'))
                                         <p class="text-muted small mb-3">Pencarian filter Anda tidak membuahkan hasil.</p>
                                         <a href="{{ route('field_coordinator.location-requests.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
-                                            <i class="ri ri-refresh-line me-1"></i> Reset Semua Filter
+                                            <i class="ti tabler-refresh me-1"></i> Reset Semua Filter
                                         </a>
                                     @else
                                         <p class="text-muted small mb-3">Anda belum pernah mengajukan penambahan atau pencabutan titik.</p>
                                         <a href="{{ route('field_coordinator.location-requests.create') }}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                            <i class="ri ri-add-line me-1"></i> Buat Pengajuan Pertama
+                                            <i class="ti tabler-plus me-1"></i> Buat Pengajuan Pertama
                                         </a>
                                     @endif
                                 </div>
@@ -242,7 +240,7 @@
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-body text-center p-4">
                 <div class="avatar avatar-xl bg-label-danger rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center">
-                    <i class="ri ri-delete-bin-line ri-3x"></i>
+                    <i class="ti tabler-trash ti-xl"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Batalkan Pengajuan?</h5>
                 <p class="text-muted small mb-4">Pengajuan yang dibatalkan akan dihapus permanen dari sistem dan tidak dapat dikembalikan.</p>
@@ -261,9 +259,9 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+@section('page-script')
+<script type="module">
+        document.addEventListener("DOMContentLoaded", function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
@@ -284,4 +282,4 @@
         document.querySelector('.search-bar form, form.d-flex').submit();
     }
 </script>
-@endpush
+@endsection
