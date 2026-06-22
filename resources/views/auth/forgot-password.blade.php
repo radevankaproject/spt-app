@@ -52,7 +52,13 @@ $customizerHidden = 'customizer-hide';
       </div>
       
       <div class="mb-6">
-        <button class="btn btn-primary d-grid w-100" type="submit">Kirim Kode OTP</button>
+        <button class="btn btn-primary d-grid w-100" type="submit" id="submitBtn">
+          <span class="indicator-label">Kirim Kode OTP</span>
+          <span class="indicator-progress d-none">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Mengirim...
+          </span>
+        </button>
       </div>
     </form>
 
@@ -66,4 +72,23 @@ $customizerHidden = 'customizer-hide';
   </div>
 </div>
 <!-- /Forgot Password -->
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formAuthentication');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if(form && submitBtn) {
+            form.addEventListener('submit', function() {
+                if(form.checkValidity()) {
+                    submitBtn.disabled = true;
+                    submitBtn.querySelector('.indicator-label').classList.add('d-none');
+                    submitBtn.querySelector('.indicator-progress').classList.remove('d-none');
+                }
+            });
+        }
+    });
+</script>
 @endsection

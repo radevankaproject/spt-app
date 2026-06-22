@@ -233,7 +233,10 @@ class DepositTransactionController extends Controller
                 $transactionData['proof_of_transfer'] = $request->file('proof_of_transfer')->storeAs('uploads/proofs', $imageName, 'public');
             }
 
-            DepositTransaction::create($transactionData);
+            $newDeposit = DepositTransaction::create($transactionData);
+            // Kirim Notifikasi ke Staff Keuangan
+            $staffKeus = \App\Models\User::whereIn('role', ['admin', 'staff_keu'])->get();
+            \Illuminate\Support\Facades\Notification::send($staffKeus, new \App\Notifications\DepositPendingNotification($newDeposit));
 
             return redirect()->route('masterdata.deposit-transactions.index')->with('success', 'Setoran berhasil dicatat! Menunggu validasi.');
         } catch (\Exception $e) {
@@ -401,6 +404,11 @@ class DepositTransactionController extends Controller
                 'validation_date' => now(),
                 'validated_by_user_id' => Auth::id(),
             ]);
+
+            // Kirim Notifikasi ke Bendahara
+            if ($depositTransaction->treasurer && $depositTransaction->treasurer->user) {
+                $depositTransaction->treasurer->user->notify(new \App\Notifications\DepositValidatedNotification($depositTransaction));
+            }
 
             // 3. LOGIKA AKTIVASI PKS Otomatis
             if ($agreement && $agreement->status === 'pending') {

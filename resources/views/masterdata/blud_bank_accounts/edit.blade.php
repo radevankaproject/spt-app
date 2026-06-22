@@ -69,7 +69,7 @@
                     {{-- Tanggal Mulai Efektif --}}
                     <div class="col-md-6">
                         <div class="form-floating form-floating-outline">
-                            <input type="date" class="form-control" id="start_date" name="start_date"
+                            <input type="text" class="form-control flatpickr-date" id="start_date" name="start_date"
                                 value="{{ old('start_date', $account->start_date->format('Y-m-d')) }}" required />
                             <label for="start_date">Tanggal Mulai Efektif</label>
                         </div>
@@ -78,7 +78,7 @@
                     {{-- Tanggal Berakhir --}}
                     <div class="col-md-6">
                         <div class="form-floating form-floating-outline">
-                            <input type="date" class="form-control" id="end_date" name="end_date"
+                            <input type="text" class="form-control flatpickr-date" id="end_date" name="end_date"
                                 value="{{ old('end_date', $account->end_date ? $account->end_date->format('Y-m-d') : '') }}" />
                             <label for="end_date">Tanggal Berakhir (Opsional)</label>
                         </div>
@@ -98,7 +98,7 @@
                 </div>
                 <div class="col-12 mt-4">
                     <div class="alert alert-warning d-flex align-items-center" role="alert">
-                        <span class="alert-icon rounded-3"><i class="icon-base ti tabler-alert ti-md"></i></span>
+                        <span class="alert-icon rounded-3"><i class="icon-base ti tabler-alert-octagon ti-md"></i></span>
                         <div class="alert-text">
                             Mengaktifkan rekening ini akan menonaktifkan rekening aktif lainnya secara otomatis.
                         </div>
@@ -116,6 +116,20 @@
 @endsection
 
 @section('page-script')
+
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flatpickrDates = document.querySelectorAll('.flatpickr-date');
+            if (flatpickrDates) {
+                flatpickr('.flatpickr-date', {
+                    dateFormat: "Y-m-d",
+                    appendTo: document.body
+                });
+            }
+        });
+    </script>
+
     <script>
         // Script khusus untuk form ini (jika ada di masa depan)
         document.addEventListener("DOMContentLoaded", function() {
@@ -131,4 +145,14 @@
             hiddenInput.disabled = isActiveSwitch.checked;
         });
     </script>
+@endsection
+
+@section('page-style')
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+<style>
+    .flatpickr-calendar {
+        z-index: 99999 !important;
+    }
+</style>
+
 @endsection

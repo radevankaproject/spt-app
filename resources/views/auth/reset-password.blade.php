@@ -63,7 +63,13 @@ $customizerHidden = 'customizer-hide';
       </div>
 
       <div class="mb-6">
-        <button class="btn btn-primary d-grid w-100" type="submit">Reset Kata Sandi</button>
+        <button class="btn btn-primary d-grid w-100" type="submit" id="submitBtn">
+          <span class="indicator-label">Reset Kata Sandi</span>
+          <span class="indicator-progress d-none">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Menyimpan...
+          </span>
+        </button>
       </div>
     </form>
 
@@ -77,4 +83,23 @@ $customizerHidden = 'customizer-hide';
   </div>
 </div>
 <!-- /Reset Password -->
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formAuthentication');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if(form && submitBtn) {
+            form.addEventListener('submit', function() {
+                if(form.checkValidity()) {
+                    submitBtn.disabled = true;
+                    submitBtn.querySelector('.indicator-label').classList.add('d-none');
+                    submitBtn.querySelector('.indicator-progress').classList.remove('d-none');
+                }
+            });
+        }
+    });
+</script>
 @endsection

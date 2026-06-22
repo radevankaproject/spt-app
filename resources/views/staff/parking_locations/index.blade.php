@@ -98,7 +98,7 @@
                     </form>
 
                     <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary shadow-sm">
-                        <i class="ri icon-base ti tabler-upload-cloud me-1"></i> Impor
+                        <i class="ri icon-base ti tabler-cloud-upload me-1"></i> Impor
                     </a>
                     <a href="{{ route('masterdata.parking-locations.create') }}" class="btn btn-primary shadow-sm">
                         <i class="ri icon-base ti tabler-plus me-1"></i> Tambah
@@ -198,14 +198,28 @@
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
                                             href="{{ route('masterdata.parking-locations.show', $location->id) }}"
                                             data-bs-toggle="tooltip" title="Detail Lokasi">
-                                            <i class="ri icon-base ti tabler-eye ti-md"></i>
+                                            <i class="ri icon-base ti tabler-eye icon-22px"></i>
                                         </a>
 
                                         @if(Auth::user()->role !== 'leader')
+                                            @if ($location->agreements->isEmpty())
+                                            <form action="{{ route('masterdata.parking-locations.toggleStatus', $location->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-icon btn-text-{{ $location->status == 'tersedia' ? 'success' : 'danger' }} rounded-pill" data-bs-toggle="tooltip" title="Ubah ke {{ $location->status == 'tersedia' ? 'Tidak Tersedia' : 'Tersedia' }}">
+                                                    <i class="ri icon-base ti tabler-{{ $location->status == 'tersedia' ? 'toggle-right' : 'toggle-left' }} icon-22px"></i>
+                                                </button>
+                                            </form>
+                                            @else
+                                            <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled data-bs-toggle="tooltip" title="Terikat PKS (Tidak bisa ubah status)">
+                                                <i class="ri icon-base ti tabler-toggle-right icon-22px opacity-50"></i>
+                                            </button>
+                                            @endif
+
                                             <a class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                                 href="{{ route('masterdata.parking-locations.edit', $location->id) }}"
                                                 data-bs-toggle="tooltip" title="Edit Lokasi">
-                                                <i class="ri icon-base ti tabler-pencil ti-md"></i>
+                                                <i class="ri icon-base ti tabler-pencil icon-22px"></i>
                                             </a>
                                         @endif
 
@@ -213,14 +227,14 @@
                                         @if ($location->status == 'tidak_tersedia')
                                             <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
                                                 data-bs-toggle="tooltip" title="Tidak dapat dihapus, sedang terikat PKS!">
-                                                <i class="ri icon-base ti tabler-delete-bin-7 ti-md opacity-50"></i>
+                                                <i class="ri icon-base ti tabler-trash icon-22px opacity-50"></i>
                                             </button>
                                         @else
                                             <form action="{{ route('masterdata.parking-locations.destroy', $location->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Lokasi">
-                                                    <i class="ri icon-base ti tabler-delete-bin-7 ti-md"></i>
+                                                    <i class="ri icon-base ti tabler-trash icon-22px"></i>
                                                 </button>
                                             </form>
                                         @endif

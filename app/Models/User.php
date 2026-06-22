@@ -68,6 +68,11 @@ class User extends Authenticatable
         return $this->hasOne(Treasurer::class);
     }
 
+    public function shortcuts()
+    {
+        return $this->hasMany(UserShortcut::class);
+    }
+
     // --- Start: Metode Helper Role ---
 
     public function isAdmin(): bool

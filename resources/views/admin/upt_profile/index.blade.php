@@ -225,7 +225,7 @@
                     @if(Auth::user()->role !== 'leader')
                     <div class="card-footer text-center border-top">
                         <button type="submit" class="btn btn-success w-100">
-                            <i class="ti tabler-save me-1"></i> Simpan Perubahan
+                            <i class="ti tabler-device-floppy me-1"></i> Simpan Perubahan
                         </button>
                     </div>
                     @endif

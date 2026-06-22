@@ -103,12 +103,19 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-2">
+                                        {{-- Tombol Lihat Detail --}}
+                                        <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
+                                            href="{{ route('masterdata.road-sections.show', $roadSection->id) }}"
+                                            data-bs-toggle="tooltip" title="Lihat Detail">
+                                            <i class="ri icon-base ti tabler-eye icon-22px"></i>
+                                        </a>
+
                                         @if(Auth::user()->role !== 'leader')
                                         {{-- Tombol Edit Panggil Modal --}}
                                         <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill"
                                             data-bs-toggle="modal" data-bs-target="#editModal{{ $roadSection->id }}"
                                             data-bs-placement="top" title="Edit">
-                                            <i class="ri icon-base ti tabler-pencil ti-md"></i>
+                                            <i class="ri icon-base ti tabler-pencil icon-22px"></i>
                                         </button>
 
                                         {{-- ✅ Logika Disable Hapus --}}
@@ -116,7 +123,7 @@
                                             <button type="button"
                                                 class="btn btn-sm btn-icon btn-text-secondary rounded-pill" disabled
                                                 data-bs-toggle="tooltip" title="Tidak dapat dihapus, sedang digunakan!">
-                                                <i class="ri icon-base ti tabler-delete-bin-7 ti-md opacity-50"></i>
+                                                <i class="ri icon-base ti tabler-trash icon-22px opacity-50"></i>
                                             </button>
                                         @else
                                             <form
@@ -128,7 +135,7 @@
                                                     class="btn btn-sm btn-icon btn-text-danger rounded-pill"
                                                     onclick="confirmDelete({{ $roadSection->id }}, '{{ addslashes($roadSection->name) }}')"
                                                     data-bs-toggle="tooltip" title="Hapus">
-                                                    <i class="ri icon-base ti tabler-delete-bin-7 ti-md"></i>
+                                                    <i class="ri icon-base ti tabler-trash icon-22px"></i>
                                                 </button>
                                             </form>
                                         @endif

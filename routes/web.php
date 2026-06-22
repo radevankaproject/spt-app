@@ -43,6 +43,10 @@ Route::get('/verify/agreement/{code}', [PublicVerificationController::class, 've
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard (Redirector)
+    // Shortcuts
+    Route::get('/user-shortcuts', [\App\Http\Controllers\UserShortcutController::class, 'getAvailable'])->name('shortcuts.get');
+    Route::post('/user-shortcuts', [\App\Http\Controllers\UserShortcutController::class, 'saveShortcuts'])->name('shortcuts.save');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profil Pengguna
@@ -110,6 +114,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('parking-locations.importStore');
             Route::delete('parking-locations/bulk-delete', [ParkingLocationController::class, 'bulkDeleteUnused'])
                 ->name('parking-locations.bulkDeleteUnused');
+            Route::patch('parking-locations/{parking_location}/toggle-status', [ParkingLocationController::class, 'toggleStatus'])
+                ->name('parking-locations.toggleStatus');
             Route::resource('parking-locations', ParkingLocationController::class)->except(['show']);
 
             // ✅ Rute AJAX harus di atas resource
@@ -135,6 +141,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // --- Rute yang bisa diakses SEMUA role (termasuk Leader untuk view & AJAX) ---
         // Ini untuk aksi lihat-saja (view-only) dan kebutuhan AJAX.
         Route::middleware('role:admin,staff_keu,staff_pks,leader,field_coordinator')->group(function () {
+            Route::get('road-sections/{road_section}', [RoadSectionController::class, 'show'])->name('road-sections.show');
             Route::get('parking-locations/{parking_location}', [ParkingLocationController::class, 'show'])->name('parking-locations.show');
             Route::get('agreements/{agreement}', [AgreementController::class, 'show'])->name('agreements.show');
             Route::get('agreements/{agreement}/pdf-history', [AgreementController::class, 'showPdfHistory'])->name('agreements.pdf-history');
@@ -161,18 +168,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // ✅ PERBAIKAN: Definisikan rute spesifik SEBELUM resource
             // --- Users ---
-            Route::get('users/trashed', [UserController::class, 'trashed'])->name('users.trashed');
-            Route::patch('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
             Route::resource('users', UserController::class);
 
             // --- Leaders ---
-            Route::get('leaders/trashed', [LeaderController::class, 'trashed'])->name('leaders.trashed');
-            Route::patch('leaders/{id}/restore', [LeaderController::class, 'restore'])->name('leaders.restore');
             Route::resource('leaders', LeaderController::class);
+            Route::post('leaders/{leader}/extend', [LeaderController::class, 'extend'])->name('leaders.extend');
             Route::patch('leader/{leader}/toggle-status', [LeaderController::class, 'toggleStatus'])->name('leaders.toggle-status');
 
             // --- Treasurers (Bendahara) ---
             Route::resource('treasurers', TreasurerController::class);
+            Route::post('treasurers/{treasurer}/extend', [TreasurerController::class, 'extend'])->name('treasurers.extend');
             Route::patch('treasurers/{treasurer}/toggle-status', [TreasurerController::class, 'toggleStatus'])->name('treasurers.toggle-status');
 
             // --- Rute lainnya ---
@@ -201,8 +206,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('admin.')
         ->group(function () {
             // --- Field Coordinators ---
-            Route::get('field-coordinators/trashed', [FieldCoordinatorController::class, 'trashed'])->name('field-coordinators.trashed');
-            Route::patch('field-coordinators/{id}/restore', [FieldCoordinatorController::class, 'restore'])->name('field-coordinators.restore');
             Route::resource('field-coordinators', FieldCoordinatorController::class);
             Route::patch('field-coordinators/{field_coordinator}/toggle-status', [FieldCoordinatorController::class, 'toggleStatus'])->name('field-coordinators.toggle-status');
             Route::patch('field-coordinators/{field_coordinator}/update-login', [FieldCoordinatorController::class, 'updateLogin'])->name('field-coordinators.update-login');

@@ -12,11 +12,6 @@
         object-fit: cover;
     }
 
-    .card {
-        border: none;
-        box-shadow: 0 0.25rem 1rem rgba(161, 172, 184, 0.15);
-    }
-
     .pdf-container {
         height: 75vh;
         width: 100%;
@@ -67,17 +62,20 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
 {{-- HERO SECTION --}}
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card bg-primary text-white border-0 shadow-sm"
-            style="background: linear-gradient(135deg, #696cff, #8485ff);">
-            <div class="card-body p-4 d-flex align-items-center justify-content-between">
-                <div>
-                    <h4 class="text-white fw-bold mb-2">Halo, {{ Auth::user()->name }}! 👋</h4>
-                    <p class="mb-0 text-white-50">Selamat datang di Panel Mitra Pengelolaan Perparkiran Kota Pekanbaru.
+        <div class="fintech-card shadow-lg text-white p-4 p-lg-5 animate__animated animate__fadeInDown d-flex align-items-center position-relative h-100 w-100">
+            <i class="ti tabler-parking position-absolute text-white opacity-10" style="font-size: 200px; right: 0px; bottom: -20px; transform: rotate(-10deg);"></i>
+            <div class="row w-100 align-items-center position-relative z-1">
+                <div class="col-md-9 text-md-start text-center mb-4 mb-md-0">
+                    <h2 class="text-white fw-bold mb-2">Halo, {{ Auth::user()->name }}! <span class="waving-hand">👋</span></h2>
+                    <p class="mb-0 text-white-50" style="font-size: 1.1rem;">Selamat datang di Panel Mitra Pengelolaan Perparkiran Kota Pekanbaru.
                     </p>
                 </div>
-                <div class="avatar avatar-xl d-none d-md-flex">
-                    <img src="{{ Auth::user()->img ? asset('storage/'.Auth::user()->img) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=fff&color=696cff&bold=true' }}"
-                        alt="Avatar" class="rounded-circle shadow" style="object-fit: cover;">
+                <div class="col-md-3 text-center text-md-end d-none d-md-block">
+                    <div class="position-relative d-inline-block">
+                        <div class="position-absolute w-100 h-100 rounded-circle bg-white opacity-25" style="top: 10px; left: -10px; filter: blur(20px);"></div>
+                        <img src="{{ Auth::user()->img ? asset('storage/'.Auth::user()->img) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=fff&color=696cff&bold=true' }}"
+                            alt="Avatar" class="rounded-circle gold-frame-glow position-relative" style="width: 120px; height: 120px; object-fit: cover;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,26 +86,28 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
 </h6>
 <div class="row g-4 mb-4">
     <div class="col-md-6">
-        <div class="card h-100 shadow-sm border-start border-4 border-primary">
-            <div class="card-body d-flex align-items-center py-3">
+        <div class="glass-card h-100 p-0 border-start border-4 border-primary animate__animated animate__zoomIn animate__delay-1s">
+            <div class="p-3 d-flex align-items-center">
+                <a href="{{ route('admin.leaders.show', $currentLeader->id) }}">
                 <img src="{{ $leaderAvatar }}" alt="Avatar Pimpinan" class="rounded-circle shadow-sm me-3 avatar-fit">
                 <div>
                     <h6 class="mb-0 fw-bold text-dark text-wrap">{{ $leaderName }}</h6>
                     <p class="text-muted mb-0" style="font-size: 0.75rem;">{{ $leaderJabatan }}</p>
-                    <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">NIP. {{ $leaderNip }}</p>
+                    <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">NIP. {{ $leaderNip ? formatNip($leaderNip) : '-' }}</p>
                 </div>
+            </a>
             </div>
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card h-100 shadow-sm border-start border-4 border-warning">
-            <div class="card-body d-flex align-items-center py-3">
+        <div class="glass-card h-100 p-0 border-start border-4 border-warning animate__animated animate__zoomIn animate__delay-1s" style="animation-delay: 1.2s;">
+            <div class="p-3 d-flex align-items-center">
                 <img src="{{ $treasurerAvatar }}" alt="Avatar Bendahara"
                     class="rounded-circle shadow-sm me-3 avatar-fit">
                 <div>
                     <h6 class="mb-0 fw-bold text-dark text-wrap">{{ $treasurerName }}</h6>
                     <p class="text-muted mb-0" style="font-size: 0.75rem;">Bendahara Penerimaan (Tujuan Setoran)</p>
-                    <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">NIP. {{ $treasurerNip }}</p>
+                    <p class="text-muted mb-0 fw-medium" style="font-size: 0.75rem;">NIP. {{ $treasurerNip ? formatNip($treasurerNip) : '-' }}</p>
                 </div>
             </div>
         </div>
@@ -119,44 +119,42 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
 
     {{-- 1. STATUS PKS --}}
     <div class="col-md-4">
-        <div class="card h-100 border-start border-4 border-success shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div class="d-flex align-items-center">
-                        <div
-                            class="avatar avatar-sm me-2 bg-label-success rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="ti tabler-file-description"></i>
-                        </div>
-                        <h6 class="mb-0 fw-bold">Kontrak PKS</h6>
+        <div class="glass-card h-100 p-3 border-start border-4 border-success animate__animated animate__flipInY animate__fast">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center">
+                    <div
+                        class="stat-glow-icon bg-white text-success me-2">
+                        <i class="ti tabler-file-description ti-md"></i>
                     </div>
-                    @if($activeAgreement)
-                    <button type="button" class="btn btn-xs btn-label-success rounded-pill" data-bs-toggle="modal"
-                        data-bs-target="#modalPks">
-                        <i class="ti tabler-eye me-1"></i> Lihat Dokumen
-                    </button>
-                    @endif
+                    <h6 class="mb-0 fw-bold text-dark">Kontrak PKS</h6>
                 </div>
                 @if($activeAgreement)
-                <h5 class="fw-bold text-success mb-1">{{ $activeAgreement->agreement_number }}</h5>
-                <small class="text-muted d-block">Berlaku s/d: {{ $activeAgreement->end_date->translatedFormat('d M Y')
-                    }}</small>
-                @else
-                <h5 class="fw-bold text-danger mb-0">Tidak Ada PKS Aktif</h5>
+                <button type="button" class="btn btn-xs btn-success rounded-pill shadow-sm" data-bs-toggle="modal"
+                    data-bs-target="#modalPks">
+                    <i class="ti tabler-eye me-1"></i> Lihat Dokumen
+                </button>
                 @endif
             </div>
+            @if($activeAgreement)
+            <h4 class="fw-bold text-success mb-1">{{ $activeAgreement->agreement_number }}</h4>
+            <small class="text-muted d-block">Berlaku s/d: {{ $activeAgreement->end_date->translatedFormat('d M Y')
+                }}</small>
+            @else
+            <h4 class="fw-bold text-danger mb-0">Tidak Ada PKS Aktif</h4>
+            @endif
         </div>
     </div>
 
     {{-- 2. SETORAN HARIAN & PREDIKSI --}}
     <div class="col-md-4">
-        <div class="card h-100 border-start border-4 border-warning shadow-sm">
-            <div class="card-body d-flex flex-column">
+        <div class="glass-card h-100 p-3 border-start border-4 border-warning animate__animated animate__flipInY animate__fast" style="animation-delay: 0.2s;">
+            <div class="d-flex flex-column h-100">
                 <div class="d-flex align-items-center mb-2">
                     <div
-                        class="avatar avatar-sm me-2 bg-label-warning rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="ti tabler-currency-dollar"></i>
+                        class="stat-glow-icon bg-white text-warning me-2">
+                        <i class="ti tabler-currency-dollar ti-md"></i>
                     </div>
-                    <h6 class="mb-0 fw-bold">Target Setoran Harian</h6>
+                    <h6 class="mb-0 fw-bold text-dark">Target Setoran Harian</h6>
                 </div>
                 <h4 class="fw-bold text-dark mb-1">Rp {{ number_format($dailyDeposit, 0, ',', '.') }}</h4>
 
@@ -240,20 +238,20 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
 
     {{-- 3. TOTAL TITIK --}}
     <div class="col-md-4">
-        <div class="card h-100 border-start border-4 border-info shadow-sm">
-            <div class="card-body d-flex flex-column">
+        <div class="glass-card h-100 p-3 border-start border-4 border-info animate__animated animate__flipInY animate__fast" style="animation-delay: 0.4s;">
+            <div class="d-flex flex-column h-100">
                 <div class="d-flex align-items-center mb-2">
                     <div
-                        class="avatar avatar-sm me-2 bg-label-info rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="ti tabler-user-pin"></i>
+                        class="stat-glow-icon bg-white text-info me-2">
+                        <i class="ti tabler-user-pin ti-md"></i>
                     </div>
-                    <h6 class="mb-0 fw-bold">Titik Parkir Dikelola</h6>
+                    <h6 class="mb-0 fw-bold text-dark">Titik Parkir Dikelola</h6>
                 </div>
-                <h3 class="fw-bold text-info mb-3">{{ $totalLocations }} <small class="fs-6 text-muted">Titik</small>
+                <h3 class="fw-bold text-info mb-3" style="font-size: 2rem;">{{ $totalLocations }} <small class="fs-6 text-muted">Titik</small>
                 </h3>
                 <div class="mt-auto text-end">
                     <a href="{{ route('field_coordinator.location-requests.create') }}"
-                        class="btn btn-sm btn-outline-info rounded-pill w-100"><i class="ti tabler-plus me-1"></i>
+                        class="btn btn-sm btn-info rounded-pill w-100 shadow-sm"><i class="ti tabler-plus me-1"></i>
                         Ajukan Perubahan Titik</a>
                 </div>
             </div>
@@ -264,14 +262,14 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
 {{-- TABEL DATA --}}
 <div class="row g-4">
     <div class="col-lg-6">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center">
-                <h6 class="card-title fw-bold mb-0"><i class="ti tabler-map-pin text-primary me-1"></i> Titik Parkir
+        <div class="glass-card h-100 p-0 animate__animated animate__slideInUp animate__delay-1s">
+            <div class="p-3 border-bottom bg-transparent d-flex justify-content-between align-items-center">
+                <h6 class="card-title fw-bold mb-0 text-dark"><i class="ti tabler-map-pin text-primary me-1"></i> Titik Parkir
                     Anda</h6>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+            <div class="p-2" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-borderless premium-table mb-0">
+                    <thead class="bg-lighter">
                         <tr>
                             <th>Nama Lokasi</th>
                             <th>Ruas Jalan</th>
@@ -279,9 +277,9 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                     </thead>
                     <tbody>
                         @forelse($recentLocations as $loc)
-                        <tr>
-                            <td class="fw-medium">{{ Str::limit($loc->name, 25) }}</td>
-                            <td><span class="badge bg-label-secondary">{{ Str::limit($loc->roadSection->name ?? '-', 20)
+                        <tr class="premium-list-item">
+                            <td class="py-2 fw-bold text-dark">{{ Str::limit($loc->name, 25) }}</td>
+                            <td class="py-2"><span class="badge bg-label-secondary">{{ Str::limit($loc->roadSection->name ?? '-', 20)
                                     }}</span></td>
                         </tr>
                         @empty
@@ -299,16 +297,16 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
     </div>
 
     <div class="col-lg-6">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center">
-                <h6 class="card-title fw-bold mb-0"><i class="ti tabler-history text-warning me-1"></i> Status
+        <div class="glass-card h-100 p-0 animate__animated animate__slideInUp animate__delay-1s" style="animation-delay: 1.2s;">
+            <div class="p-3 border-bottom bg-transparent d-flex justify-content-between align-items-center">
+                <h6 class="card-title fw-bold mb-0 text-dark"><i class="ti tabler-history text-warning me-1"></i> Status
                     Pengajuan Terakhir</h6>
                 <a href="{{ route('field_coordinator.location-requests.index') }}"
                     class="btn btn-xs btn-outline-secondary rounded-pill">Lihat Semua</a>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+            <div class="p-2" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-borderless premium-table mb-0">
+                    <thead class="bg-lighter">
                         <tr>
                             <th>Tipe</th>
                             <th>Detail Titik</th>
@@ -317,20 +315,20 @@ $treasurerNip = $currentTreasurer ? formatNip($currentTreasurer->employee_number
                     </thead>
                     <tbody>
                         @forelse($recentRequests as $req)
-                        <tr>
-                            <td>
+                        <tr class="premium-list-item">
+                            <td class="py-2">
                                 @if($req->request_type == 'add') <span class="badge bg-label-success"><i
                                         class="ti tabler-plus me-1"></i> Penambahan</span>
                                 @else <span class="badge bg-label-danger"><i class="ti tabler-subtract me-1"></i>
                                     Pencabutan</span> @endif
                             </td>
-                            <td>
-                                <span class="fw-medium text-wrap d-block" style="max-width: 150px;">
+                            <td class="py-2">
+                                <span class="fw-bold text-dark text-wrap d-block" style="max-width: 150px;">
                                     {{ $req->request_type == 'add' ? $req->name : ($req->parkingLocation->name ?? '-')
                                     }}
                                 </span>
                             </td>
-                            <td>
+                            <td class="py-2">
                                 @if($req->status == 'pending') <span class="badge bg-label-warning">Pending</span>
                                 @elseif($req->status == 'surveyed') <span class="badge bg-label-info">Surveyed</span>
                                 @elseif($req->status == 'approved') <span

@@ -109,6 +109,7 @@ class DashboardController extends Controller
             ->limit(10)->get();
 
         $barChartData = [
+            'ids' => $locationsPerRoadSection->pluck('id'),
             'labels' => $locationsPerRoadSection->pluck('name'),
             'data' => $locationsPerRoadSection->pluck('parking_locations_count'),
         ];
@@ -186,6 +187,7 @@ class DashboardController extends Controller
             ->limit(10)->get();
 
         $barChartData = [
+            'ids' => $locationsPerRoadSection->pluck('id'),
             'labels' => $locationsPerRoadSection->pluck('name'),
             'data' => $locationsPerRoadSection->pluck('parking_locations_count'),
         ];
@@ -564,11 +566,22 @@ class DashboardController extends Controller
         // 1. Cari Lokasi Parkir (Titik)
         $locations = ParkingLocation::where('name', 'like', "%{$term}%")->limit(3)->get();
         foreach ($locations as $loc) {
+            if ($loc->image) {
+                $iconHtml = "<img src='" . asset('storage/' . $loc->image) . "' alt='Lokasi' style='width:100%;height:100%;object-fit:cover;' />";
+                $avatarType = 'image';
+                $colorClass = '';
+            } else {
+                $iconHtml = "<i class='ti tabler-map-pin'></i>";
+                $avatarType = 'icon';
+                $colorClass = 'bg-label-danger text-danger';
+            }
             $results[] = [
                 'title' => $loc->name,
                 'subtitle' => 'Lokasi Parkir',
                 'url' => route('masterdata.parking-locations.show', $loc->id),
-                'icon' => 'ri icon-base ri-map-pin-line text-danger bg-label-danger',
+                'avatar_type' => $avatarType,
+                'avatar_html' => $iconHtml,
+                'color_class' => $colorClass,
             ];
         }
 
@@ -579,44 +592,85 @@ class DashboardController extends Controller
                 'title' => $agr->agreement_number,
                 'subtitle' => 'Perjanjian PKS',
                 'url' => route('masterdata.agreements.show', $agr->id),
-                'icon' => 'ri icon-base ri-file-text-line text-primary bg-label-primary',
+                'avatar_type' => 'icon',
+                'avatar_html' => "<i class='ti tabler-file-signature'></i>",
+                'color_class' => 'bg-label-primary text-primary',
             ];
         }
 
-        // 3. Cari User (Khusus Admin) - SMART ROUTING
-        if (Auth::user()->role === 'admin') {
-            $users = User::where('name', 'like', "%{$term}%")->limit(3)->get();
+        // 3. Cari Ruas Jalan
+        $roads = RoadSection::where('name', 'like', "%{$term}%")->limit(3)->get();
+        foreach ($roads as $road) {
+            $results[] = [
+                'title' => $road->name,
+                'subtitle' => 'Ruas Jalan',
+                'url' => route('masterdata.road-sections.index') . '?search=' . urlencode($road->name),
+                'avatar_type' => 'icon',
+                'avatar_html' => "<i class='ti tabler-road'></i>",
+                'color_class' => 'bg-label-dark text-dark',
+            ];
+        }
+
+        // 4. Cari Transaksi
+        $transactions = DepositTransaction::with('agreement')->where('referral_code', 'like', "%{$term}%")->limit(3)->get();
+        foreach ($transactions as $trx) {
+            $results[] = [
+                'title' => $trx->referral_code,
+                'subtitle' => 'Transaksi Setoran Rp ' . number_format($trx->amount, 0, ',', '.'),
+                'url' => route('masterdata.deposit-transactions.index'), 
+                'avatar_type' => 'icon',
+                'avatar_html' => "<i class='ti tabler-report-money'></i>",
+                'color_class' => 'bg-label-success text-success',
+            ];
+        }
+
+        // 5. Cari User (Khusus Admin) - SMART ROUTING
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            $users = User::where('name', 'like', "%{$term}%")->limit(5)->get();
 
             foreach ($users as $u) {
                 // Tentukan URL berdasarkan Role User yang dicari
                 $url = route('admin.users.show', $u->id); // Default URL
-                $icon = 'ri icon-base ri-user-line text-secondary bg-label-secondary'; // Default Icon
                 $roleLabel = str_replace('_', ' ', $u->role);
+                $colorClass = 'bg-label-secondary text-secondary';
 
                 // Cek relasi dan sesuaikan route
                 if ($u->role === 'leader' && $u->leader) {
                     $url = route('admin.leaders.show', $u->leader->id);
-                    $icon = 'ri icon-base ri-user-star-line text-warning bg-label-warning';
+                    $colorClass = 'bg-label-warning text-warning';
                     $roleLabel = 'Pimpinan UPT';
                 } elseif ($u->role === 'treasurer' && $u->treasurer) {
                     $url = route('admin.treasurers.show', $u->treasurer->id);
-                    $icon = 'ri icon-base ri-safe-2-line text-success bg-label-success';
+                    $colorClass = 'bg-label-success text-success';
                     $roleLabel = 'Bendahara';
                 } elseif ($u->role === 'field_coordinator' && $u->fieldCoordinator) {
                     $url = route('admin.field-coordinators.show', $u->fieldCoordinator->id);
-                    $icon = 'ri icon-base ri-user-location-line text-info bg-label-info';
+                    $colorClass = 'bg-label-info text-info';
                     $roleLabel = 'Koordinator Lapangan';
                 } elseif (in_array($u->role, ['admin', 'staff_pks', 'staff_keu'])) {
                     // Admin & Staff cukup pakai route users biasa
                     $url = route('admin.users.show', $u->id);
-                    $icon = 'ri icon-base ri-shield-user-line text-primary bg-label-primary';
+                    $colorClass = 'bg-label-primary text-primary';
+                }
+
+                if ($u->img) {
+                    $iconHtml = "<img src='" . asset('storage/' . $u->img) . "' alt='Avatar' style='width:100%;height:100%;object-fit:cover;' />";
+                    $avatarType = 'image';
+                    $finalColorClass = '';
+                } else {
+                    $initials = strtoupper(substr($u->name, 0, 2));
+                    $iconHtml = "<span class='fw-bold'>{$initials}</span>";
+                    $avatarType = 'initials';
+                    $finalColorClass = $colorClass;
                 }
 
                 $results[] = [
                     'title' => $u->name,
                     'subtitle' => 'Pengguna ('.ucwords($roleLabel).')',
                     'url' => $url,
-                    'icon' => $icon,
+                    'avatar_type' => $avatarType,
+                    'avatar_html' => $iconHtml,
+                    'color_class' => $finalColorClass,
                 ];
             }
         }

@@ -511,6 +511,38 @@ class ParkingLocationController extends Controller
     }
 
     /**
+     * Toggle status lokasi parkir (antara tersedia dan tidak_tersedia).
+     */
+    public function toggleStatus(ParkingLocation $parkingLocation)
+    {
+        abort_if(Auth::user()->role === 'leader', 403, 'Akses Ditolak! Pimpinan hanya memiliki akses Lihat (View-Only).');
+
+        // Pastikan tidak terikat ke PKS aktif
+        $hasActiveAgreement = Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
+            $query->where('parking_location_id', $parkingLocation->id)
+                ->where('agreement_parking_locations.status', 'active');
+        })->whereIn('status', ['active', 'pending_renewal'])->exists();
+
+        if ($hasActiveAgreement) {
+            return redirect()->back()->with('error', 'Gagal! Lokasi ini sedang terikat dengan kontrak yang aktif.');
+        }
+
+        $parkingLocation->status = $parkingLocation->status === 'tersedia' ? 'tidak_tersedia' : 'tersedia';
+        $parkingLocation->save();
+
+        $statusLabel = $parkingLocation->status === 'tersedia' ? 'Tersedia' : 'Tidak Tersedia';
+
+        ParkingLocationHistory::create([
+            'parking_location_id' => $parkingLocation->id,
+            'user_id' => Auth::id(),
+            'action' => 'updated',
+            'description' => "Status lokasi diubah menjadi {$statusLabel}.",
+        ]);
+
+        return redirect()->back()->with('success', "Status lokasi {$parkingLocation->name} berhasil diubah menjadi {$statusLabel}.");
+    }
+
+    /**
      * Hapus massal lokasi parkir yang dipilih dan berstatus 'tersedia'.
      */
     public function bulkDeleteUnused(Request $request)

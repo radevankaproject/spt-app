@@ -164,7 +164,7 @@
                                         {{-- ✅ INDIKATOR MASA TENGGANG --}}
                                         @if($isGracePeriod)
                                             <span class="badge bg-label-warning bg-opacity-20 text-warning ms-3 rounded-pill" data-bs-toggle="tooltip" title="Tersisa {{ $daysRemaining }} hari lagi!">
-                                                <i class="ti tabler-alert icon-20px"></i> PKS dalam masa Tenggang
+                                                <i class="ti tabler-alert-octagon me-1"></i> PKS dalam masa Tenggang
                                             </span>
                                         @endif
                                     </div>
@@ -224,7 +224,7 @@
                                         <a class="btn btn-sm btn-icon btn-text-warning rounded-pill"
                                             href="{{ route('masterdata.agreements.renew', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Perpanjang PKS">
-                                            <i class="icon-base ti tabler-loop-right icon-20px"></i>
+                                            <i class="icon-base ti tabler-refresh icon-20px"></i>
                                         </a>
                                         @endif
                                         <form action="{{ route('masterdata.agreements.destroy', $agreement->id) }}"

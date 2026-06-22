@@ -24,7 +24,7 @@ class LeaderController extends Controller
         $search = $request->input('search');
         $tab = $request->input('tab', 'active'); // Default tab aktif
 
-        $query = Leader::with('user');
+        $query = Leader::with('user')->withCount('agreements');
 
         // ✅ LOGIKA TAB IS_ACTIVE
         if ($tab === 'active') {
@@ -225,8 +225,8 @@ class LeaderController extends Controller
      */
     public function show(Request $request, Leader $leader)
     {
-        // 1. Dapatkan daftar tahun...
-        $availableYears = $leader->agreements()
+        // 1. Dapatkan daftar tahun langsung dari tabel Agreement tanpa memanggil relasi
+        $availableYears = \App\Models\Agreement::where('leader_id', $leader->id)
             ->selectRaw('YEAR(start_date) as year')
             ->distinct()
             ->orderBy('year', 'desc')
@@ -238,21 +238,38 @@ class LeaderController extends Controller
 
         // 2. Tangkap tahun yang dipilih...
         $selectedYear = $request->input('year', $availableYears->first());
+        $search = $request->input('search');
 
         // 3. Ambil data PKS HANYA untuk tahun yang dipilih...
-        $agreementsInYear = $leader->agreements()
+        $agreementsQuery = \App\Models\Agreement::where('leader_id', $leader->id)
             ->whereYear('start_date', $selectedYear)
-            ->with(['fieldCoordinator.user'])
+            ->with(['fieldCoordinator.user']);
+
+        if ($search) {
+            $agreementsQuery->where(function ($q) use ($search) {
+                $q->where('agreement_number', 'like', "%{$search}%")
+                  ->orWhereHas('fieldCoordinator.user', function ($qUser) use ($search) {
+                      $qUser->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // 4. Kalkulasi Statistik
+        $totalAgreementsCount = \App\Models\Agreement::where('leader_id', $leader->id)
+            ->whereYear('start_date', $selectedYear)
+            ->count();
+            
+        $activeAgreementsCount = \App\Models\Agreement::where('leader_id', $leader->id)
+            ->whereYear('start_date', $selectedYear)
+            ->whereIn('status', ['active', 'pending_renewal'])
+            ->count();
+
+        // 5. Paginate Data (Aktif duluan, lalu tanggal mulai)
+        $agreementsInYear = $agreementsQuery
+            ->orderByRaw("CASE WHEN status IN ('active', 'pending_renewal') THEN 0 ELSE 1 END")
             ->orderBy('start_date', 'desc')
-            ->get();
-
-        // 4. Pisahkan Aktif dan Riwayat
-        $activeAgreements = $agreementsInYear->whereIn('status', ['active', 'pending_renewal']);
-        $historyAgreements = $agreementsInYear->whereNotIn('status', ['active', 'pending_renewal']);
-
-        // 5. Kalkulasi Statistik
-        $totalAgreementsCount = $agreementsInYear->count();
-        $activeAgreementsCount = $activeAgreements->count();
+            ->paginate(10)
+            ->withQueryString();
 
         // ✅ TAMBAHKAN RELASI 'histories' DI SINI
         $leader->load(['user', 'histories' => function ($q) {
@@ -263,10 +280,10 @@ class LeaderController extends Controller
             'leader',
             'availableYears',
             'selectedYear',
-            'activeAgreements',
-            'historyAgreements',
+            'agreementsInYear',
             'totalAgreementsCount',
-            'activeAgreementsCount'
+            'activeAgreementsCount',
+            'search'
         ));
     }
 
@@ -358,6 +375,42 @@ class LeaderController extends Controller
             Log::error('Toggle Status Error: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'Gagal memproses status jabatan.');
+        }
+    }
+    public function extend(Request $request, Leader $leader)
+    {
+        $request->validate([
+            'status_jabatan' => 'required|in:tetap,plt,plh',
+            'start_date' => 'required|date',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Arsipkan jabatan lama ke LeaderHistory
+            $oldEndDate = $request->end_date_old 
+                ? \Carbon\Carbon::parse($request->end_date_old)->format('Y-m-d')
+                : \Carbon\Carbon::parse($request->start_date)->subDay()->format('Y-m-d');
+
+            LeaderHistory::create([
+                'leader_id' => $leader->id,
+                'status_jabatan' => $leader->status_jabatan,
+                'start_date' => $leader->start_date,
+                'end_date' => $oldEndDate,
+            ]);
+
+            // Update data pimpinan dengan masa jabatan baru
+            $leader->update([
+                'status_jabatan' => $request->status_jabatan,
+                'start_date' => $request->start_date,
+                'end_date' => null,
+            ]);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Jabatan Pimpinan berhasil diperpanjang. Riwayat jabatan sebelumnya telah diarsipkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Leader Extend Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperpanjang jabatan.');
         }
     }
 }

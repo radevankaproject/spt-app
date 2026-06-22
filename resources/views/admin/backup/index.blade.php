@@ -36,7 +36,7 @@
     @if(Auth::user()->role !== 'leader')
     <div class="card mb-6">
         <div class="card-body text-center">
-            <i class="icon-base ti tabler-cloud-download text-primary" style="font-size: 80px;"></i>
+            <i class="icon-base ti tabler-device-desktop-down text-primary icon-30px" style="font-size: 80px;"></i>
             <h5 class="mt-4">Buat Cadangan Database Baru</h5>
             <p class="text-muted">
                 Pilih jenis backup yang ingin Anda lakukan. Backup Database hanya mencadangkan data SQL, sedangkan Backup Full Aplikasi mencadangkan database beserta semua file source code.
@@ -45,11 +45,11 @@
                 @csrf
                 <button type="submit" name="type" value="db" class="btn btn-primary btn-lg backup-btn">
                     <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
-                    <i class="icon-base ti tabler-database-2 me-2"></i>Backup Database
+                    <i class="icon-base ti tabler-database-export me-2"></i>Backup Database
                 </button>
                 <button type="submit" name="type" value="full" class="btn btn-warning btn-lg backup-btn">
                     <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
-                    <i class="icon-base ti tabler-folder-zip me-2"></i>Backup Full Aplikasi
+                    <i class="icon-base ti tabler-archive me-2"></i>Backup Full Aplikasi
                 </button>
             </form>
         </div>
@@ -85,13 +85,13 @@
                                     <a href="{{ route('admin.backup.download', $backup->id) }}"
                                         class="btn btn-sm btn-icon btn-text-secondary rounded-pill me-2"
                                         data-bs-toggle="tooltip" title="Download"><i
-                                            class="icon-base ti tabler-download-2 icon-22px"></i></a>
+                                            class="icon-base ti tabler-download icon-22px"></i></a>
                                     @if(Auth::user()->role !== 'leader')
                                     <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-btn"
                                         data-bs-toggle="modal" data-bs-target="#deleteModal"
                                         data-url="{{ route('admin.backup.destroy', $backup->id) }}"
                                         data-filename="{{ $backup->file_name }}" data-bs-toggle="tooltip" title="Hapus">
-                                        <i class="icon-base ti tabler-delete-bin-7 icon-22px"></i>
+                                        <i class="icon-base ti tabler-trash icon-22px"></i>
                                     </button>
                                     @endif
                                 </div>

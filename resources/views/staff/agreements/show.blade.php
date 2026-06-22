@@ -201,9 +201,13 @@
             <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
                 <div class="card-body pt-5">
                     <div class="text-center mb-4">
-                        <img src="{{ $cAvatar }}" alt="Korlap Avatar" class="rounded-circle shadow-sm mb-3"
-                            style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #fff;" />
-                        <h5 class="mb-1 fw-bold text-dark">{{ $cName }}</h5>
+                        <a href="{{ route('admin.field-coordinators.show', $agreement->field_coordinator_id) }}">
+                            <img src="{{ $cAvatar }}" alt="Korlap Avatar" class="rounded-circle shadow-sm mb-3"
+                                style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #fff;" />
+                        </a>
+                        <a href="{{ route('admin.field-coordinators.show', $agreement->field_coordinator_id) }}">
+                            <h5 class="mb-1 fw-bold text-dark">{{ $cName }}</h5>
+                        </a>
                         <span class="badge bg-label-primary rounded-pill px-3 py-2">Koordinator Lapangan</span>
                     </div>
 
@@ -247,7 +251,7 @@
                             </div>
                         </li>
                         <li class="d-flex align-items-center mb-3">
-                            <i class="ti tabler-file-list text-primary me-2 ti-md"></i>
+                            <i class="ti tabler-category text-primary me-2 ti-md"></i>
                             <div class="w-100 d-flex justify-content-between">
                                 <span class="fw-medium text-heading">Jenis</span>
                                 <span class="badge bg-label-info rounded-pill">{{ ucfirst($agreement->jenis) }}</span>
@@ -260,7 +264,7 @@
                                 <span class="text-end">{{ Str::limit($agreement->leader->user->name ?? 'N/A', 15) }}</span>
                             </div>
                         </li>
-                        <li class="d-flex align-items-start mb-2">
+                        <li class="d-flex align-items-start mb-3">
                             <i class="ti tabler-calendar-event text-primary me-2 ti-md mt-1"></i>
                             <div class="w-100 d-flex justify-content-between">
                                 <span class="fw-medium text-heading">Masa Berlaku</span>
@@ -271,11 +275,32 @@
                                 </div>
                             </div>
                         </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <i class="ti tabler-cash text-primary me-2 ti-md"></i>
+                            <div class="w-100 d-flex justify-content-between">
+                                <span class="fw-medium text-heading">Setoran Harian</span>
+                                <span class="fw-bold text-dark">Rp {{ number_format($agreement->daily_deposit_amount, 0, ',', '.') }}</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <i class="ti tabler-report-money text-primary me-2 ti-md"></i>
+                            <div class="w-100 d-flex justify-content-between">
+                                <span class="fw-medium text-heading">Target Bulanan</span>
+                                <span class="fw-bold text-dark">Rp {{ number_format($agreement->monthly_deposit_target, 0, ',', '.') }}</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <i class="ti tabler-businessplan text-primary me-2 ti-md"></i>
+                            <div class="w-100 d-flex justify-content-between">
+                                <span class="fw-medium text-heading">Total Selama PKS</span>
+                                <span class="fw-bold text-dark">Rp {{ number_format($agreement->total_deposit_target, 0, ',', '.') }}</span>
+                            </div>
+                        </li>
                     </ul>
 
                     @if ($isGracePeriod)
                         <div class="alert alert-warning d-flex align-items-center mb-4 shadow-sm" role="alert">
-                            <i class="ti tabler-alert ti-lg me-3"></i>
+                            <i class="ti tabler-alert-octagon ti-lg me-3"></i>
                             <div>
                                 <h6 class="alert-heading mb-1 fw-bold">Perhatian!</h6>
                                 <p class="mb-0" style="font-size: 0.85rem;">PKS ini akan kedaluwarsa dalam
@@ -303,7 +328,7 @@
                     <li class="nav-item">
                         <button type="button" class="nav-link {{ $agreement->status !== 'expired' ? 'active' : '' }}" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-overview">
-                            <i class="ti tabler-bar-chart-box me-1"></i> Setoran & Grafik
+                            <i class="ti tabler-chart-histogram me-1"></i> Setoran & Grafik
                         </button>
                     </li>
                     <li class="nav-item">
@@ -322,7 +347,7 @@
                     <li class="nav-item">
                         <button type="button" class="nav-link {{ $agreement->status === 'expired' ? 'active' : '' }}" role="tab" data-bs-toggle="tab"
                             data-bs-target="#tab-pdf">
-                            <i class="ti tabler-file-pdf-2 me-1"></i> Arsip PKS
+                            <i class="ti tabler-file-zip me-1"></i> Arsip PKS
                         </button>
                     </li>
                 </ul>
@@ -340,7 +365,7 @@
                                     <div id="depositChart" style="min-height: 300px;"></div>
                                 @else
                                     <div class="text-center py-5">
-                                        <i class="ri icon-base ti tabler-bar-chart-2 text-muted mb-2"
+                                        <i class="ri icon-base ti tabler-chart-bar-off text-muted mb-2"
                                             style="font-size: 3rem;"></i>
                                         <p class="text-muted">Belum ada data setoran yang tervalidasi di tahun ini.</p>
                                     </div>
@@ -396,7 +421,7 @@
                                         @empty
                                             <tr>
                                                 <td colspan="4" class="text-center text-muted py-4"><i
-                                                        class="ri icon-base ti tabler-wallet-3-filled me-1"></i> Belum ada riwayat setoran sama
+                                                        class="ri icon-base ti tabler-wallet-off me-1"></i> Belum ada riwayat setoran sama
                                                     sekali.</td>
                                             </tr>
                                         @endforelse
@@ -486,7 +511,7 @@
                                                 switch ($history->event_type) {
                                                     case 'agreement_created': $icon = 'ti tabler-file-add'; $color = 'primary'; $eventName = 'PKS Diterbitkan'; break;
                                                     case 'location_added': $icon = 'ti tabler-map-pin-plus'; $color = 'success'; $eventName = 'Lokasi Ditambahkan'; break;
-                                                    case 'location_removed': $icon = 'ti tabler-map-pin-5'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
+                                                    case 'location_removed': $icon = 'ti tabler-map-pin-minus'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
                                                     case 'deposit_changed': $icon = 'ti tabler-currency-dollar'; $color = 'info'; $eventName = 'Perubahan Setoran'; break;
                                                     case 'status_changed': $icon = 'ti tabler-refresh'; $color = 'warning'; $eventName = 'Status Berubah'; break;
                                                     case 'agreement_renewed': $icon = 'ti tabler-loop-right'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
@@ -553,7 +578,7 @@
                                                             <div class="avatar avatar-xs me-2">
                                                                 <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle shadow-sm" style="object-fit:cover;" />
                                                             </div>
-                                                            <small class="text-muted">Aktor: <span class="fw-bold text-dark">{{ $uName }}</span></small>
+                                                            <small class="text-muted">Oleh: <span class="fw-bold text-dark">{{ $uName }}</span></small>
                                                         </div>
                                                     </div>
                                                     <div class="timeline-event-time fw-bold text-muted" style="font-size:0.75rem;">
@@ -587,7 +612,7 @@
                                     @endif
                                     <a href="{{ route('masterdata.agreements.pdf-history', $agreement->id) }}"
                                         class="btn btn-sm btn-outline-primary rounded-pill"><i
-                                            class="ti tabler-file-copy-2 me-1"></i> Versi Sebelumnya</a>
+                                            class="ti tabler-file-dots me-1"></i> Versi Sebelumnya</a>
                                 </div>
                             </div>
                             <div class="card-body pt-4">
@@ -611,7 +636,7 @@
                                                     {{-- Kiri: Ikon & Info Tanggal --}}
                                                     <div class="d-flex align-items-center gap-3">
                                                         <div class="avatar avatar-md rounded-circle bg-label-danger d-flex align-items-center justify-content-center flex-shrink-0">
-                                                            <i class="ti tabler-file-pdf-2-filled fs-4"></i>
+                                                            <i class="ti tabler-file-type-doc fs-4"></i>
                                                         </div>
                                                         <div>
                                                             <h6 class="mb-1 fw-bold text-dark">Arsip PKS - {{ $history->created_at->translatedFormat('d M Y') }}</h6>

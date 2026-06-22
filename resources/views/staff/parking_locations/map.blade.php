@@ -141,7 +141,7 @@
                     <span class="small text-white-50">Lokasi Dengan Koordinat</span>
                 </div>
                 <div class="avatar avatar-md bg-white text-success rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="ri icon-base ti tabler-live-view fs-4"></i>
+                    <i class="ri icon-base ti tabler-map-pin-plus fs-4"></i>
                 </div>
             </div>
         </div>

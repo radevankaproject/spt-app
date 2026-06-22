@@ -26,59 +26,129 @@ class ProfileSettingController extends Controller
     /**
      * Menampilkan halaman Profil Saya beserta statistiknya.
      */
-    public function index(Request $request): View
+        public function index(Request $request): View
     {
         $user = $request->user();
         $stats = [];
-        $recentActivities = collect();
+        
+        $activeTab = $request->get('tab');
+        $search = $request->get('search');
+        $paginatedData = null;
 
         if (in_array($user->role, ['admin', 'staff_pks'])) {
             $stats['korlapCount'] = FieldCoordinator::where('last_updated_by', $user->id)->count();
             $stats['roadSectionCount'] = RoadSection::where('last_updated_by', $user->id)->count();
             $stats['agreementPdfCount'] = AgreementPdfHistory::where('generated_by_user_id', $user->id)->count();
 
-            // Parking location histories: "tampilkan data lokasi mana saja yang diubah oleh user"
-            $recentActivities = ParkingLocationHistory::with('parkingLocation.roadSection')
-                ->where('user_id', $user->id)
-                ->latest()
-                ->take(10)
-                ->get();
+            if (!$activeTab) $activeTab = 'korlap';
+
+            if ($activeTab === 'korlap') {
+                $query = FieldCoordinator::with('user')->where('last_updated_by', $user->id);
+                if ($search) {
+                    $query->whereHas('user', function($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+                }
+                $paginatedData = $query->latest()->paginate(10)->withQueryString();
+            } elseif ($activeTab === 'zona') {
+                $query = RoadSection::where('last_updated_by', $user->id);
+                if ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                }
+                $paginatedData = $query->latest()->paginate(10)->withQueryString();
+            } elseif ($activeTab === 'pks') {
+                $query = AgreementPdfHistory::with('agreement.fieldCoordinator.user')->where('generated_by_user_id', $user->id);
+                if ($search) {
+                    $query->whereHas('agreement', function($q) use ($search) {
+                        $q->where('agreement_number', 'like', "%{$search}%");
+                    });
+                }
+                $paginatedData = $query->latest()->paginate(10)->withQueryString();
+            }
+            
         } elseif ($user->role === 'staff_keu') {
             $stats['validatedDepositsCount'] = DepositTransaction::where('validated_by_user_id', $user->id)->count();
             $stats['validatedDepositsAmount'] = DepositTransaction::where('validated_by_user_id', $user->id)->sum('amount');
             
-            $recentActivities = DepositTransaction::with('agreement.parkingLocations.roadSection')
-                ->where('validated_by_user_id', $user->id)
-                ->latest()
-                ->take(10)
-                ->get();
+            if (!$activeTab) $activeTab = 'setoran';
+            
+            if ($activeTab === 'setoran') {
+                $query = DepositTransaction::with('agreement.fieldCoordinator.user')->where('validated_by_user_id', $user->id);
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('referral_code', 'like', "%{$search}%")
+                          ->orWhereHas('agreement', function($q2) use ($search) {
+                              $q2->where('agreement_number', 'like', "%{$search}%");
+                          });
+                    });
+                }
+                $paginatedData = $query->latest('validation_date')->paginate(10)->withQueryString();
+            }
+            
         } elseif ($user->role === 'treasurer') {
             $treasurer = Treasurer::where('user_id', $user->id)->first();
             if ($treasurer) {
-                $query = DepositTransaction::where('payment_date', '>=', $treasurer->start_date);
+                $baseQuery = DepositTransaction::where('deposit_date', '>=', $treasurer->start_date);
                 if ($treasurer->end_date) {
-                    $query->where('payment_date', '<=', $treasurer->end_date);
+                    $baseQuery->where('deposit_date', '<=', $treasurer->end_date);
                 }
-                $query->where('is_validated', true);
+                $baseQuery->where('is_validated', true);
                 
-                $stats['termDepositsCount'] = $query->count();
-                $stats['termDepositsAmount'] = $query->sum('amount');
+                $stats['termDepositsCount'] = (clone $baseQuery)->count();
+                $stats['termDepositsAmount'] = (clone $baseQuery)->sum('amount');
+                
+                if (!$activeTab) $activeTab = 'term_deposits';
+                
+                if ($activeTab === 'term_deposits') {
+                    $query = clone $baseQuery;
+                    $query->with('agreement.fieldCoordinator.user');
+                    if ($search) {
+                        $query->where(function($q) use ($search) {
+                            $q->where('referral_code', 'like', "%{$search}%")
+                              ->orWhereHas('agreement', function($q2) use ($search) {
+                                  $q2->where('agreement_number', 'like', "%{$search}%");
+                              });
+                        });
+                    }
+                    $paginatedData = $query->latest('deposit_date')->paginate(10)->withQueryString();
+                }
             } else {
                 $stats['termDepositsCount'] = 0;
                 $stats['termDepositsAmount'] = 0;
+                $paginatedData = null;
             }
+            
         } elseif ($user->role === 'leader') {
             $leader = Leader::where('user_id', $user->id)->first();
             if ($leader) {
                 $stats['signedAgreementsCount'] = Agreement::where('leader_id', $leader->id)->count();
+                
+                if (!$activeTab) $activeTab = 'signed_agreements';
+                
+                if ($activeTab === 'signed_agreements') {
+                    $query = Agreement::with('fieldCoordinator.user')->where('leader_id', $leader->id);
+                    if ($search) {
+                        $query->where('agreement_number', 'like', "%{$search}%")
+                              ->orWhereHas('fieldCoordinator.user', function($q) use ($search) {
+                                  $q->where('name', 'like', "%{$search}%");
+                              });
+                    }
+                    $paginatedData = $query->latest('signed_date')->paginate(10)->withQueryString();
+                }
             } else {
                 $stats['signedAgreementsCount'] = 0;
+                $paginatedData = null;
             }
         }
 
         // Relasi default untuk tampilan avatar dll
         if ($user->role === 'field_coordinator') {
             $user->load('fieldCoordinator');
+            
+            // For field_coordinator, we might need a default active tab as well if they had stats, 
+            // but the original code didn't have stats for them. 
+            // Let's add simple logic for them just in case.
+            if (!$activeTab) $activeTab = 'profile';
         } elseif ($user->role === 'leader') {
             $user->load('leader');
         } elseif (in_array($user->role, ['treasurer', 'staff_keu'])) {
@@ -87,7 +157,7 @@ class ProfileSettingController extends Controller
             }
         }
 
-        return view('profile.index', compact('user', 'stats', 'recentActivities'));
+        return view('profile.index', compact('user', 'stats', 'paginatedData', 'activeTab', 'search'));
     }
 
     /**
@@ -129,11 +199,11 @@ class ProfileSettingController extends Controller
             ],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'employee_number' => ['nullable', 'string', 'max:50'],
-            'img' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
+            'img' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:10240'],
         ], [
             'username.unique' => 'Username ini sudah digunakan oleh pengguna lain.',
             'username.alpha_dash' => 'Username hanya boleh mengandung huruf, angka, strip, dan underscore.',
-            'img.max' => 'Ukuran foto maksimal 1 MB.',
+            'img.max' => 'Ukuran foto maksimal 10 MB.',
         ]);
 
         $user->fill($request->except('img'));

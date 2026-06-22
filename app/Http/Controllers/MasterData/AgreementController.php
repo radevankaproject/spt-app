@@ -210,7 +210,7 @@ class AgreementController extends Controller
         $agreementData = $validatedData;
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
         $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
-        $agreementData['verification_code'] = Str::uuid()->toString();
+        $agreementData['verification_code'] = Str::random(10);
 
         DB::beginTransaction();
         try {
@@ -330,7 +330,7 @@ class AgreementController extends Controller
         $agreementData = $validatedData;
         $agreementData['monthly_deposit_target'] = $dailyAmount * 30;
         $agreementData['total_deposit_target'] = $dailyAmount * $durationInDays;
-        $agreementData['verification_code'] = Str::uuid()->toString();
+        $agreementData['verification_code'] = Str::random(10);
 
         DB::beginTransaction();
         try {
@@ -820,28 +820,34 @@ class AgreementController extends Controller
         $qrCodeImage = null;
 
         if ($agreement->verification_code) {
-            $dishubLogoPath = storage_path('images/dishub.png');
+            $logoPath = public_path('assets/img/logo-spt.png');
             $url = route('public.agreement.verify', $agreement->verification_code);
 
-            // Periksa ketersediaan Imagick untuk fitur logo (PNG)
-            if (extension_loaded('imagick') && file_exists($dishubLogoPath)) {
+            // Menggunakan ekstensi GD untuk memproses logo menjadi bentuk premium (Lingkaran Putih)
+            if (extension_loaded('gd') && file_exists($logoPath)) {
                 try {
-                    $img = imagecreatefrompng($dishubLogoPath);
+                    $img = imagecreatefrompng($logoPath);
                     imagepalettetotruecolor($img);
 
-                    // Ubah Logo Menjadi Grayscale
-                    imagefilter($img, IMG_FILTER_GRAYSCALE);
-
-                    // Buat Canvas Putih
                     $width = imagesx($img);
                     $height = imagesy($img);
-                    $canvasSize = max($width, $height) + 20;
-
+                    
+                    // Ukuran kanvas (padding diturunkan jadi 30 agar porsi logo lebih dominan)
+                    $canvasSize = max($width, $height) + 30; 
+                    
+                    // Buat kanvas transparan
                     $canvas = imagecreatetruecolor($canvasSize, $canvasSize);
+                    imagealphablending($canvas, false);
+                    imagesavealpha($canvas, true);
+                    $transparent = imagecolorallocatealpha($canvas, 255, 255, 255, 127);
+                    imagefill($canvas, 0, 0, $transparent);
+                    
+                    // Gambar Lingkaran Putih Solid di tengah kanvas
+                    imagealphablending($canvas, true);
                     $white = imagecolorallocate($canvas, 255, 255, 255);
-                    imagefill($canvas, 0, 0, $white);
-
-                    // Tempelkan logo
+                    imagefilledellipse($canvas, $canvasSize/2, $canvasSize/2, $canvasSize-2, $canvasSize-2, $white);
+                    
+                    // Tempelkan logo Dishub di tengah lingkaran putih
                     $dstX = ($canvasSize - $width) / 2;
                     $dstY = ($canvasSize - $height) / 2;
                     imagecopy($canvas, $img, $dstX, $dstY, 0, 0, $width, $height);
@@ -856,19 +862,20 @@ class AgreementController extends Controller
                     // Merge Canvas Putih Berlogo dengan QR Code
                     $qrCodeImage = 'data:image/png;base64,' . base64_encode(
                         QrCode::format('png')
-                            ->errorCorrection('H')
-                            ->size(200)
-                            ->mergeString($logoString, 0.26)
+                            ->errorCorrection('M') // Ubah dari H ke M agar titik jauh lebih renggang
+                            ->size(300) // Resolusi tinggi agar tajam
+                            ->margin(0) // Hilangkan margin bawaan agar titik lebih besar
+                            ->mergeString($logoString, 0.32) // Logo dibesarkan jadi 32%
                             ->generate($url)
                     );
 
                 } catch (\Exception $e) {
                     Log::warning('Gagal merge logo QR Code: '.$e->getMessage());
-                    $qrCodeImage = 'data:image/svg+xml;base64,' . base64_encode(QrCode::format('svg')->size(200)->generate($url));
+                    $qrCodeImage = 'data:image/png;base64,' . base64_encode(QrCode::format('png')->size(300)->errorCorrection('M')->margin(0)->generate($url));
                 }
             } else {
-                // Fallback ke SVG (Tanpa Logo) jika tidak ada Imagick (contoh: di Windows)
-                $qrCodeImage = 'data:image/svg+xml;base64,' . base64_encode(QrCode::format('svg')->size(200)->generate($url));
+                // Fallback (Tanpa Logo)
+                $qrCodeImage = 'data:image/png;base64,' . base64_encode(QrCode::format('png')->size(300)->errorCorrection('M')->margin(0)->generate($url));
             }
         }
 

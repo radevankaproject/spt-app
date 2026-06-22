@@ -1,6 +1,7 @@
 <?php
 
-function formatNip($nip)
+if (!function_exists('formatNip')) {
+    function formatNip($nip)
 {
     // Pastikan hanya angka
     $nip = preg_replace('/[^0-9]/', '', $nip);
@@ -15,4 +16,6 @@ function formatNip($nip)
     $urut     = substr($nip, 15, 3);    // 005
 
     return "$tglLahir $tmtCpns $jk $urut";
+}
+
 }

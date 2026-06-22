@@ -73,7 +73,13 @@ $customizerHidden = 'customizer-hide';
       </div>
       <input type="hidden" name="otp_code" id="otp_code">
 
-      <button class="btn btn-primary d-grid w-100" type="submit">Verifikasi</button>
+      <button class="btn btn-primary d-grid w-100" type="submit" id="submitBtn">
+          <span class="indicator-label">Verifikasi</span>
+          <span class="indicator-progress d-none">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Memverifikasi...
+          </span>
+      </button>
     </form>
 
     <form action="{{ route('password.otp.send') }}" method="POST" class="text-center mt-4" id="resendForm">
@@ -103,12 +109,30 @@ $customizerHidden = 'customizer-hide';
         const inputs = document.querySelectorAll('.otp-input');
         const hiddenInput = document.getElementById('otp_code');
         const form = document.getElementById('formAuthentication');
+        const submitBtn = document.getElementById('submitBtn');
 
-        // Auto focus next input
+        function triggerLoading() {
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.indicator-label').classList.add('d-none');
+            submitBtn.querySelector('.indicator-progress').classList.remove('d-none');
+        }
+
+        // Auto focus next input and auto submit
         inputs.forEach((input, index) => {
             input.addEventListener('keyup', function(e) {
                 if (this.value.length === 1) {
-                    if (index < inputs.length - 1) inputs[index + 1].focus();
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    } else {
+                        // last input filled -> auto submit
+                        let otp = '';
+                        inputs.forEach(i => otp += i.value);
+                        if (otp.length === 6) {
+                            hiddenInput.value = otp;
+                            triggerLoading();
+                            form.submit();
+                        }
+                    }
                 }
                 
                 // Backspace
@@ -127,13 +151,20 @@ $customizerHidden = 'customizer-hide';
                 e.preventDefault();
                 let pasteData = e.clipboardData.getData('text/plain').replace(/[^0-9]/g, '');
                 if (pasteData.length > 0) {
+                    let otp = '';
                     for (let i = 0; i < inputs.length; i++) {
                         if (i < pasteData.length) {
                             inputs[i].value = pasteData[i];
+                            otp += pasteData[i];
                             if (i === inputs.length - 1 || i === pasteData.length - 1) {
                                 inputs[i].focus();
                             }
                         }
+                    }
+                    if (otp.length === 6) {
+                        hiddenInput.value = otp;
+                        triggerLoading();
+                        form.submit();
                     }
                 }
             });
@@ -141,8 +172,6 @@ $customizerHidden = 'customizer-hide';
 
         // Set hidden input value before submit
         form.addEventListener('submit', function(e) {
-            if (e.target.id === 'resendForm') return;
-
             let otp = '';
             inputs.forEach(input => {
                 otp += input.value;
@@ -151,31 +180,72 @@ $customizerHidden = 'customizer-hide';
             
             if (otp.length < 6) {
                 e.preventDefault();
-                alert('Silakan lengkapi 6 digit kode OTP');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Kode Belum Lengkap',
+                        text: 'Silakan masukkan 6 digit kode OTP yang kami kirim ke WhatsApp Anda.',
+                        icon: 'warning',
+                        customClass: { confirmButton: 'btn btn-primary waves-effect waves-light' },
+                        buttonsStyling: false
+                    });
+                } else {
+                    alert('Silakan lengkapi 6 digit kode OTP');
+                }
+            } else {
+                triggerLoading();
             }
         });
 
         // Countdown timer for resend
+        const resendForm = document.getElementById('resendForm');
         const resendBtn = document.getElementById('resendBtn');
         const countdownText = document.getElementById('countdownText');
         const timerSpan = document.getElementById('timer');
         
-        let timeLeft = 60; // 60 seconds
-        resendBtn.disabled = true;
-        resendBtn.classList.add('text-muted');
-        resendBtn.classList.remove('text-primary');
-        countdownText.classList.remove('d-none');
+        resendForm.addEventListener('submit', function() {
+            localStorage.removeItem('otpTimerExpiresAt');
+        });
+
+        let expiresAt = localStorage.getItem('otpTimerExpiresAt');
+        const nowMs = Date.now();
+        
+        // If no timer or it's expired by more than a long time (safety check), start a new one
+        if (!expiresAt || parseInt(expiresAt) < nowMs) {
+            // Also check session variable if it's a fresh send from server
+            let serverResendTime = {{ session('otp_resend_time', 0) }} * 1000;
+            if (serverResendTime > nowMs) {
+                expiresAt = serverResendTime;
+            } else {
+                expiresAt = nowMs + 60000; // default 60s
+            }
+            localStorage.setItem('otpTimerExpiresAt', expiresAt);
+        }
+        
+        let timeLeft = Math.floor((parseInt(expiresAt) - nowMs) / 1000);
+        
+        if (timeLeft > 0) {
+            resendBtn.disabled = true;
+            resendBtn.classList.add('text-muted');
+            resendBtn.classList.remove('text-primary');
+            countdownText.classList.remove('d-none');
+            timerSpan.innerText = timeLeft;
+        } else {
+            resendBtn.disabled = false;
+            resendBtn.classList.remove('text-muted');
+            resendBtn.classList.add('text-primary');
+            countdownText.classList.add('d-none');
+        }
         
         const timer = setInterval(() => {
-            timeLeft--;
-            timerSpan.innerText = timeLeft;
-            
-            if (timeLeft <= 0) {
+            let currentLeft = Math.floor((parseInt(expiresAt) - Date.now()) / 1000);
+            if (currentLeft <= 0) {
                 clearInterval(timer);
                 resendBtn.disabled = false;
                 resendBtn.classList.remove('text-muted');
                 resendBtn.classList.add('text-primary');
                 countdownText.classList.add('d-none');
+            } else {
+                timerSpan.innerText = currentLeft;
             }
         }, 1000);
     });

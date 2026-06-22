@@ -202,7 +202,7 @@
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('masterdata.deposit-transactions.show', $transaction->id) }}" data-bs-toggle="tooltip" title="Lihat Detail">
-                                            <i class="ti tabler-eye ti-md"></i>
+                                            <i class="ti tabler-eye icon-22px"></i>
                                         </a>
 
                                         @if (!$transaction->is_validated)
@@ -210,11 +210,11 @@
                                                 <form action="{{ route('masterdata.deposit-transactions.validate', $transaction->id) }}" method="POST" class="form-validate d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-icon btn-text-success rounded-pill" data-bs-toggle="tooltip" title="Validasi">
-                                                        <i class="ti tabler-checks ti-md"></i>
+                                                        <i class="ti tabler-checks icon-22px"></i>
                                                     </button>
                                                 </form>
                                                 <a class="btn btn-sm btn-icon btn-text-primary rounded-pill" href="{{ route('masterdata.deposit-transactions.edit', $transaction->id) }}" data-bs-toggle="tooltip" title="Edit">
-                                                    <i class="ti tabler-pencil ti-md"></i>
+                                                    <i class="ti tabler-pencil icon-22px"></i>
                                                 </a>
                                             @endif
                                         @endif
@@ -223,7 +223,7 @@
                                             <form action="{{ route('masterdata.deposit-transactions.destroy', $transaction->id) }}" method="POST" class="form-delete d-inline">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus">
-                                                    <i class="ti tabler-trash ti-md"></i>
+                                                    <i class="ti tabler-trash icon-22px"></i>
                                                 </button>
                                             </form>
                                         @endif

@@ -1,165 +1,110 @@
-<h1 align="center">⚡ Bangameck ⚡</h1>
+<h1 align="center">
+  <img src="public/logo.png" width="80" alt="SiPKS Logo" onerror="this.style.display='none'"><br>
+  Sistem Informasi Manajemen Perparkiran Terpadu (SiPKS)
+</h1>
 
-![Twitter Follow](https://img.shields.io/twitter/follow/bangameck?style=social)
-![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UChbu6CEMvD3RO1RBo9ADldg?label=RRA%20Dev&style=social)
+<h4 align="center">Enterprise-Grade Parking Management & Collaboration System</h4>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12.x-EF4135?style=for-the-badge&logo=laravel" alt="Laravel 12">
+  <img src="https://img.shields.io/badge/Vuexy-10.11.1-7367F0?style=for-the-badge&logo=bootstrap" alt="Vuexy UI">
+  <img src="https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php" alt="PHP 8.4">
+  <img src="https://img.shields.io/badge/Version-v2.1.0-FFB020?style=for-the-badge" alt="Version 2.1.0">
+</p>
+
+<p align="center">
+  <b>SiPKS (Sistem Parkir Terpadu)</b> adalah mahakarya arsitektur perangkat lunak yang dirancang eksklusif untuk mendigitalisasi tata kelola perparkiran pada Dinas Perhubungan / UPT Perparkiran Kota Pekanbaru. Menghadirkan keseimbangan sempurna antara keamanan tingkat tinggi, manajemen data presisi, dan antarmuka pengguna ultra-premium bergaya <i>Glassmorphism</i>.
+</p>
+
+---
+
+## 🌟 Fitur Premium & Kemampuan Sistem
+
+SiPKS bukan sekadar aplikasi pencatatan, melainkan instrumen cerdas yang memadukan otomasi proses bisnis dengan _user experience_ (UX) modern.
+
+- 📊 **Executive Dashboard Interaktif**
+  Visualisasi _real-time_ berbasis ApexCharts. Dilengkapi navigasi cerdas—klik grafik batang untuk melompat langsung ke rincian spesifik (misal: analisis detail ruas jalan penyumbang setoran terbesar).
+  
+- 📄 **Digitalisasi Dokumen & PKS Terpadu**
+  Otomatisasi pembuatan _Draft_ Perjanjian Kerjasama (PKS) ke dalam format PDF berstandar tinggi. Dilengkapi Generator QR Code berlapis keamanan _10-char Alphanumeric_ dengan _watermark_ logo instansi di tengahnya.
+
+- 🗺️ **Sistem Informasi Geografis (GIS)**
+  Pemetaan presisi menggunakan Leaflet.js & OpenStreetMap. Memantau koordinat setiap lahan parkir lengkap dengan status aktif, masa berlaku PKS, dan performa retribusi secara spasial.
+
+- 💳 **Akuntansi & Rekonsiliasi Deposit BLUD**
+  Modul manajemen keuangan tingkat _enterprise_ yang melacak kalkulasi setoran harian/bulanan koordinator, membandingkannya dengan target tahunan, dan mengintegrasikannya dengan buku rekening BLUD daerah.
+
+- 🔒 **Arsitektur Keamanan Berlapis (RBAC 5-Level)**
+  Sistem otonomi wewenang presisi untuk Admin, Pimpinan, Bendahara, Staff PKS, dan Staff Keuangan. Dilengkapi sistem proteksi anti-IDOR dan enkripsi OTP WhatsApp _passwordless recovery_.
+
+- 💎 **Premium Glassmorphism UI & M3 Animations**
+  Menerapkan standar desain web mutakhir. Mulai dari _Squiggly Preloader_ bertenaga Material 3, formulir _Auto-Submit_ responsif, hingga halaman respons _error_ berhiaskan animasi _Gradient Mesh_ dan efek kaca buram (_frosted glass_).
+
+---
+
+## 🛠️ Tech Stack & Ekosistem
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>Backend & Core</b></td>
+      <td align="center"><b>Frontend & UI</b></td>
+      <td align="center"><b>Database & DevOps</b></td>
+    </tr>
+    <tr>
+      <td>
+        • Laravel 12<br>
+        • PHP 8.4+<br>
+        • Laravel WebSockets<br>
+        • Ghostscript (PDF Opt)
+      </td>
+      <td>
+        • Vuexy v10.11.1 (Bootstrap 5)<br>
+        • ApexCharts & Leaflet.js<br>
+        • SweetAlert2 & Flatpickr<br>
+        • Blade UI Components
+      </td>
+      <td>
+        • MySQL / MariaDB<br>
+        • Fonnte API (WA Gateway)<br>
+        • Git Version Control<br>
+        • Ubuntu Server Environment
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## 👨‍💻 _The Architect_
 
 <p align="center">
   <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=22&duration=3500&pause=1000&color=0A66C2&center=true&vCenter=true&width=700&lines=Independent+Full+Stack+Developer;Flutter+Mobile+Engineer;Laravel+Backend+Architect;Biometric+%26+Security+System+Builder" />
 </p>
 
-<p align="center">
-  <img src="https://komarev.com/ghpvc/?username=bangameck&label=Profile%20Views&color=0A66C2&style=flat" />
-  <img src="https://img.shields.io/badge/Maintained%20By-Bangameck-0A66C2?logo=github" />
-  <img src="https://img.shields.io/badge/Status-Available%20for%20Project-success" />
-  <img src="https://img.shields.io/badge/Version-v2.0.0-blueviolet" />
-  <img src="https://img.shields.io/badge/Brand-RadevankaProject-black" />
-</p>
-
----
-
-## 🚗 Sistem Parkir Terpadu (SiPKS)
-
-Sistem Informasi Manajemen Perparkiran Terpadu (SiPKS) / SPT adalah aplikasi _enterprise-grade_ yang dirancang untuk mendigitalisasi tata kelola perparkiran pada Dinas Perhubungan / UPT Perparkiran. Aplikasi ini mempermudah pengelolaan **Perjanjian Kerjasama (PKS)**, evaluasi rasio keuangan (target setoran), pemetaan lokasi parkir, hingga manajemen mitra/koordinator secara _real-time_, aman, dan transparan.
-
-### 🛠️ Tech Stack & Integrasi Aplikasi
-
-Aplikasi ini dibangun menggunakan arsitektur modern yang mengedepankan performa, estetika premium, serta standar keamanan tinggi:
-
-- **Core Backend:** Laravel 12 / PHP 8.4+
-- **UI/UX & Frontend:** Vuexy v10.11.1 (Full Version), Bootstrap 5, Laravel Blade Engine
-- **Database:** MySQL
-- **Mapping & Geolocation:** Leaflet.js terintegrasi dengan OpenStreetMap API
-- **Gateway & Notifikasi:** Fonnte API (Integrasi pengiriman OTP via WhatsApp)
-- **Security:** _Role-Based Access Control_ (RBAC) 5 level (Admin, Pimpinan, Bendahara, Staff Keuangan, Staff PKS), Anti-IDOR Middleware, dan perlindungan _View-Only Mode_.
-- **Reporting & Analytics:** DOMPDF (Cetak Dokumen PKS), ApexCharts (Visualisasi Data Dashboard)
-- **Utilities & Komponen:** SweetAlert2 (Dynamic Alerting), DataTables, Select2, Quill.js (Rich Text Editor), UI-Avatars API (Dynamic Profile Image)
-
-### ✨ Fitur Unggulan SiPKS
-
-1. **Analitik Executive Dashboard:** Menampilkan perbandingan diagram (_Pie/Bar_) terkait rasio setoran, jumlah PKS aktif, PKS jatuh tempo, hingga persebaran titik parkir.
-2. **Manajemen PKS Kompleks:** Administrasi terpusat untuk Surat Keputusan (SK) dan _Agreement_ yang mensinergikan pihak dinas dengan koordinator lapangan.
-3. **Peta Interaktif (GIS):** Sistem informasi geografis untuk memetakan koordinat riil (Latitude / Longitude) dari masing-masing titik lahan parkir yang disewakan.
-4. **Alur Pengajuan (_Workflows_):** Proses disposisi (Verifikasi/Preview dinas) untuk usulan penambahan lahan parkir baru atau pencabutan lahan secara _paperless_ dari pihak koordinator.
-5. **Akuntansi Target Biaya:** Kalkulasi akurat target tahunan vs setoran bulanan (_revenue tracking_) yang terhubung pada buku bank BLUD daerah.
-6. **Manajemen Versi (In-App Changelog):** _Update notification_ terenkapsulasi langsung di dalam aplikasi agar mitra selalu mendapat informasi terbaru setiap kali ada peningkatan perangkat lunak.
-
----
-
-## 🧠 About Me
-
-Saya **Bangameck**, seorang **Independent Web & Mobile Developer** dengan brand:
-
-<h2 align="center">🚀 RadevankaProject</h2>
-
-Saya membangun **produk nyata**, bukan sekadar demo:
-
-- 🏢 Sistem Enterprise & Pemerintahan
-- 📱 Mobile App (Flutter)
-- 🌐 Web App (Laravel, React, Vue)
-- 🔐 Sistem Biometrik & Keamanan
-
-> _Project kecil (skripsi, landing page)? Gas._  
-> _Project besar (enterprise, absensi, biometrik)? Lebih gas._
-
----
-
-## 💼 What I Do
-
-✔️ Enterprise Attendance System (Biometric + GPS)  
-✔️ Information System & Dashboard  
-✔️ API & Backend Architecture  
-✔️ Research Project & Private App  
-✔️ UI/UX Modern & Secure Flow
-
----
-
-## 🛠 Tech Stack (Battle Tested)
-
-### 💻 Languages
-
-![PHP](https://img.shields.io/badge/PHP-Laravel-blue?logo=php)
-![Dart](https://img.shields.io/badge/Dart-Flutter-0175C2?logo=dart)
-![Java](https://img.shields.io/badge/Java-ED8B00?logo=openjdk)
-![C++](https://img.shields.io/badge/C++-00599C?logo=cplusplus)
-
-### 🌐 Frameworks
-
-![Laravel](https://img.shields.io/badge/Laravel-EF4135?logo=laravel)
-![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter)
-![React](https://img.shields.io/badge/React-20232A?logo=react)
-![Vue.js](https://img.shields.io/badge/Vue.js-35495E?logo=vue.js)
-
-### 🛢 Database & Services
-
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase)
-
-### 🔧 Tools
-
-![VS Code](https://img.shields.io/badge/VS_Code-007ACC?logo=visualstudiocode)
-![Android Studio](https://img.shields.io/badge/Android_Studio-3DDC84?logo=androidstudio)
-![Git](https://img.shields.io/badge/Git-F05032?logo=git)
-
----
-
-## 📊 GitHub Stats
+Sistem ini dirancang dan dikembangkan sepenuhnya oleh **Bangameck** di bawah bendera **RadevankaProject**. Fokus utama saya adalah menciptakan perangkat lunak yang tidak hanya berfungsi memecahkan masalah kompleks (_Enterprise & Government Scale_), tetapi juga memberikan pengalaman visual yang memanjakan mata.
 
 <p align="center">
-  <img width="48%" src="https://github-readme-stats.vercel.app/api?username=bangameck&show_icons=true&theme=tokyonight&count_private=true"/>
-  <img width="48%" src="https://github-readme-streak-stats.herokuapp.com/?user=bangameck&theme=tokyonight"/>
+  <a href="https://github.com/bangameck">
+    <img src="https://img.shields.io/badge/GitHub-bangameck-black?logo=github&style=for-the-badge" alt="GitHub">
+  </a>
+  <a href="https://instagram.com/bangameck">
+    <img src="https://img.shields.io/badge/Instagram-@bangameck-E4405F?logo=instagram&logoColor=white&style=for-the-badge" alt="Instagram">
+  </a>
+  <a href="https://tiktok.com/@bangameck.dev">
+    <img src="https://img.shields.io/badge/TikTok-@bangameck.dev-000000?logo=tiktok&style=for-the-badge" alt="TikTok">
+  </a>
 </p>
 
----
+### 💼 _Available for Collaboration_
+Menerima pembuatan _Enterprise System_, MVP Startup, _Government Project_, hingga Aplikasi Mobile terintegrasi _Biometric/GPS_.
 
-## 🎯 Current Focus
-
-- 🔐 Biometric Face Recognition (MLKit + TFLite)
-- 📍 Anti Fake GPS & Time Validation
-- 🏢 Enterprise Attendance System
-- ☁️ Secure Laravel Backend
-- 📱 Flutter Performance Optimization
-
----
-
-## 🤝 Work With Me
-
-💼 **Available for:**
-
-- Freelance & Contract
-- Startup MVP
-- Enterprise / Government Project
-- Research & Private System
-
----
-
-## 📞 Contact & Social
-
-📱 **WhatsApp**: +62 822-8844-5265  
+📱 **WhatsApp**: +62 822-8844-5265 <br>
 📧 **Email**: `radevankaproject@gmail.com`
 
-[![GitHub](https://img.shields.io/badge/GitHub-bangameck-black?logo=github)](https://github.com/bangameck)
-[![Instagram](https://img.shields.io/badge/Instagram-@bangameck-E4405F?logo=instagram&logoColor=white)](https://instagram.com/bangameck)
-[![TikTok](https://img.shields.io/badge/TikTok-@bangameck.dev-000000?logo=tiktok)](https://tiktok.com/@bangameck.dev)
-[![Facebook](https://img.shields.io/badge/Facebook-Bangameck-1877F2?logo=facebook&logoColor=white)](https://facebook.com/bangameck95)
-
-Kamu bisa mentraktir saya segelas kopi melalui link di bawah ini (support dev):
-
-<a href="https://trakteer.id/rproject" target="_blank">
-  <img src="https://img.shields.io/badge/Trakteer-Traktir_Kopi_Developer-E11D48?style=for-the-badge&logo=kofi&logoColor=white" alt="Support via Trakteer">
-</a>
-
 ---
 
-## 🧾 Digital Signature
-
-```text
-Signed-Off-By : Bangameck
-Role          : Independent Full Stack Developer
-Brand         : RadevankaProject
-Specialty     : Flutter • Laravel • Biometric System
-Location      : Pekanbaru, Indonesia
-```
-
-> _"Build with logic. Secure with discipline. Deliver with pride."_
-
-👽 From [bangameck • 🚀 RadevankaProject](https://github.com/bangameck)
+<p align="center">
+  <i>"Build with logic. Secure with discipline. Deliver with pride."</i><br>
+  <b>— Bangameck • 🚀 RadevankaProject</b>
+</p>

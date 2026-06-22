@@ -51,7 +51,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <input type="date" class="form-control" id="release_date" name="release_date"
+                                    <input type="text" class="form-control flatpickr-date" id="release_date" name="release_date"
                                         value="{{ old('release_date', date('Y-m-d')) }}" required />
                                     <label for="release_date">Tanggal Rilis</label>
                                 </div>
@@ -91,33 +91,39 @@
         <div class="col-lg-7">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">5 Versi Terakhir</h5>
+                    <h5 class="card-title mb-0">Daftar Versi Aplikasi</h5>
                 </div>
                 <div class="card-body">
-                    @forelse ($versions as $version)
-                        <div class="mb-4 pb-4 @if (!$loop->last) border-bottom @endif">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="mb-1"><strong>Versi {{ $version->version }}</strong></h6>
-                                <div>
-                                    <small class="text-muted me-2">{{ $version->release_date->translatedFormat('d F Y') }}</small>
-                                    @if(Auth::user()->role !== 'leader')
-                                    <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill" onclick="editVersion({{ $version->id }}, '{{ $version->version }}', '{{ $version->release_date->format('Y-m-d') }}', `{{ str_replace('`', '\`', $version->changelog) }}`)" title="Edit Versi">
-                                        <i class="ti tabler-edit-box ti tabler-18px"></i>
+                    @if($versions->count() > 0)
+                    <div class="accordion" id="manageVersionsAccordion">
+                        @foreach ($versions as $index => $version)
+                        <div class="accordion-item card shadow-none border mb-2">
+                            <h2 class="accordion-header d-flex" id="manageHeading{{ $index }}">
+                                <button type="button" class="accordion-button {{ $index === 0 ? '' : 'collapsed' }} bg-lighter" data-bs-toggle="collapse" data-bs-target="#manageAccordion{{ $index }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="manageAccordion{{ $index }}" style="flex-grow: 1;">
+                                    <span class="fw-bold text-primary me-2">Versi {{ $version->version }}</span>
+                                    <span class="badge bg-label-secondary small">{{ $version->release_date->translatedFormat('d F Y') }}</span>
+                                </button>
+                                @if(Auth::user()->role !== 'leader')
+                                <div class="bg-lighter d-flex align-items-center justify-content-center px-3 border-start" style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
+                                    <button type="button" class="btn btn-sm btn-icon btn-primary rounded-pill shadow-sm" onclick="editVersion({{ $version->id }}, '{{ $version->version }}', '{{ $version->release_date->format('Y-m-d') }}', `{{ str_replace('`', '\`', $version->changelog) }}`)" title="Edit Versi">
+                                        <i class="ti tabler-edit icon-16px"></i>
                                     </button>
-                                    @endif
+                                </div>
+                                @endif
+                            </h2>
+                            <div id="manageAccordion{{ $index }}" class="accordion-collapse collapse {{ $index === 0 ? 'show' : '' }}" data-bs-parent="#manageVersionsAccordion" aria-labelledby="manageHeading{{ $index }}">
+                                <div class="accordion-body pt-3 pb-3">
+                                    <div class="changelog-content text-dark" style="font-size: 0.95rem;">
+                                        {!! \Illuminate\Support\Str::markdown($version->changelog) !!}
+                                    </div>
                                 </div>
                             </div>
-                            <div class="mt-3 text-dark changelog-content" style="font-size: 0.95rem;">
-                                {!! \Illuminate\Support\Str::markdown($version->changelog) !!}
-                            </div>
                         </div>
-                    @empty
-                        <p class="text-center text-muted">Belum ada data versi yang ditambahkan.</p>
-                    @endforelse
-
-                    <div class="mt-4">
-                        {{ $versions->links() }}
+                        @endforeach
                     </div>
+                    @else
+                        <p class="text-center text-muted">Belum ada data versi yang ditambahkan.</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -125,6 +131,16 @@
 @endsection
 
 @section('page-style')
+
+<style>
+    .flatpickr-calendar {
+        z-index: 99999 !important;
+    }
+</style>
+
+
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+
 <style>
     .changelog-content ul {
         padding-left: 1.5rem;
@@ -138,6 +154,20 @@
 @endsection
 
 @section('page-script')
+
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flatpickrDates = document.querySelectorAll('.flatpickr-date');
+            if (flatpickrDates) {
+                flatpickr('.flatpickr-date', {
+                    dateFormat: "Y-m-d",
+                    appendTo: document.body
+                });
+            }
+        });
+    </script>
+
 <script>
     const form = document.getElementById('versionForm');
     const formTitle = document.getElementById('formTitle');

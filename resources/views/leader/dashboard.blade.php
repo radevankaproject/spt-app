@@ -6,18 +6,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
-    <style>
-        .hero-card-leader { background: linear-gradient(135deg, #696cff 0%, #8b8eff 100%); }
-        .stat-card-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
-        .quick-stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; border: none; }
-        .quick-stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.08) !important; }
-        .quick-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
-        .quick-stat-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .glass-panel { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; }
-        .premium-table tbody tr { transition: all 0.2s ease; }
-        .premium-table tbody tr:hover { background-color: rgba(105, 108, 255, 0.05); }
-        .select2-container--default .select2-selection--single { border: 1px solid #d9dee3; border-radius: 0.375rem; height: 38px; padding: 5px 15px; }
-        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 36px; right: 10px; }
+        .select2-container--default .select2-selection--single { border: 1px solid rgba(105, 108, 255, 0.2); border-radius: 0.75rem; height: 42px; padding: 7px 15px; background: rgba(255,255,255,0.7); backdrop-filter: blur(5px); }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 40px; right: 10px; }
     </style>
 @endsection
 
@@ -28,42 +18,34 @@
     {{-- ✅ 1. WELCOME BANNER PREMIUM --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm hero-card-leader text-white rounded-4 overflow-hidden">
-                <div class="card-body p-4 p-md-5 position-relative">
-                    <div class="row align-items-center relative z-2">
-                        <div class="col-md-8 col-12 text-center text-md-start mb-4 mb-md-0">
-                            <span class="badge bg-white text-primary rounded-pill mb-3 fw-bold px-3 py-2 shadow-sm">
-                                <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
-                            </span>
-                            <h3 class="text-white fw-bold mb-2">Selamat Datang, {{ $currentLeader->user->name ?? 'Pimpinan' }}! 👑</h3>
-                            <p class="mb-4 opacity-75" style="font-size: 1.05rem;">
-                                Pantau kinerja pendapatan, pergerakan titik parkir, dan aktivitas koordinator lapangan secara <em>real-time</em> di sini.
-                            </p>
-                            <div class="d-inline-flex flex-wrap gap-3">
-                                <div class="glass-panel px-3 py-2 d-flex align-items-center">
-                                    <i class="ti tabler-fingerprint ti tabler-xl me-2 opacity-75"></i>
-                                    <div>
-                                        <span class="d-block opacity-75 small fw-bold">NIP Pegawai</span>
-                                        <span class="fw-bold">{{ $currentLeader->employee_number ?? '-' }}</span>
-                                    </div>
-                                </div>
-                                <div class="glass-panel px-3 py-2 d-flex align-items-center">
-                                    <i class="ti tabler-calendar-check ti tabler-xl me-2 opacity-75"></i>
-                                    <div>
-                                        <span class="d-block opacity-75 small fw-bold">Mulai Menjabat</span>
-                                        <span class="fw-bold">{{ $currentLeader->start_date ? \Carbon\Carbon::parse($currentLeader->start_date)->translatedFormat('d M Y') : '-' }}</span>
-                                    </div>
-                                </div>
+            <div class="fintech-card shadow-lg text-white p-4 p-lg-5 animate__animated animate__fadeInDown">
+                <i class="ti tabler-crown position-absolute text-white opacity-10" style="font-size: 8rem; right: -1%; top: -10%; transform: rotate(15deg);"></i>
+                <div class="row align-items-center position-relative z-1">
+                    <div class="col-md-8 col-12 text-center text-md-start mb-4 mb-md-0">
+                        <span class="badge bg-white text-primary rounded-pill mb-3 fw-bold px-3 py-2 shadow-sm">
+                            <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                        </span>
+                        <h3 class="text-white fw-bold mb-2">Selamat Datang, {{ $currentLeader->user->name ?? 'Pimpinan' }}! 👑</h3>
+                        <p class="mb-4 opacity-75" style="font-size: 1.05rem;">
+                            Pantau kinerja pendapatan, pergerakan titik parkir, dan aktivitas koordinator lapangan secara <em>real-time</em> di sini.
+                        </p>
+                        <div class="d-inline-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
+                            <div class="bg-white text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
+                                <i class="ti tabler-fingerprint me-1"></i> NIP: <strong>{{ $currentLeader->employee_number ? formatNip($currentLeader->employee_number) : '-' }}</strong>
                             </div>
-                        </div>
-                        <div class="col-md-4 col-12 text-center text-md-end">
-                            <div class="d-inline-block position-relative rounded-circle p-1" style="background: linear-gradient(135deg, #f6d365 0%, #ffb142 100%);">
-                                <img src="{{ $currentLeader && $currentLeader->user->img ? asset('storage/' . $currentLeader->user->img) : 'https://ui-avatars.com/api/?name='.urlencode($currentLeader->user->name ?? 'Pimpinan').'&background=fff&color=696cff' }}"
-                                    alt="Avatar" class="rounded-circle shadow-lg border border-white border-3" style="width: 140px; height: 140px; object-fit: cover;">
+                            <div class="bg-white text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
+                                <i class="ti tabler-calendar-check me-1"></i> Mulai: <strong>{{ $currentLeader->start_date ? \Carbon\Carbon::parse($currentLeader->start_date)->translatedFormat('d M Y') : '-' }}</strong>
                             </div>
                         </div>
                     </div>
-                    <i class="ti tabler-bar-chart-box position-absolute text-white" style="font-size: 250px; left: -20px; bottom: -50px; opacity: 0.1; transform: rotate(-15deg);"></i>
+                    <div class="col-md-4 col-12 text-center text-md-end">
+                        <div class="position-relative d-inline-block">
+                            <div class="position-absolute w-100 h-100 rounded-circle bg-white opacity-25" style="top: 10px; left: -10px; filter: blur(20px);"></div>
+                            <img src="{{ $currentLeader && $currentLeader->user->img ? asset('storage/' . $currentLeader->user->img) : 'https://ui-avatars.com/api/?name='.urlencode($currentLeader->user->name ?? 'Pimpinan').'&background=fff&color=696cff' }}"
+                                alt="Avatar" class="rounded-circle gold-frame-glow position-relative" style="width: 140px; height: 140px; object-fit: cover;">
+                            <span class="position-absolute bottom-0 end-0 bg-success border border-3 border-white rounded-circle p-2" title="Online" style="margin-bottom: 10px; margin-right: 10px;"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,57 +54,47 @@
     {{-- ✅ 2. QUICK STATS (6 kartu) --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card quick-stat-card shadow-sm h-100 bg-label-success">
-                <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-success text-white mx-auto mb-2 shadow-sm"><i class="ti tabler-currency-dollar ti-md"></i></div>
-                    <div class="quick-stat-value text-success" style="font-size: 1rem;">Rp {{ number_format($depositThisYear, 0, ',', '.') }}</div>
-                    <div class="quick-stat-label text-success mt-1">Thn {{ now()->year }}</div>
-                </div>
+            <div class="fintech-card fintech-card-green text-center p-3 h-100 animate__animated animate__zoomIn animate__fast">
+                <div class="stat-glow-icon bg-success text-white mx-auto mb-3 shadow-sm"><i class="ti tabler-currency-dollar ti-md"></i></div>
+                <h4 class="fw-bolder text-success mb-1" style="font-size: 1rem;">Rp {{ number_format($depositThisYear, 0, ',', '.') }}</h4>
+                <span class="text-success small fw-bold text-uppercase">Thn {{ now()->year }}</span>
             </div>
         </div>
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card quick-stat-card shadow-sm h-100">
-                <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-info mx-auto mb-2"><i class="ti tabler-wallet ti-md"></i></div>
-                    <div class="quick-stat-value text-info" style="font-size: 1rem;">Rp {{ number_format($depositThisMonth, 0, ',', '.') }}</div>
-                    <div class="quick-stat-label text-muted mt-1">Bln Ini</div>
-                </div>
+            <div class="fintech-card fintech-card-purple text-center p-3 h-100 animate__animated animate__bounceIn animate__fast" style="animation-delay: 0.1s;">
+                <div class="stat-glow-icon bg-white text-info mx-auto mb-3"><i class="ti tabler-wallet ti-md"></i></div>
+                <h4 class="fw-bolder text-info mb-1" style="font-size: 1rem;">Rp {{ number_format($depositThisMonth, 0, ',', '.') }}</h4>
+                <span class="text-muted small fw-bold text-uppercase">Bln Ini</span>
             </div>
         </div>
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card quick-stat-card shadow-sm h-100">
-                <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-primary mx-auto mb-2"><i class="ti tabler-file-text ti-md"></i></div>
-                    <div class="quick-stat-value text-primary">{{ $totalAgreements }}</div>
-                    <div class="quick-stat-label text-muted mt-1">PKS Aktif</div>
-                </div>
+            <div class="fintech-card fintech-card-blue text-center p-3 h-100 animate__animated animate__fadeInUp animate__fast" style="animation-delay: 0.2s;">
+                <div class="stat-glow-icon bg-white text-primary mx-auto mb-3"><i class="ti tabler-file-text ti-md"></i></div>
+                <h3 class="fw-bolder text-primary mb-1">{{ $totalAgreements }}</h3>
+                <span class="text-muted small fw-bold text-uppercase">PKS Aktif</span>
             </div>
         </div>
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card quick-stat-card shadow-sm h-100">
-                <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-warning mx-auto mb-2"><i class="ti tabler-map-pin ti-md"></i></div>
-                    <div class="quick-stat-value text-warning">{{ $totalParkingLocations }}</div>
-                    <div class="quick-stat-label text-muted mt-1">Titik Parkir</div>
-                </div>
+            <div class="fintech-card fintech-card-orange text-center p-3 h-100 animate__animated animate__flipInX animate__fast" style="animation-delay: 0.3s;">
+                <div class="stat-glow-icon bg-white text-warning mx-auto mb-3"><i class="ti tabler-map-pin ti-md"></i></div>
+                <h3 class="fw-bolder text-warning mb-1">{{ $totalParkingLocations }}</h3>
+                <span class="text-muted small fw-bold text-uppercase">Titik Parkir</span>
             </div>
         </div>
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card quick-stat-card shadow-sm h-100">
-                <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-dark mx-auto mb-2"><i class="ti tabler-road ti-md"></i></div>
-                    <div class="quick-stat-value">{{ $totalRoadSections }}</div>
-                    <div class="quick-stat-label text-muted mt-1">Ruas Jalan</div>
+            <a href="{{ route('masterdata.road-sections.index') }}" class="text-decoration-none d-block h-100">
+                <div class="fintech-card fintech-card text-center p-3 h-100 animate__animated animate__slideInUp animate__fast" style="animation-delay: 0.4s;">
+                    <div class="stat-glow-icon bg-white text-dark mx-auto mb-3"><i class="ti tabler-road ti-md"></i></div>
+                    <h3 class="fw-bolder text-dark mb-1">{{ $totalRoadSections }}</h3>
+                    <span class="text-muted small fw-bold text-uppercase">Ruas Jalan</span>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card quick-stat-card shadow-sm h-100">
-                <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-label-secondary mx-auto mb-2"><i class="ti tabler-user-pin ti-md"></i></div>
-                    <div class="quick-stat-value">{{ $totalFieldCoordinators }}</div>
-                    <div class="quick-stat-label text-muted mt-1">Korlap</div>
-                </div>
+            <div class="fintech-card fintech-card-green text-center p-3 h-100 animate__animated animate__lightSpeedInRight animate__fast" style="animation-delay: 0.5s;">
+                <div class="stat-glow-icon bg-white text-secondary mx-auto mb-3"><i class="ti tabler-user-pin ti-md"></i></div>
+                <h3 class="fw-bolder text-secondary mb-1">{{ $totalFieldCoordinators }}</h3>
+                <span class="text-muted small fw-bold text-uppercase">Korlap</span>
             </div>
         </div>
     </div>
@@ -130,11 +102,11 @@
     {{-- ✅ 3. PENCARIAN CEPAT --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-transparent border-bottom py-3">
-                    <h6 class="mb-0 fw-bold"><i class="ti tabler-zoom-in me-2 text-primary"></i>Pencarian Data Cepat</h6>
+            <div class="glass-card h-100 p-0 animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="p-3 border-bottom bg-transparent">
+                    <h6 class="mb-0 fw-bold text-dark"><i class="ti tabler-zoom-in me-2 text-primary"></i>Pencarian Data Cepat</h6>
                 </div>
-                <div class="card-body pt-4">
+                <div class="p-4">
                     <div class="row g-4">
                         <div class="col-md-4">
                             <label for="pks-search-select" class="form-label fw-bold text-muted small text-uppercase">Cari PKS / Korlap</label>
@@ -157,44 +129,38 @@
     {{-- ✅ 4. MAP & TABEL LOKASI TERBARU --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-8 col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
+            <div class="glass-card h-100 p-0 animate__animated animate__slideInLeft animate__delay-1s">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-transparent">
                     <div>
-                        <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-map-pin text-danger me-2"></i>Peta Sampel Lokasi Parkir</h6>
+                        <h6 class="mb-0 fw-bold text-dark"><i class="ti tabler-map-pin text-danger me-2"></i>Peta Sampel Lokasi Parkir</h6>
                         <small class="text-muted">50 Titik Acak (Real-time)</small>
                     </div>
-                    <a href="{{ route('masterdata.parking-locations.map') }}" class="btn btn-sm btn-outline-danger rounded-pill">Lihat Peta Lengkap <i class="ti tabler-arrow-right ms-1"></i></a>
+                    <a href="{{ route('masterdata.parking-locations.map') }}" class="btn btn-xs btn-danger rounded-pill shadow-sm">Lihat Peta Lengkap <i class="ti tabler-arrow-right ms-1"></i></a>
                 </div>
-                <div class="card-body p-0">
-                    <div id="leader-map" style="height: 400px; width: 100%; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; z-index: 1;"></div>
+                <div class="p-0">
+                    <div id="leader-map" style="height: 400px; width: 100%; border-bottom-left-radius: 1.25rem; border-bottom-right-radius: 1.25rem; z-index: 1;"></div>
                 </div>
             </div>
         </div>
         <div class="col-xl-4 col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
-                    <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-map-pin-plus text-warning me-2"></i>Lokasi Terbaru</h6>
+            <div class="glass-card h-100 p-0 animate__animated animate__slideInRight animate__delay-1s">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-warning bg-opacity-10" style="border-top-left-radius: 1.25rem; border-top-right-radius: 1.25rem;">
+                    <h6 class="fw-bold mb-0 text-warning"><i class="ti tabler-map-pin-plus me-2"></i>Lokasi Terbaru</h6>
                     @if ($totalParkingLocations > 10)
-                        <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-sm btn-outline-warning rounded-pill">Semua</a>
+                        <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-xs btn-warning rounded-pill shadow-sm">Semua</a>
                     @endif
                 </div>
-                <div class="table-responsive text-nowrap" style="max-height: 400px;">
-                    <table class="table table-hover mb-0 align-middle premium-table">
-                        <thead class="bg-lighter position-sticky top-0 z-1">
-                            <tr>
-                                <th class="text-uppercase" style="font-size: 0.75rem;">Nama Lokasi</th>
-                                <th class="text-uppercase text-end" style="font-size: 0.75rem;">Zona</th>
-                            </tr>
-                        </thead>
+                <div class="p-2" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-borderless premium-table mb-0">
                         <tbody>
                             @forelse($recentParkingLocations as $loc)
-                                <tr>
-                                    <td>
-                                        <a href="{{ route('masterdata.parking-locations.show', $loc->id) }}" class="fw-bold text-dark" style="font-size: 0.85rem;">{{ Str::limit($loc->name, 25) }}</a>
+                                <tr class="premium-list-item" style="cursor: pointer;" onclick="window.location='{{ route('masterdata.parking-locations.show', $loc->id) }}'">
+                                    <td class="py-2">
+                                        <span class="fw-bold text-dark" style="font-size: 0.85rem;">{{ Str::limit($loc->name, 25) }}</span>
                                         <small class="d-block text-muted" style="font-size: 0.75rem;">{{ Str::limit($loc->roadSection->name ?? '-', 25) }}</small>
                                     </td>
-                                    <td class="text-end">
-                                        <span class="badge bg-label-dark rounded-pill">{{ $loc->roadSection->zone ?? 'N/A' }}</span>
+                                    <td class="text-end py-2 align-middle">
+                                        <span class="badge bg-label-dark rounded-pill fw-bold">{{ $loc->roadSection->zone ?? 'N/A' }}</span>
                                     </td>
                                 </tr>
                             @empty
@@ -210,24 +176,24 @@
     {{-- ✅ 5. GRAFIK APEXCHARTS --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-8 col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-0">
+            <div class="glass-card h-100 p-0 animate__animated animate__zoomIn animate__delay-1s" style="animation-delay: 1.2s;">
+                <div class="p-4 border-bottom bg-transparent d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-title mb-0 fw-bold">Tren Setoran Tervalidasi</h6>
+                        <h6 class="mb-0 fw-bold text-dark">Tren Setoran Tervalidasi</h6>
                         <small class="text-muted">Tahun {{ now()->year }}</small>
                     </div>
-                    <div class="badge bg-label-success rounded-pill px-3 py-2"><i class="ti tabler-chart me-1"></i> Stabil</div>
+                    <div class="badge bg-label-success rounded-pill px-3 py-2"><i class="ti tabler-chart-line me-1"></i> Stabil</div>
                 </div>
-                <div class="card-body"><div id="deposit-chart"></div></div>
+                <div class="p-4"><div id="deposit-chart"></div></div>
             </div>
         </div>
         <div class="col-xl-4 col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header bg-transparent border-0 pb-0">
-                    <h6 class="card-title mb-0 fw-bold">Kepadatan Titik Parkir</h6>
+            <div class="glass-card h-100 p-0 animate__animated animate__zoomIn animate__delay-1s" style="animation-delay: 1.4s;">
+                <div class="p-4 border-bottom bg-transparent">
+                    <h6 class="mb-0 fw-bold text-dark">Kepadatan Titik Parkir</h6>
                     <small class="text-muted">Top 10 Ruas Jalan</small>
                 </div>
-                <div class="card-body"><div id="locations-per-road-chart"></div></div>
+                <div class="p-4"><div id="locations-per-road-chart"></div></div>
             </div>
         </div>
     </div>
@@ -235,33 +201,25 @@
     {{-- ✅ 6. TABEL PKS (TERBARU + SEGERA BERAKHIR) --}}
     <div class="row g-4">
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
-                    <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-file-text text-primary me-2"></i>Kontrak PKS Terbaru</h6>
+            <div class="glass-card h-100 p-0 animate__animated animate__fadeInUp animate__delay-1s" style="animation-delay: 1.6s;">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-primary bg-opacity-10" style="border-top-left-radius: 1.25rem; border-top-right-radius: 1.25rem;">
+                    <h6 class="fw-bold mb-0 text-primary"><i class="ti tabler-file-text me-2"></i>Kontrak PKS Terbaru</h6>
                     @if ($totalAgreements > 10)
-                        <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-sm btn-outline-primary rounded-pill">Lihat Semua</a>
+                        <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-xs btn-primary rounded-pill shadow-sm">Lihat Semua</a>
                     @endif
                 </div>
-                <div class="table-responsive text-nowrap" style="max-height: 320px;">
-                    <table class="table table-hover mb-0 align-middle premium-table">
-                        <thead class="bg-lighter position-sticky top-0 z-1">
-                            <tr>
-                                <th class="text-uppercase" style="font-size: 0.75rem;">No. Kontrak PKS</th>
-                                <th class="text-uppercase" style="font-size: 0.75rem;">Mitra (Korlap)</th>
-                                <th class="text-uppercase text-center" style="font-size: 0.75rem;">Titik</th>
-                                <th class="text-uppercase text-end" style="font-size: 0.75rem;">Target/Bln</th>
-                            </tr>
-                        </thead>
+                <div class="p-2" style="max-height: 320px; overflow-y: auto;">
+                    <table class="table table-borderless premium-table mb-0">
                         <tbody>
                             @forelse($recentAgreements as $pks)
-                                <tr>
-                                    <td>
-                                        <a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="fw-bold text-primary">{{ $pks->agreement_number }}</a>
+                                <tr class="premium-list-item" style="cursor: pointer;" onclick="window.location='{{ route('masterdata.agreements.show', $pks->id) }}'">
+                                    <td class="py-2">
+                                        <span class="fw-bold text-primary">{{ $pks->agreement_number }}</span>
                                         <small class="d-block text-muted">{{ \Carbon\Carbon::parse($pks->start_date)->translatedFormat('d M Y') }}</small>
                                     </td>
-                                    <td><span class="fw-medium text-dark">{{ $pks->fieldCoordinator->user->name ?? 'N/A' }}</span></td>
-                                    <td class="text-center"><span class="badge bg-label-info rounded-pill">{{ $pks->active_parking_locations_count }}</span></td>
-                                    <td class="text-end"><span class="fw-bold text-primary">Rp {{ number_format($pks->monthly_deposit_target, 0, ',', '.') }}</span></td>
+                                    <td class="py-2 align-middle"><span class="fw-medium text-dark">{{ $pks->fieldCoordinator->user->name ?? 'N/A' }}</span></td>
+                                    <td class="text-center py-2 align-middle"><span class="badge bg-label-info rounded-pill">{{ $pks->active_parking_locations_count }} Titik</span></td>
+                                    <td class="text-end py-2 align-middle"><span class="fw-bold text-success">Rp {{ number_format($pks->monthly_deposit_target, 0, ',', '.') }}</span></td>
                                 </tr>
                             @empty
                                 <tr><td colspan="4" class="text-center py-5 text-muted"><i class="ti tabler-inbox-2 ti-xl opacity-50 mb-2 d-block"></i> Belum ada kontrak PKS.</td></tr>
@@ -273,27 +231,20 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
-                <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center py-3">
-                    <h6 class="card-title mb-0 fw-bold"><i class="ti tabler-alert-triangle text-warning me-2"></i>PKS Segera Berakhir</h6>
-                    <span class="badge bg-warning bg-opacity-10 text-warning fw-bold">30 Hari</span>
+            <div class="glass-card h-100 p-0 animate__animated animate__fadeInUp animate__delay-1s" style="animation-delay: 1.8s;">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-warning bg-opacity-10" style="border-top-left-radius: 1.25rem; border-top-right-radius: 1.25rem;">
+                    <h6 class="fw-bold mb-0 text-warning"><i class="ti tabler-alert-triangle me-2"></i>PKS Segera Berakhir</h6>
+                    <span class="badge bg-warning bg-opacity-25 text-warning fw-bold">30 Hari</span>
                 </div>
-                <div class="table-responsive text-nowrap" style="max-height: 320px;">
-                    <table class="table table-hover mb-0 align-middle premium-table">
-                        <thead class="bg-lighter position-sticky top-0 z-1">
-                            <tr>
-                                <th class="text-uppercase" style="font-size: 0.75rem;">No. PKS</th>
-                                <th class="text-uppercase" style="font-size: 0.75rem;">Korlap</th>
-                                <th class="text-uppercase text-end" style="font-size: 0.75rem;">Sisa</th>
-                            </tr>
-                        </thead>
+                <div class="p-2" style="max-height: 320px; overflow-y: auto;">
+                    <table class="table table-borderless premium-table mb-0">
                         <tbody>
                             @forelse($expiringAgreements as $pks)
                                 @php $daysLeft = now()->diffInDays($pks->end_date, false); @endphp
-                                <tr>
-                                    <td><a href="{{ route('masterdata.agreements.show', $pks->id) }}" class="fw-bold text-warning">{{ $pks->agreement_number }}</a></td>
-                                    <td>{{ $pks->fieldCoordinator->user->name ?? 'N/A' }}</td>
-                                    <td class="text-end"><span class="badge {{ $daysLeft <= 7 ? 'bg-label-danger' : 'bg-label-warning' }} fw-bold">{{ (int)$daysLeft }} hari</span></td>
+                                <tr class="premium-list-item" style="cursor: pointer;" onclick="window.location='{{ route('masterdata.agreements.show', $pks->id) }}'">
+                                    <td class="py-2"><span class="fw-bold text-warning">{{ $pks->agreement_number }}</span></td>
+                                    <td class="py-2 align-middle text-dark">{{ $pks->fieldCoordinator->user->name ?? 'N/A' }}</td>
+                                    <td class="text-end py-2 align-middle"><span class="badge {{ $daysLeft <= 7 ? 'bg-label-danger' : 'bg-label-warning' }} fw-bold">{{ (int)$daysLeft }} hari</span></td>
                                 </tr>
                             @empty
                                 <tr><td colspan="3" class="text-center py-5 text-success"><i class="ti tabler-checks ti-lg opacity-50 mb-2 d-block"></i> Semua PKS aman.</td></tr>
@@ -337,7 +288,19 @@
             const barChartEl = document.querySelector("#locations-per-road-chart");
             if (barChartEl) {
                 new ApexCharts(barChartEl, {
-                    chart: { type: 'bar', height: 320, parentHeightOffset: 0, toolbar: { show: false }, fontFamily: 'Public Sans, sans-serif' },
+                    chart: { 
+                        type: 'bar', height: 320, parentHeightOffset: 0, toolbar: { show: false }, fontFamily: 'Public Sans, sans-serif',
+                        events: {
+                            dataPointSelection: function(event, chartContext, config) {
+                                const ids = @json($barChartData['ids'] ?? []);
+                                const id = ids[config.dataPointIndex];
+                                if (id) {
+                                    let url = "{{ route('masterdata.road-sections.show', ':id') }}";
+                                    window.location.href = url.replace(':id', id);
+                                }
+                            }
+                        }
+                    },
                     plotOptions: { bar: { horizontal: true, barHeight: '60%', borderRadius: 4, distributed: true } },
                     dataLabels: { enabled: false },
                     series: [{ name: 'Jumlah Titik', data: @json($barChartData['data']) }],
@@ -345,8 +308,11 @@
                     yaxis: { labels: { style: { colors: '#a1acb8', fontSize: '12px' } } },
                     colors: ['#696cff', '#03c3ec', '#71dd37', '#ffab00', '#ff3e1d', '#8592a3'],
                     grid: { show: false },
-                    legend: { show: false }
+                    legend: { show: false },
+                    states: { hover: { filter: { type: 'darken', value: 0.9 } }, active: { filter: { type: 'darken', value: 0.8 } } }
                 }).render();
+                // Add pointer cursor
+                document.querySelector("#locations-per-road-chart").style.cursor = "pointer";
             }
 
             // 3. LOGIKA QUICK SEARCH (SELECT 2 AJAX)
@@ -387,7 +353,21 @@
                             const roadName = loc.road_section ? loc.road_section.name : 'Tanpa Ruas';
                             const zone = loc.road_section ? loc.road_section.zone : '-';
                             const url = `/masterdata/parking-locations/${loc.id}`;
-                            marker.bindPopup(`<div class="p-1"><h6 class="fw-bold mb-1">${loc.name}</h6><p class="small text-muted mb-2"><i class="ti tabler-road align-middle"></i> ${roadName} (Zona ${zone})</p><a href="${url}" class="btn btn-xs btn-outline-secondary w-100">Detail</a></div>`);
+                            const imageHtml = loc.image 
+                                ? `<img src="/storage/${loc.image}" alt="Location" style="width: 100%; height: 100%; object-fit: cover;">` 
+                                : `<i class="ti tabler-map-pin-filled ti-sm"></i>`;
+                                
+                            let popupContent = `
+                                <div class="p-2 text-center" style="min-width: 180px;">
+                                    <div class="mb-2 mx-auto d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle overflow-hidden shadow-sm" style="width: 56px; height: 56px;">
+                                        ${imageHtml}
+                                    </div>
+                                    <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">${loc.name}</h6>
+                                    <p class="small text-muted mb-3"><i class="ti tabler-road align-middle text-primary me-1"></i> ${roadName} <br> <span class="badge bg-label-dark mt-2 px-3 py-1 rounded-pill shadow-sm">Zona ${zone}</span></p>
+                                    <a href="${url}" class="btn btn-sm btn-primary w-100 rounded-pill shadow-sm">Lihat Detail <i class="ti tabler-arrow-right ms-1 icon-xs"></i></a>
+                                </div>
+                            `;
+                            marker.bindPopup(popupContent, { className: 'premium-leaflet-popup' });
                             bounds.push([loc.latitude, loc.longitude]);
                         }
                     });

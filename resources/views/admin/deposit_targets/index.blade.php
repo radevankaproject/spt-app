@@ -64,7 +64,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
             {{-- ✅ ICON DIPERBAIKI --}}
-            <h4 class="fw-bold mb-1"><i class="ri icon-base ti tabler-chart me-2 text-primary ti-md"></i> Target Pendapatan
+            <h4 class="fw-bold mb-1"><i class="ri icon-base ti tabler-chart-histogram me-2 text-primary ti-md"></i> Target Pendapatan
                 Setoran</h4>
             <p class="text-muted mb-0">Kelola dan proyeksikan target setoran bulanan dan tahunan UPT.</p>
         </div>
@@ -101,7 +101,7 @@
             <div class="card sticky-form-card shadow-sm border-0" id="formContainer">
                 <div class="card-header bg-primary text-white d-flex align-items-center rounded-top">
                     {{-- ✅ ICON DIPERBAIKI --}}
-                    <i class="ti tabler-arrow-right-up-box me-2 icon-20spx"></i>
+                    <i class="ti tabler-arrow-merge-right me-2 icon-22px"></i>
                     <h5 class="card-title text-white mb-0">Set / Update Target</h5>
                 </div>
 
@@ -208,7 +208,7 @@
                                             <div class="avatar avatar-md">
                                                 {{-- ✅ ICON DIPERBAIKI --}}
                                                 <span class="avatar-initial rounded-circle bg-label-primary"><i
-                                                        class="ri icon-base ti tabler-calendar-2 ti-lg"></i></span>
+                                                        class="ri icon-base ti tabler-calendar ti-lg"></i></span>
                                             </div>
                                             <div>
                                                 <span class="text-muted mb-0 d-block" style="font-size: 0.8rem;">Tahun
@@ -255,7 +255,7 @@
                                                                 class="btn btn-sm btn-label-primary btn-icon rounded-pill shadow-sm"
                                                                 onclick="editTarget({{ $yearly->year }}, {{ $monthly->month }}, {{ $monthly->target_amount }})"
                                                                 data-bs-toggle="tooltip" title="Edit Target Ini">
-                                                                <i class="ri icon-base ti tabler-edit-box icon-18px"></i>
+                                                                <i class="ri icon-base ti tabler-edit icon-18px"></i>
                                                             </button>
                                                         </td>
                                                     </tr>

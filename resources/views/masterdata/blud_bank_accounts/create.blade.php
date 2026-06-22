@@ -66,7 +66,7 @@
                     {{-- Tanggal Mulai Efektif --}}
                     <div class="col-md-6">
                         <div class="form-floating form-floating-outline">
-                            <input type="date" class="form-control" id="start_date" name="start_date"
+                            <input type="text" class="form-control flatpickr-date" id="start_date" name="start_date"
                                 value="{{ old('start_date', date('Y-m-d')) }}" required />
                             <label for="start_date">Tanggal Mulai Efektif</label>
                         </div>
@@ -81,4 +81,31 @@
             </form>
         </div>
     </div>
+@endsection
+
+@section('page-script')
+
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flatpickrDates = document.querySelectorAll('.flatpickr-date');
+            if (flatpickrDates) {
+                flatpickr('.flatpickr-date', {
+                    dateFormat: "Y-m-d",
+                    appendTo: document.body
+                });
+            }
+        });
+    </script>
+
+@endsection
+
+@section('page-style')
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+<style>
+    .flatpickr-calendar {
+        z-index: 99999 !important;
+    }
+</style>
+
 @endsection

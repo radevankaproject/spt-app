@@ -95,7 +95,7 @@
                 <!-- Filter Zona -->
                 <div class="col-md-4 col-lg-3">
                     <label class="form-label fw-bold">
-                        <i class="ti tabler-map-pin-range me-1 text-primary"></i> Zona
+                        <i class="ti tabler-map-pin me-1 text-primary"></i> Zona
                     </label>
                     <div class="btn-group w-100 shadow-sm" role="group" aria-label="Pilih Zona">
                         <input type="radio" class="btn-check zone-radio" name="zone" id="zone_all" value="" autocomplete="off" {{ request('zone') == '' ? 'checked' : '' }}>
@@ -136,7 +136,7 @@
                     <div class="form-check custom-checkbox mb-3 mb-md-0 d-flex align-items-center">
                         <input type="checkbox" id="no_agreement" name="no_agreement" value="1" {{ request('no_agreement') == '1' ? 'checked' : '' }} class="form-check-input rounded border-gray-400 text-primary shadow-sm focus:ring-primary">
                         <label for="no_agreement" class="form-check-label ms-2 fw-semibold text-dark user-select-none">
-                            <span class="badge bg-label-warning px-2 py-1"><i class="ti tabler-alert me-1"></i> Tampilkan Titik Tanpa Koordinator (Belum PKS)</span>
+                            <span class="badge bg-label-warning px-2 py-1"><i class="ti tabler-alert-octagon me-1"></i> Tampilkan Titik Tanpa Koordinator (Belum PKS)</span>
                         </label>
                     </div>
 
@@ -157,14 +157,14 @@
     <div class="card border-0">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center border-bottom bg-transparent pb-3 pt-4">
             <h5 class="mb-0 fw-bold text-dark d-flex align-items-center">
-                <i class="ti tabler-table-alt me-2 text-primary"></i> Hasil Laporan
+                <i class="ti tabler-table me-2 text-primary"></i> Hasil Laporan
             </h5>
             <div class="d-flex gap-2 mt-3 mt-md-0">
                 <a href="{{ route('admin.parking-locations.report.export-pdf', request()->all()) }}" class="btn btn-danger shadow-sm px-3" data-bs-toggle="tooltip" title="Download PDF">
-                    <i class="ti tabler-file-pdf-2 me-2"></i> PDF
+                    <i class="ti tabler-file-type-pdf me-2"></i> PDF
                 </a>
                 <a href="{{ route('admin.parking-locations.report.export-excel', request()->all()) }}" class="btn btn-success shadow-sm px-3" data-bs-toggle="tooltip" title="Download Excel">
-                    <i class="ti tabler-file-excel-2 me-2"></i> Excel
+                    <i class="ti tabler-file-excel me-2"></i> Excel
                 </a>
             </div>
         </div>
@@ -176,9 +176,9 @@
                             <th class="text-center text-muted" width="5%">#</th>
                             <th width="20%"><i class="ti tabler-map-pin align-text-bottom me-1"></i> Titik Lokasi</th>
                             <th width="20%"><i class="ti tabler-road align-text-bottom me-1"></i> Ruas Jalan</th>
-                            <th class="text-center" width="10%"><i class="ti tabler-map-pin-range align-text-bottom me-1"></i> Zona</th>
+                            <th class="text-center" width="10%"><i class="ti tabler-map-2 align-text-bottom me-1"></i> Zona</th>
                             <th width="20%"><i class="ti tabler-user-star align-text-bottom me-1"></i> Koordinator</th>
-                            <th class="text-center" width="10%"><i class="ti tabler-toggle align-text-bottom me-1"></i> Status</th>
+                            <th class="text-center" width="10%"><i class="ti tabler-category align-text-bottom me-1"></i> Status</th>
                             <th class="text-end" width="15%"><i class="ti tabler-currency-dollar align-text-bottom me-1"></i> Setoran (Rp)</th>
                         </tr>
                     </thead>

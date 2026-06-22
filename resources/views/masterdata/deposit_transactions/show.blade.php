@@ -214,7 +214,7 @@
                                             <div class="label pt-2">Divalidasi Oleh</div>
                                             <div class="colon pt-2">:</div>
                                             <div class="value pt-2 text-success">
-                                                <i class="ti tabler-verified-badge-filled me-1"></i> {{ $depositTransaction->validator->name ?? 'N/A' }}
+                                                <i class="ti tabler-rosette-discount-check icon-18px"></i> {{ $depositTransaction->validator->name ?? 'N/A' }}
                                                 <div class="text-muted fw-normal mt-1" style="font-size: 0.75rem;">{{ \Carbon\Carbon::parse($depositTransaction->validation_date)->translatedFormat('d M Y, H:i') }}</div>
                                             </div>
                                         @endif
@@ -223,7 +223,7 @@
                                             <div class="label pt-2">Diskon Oleh</div>
                                             <div class="colon pt-2">:</div>
                                             <div class="value pt-2 text-danger">
-                                                <i class="ti tabler-shield-star-filled me-1"></i> {{ $depositTransaction->discountApprover->name ?? 'N/A' }}
+                                                <i class="ti tabler-rosette-discount icon-18px"></i> {{ $depositTransaction->discountApprover->name ?? 'N/A' }}
                                             </div>
                                         @endif
                                     </div>
@@ -271,7 +271,7 @@
                             <div class="col-md-7 d-flex flex-column gap-4">
                                 {{-- Notes --}}
                                 <div>
-                                    <div class="text-label mb-2"><i class="ti tabler-sticky-note me-1"></i> Catatan Tambahan</div>
+                                    <div class="text-label mb-2"><i class="ti tabler-pencil-check me-1"></i> Catatan Tambahan</div>
                                     <div class="bg-light rounded p-3 text-muted fst-italic" style="font-size: 0.9rem; border-left: 3px solid #dee2e6;">
                                         {{ $depositTransaction->notes ?? 'Tidak ada catatan yang dilampirkan.' }}
                                     </div>
@@ -289,7 +289,7 @@
                                 {{-- Image --}}
                                 @if ($depositTransaction->proof_of_transfer)
                                 <div>
-                                    <div class="text-label mb-2"><i class="ti tabler-image me-1"></i> Bukti Transfer</div>
+                                    <div class="text-label mb-2"><i class="ti tabler-receipt-dollar me-1"></i> Bukti Transfer</div>
                                     <div class="d-inline-block position-relative" data-bs-toggle="modal" data-bs-target="#proofModal">
                                         <img src="{{ asset('storage/' . $depositTransaction->proof_of_transfer) }}" alt="Bukti Transfer" class="proof-img img-fluid bg-light p-1">
                                         <div class="position-absolute bottom-0 start-0 w-100 p-2 text-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.7)); border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;">

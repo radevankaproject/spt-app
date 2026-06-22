@@ -85,7 +85,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center">
                 <div class="avatar avatar-lg bg-label-primary rounded-3 me-3 d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="ri icon-base ti tabler-user-pin ti tabler-30px"></i>
+                    <i class="ri icon-base ti tabler-map-pin-bolt ti tabler-30px"></i>
                 </div>
                 <div>
                     <h4 class="fw-bold mb-1">Detail Lokasi: {{ $parkingLocation->name }}</h4>
@@ -120,7 +120,7 @@
                             </a>
                         @else
                             <div class="bg-label-secondary d-flex align-items-center justify-content-center mt-3 mb-3 rounded" style="width: 140px; height: 140px;">
-                                <i class="ri icon-base ti tabler-image text-secondary" style="font-size: 4.5rem;"></i>
+                                <i class="ri icon-base ti tabler-photo-circle-minus text-secondary" style="font-size: 6rem;"></i>
                             </div>
                         @endif
                         <div class="user-info text-center">
@@ -157,7 +157,7 @@
                 <div class="info-container">
                     <ul class="list-unstyled mb-4">
                         <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ti tabler-qr-code text-primary me-2 ti-md"></i>
+                            <i class="ri icon-base ti tabler-qrcode text-primary me-2 ti-md"></i>
                             <span class="fw-medium text-heading me-2">Kode ID:</span>
                             <span>#LOC-{{ str_pad($parkingLocation->id, 4, '0', STR_PAD_LEFT) }}</span>
                         </li>
@@ -249,7 +249,7 @@
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-docs" aria-controls="navs-docs" aria-selected="false">
-                        <i class="ri icon-base ti tabler-folder-zip me-1"></i> Dokumen Digital
+                        <i class="ri icon-base ti tabler-file-zip me-1"></i> Dokumen Digital
                     </button>
                 </li>
                 <li class="nav-item">
@@ -305,7 +305,7 @@
                                 </a>
                             @else
                                 <div class="text-center py-5">
-                                    <i class="ri icon-base ti tabler-link-unlink-m text-muted" style="font-size: 3rem;"></i>
+                                    <i class="ri icon-base ti tabler-unlink text-muted" style="font-size: 3rem;"></i>
                                     <p class="text-muted mt-2 mb-0">Lokasi ini <strong>Tersedia</strong> dan belum terikat PKS aktif manapun.</p>
                                 </div>
                             @endif
@@ -392,11 +392,11 @@
                                     @forelse($parkingLocation->histories as $history)
                                         @php
                                             $color = 'primary';
-                                            $icon = 'ti tabler-record-circle-filled';
-                                            if($history->action == 'created') { $color = 'success'; $icon = 'ti tabler-add-circle-filled'; }
-                                            elseif($history->action == 'updated') { $color = 'warning'; $icon = 'ti tabler-edit-circle-filled'; }
-                                            elseif($history->action == 'owner_changed') { $color = 'info'; $icon = 'ti tabler-exchange-box-filled'; }
-                                            elseif($history->action == 'deleted') { $color = 'danger'; $icon = 'ti tabler-delete-bin-filled'; }
+                                            $icon = 'ti tabler-map-pin-star';
+                                            if($history->action == 'created') { $color = 'success'; $icon = 'ti tabler-map-pin-plus'; }
+                                            elseif($history->action == 'updated') { $color = 'warning'; $icon = 'ti tabler-map-pin-share'; }
+                                            elseif($history->action == 'owner_changed') { $color = 'info'; $icon = 'ti tabler-map-pin-pin'; }
+                                            elseif($history->action == 'deleted') { $color = 'danger'; $icon = 'ti tabler-map-pin-x'; }
                                         @endphp
         
                                         <li class="timeline-item timeline-item-{{ $color }} mb-4">
@@ -452,7 +452,7 @@
         
                                     @if($parkingLocation->histories->isNotEmpty())
                                         <li class="timeline-item timeline-item-transparent border-0">
-                                            <span class="timeline-indicator timeline-indicator-secondary"><i class="ri icon-base ti tabler-checkbox-blank-circle"></i></span>
+                                            <span class="timeline-indicator timeline-indicator-secondary"><i class="ri icon-base ti tabler-map-pin-check"></i></span>
                                             <div class="timeline-event pb-0">
                                                 <small class="text-muted text-uppercase fw-bold">Awal Rekaman</small>
                                             </div>

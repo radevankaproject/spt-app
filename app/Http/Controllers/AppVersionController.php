@@ -29,7 +29,7 @@ class AppVersionController extends Controller
     public function manage()
     {
         // Mengambil semua versi yang ada untuk ditampilkan dalam daftar
-        $versions = AppVersion::latest('release_date')->paginate(5);
+        $versions = AppVersion::latest('release_date')->get();
         return view('admin.versions.manage', compact('versions'));
     }
 

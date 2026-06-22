@@ -70,7 +70,7 @@
         $defaultAvatar = 'data:image/svg+xml;base64,' . base64_encode($svg);
 
         $roleLabels = [
-            'admin' => ['text' => 'Administrator Sistem', 'color' => 'bg-label-danger', 'icon' => 'ti tabler-shield-keyhole'],
+            'admin' => ['text' => 'Administrator Sistem', 'color' => 'bg-label-danger', 'icon' => 'ti tabler-user-shield'],
             'leader' => ['text' => 'Kepala UPT / Pimpinan', 'color' => 'bg-label-primary', 'icon' => 'ti tabler-crown'],
             'staff_pks' => ['text' => 'Staff Administrasi PKS', 'color' => 'bg-label-info', 'icon' => 'ti tabler-file-text'],
             'staff_keu' => ['text' => 'Staff Keuangan', 'color' => 'bg-label-warning', 'icon' => 'ti tabler-currency-dollar'],
@@ -111,37 +111,39 @@
 
     {{-- Hero Card with Avatar Upload --}}
     <div class="profile-hero-edit mb-4 shadow-lg">
-        <form method="post" action="{{ route('profile.update.custom') }}" enctype="multipart/form-data" id="profileForm">
-            @csrf
-            @method('patch')
-            <div class="d-flex flex-column flex-sm-row align-items-center gap-3 position-relative" style="z-index:1;">
-                <div class="profile-avatar-edit-wrap">
-                    <img src="{{ $user->img ? asset('storage/' . $user->img) : $defaultAvatar }}"
-                         alt="{{ $user->name }}" id="uploadedAvatar">
-                </div>
-                <div class="text-center text-sm-start">
-                    <h4 class="fw-bold mb-1 text-white">{{ $user->name }}</h4>
-                    <span class="badge rounded-pill px-3 py-2 mb-3" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
-                        <i class="ri icon-base {{ $currentRole['icon'] }} me-1"></i> {{ $currentRole['text'] }}
-                    </span>
-                    <div class="d-flex flex-wrap gap-2 mt-2 justify-content-center justify-content-sm-start">
-                        <label for="upload" class="btn btn-sm btn-light rounded-pill shadow-sm px-3 mb-0" style="cursor:pointer;">
-                            <i class="ri icon-base ti tabler-camera me-1"></i> <span class="d-none d-sm-inline">Ganti Foto</span><span class="d-inline d-sm-none">Foto</span>
-                            <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg" name="img" />
-                        </label>
-                        <button type="button" id="resetButton" class="btn btn-sm btn-outline-light rounded-pill px-3 mb-0">
-                            <i class="ri icon-base ti tabler-refresh me-1"></i> Reset
-                        </button>
-                        @if ($user->img)
-                            <button type="button" id="deleteImageButton" class="btn btn-sm btn-outline-light rounded-pill px-3 mb-0">
-                                <i class="ri icon-base ti tabler-trash me-1"></i> Hapus
-                            </button>
-                        @endif
-                    </div>
-                    <p class="text-white opacity-50 small mt-2 mb-0">JPG atau PNG. Maksimal 1MB.</p>
+        <div class="d-flex flex-column flex-sm-row align-items-center gap-3 position-relative" style="z-index:1;">
+            <div class="profile-avatar-edit-wrap position-relative">
+                <img src="{{ $user->img ? asset('storage/' . $user->img) : $defaultAvatar }}"
+                     alt="{{ $user->name }}" id="uploadedAvatar">
+                
+                {{-- Progress Bar Overlay --}}
+                <div id="avatarProgressOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="background: rgba(0,0,0,0.6); display: none !important; backdrop-filter: blur(2px);">
+                    <div class="spinner-border text-white mb-1" role="status" style="width: 1.5rem; height: 1.5rem; border-width: 0.2em;"></div>
+                    <span id="avatarProgressText" class="text-white small fw-bold" style="font-size: 0.75rem;">0%</span>
                 </div>
             </div>
-        </form>
+            <div class="text-center text-sm-start">
+                <h4 class="fw-bold mb-1 text-white">{{ $user->name }}</h4>
+                <span class="badge rounded-pill px-3 py-2 mb-3" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                    <i class="ri icon-base {{ $currentRole['icon'] }} me-1"></i> {{ $currentRole['text'] }}
+                </span>
+                <div class="d-flex flex-wrap gap-2 mt-2 justify-content-center justify-content-sm-start">
+                    <label for="upload" class="btn btn-sm btn-light rounded-pill shadow-sm px-3 mb-0" style="cursor:pointer;">
+                        <i class="ri icon-base ti tabler-camera me-1"></i> <span class="d-none d-sm-inline">Ganti Foto</span><span class="d-inline d-sm-none">Foto</span>
+                        <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg" name="img" form="basicInfoForm" />
+                    </label>
+                    <button type="button" id="resetButton" class="btn btn-sm btn-outline-light rounded-pill px-3 mb-0">
+                        <i class="ri icon-base ti tabler-refresh me-1"></i> Reset
+                    </button>
+                    @if ($user->img)
+                        <button type="button" id="deleteImageButton" class="btn btn-sm btn-outline-light rounded-pill px-3 mb-0">
+                            <i class="ri icon-base ti tabler-trash me-1"></i> Hapus
+                        </button>
+                    @endif
+                </div>
+                <p class="text-white opacity-50 small mt-2 mb-0">JPG atau PNG. Maksimal 10MB.</p>
+            </div>
+        </div>
     </div>
 
     <div class="row g-4">
@@ -150,13 +152,13 @@
         <div class="col-xl-8 col-lg-7">
             <div class="card form-card shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-transparent border-bottom py-3">
-                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ti tabler-user-settings me-2 text-primary"></i>Informasi Dasar</h6>
+                    <h6 class="mb-0 fw-bold"><i class="ri icon-base ti tabler-user-edit me-2 text-primary"></i>Informasi Dasar</h6>
                 </div>
                 <div class="card-body pt-4">
                     <form id="send-verification" method="post" action="{{ route('verification.send') }}">@csrf</form>
 
                     {{-- Reuse form from hero (same action) --}}
-                    <form method="post" action="{{ route('profile.update.custom') }}" enctype="multipart/form-data">
+                    <form method="post" action="{{ route('profile.update.custom') }}" enctype="multipart/form-data" id="basicInfoForm">
                         @csrf
                         @method('patch')
 
@@ -341,16 +343,35 @@
 
             if (accountUserImage && fileInput) {
                 const initialAvatarSrc = accountUserImage.src;
+                const overlay = document.getElementById('avatarProgressOverlay');
+                const progressText = document.getElementById('avatarProgressText');
+
                 fileInput.addEventListener('change', async function(event) {
                     const imageFile = event.target.files[0];
                     if (!imageFile) { accountUserImage.src = initialAvatarSrc; return; }
                     try {
-                        const compressedFile = await imageCompression(imageFile, { maxSizeMB: 0.5, maxWidthOrHeight: 1024, useWebWorker: true });
+                        // Tampilkan overlay progress
+                        overlay.style.setProperty('display', 'flex', 'important');
+                        
+                        const compressedFile = await imageCompression(imageFile, { 
+                            maxSizeMB: 0.5, 
+                            maxWidthOrHeight: 1024, 
+                            useWebWorker: true,
+                            onProgress: function(progress) {
+                                progressText.textContent = progress + '%';
+                            }
+                        });
+                        
+                        // Sembunyikan overlay setelah selesai
+                        overlay.style.setProperty('display', 'none', 'important');
+                        progressText.textContent = '0%';
+                        
                         accountUserImage.src = URL.createObjectURL(compressedFile);
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(new File([compressedFile], imageFile.name, { type: compressedFile.type }));
                         fileInput.files = dataTransfer.files;
                     } catch (error) {
+                        overlay.style.setProperty('display', 'none', 'important');
                         Swal.fire({ title: 'Gagal Kompres!', text: 'Terjadi kesalahan.', icon: 'error' });
                         fileInput.value = ''; accountUserImage.src = initialAvatarSrc;
                     }

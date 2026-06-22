@@ -337,7 +337,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-light border-bottom">
-                    <h5 class="modal-title fw-bold text-primary"><i class="ti tabler-shield-keyhole me-2"></i>Edit Data Login</h5>
+                    <h5 class="modal-title fw-bold text-primary"><i class="ti tabler-key me-2"></i>Edit Data Login</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="formLoginModal" action="" method="POST">

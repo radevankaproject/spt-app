@@ -48,12 +48,18 @@ isset($configData['contentLayout']) && $configData['contentLayout'] === 'compact
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="changelog-content">
-                    {{-- Konten akan diisi oleh JavaScript --}}
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                <div id="changelog-content" data-loaded="false">
+                    <div class="text-center py-4" id="changelog-loading">
+                        <div class="m3-wavy-wrapper mx-auto" style="width: 80px; height: 80px;">
+                            <svg class="m3-wavy-svg" viewBox="0 0 120 120">
+                                <path id="modal-wavy-track" fill="none" stroke="rgba(102,108,255,0.15)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path id="modal-wavy-progress" fill="none" stroke="#666cff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="m3-wavy-center">
+                                <i class="ti tabler-rocket text-primary" style="font-size: 2rem; animation: pulse-logo 2s ease-in-out infinite;"></i>
+                            </div>
                         </div>
+                        <p class="text-muted mt-2 small fw-medium">Memuat versi...</p>
                     </div>
                 </div>
             </div>
@@ -83,5 +89,71 @@ isset($configData['contentLayout']) && $configData['contentLayout'] === 'compact
         if (loadTimeElement) {
             loadTimeElement.textContent = displayTime;
         }
+
+        // Setup Modal Wavy Loader Path
+        const modalTrack = document.getElementById('modal-wavy-track');
+        const modalProg = document.getElementById('modal-wavy-progress');
+        if (modalTrack && modalProg && typeof generateWavyCirclePath === 'function') {
+            const modalPathData = generateWavyCirclePath(60, 60, 45, 2, 16);
+            modalTrack.setAttribute('d', modalPathData);
+            modalProg.setAttribute('d', modalPathData);
+        }
+
+        // Fetch Changelog Data
+        const changelogModal = document.getElementById('changelogModal');
+        const changelogContent = document.getElementById('changelog-content');
+        
+        if (changelogModal && changelogContent) {
+            changelogModal.addEventListener('show.bs.modal', function () {
+                if (changelogContent.dataset.loaded === "true") return;
+
+                fetch('{{ route('app.versions') }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '';
+                        if (data.length > 0) {
+                            html += '<div class="accordion mt-3" id="changelogAccordion">';
+                            data.forEach((version, index) => {
+                                const dateObj = new Date(version.release_date);
+                                const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                                const isFirst = index === 0;
+                                const showClass = isFirst ? 'show' : '';
+                                const collapsedClass = isFirst ? '' : 'collapsed';
+                                
+                                html += `
+                                <div class="accordion-item card shadow-none border mb-2">
+                                    <h2 class="accordion-header" id="heading${index}">
+                                        <button type="button" class="accordion-button ${collapsedClass} d-flex align-items-center bg-lighter" data-bs-toggle="collapse" data-bs-target="#accordion${index}" aria-expanded="${isFirst}" aria-controls="accordion${index}">
+                                            <span class="fw-bold text-primary me-2">${version.version}</span>
+                                            <span class="badge bg-label-secondary small">${formattedDate}</span>
+                                        </button>
+                                    </h2>
+                                    <div id="accordion${index}" class="accordion-collapse collapse ${showClass}" data-bs-parent="#changelogAccordion" aria-labelledby="heading${index}">
+                                        <div class="accordion-body pt-3 pb-3">
+                                            <div class="changelog-content text-dark" style="font-size: 0.95rem;">
+                                                ${version.changelog}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            });
+                            html += '</div>';
+                        } else {
+                            html = `<div class="text-center text-muted py-4"><i class="ti tabler-box fs-1 mb-2 opacity-50"></i><br>Belum ada catatan versi.</div>`;
+                        }
+                        
+                        changelogContent.innerHTML = html;
+                        changelogContent.dataset.loaded = "true";
+                    })
+                    .catch(error => {
+                        changelogContent.innerHTML = `<div class="text-center text-danger py-4"><i class="ti tabler-alert-circle fs-1 mb-2"></i><br>Gagal memuat data versi.</div>`;
+                    });
+            });
+        }
     });
 </script>
+<style>
+    .changelog-content ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+    .changelog-content li { margin-bottom: 0.25rem; line-height: 1.6; }
+    .changelog-content strong { color: #566a7f; }
+</style>

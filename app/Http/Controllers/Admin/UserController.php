@@ -123,9 +123,132 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
-        return view('admin.users.show', compact('user'));
+        $stats = [];
+        $activeTab = $request->query('tab');
+        $search = $request->query('search');
+        $paginatedData = null;
+
+        // Ensure activeTab has a valid default based on role
+        if (!$activeTab) {
+            if (in_array($user->role, ['admin', 'staff_pks'])) {
+                $activeTab = 'korlap';
+            } elseif ($user->role === 'staff_keu') {
+                $activeTab = 'setoran';
+            }
+        }
+
+        // --- Logic for Admin & Staff PKS ---
+        if (in_array($user->role, ['admin', 'staff_pks'])) {
+            $stats['korlapCount'] = \App\Models\FieldCoordinator::where('last_updated_by', $user->id)->count();
+            $stats['roadSectionCount'] = \App\Models\RoadSection::where('last_updated_by', $user->id)->count();
+            $stats['agreementPdfCount'] = \App\Models\AgreementPdfHistory::where('generated_by_user_id', $user->id)->count();
+
+            if ($activeTab === 'korlap') {
+                $query = \App\Models\FieldCoordinator::with('user')->where('last_updated_by', $user->id);
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->whereHas('user', function ($uq) use ($search) {
+                            $uq->where('name', 'like', "%{$search}%");
+                        })->orWhere('id_card_number', 'like', "%{$search}%");
+                    });
+                }
+                $paginatedData = $query->latest('updated_at')->paginate(10)->withQueryString();
+            } elseif ($activeTab === 'zona') {
+                $query = \App\Models\RoadSection::where('last_updated_by', $user->id);
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")->orWhere('section_code', 'like', "%{$search}%");
+                    });
+                }
+                $paginatedData = $query->latest('updated_at')->paginate(10)->withQueryString();
+            } elseif ($activeTab === 'pks') {
+                $query = \App\Models\AgreementPdfHistory::with(['agreement.fieldCoordinator.user'])
+                            ->where('generated_by_user_id', $user->id);
+                if ($search) {
+                    $query->whereHas('agreement', function ($q) use ($search) {
+                        $q->where('agreement_number', 'like', "%{$search}%")
+                          ->orWhereHas('fieldCoordinator.user', function($uq) use ($search) {
+                              $uq->where('name', 'like', "%{$search}%");
+                          });
+                    });
+                }
+                $paginatedData = $query->latest('created_at')->paginate(10)->withQueryString();
+            }
+        }
+        // --- Logic for Staff Keuangan ---
+        elseif ($user->role === 'staff_keu') {
+            $baseQuery = \App\Models\DepositTransaction::where('validated_by_user_id', $user->id);
+            $stats['validatedDepositsCount'] = $baseQuery->count();
+            $stats['validatedDepositsAmount'] = $baseQuery->sum('amount');
+
+            if ($activeTab === 'setoran') {
+                $query = \App\Models\DepositTransaction::with(['agreement.fieldCoordinator.user'])
+                            ->where('validated_by_user_id', $user->id);
+                if ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('referral_code', 'like', "%{$search}%")
+                          ->orWhereHas('agreement', function ($aq) use ($search) {
+                              $aq->where('agreement_number', 'like', "%{$search}%");
+                          });
+                    });
+                }
+                $paginatedData = $query->latest('validation_date')->paginate(10)->withQueryString();
+            }
+        }
+        // --- Logic for Bendahara (Treasurer) ---
+        elseif ($user->role === 'treasurer') {
+            $treasurer = \App\Models\Treasurer::where('user_id', $user->id)->first();
+            if ($treasurer) {
+                $baseQuery = \App\Models\DepositTransaction::where('deposit_date', '>=', $treasurer->start_date);
+                if ($treasurer->end_date) {
+                    $baseQuery->where('deposit_date', '<=', $treasurer->end_date);
+                }
+                $baseQuery->where('is_validated', true);
+                
+                $stats['termDepositsCount'] = (clone $baseQuery)->count();
+                $stats['termDepositsAmount'] = (clone $baseQuery)->sum('amount');
+                
+                if (!$activeTab || $activeTab === 'profile') $activeTab = 'term_deposits';
+                
+                if ($activeTab === 'term_deposits') {
+                    $query = clone $baseQuery;
+                    $query->with('agreement.fieldCoordinator.user');
+                    if ($search) {
+                        $query->where(function($q) use ($search) {
+                            $q->where('referral_code', 'like', "%{$search}%")
+                              ->orWhereHas('agreement', function($q2) use ($search) {
+                                  $q2->where('agreement_number', 'like', "%{$search}%");
+                              });
+                        });
+                    }
+                    $paginatedData = $query->latest('deposit_date')->paginate(10)->withQueryString();
+                }
+            }
+        }
+        // --- Logic for Pimpinan (Leader) ---
+        elseif ($user->role === 'leader') {
+            $leader = \App\Models\Leader::where('user_id', $user->id)->first();
+            if ($leader) {
+                $stats['signedAgreementsCount'] = \App\Models\Agreement::where('leader_id', $leader->id)->count();
+                
+                if (!$activeTab || $activeTab === 'profile') $activeTab = 'signed_agreements';
+                
+                if ($activeTab === 'signed_agreements') {
+                    $query = \App\Models\Agreement::with('fieldCoordinator.user')->where('leader_id', $leader->id);
+                    if ($search) {
+                        $query->where('agreement_number', 'like', "%{$search}%")
+                              ->orWhereHas('fieldCoordinator.user', function($q) use ($search) {
+                                  $q->where('name', 'like', "%{$search}%");
+                              });
+                    }
+                    $paginatedData = $query->latest('signed_date')->paginate(10)->withQueryString();
+                }
+            }
+        }
+
+        return view('admin.users.show', compact('user', 'stats', 'activeTab', 'paginatedData', 'search'));
     }
 
     /**

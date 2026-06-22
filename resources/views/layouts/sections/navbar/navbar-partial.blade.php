@@ -1,90 +1,36 @@
 @php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Models\Agreement;
-use App\Models\DepositTransaction;
 use Carbon\Carbon;
+use App\Http\Controllers\UserShortcutController;
 
 $userRole = Auth::check() ? Auth::user()->role : null;
 
-// Build shortcuts based on role
 $shortcuts = [];
-if ($userRole === 'admin') {
-    $shortcuts = [
-        ['name' => 'Dashboard', 'url' => url('/'), 'icon' => 'tabler-device-desktop-analytics', 'desc' => 'Ringkasan Sistem'],
-        ['name' => 'Manajemen PKS', 'url' => route('masterdata.agreements.index'), 'icon' => 'tabler-file-signature', 'desc' => 'Kelola Perjanjian'],
-        ['name' => 'Master User', 'url' => route('admin.users.index'), 'icon' => 'tabler-users', 'desc' => 'Kelola Pengguna'],
-        ['name' => 'Laporan Keuangan', 'url' => route('masterdata.deposit-reports.index'), 'icon' => 'tabler-report-money', 'desc' => 'Rekap Setoran'],
-    ];
-} elseif ($userRole === 'staff-pks') {
-    $shortcuts = [
-        ['name' => 'Dashboard', 'url' => url('/'), 'icon' => 'tabler-device-desktop-analytics', 'desc' => 'Ringkasan PKS'],
-        ['name' => 'Manajemen PKS', 'url' => route('masterdata.agreements.index'), 'icon' => 'tabler-file-signature', 'desc' => 'Kelola Perjanjian'],
-        ['name' => 'Titik Parkir', 'url' => route('masterdata.parking-locations.index'), 'icon' => 'tabler-map-pin', 'desc' => 'Lokasi Parkir'],
-        ['name' => 'Master Jukir', 'url' => route('admin.leaders.index'), 'icon' => 'tabler-user', 'desc' => 'Kelola Jukir'],
-    ];
-} elseif ($userRole === 'staff-keuangan') {
-    $shortcuts = [
-        ['name' => 'Dashboard', 'url' => url('/'), 'icon' => 'tabler-device-desktop-analytics', 'desc' => 'Ringkasan Keuangan'],
-        ['name' => 'Validasi Setoran', 'url' => route('masterdata.deposit-transactions.index'), 'icon' => 'tabler-cash', 'desc' => 'Data Setoran'],
-        ['name' => 'Laporan Keuangan', 'url' => route('masterdata.deposit-reports.index'), 'icon' => 'tabler-report-money', 'desc' => 'Rekap Keuangan'],
-        ['name' => 'Data Jukir', 'url' => route('admin.leaders.index'), 'icon' => 'tabler-user', 'desc' => 'Koordinator/Jukir'],
-    ];
-}
-
-// Fetch real notifications
 $notificationsRaw = [];
 
-if (Auth::check() && in_array($userRole, ['admin', 'staff-pks'])) {
-    $expiringAgreements = Agreement::where('status', 'active')
-        ->where('end_date', '<=', Carbon::now()->addDays(30))
-        ->get();
-        
-    foreach ($expiringAgreements as $agr) {
-        $daysLeft = (int) Carbon::now()->startOfDay()->diffInDays(Carbon::parse($agr->end_date)->startOfDay(), false);
-        $statusText = $daysLeft < 0 ? 'Sudah Berakhir' : ($daysLeft == 0 ? 'Berakhir Hari Ini' : "Berakhir dalam $daysLeft hari");
-        $notifId = 'agr_' . $agr->id;
-        $notificationsRaw[] = [
-            'id' => $notifId,
-            'title' => 'PKS ' . $statusText,
-            'desc' => "PKS {$agr->agreement_number} {$statusText}.",
-            'timestamp' => Carbon::parse($agr->updated_at ?? $agr->created_at),
-            'icon' => 'tabler-file-alert',
-            'color' => $daysLeft < 0 ? 'danger' : 'warning',
-            'url' => route('masterdata.agreements.show', $agr->id),
-        ];
-    }
-}
-
-if (Auth::check() && in_array($userRole, ['admin', 'staff-keuangan'])) {
-    $pendingDeposits = DepositTransaction::where('is_validated', false)->get();
-    foreach ($pendingDeposits as $deposit) {
-        $notifId = 'dep_pend_' . $deposit->id;
-        $notificationsRaw[] = [
-            'id' => $notifId,
-            'title' => 'Setoran Belum Divalidasi',
-            'desc' => "Setoran Rp " . number_format($deposit->amount, 0, ',', '.') . " menunggu validasi.",
-            'timestamp' => Carbon::parse($deposit->created_at),
-            'icon' => 'tabler-cash',
-            'color' => 'info',
-            'url' => route('masterdata.deposit-transactions.index'),
-        ];
-    }
+if (Auth::check()) {
+    $user = Auth::user();
     
-    $recentValidated = DepositTransaction::where('is_validated', true)
-        ->orderBy('validation_date', 'desc')
-        ->take(10)
-        ->get();
-    foreach ($recentValidated as $deposit) {
-        $notifId = 'dep_val_' . $deposit->id;
+    // 1. Load Shortcuts
+    if ($user->shortcuts && $user->shortcuts->count() > 0) {
+        $shortcuts = $user->shortcuts->map(function($s) {
+            return ['name' => $s->name, 'url' => $s->url, 'icon' => $s->icon, 'desc' => $s->description];
+        })->toArray();
+    } else {
+        $shortcuts = UserShortcutController::getDefaultShortcuts($userRole);
+    }
+
+    // 2. Load DB Notifications
+    foreach ($user->unreadNotifications as $notif) {
         $notificationsRaw[] = [
-            'id' => $notifId,
-            'title' => 'Setoran Divalidasi',
-            'desc' => "Setoran Rp " . number_format($deposit->amount, 0, ',', '.') . " telah divalidasi.",
-            'timestamp' => Carbon::parse($deposit->validation_date),
-            'icon' => 'tabler-check',
-            'color' => 'success',
-            'url' => route('masterdata.deposit-transactions.index'),
+            'id' => $notif->id,
+            'title' => $notif->data['title'] ?? 'Notifikasi',
+            'desc' => $notif->data['desc'] ?? '',
+            'timestamp' => $notif->created_at,
+            'icon' => $notif->data['icon'] ?? 'tabler-bell',
+            'color' => $notif->data['color'] ?? 'primary',
+            'url' => $notif->data['url'] ?? '#',
         ];
     }
 }
@@ -94,10 +40,9 @@ usort($notificationsRaw, function($a, $b) {
     return $b['timestamp'] <=> $a['timestamp'];
 });
 
-// Take top 5 for dropdown, all for modal
 $allNotifications = $notificationsRaw;
 $navNotifications = array_slice($notificationsRaw, 0, 5);
-$unreadCount = count($notificationsRaw); // Total unique
+$unreadCount = count($notificationsRaw);
 @endphp
 
 <style>
@@ -114,6 +59,26 @@ $unreadCount = count($notificationsRaw); // Total unique
 .notif-item.removing {
     opacity: 0;
     transform: scale(0.95);
+}
+/* Custom Thin Scrollbar for Search Modal */
+.search-modal-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.search-modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.search-modal-scroll::-webkit-scrollbar-thumb {
+    background: rgba(150, 150, 150, 0.2);
+    border-radius: 10px;
+}
+.search-modal-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(150, 150, 150, 0.4);
+}
+/* Premium Smoky Backdrop for Modals */
+.modal-backdrop.show {
+    opacity: 0.75 !important;
+    backdrop-filter: blur(12px);
+    background-color: rgba(15, 23, 42, 0.8) !important;
 }
 </style>
 
@@ -146,37 +111,19 @@ $unreadCount = count($notificationsRaw); // Total unique
 
 <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
 
-  @if (!isset($menuHorizontal))
+  <!-- Letak kiri untuk menu toggle, dll -->
+  
   <!-- Search -->
   <div class="navbar-nav align-items-center flex-grow-1 position-relative me-3">
-      <div class="nav-item d-flex align-items-center w-100">
+      <div class="nav-item d-flex align-items-center w-100" data-bs-toggle="modal" data-bs-target="#globalSearchModal" style="cursor: pointer;" data-bs-placement="bottom" title="Buka Pencarian Global">
           <i class="ti tabler-search ti-md text-muted me-2"></i>
-          <input type="text" id="global-search-input" class="form-control border-0 shadow-none bg-transparent ps-1" placeholder="Cari PKS, Titik Parkir, User... (Ctrl+K atau Ctrl+/)" autocomplete="off">
-      </div>
-      
-      {{-- Dropdown Hasil Pencarian --}}
-      <div id="global-search-results" class="dropdown-menu dropdown-menu-start w-100 mt-2 shadow-lg border-0 py-2" style="display: none; position: absolute; top: 100%; left: 0; max-height: 400px; overflow-y: auto;">
-          <div class="text-center py-3" id="global-search-loading" style="display: none;">
-              <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-          </div>
-          <div id="global-search-content">
-              {{-- Hasil AJAX akan dirender di sini --}}
-          </div>
+          <span class="text-muted d-none d-md-inline-block">Search (CTRL+K)</span>
+          <span class="text-muted d-inline-block d-md-none">Search...</span>
       </div>
   </div>
   <!-- /Search -->
-  @endif
-
+  
   <ul class="navbar-nav flex-row align-items-center ms-md-auto">
-    @if (isset($menuHorizontal))
-    <!-- Search -->
-    <li class="nav-item navbar-search-wrapper btn btn-text-secondary btn-icon rounded-pill">
-      <a class="nav-item nav-link search-toggler px-0" href="javascript:void(0);">
-        <span class="d-inline-block text-body-secondary fw-normal" id="autocomplete"></span>
-      </a>
-    </li>
-    <!-- /Search -->
-    @endif
 
     <!-- Language (Removed) -->
 
@@ -230,8 +177,8 @@ $unreadCount = count($notificationsRaw); // Total unique
           <div class="dropdown-header d-flex align-items-center py-3">
             <h6 class="mb-0 me-auto">Shortcuts</h6>
             <a href="javascript:void(0)"
-              class="dropdown-shortcuts-add py-2 btn btn-text-secondary rounded-pill btn-icon" data-bs-toggle="tooltip"
-              data-bs-placement="top" title="Add shortcuts"><i
+              class="dropdown-shortcuts-add py-2 btn btn-text-secondary rounded-pill btn-icon" data-bs-toggle="modal" data-bs-target="#manageShortcutsModal"
+              data-bs-placement="top" title="Manage shortcuts"><i
                 class="icon-base ti tabler-plus icon-20px text-heading"></i></a>
           </div>
         </div>
@@ -525,41 +472,102 @@ $unreadCount = count($notificationsRaw); // Total unique
         document.body.appendChild(premiumModal);
     }
 
-    // --- B. LOGIKA GLOBAL SEARCH (LIVE AJAX) ---
-    const searchInput = document.getElementById('global-search-input');
-    const searchResults = document.getElementById('global-search-results');
-    const searchContent = document.getElementById('global-search-content');
-    const searchLoading = document.getElementById('global-search-loading');
+    // --- B. LOGIKA GLOBAL SEARCH (MODAL) ---
+    const searchModalEl = document.getElementById('globalSearchModal');
+    const searchInput = document.getElementById('modal-global-search-input');
+    const searchContent = document.getElementById('modal-global-search-content');
+    const searchLoading = document.getElementById('modal-global-search-loading');
     let searchTimeout = null;
+    let searchModal = null;
+    
+    const searchEmptyStateHtml = `
+      <div class="p-4" id="modal-global-search-empty">
+          <div class="row g-4">
+              <div class="col-md-6">
+                  <p class="text-muted text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px;">Popular Searches</p>
+                  <div class="list-group list-group-flush">
+                      <a href="javascript:void(0)" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1" onclick="document.getElementById('modal-global-search-input').value='Parkir'; document.getElementById('modal-global-search-input').dispatchEvent(new Event('input'))">
+                          <i class="ti tabler-map-pin me-3 text-muted" style="font-size: 1.2rem;"></i> Titik Parkir
+                      </a>
+                      <a href="javascript:void(0)" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1" onclick="document.getElementById('modal-global-search-input').value='PKS'; document.getElementById('modal-global-search-input').dispatchEvent(new Event('input'))">
+                          <i class="ti tabler-file-type-doc me-3 text-muted" style="font-size: 1.2rem;"></i> Perjanjian PKS
+                      </a>
+                      <a href="javascript:void(0)" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1" onclick="document.getElementById('modal-global-search-input').value='User'; document.getElementById('modal-global-search-input').dispatchEvent(new Event('input'))">
+                          <i class="ti tabler-users me-3 text-muted" style="font-size: 1.2rem;"></i> Daftar User
+                      </a>
+                      <a href="javascript:void(0)" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1" onclick="document.getElementById('modal-global-search-input').value='Jalan'; document.getElementById('modal-global-search-input').dispatchEvent(new Event('input'))">
+                          <i class="ti tabler-road me-3 text-muted" style="font-size: 1.2rem;"></i> Ruas Jalan
+                      </a>
+                  </div>
+              </div>
+              <div class="col-md-6">
+                  <p class="text-muted text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px;">Apps & Pages</p>
+                  <div class="list-group list-group-flush">
+                      <a href="{{ route('profile.index') }}" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1">
+                          <i class="ti tabler-user-circle me-3 text-muted" style="font-size: 1.2rem;"></i> Profil Saya
+                      </a>
+                      <a href="{{ route('masterdata.parking-locations.index') }}" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1">
+                          <i class="ti tabler-map me-3 text-muted" style="font-size: 1.2rem;"></i> Kelola Parkir
+                      </a>
+                      <a href="{{ route('masterdata.agreements.index') }}" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1">
+                          <i class="ti tabler-file-type-doc me-3 text-muted" style="font-size: 1.2rem;"></i> Kelola PKS
+                      </a>
+                      <a href="{{ route('dashboard') }}" class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body d-flex align-items-center mb-1">
+                          <i class="ti tabler-home me-3 text-muted" style="font-size: 1.2rem;"></i> Dashboard
+                      </a>
+                  </div>
+              </div>
+          </div>
+      </div>
+    `;
 
-    if (searchInput) {
-        document.addEventListener('keydown', function(e) {
-            if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.ctrlKey && e.key === '/')) {
-                if (document.activeElement !== searchInput) {
-                    e.preventDefault();
-                    searchInput.focus();
+    // Inisialisasi modal jika ada
+    if (searchModalEl) {
+        document.body.appendChild(searchModalEl);
+        if (typeof bootstrap !== 'undefined') {
+            searchModal = new bootstrap.Modal(searchModalEl);
+        }
+        
+        // Auto focus input ketika modal dibuka
+        searchModalEl.addEventListener('shown.bs.modal', function () {
+            if (searchInput) {
+                searchInput.focus();
+                // Jika sudah ada isinya, langsung trigger pencarian
+                if (searchInput.value.trim().length >= 2) {
+                    searchInput.dispatchEvent(new Event('input'));
                 }
             }
-            if (e.key === 'Escape') {
-                searchResults.style.display = 'none';
-                searchInput.blur();
+        });
+        
+        // Clear isi saat ditutup agar fresh
+        searchModalEl.addEventListener('hidden.bs.modal', function () {
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            if (searchContent) {
+                searchContent.innerHTML = searchEmptyStateHtml;
             }
         });
+    }
 
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.style.display = 'none';
+    // Ctrl+K atau Ctrl+/ untuk membuka modal pencarian
+    document.addEventListener('keydown', function(e) {
+        if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.ctrlKey && e.key === '/')) {
+            e.preventDefault();
+            if (searchModal) {
+                searchModal.show();
             }
-        });
+        }
+    });
 
+    if (searchInput) {
         searchInput.addEventListener('input', function() {
             const query = this.value.trim();
             if (query.length < 2) {
-                searchResults.style.display = 'none';
+                searchContent.innerHTML = searchEmptyStateHtml;
                 return;
             }
 
-            searchResults.style.display = 'block';
             searchContent.innerHTML = '';
             searchLoading.style.display = 'block';
 
@@ -572,75 +580,176 @@ $unreadCount = count($notificationsRaw); // Total unique
                         let html = '';
 
                         if (data.length === 0) {
-                            html = `<div class="px-4 py-3 text-center text-muted">
-                                        <i class="ti tabler-zoom-in ti-lg opacity-50 mb-2"></i>
-                                        Tidak ada data ditemukan untuk "<b>${query}</b>"
+                            html = `<div class="px-4 py-5 my-4 text-center">
+                                        <div class="d-inline-flex align-items-center justify-content-center bg-label-secondary rounded-circle mb-4" style="width: 80px; height: 80px;">
+                                            <i class="ti tabler-file-search text-muted" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <h5 class="text-dark fw-bold mb-2">Tidak Ditemukan</h5>
+                                        <p class="text-muted mb-0">Maaf, tidak ada data yang cocok dengan kata kunci "<b>${query}</b>"</p>
                                     </div>`;
                         } else {
-                            data.forEach(item => {
-                                html += `
-                                <a class="dropdown-item px-4 py-2" href="${item.url}">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar avatar-sm me-3">
-                                            <span class="avatar-initial rounded-circle ${item.icon}"><i class="${item.icon.split(' ')[0]}"></i></span>
+                            // Group data by subtitle
+                            const groupedData = data.reduce((acc, item) => {
+                                const key = item.subtitle || 'Lainnya';
+                                if (!acc[key]) acc[key] = [];
+                                acc[key].push(item);
+                                return acc;
+                            }, {});
+
+                            for (const [category, items] of Object.entries(groupedData)) {
+                                html += `<div class="px-4 py-2 mt-2">
+                                            <p class="text-muted text-uppercase mb-2" style="font-size: 0.7rem; letter-spacing: 1px;">${category}</p>
+                                            <div class="list-group list-group-flush">`;
+                                items.forEach(item => {
+                                    let avatarDisplay = '';
+                                    if (item.avatar_type === 'image') {
+                                        avatarDisplay = `<div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle overflow-hidden shadow-sm">${item.avatar_html}</span></div>`;
+                                    } else {
+                                        avatarDisplay = `<div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle ${item.color_class} shadow-sm">${item.avatar_html}</span></div>`;
+                                    }
+                                    
+                                    html += `
+                                    <a class="list-group-item list-group-item-action border-0 px-2 py-2 rounded text-body mb-1" href="${item.url}">
+                                        <div class="d-flex align-items-center">
+                                            ${avatarDisplay}
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0 text-dark fw-bold" style="font-size: 0.85rem;">${item.title}</h6>
+                                                <small class="text-muted d-block" style="font-size: 0.7rem;">${item.subtitle}</small>
+                                            </div>
+                                            <div class="flex-shrink-0 text-muted ms-2">
+                                                <i class="ti tabler-chevron-right icon-sm opacity-50"></i>
+                                            </div>
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-0 text-dark fw-bold">${item.title}</h6>
-                                            <small class="text-muted">${item.subtitle}</small>
-                                        </div>
-                                    </div>
-                                </a>`;
-                            });
+                                    </a>`;
+                                });
+                                html += `</div></div>`;
+                            }
                         }
                         searchContent.innerHTML = html;
                     })
                     .catch(error => {
                         searchLoading.style.display = 'none';
-                        searchContent.innerHTML = `<div class="px-4 py-3 text-center text-danger small">Gagal memuat data. Periksa koneksi atau rute.</div>`;
+                        searchContent.innerHTML = `<div class="px-4 py-5 text-center text-danger small"><i class="ti tabler-alert-triangle ti-xl mb-3 d-block"></i>Gagal memuat data. Periksa koneksi atau rute.</div>`;
                     });
             }, 500); 
-        });
-
-        searchInput.addEventListener('focus', function() {
-            if (this.value.trim().length >= 2) {
-                searchResults.style.display = 'block';
-            }
         });
     }
 
     // ==========================================
-    // 3. LOGOUT CONFIRMATION (SWEETALERT / NATIVE)
+    // 3. LOGOUT CONFIRMATION (PREMIUM MODAL)
     // ==========================================
     const logoutBtn = document.getElementById('logout-button');
     const logoutForm = document.getElementById('logout-form');
+    const premiumLogoutModal = document.getElementById('premiumLogoutModal');
+    
+    if (premiumLogoutModal) {
+        document.body.appendChild(premiumLogoutModal);
+    }
 
     if (logoutBtn && logoutForm) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault(); 
             
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Keluar Aplikasi?',
-                    text: "Sesi Anda akan diakhiri dan harus login kembali.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Keluar!',
-                    cancelButtonText: 'Batal',
-                    customClass: {
-                        confirmButton: 'btn btn-danger rounded-pill px-4 mx-2',
-                        cancelButton: 'btn btn-outline-secondary rounded-pill px-4 mx-2'
-                    },
-                    buttonsStyling: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        logoutForm.submit(); 
-                    }
-                });
+            if (typeof bootstrap !== 'undefined') {
+                const modal = new bootstrap.Modal(document.getElementById('premiumLogoutModal'));
+                modal.show();
             } else {
                 if (confirm('Keluar Aplikasi? Sesi Anda akan diakhiri dan harus login kembali.')) {
                     logoutForm.submit();
                 }
             }
+        });
+        
+        const confirmLogoutBtn = document.getElementById('confirm-logout-btn');
+        if (confirmLogoutBtn) {
+            confirmLogoutBtn.addEventListener('click', function() {
+                // Tampilkan animasi loading di tombol sebelum submit
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Keluar...';
+                this.classList.add('disabled');
+                logoutForm.submit();
+            });
+        }
+    }
+
+    // ==========================================
+    // 4. LOGIKA MANAGE SHORTCUTS
+    // ==========================================
+    const manageShortcutsModal = document.getElementById('manageShortcutsModal');
+    if (manageShortcutsModal) {
+        document.body.appendChild(manageShortcutsModal);
+        
+        let shortcutsLoaded = false;
+        
+        manageShortcutsModal.addEventListener('show.bs.modal', function () {
+            if (shortcutsLoaded) return;
+            
+            fetch("{{ route('shortcuts.get') }}")
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('shortcuts-checkbox-container');
+                let html = '';
+                if(data.length === 0) {
+                    html = '<div class="col-12 text-center text-muted py-3">Tidak ada shortcut tersedia untuk role Anda.</div>';
+                }
+                data.forEach((item, index) => {
+                    const checked = item.is_selected ? 'checked' : '';
+                    html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-check custom-option custom-option-icon h-100 position-relative">
+                            <label class="form-check-label custom-option-content h-100 p-3" for="shortcutOpt${index}">
+                                <span class="custom-option-body text-center">
+                                    <i class="icon-base ti ${item.icon} mb-2 fs-3 text-primary"></i>
+                                    <span class="custom-option-title d-block mb-1 fw-bold">${item.name}</span>
+                                    <small class="text-muted d-block">${item.desc}</small>
+                                </span>
+                                <input class="form-check-input" type="checkbox" value='${JSON.stringify(item)}' id="shortcutOpt${index}" ${checked} />
+                            </label>
+                        </div>
+                    </div>
+                    `;
+                });
+                container.innerHTML = html;
+                document.getElementById('manage-shortcuts-loading').style.display = 'none';
+                document.getElementById('form-manage-shortcuts').style.display = 'block';
+                shortcutsLoaded = true;
+            })
+            .catch(err => {
+                document.getElementById('manage-shortcuts-loading').innerHTML = '<p class="text-danger">Gagal memuat menu shortcut.</p>';
+            });
+        });
+        
+        document.getElementById('form-manage-shortcuts').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-shortcuts');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
+            btn.disabled = true;
+            
+            const checkedBoxes = document.querySelectorAll('#shortcuts-checkbox-container input[type="checkbox"]:checked');
+            const selectedShortcuts = Array.from(checkedBoxes).map(cb => JSON.parse(cb.value));
+            
+            fetch("{{ route('shortcuts.save') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ shortcuts: selectedShortcuts })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Reload immediately to apply new shortcuts
+                } else {
+                    alert('Gagal menyimpan.');
+                    btn.innerHTML = 'Simpan Pilihan';
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                alert('Terjadi kesalahan jaringan.');
+                btn.innerHTML = 'Simpan Pilihan';
+                btn.disabled = false;
+            });
         });
     }
 });
@@ -700,6 +809,93 @@ $unreadCount = count($notificationsRaw); // Total unique
             </div>
             @endforelse
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Manage Shortcuts Modal -->
+<div class="modal fade" id="manageShortcutsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 px-md-5 d-flex align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 54px; height: 54px;">
+                <i class="ti tabler-layout-grid-add text-primary icon-28px"></i>
+            </div>
+            <div>
+                <h4 class="modal-title fw-bold mb-0 text-dark">Kelola Shortcut</h4>
+                <small class="text-muted fw-medium">Pilih menu akses cepat sesuai preferensi Anda</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close shadow-none bg-secondary bg-opacity-10 rounded-circle p-2" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 p-md-5 pt-4" id="manage-shortcuts-body">
+         <div class="text-center py-4" id="manage-shortcuts-loading">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Memuat opsi menu...</p>
+         </div>
+         <form id="form-manage-shortcuts" style="display:none;">
+            <div class="row g-3" id="shortcuts-checkbox-container">
+                <!-- Injected via AJAX -->
+            </div>
+            <div class="text-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-label-secondary me-2 rounded-pill fw-bold px-4" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary rounded-pill fw-bold px-4 shadow-sm" id="btn-save-shortcuts">Simpan Pilihan</button>
+            </div>
+         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Premium Logout Modal -->
+<div class="modal fade" id="premiumLogoutModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);">
+      <div class="modal-body p-4 text-center pt-5">
+        <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle mb-4" style="width: 80px; height: 80px; box-shadow: 0 8px 20px -6px rgba(234, 84, 85, 0.3);">
+            <i class="ti tabler-logout text-danger" style="font-size: 2.5rem;"></i>
+        </div>
+        <h4 class="text-dark fw-bold mb-2">Keluar Aplikasi?</h4>
+        <p class="text-muted mb-4">Sesi Anda akan diakhiri dan Anda harus masuk kembali untuk mengakses sistem.</p>
+        
+        <div class="d-flex flex-column gap-2">
+            <button type="button" class="btn btn-danger rounded-pill fw-bold py-2 shadow-sm" id="confirm-logout-btn">
+                Ya, Keluar!
+            </button>
+            <button type="button" class="btn btn-label-secondary rounded-pill fw-bold py-2" data-bs-dismiss="modal">
+                Batal
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Global Search Modal (Premium Vuexy Style) -->
+<div class="modal fade" id="globalSearchModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg mt-5">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.98); backdrop-filter: blur(25px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2) !important;">
+      <div class="modal-header border-0 p-0 align-items-center">
+        <div class="input-group input-group-merge border-0" style="padding: 0.5rem 1rem;">
+          <span class="input-group-text border-0 bg-transparent text-primary ps-3"><i class="ti tabler-search ti-md"></i></span>
+          <input type="text" id="modal-global-search-input" class="form-control border-0 shadow-none fs-5 py-3" placeholder="Search (CTRL+K)" autocomplete="off" style="background: transparent;">
+          <span class="input-group-text border-0 bg-transparent text-muted px-2 d-flex align-items-center">
+            <span class="d-none d-md-inline-block text-muted fw-medium me-3" style="font-size: 0.75rem;">[esc]</span>
+            <button type="button" class="btn-close m-0 position-relative" style="right: 0.5rem;" data-bs-dismiss="modal" aria-label="Close"></button>
+          </span>
+        </div>
+      </div>
+      <hr class="m-0 text-muted" style="opacity: 0.15;">
+      <div class="modal-body p-0 search-modal-scroll" style="min-height: 250px; max-height: 60vh; overflow-y: auto; overflow-x: hidden;">
+          <div class="text-center py-5" id="modal-global-search-loading" style="display: none;">
+              <div class="spinner-border spinner-border-lg text-primary" role="status"></div>
+          </div>
+          <div id="modal-global-search-content" class="rounded-bottom pb-3">
+              <!-- Empty state injected by JS -->
+          </div>
       </div>
     </div>
   </div>

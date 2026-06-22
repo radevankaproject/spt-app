@@ -92,7 +92,7 @@
                             switch ($history->event_type) {
                                 case 'agreement_created': $icon = 'ti tabler-file-add'; $color = 'primary'; $eventName = 'PKS Diterbitkan'; break;
                                 case 'location_added': $icon = 'ti tabler-map-pin-plus'; $color = 'success'; $eventName = 'Lokasi Ditambahkan'; break;
-                                case 'location_removed': $icon = 'ti tabler-map-pin-5'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
+                                case 'location_removed': $icon = 'ti tabler-map-pin-minus'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
                                 case 'deposit_changed': $icon = 'ti tabler-currency-dollar'; $color = 'info'; $eventName = 'Perubahan Setoran'; break;
                                 case 'status_changed': $icon = 'ti tabler-refresh'; $color = 'warning'; $eventName = 'Status Berubah'; break;
                                 case 'agreement_renewed': $icon = 'ti tabler-loop-right'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
@@ -159,7 +159,7 @@
                                         <div class="avatar avatar-xs me-2">
                                             <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle shadow-sm" style="object-fit:cover;" />
                                         </div>
-                                        <small class="text-muted">Aktor: <span class="fw-bold text-dark">{{ $uName }}</span></small>
+                                        <small class="text-muted">Oleh: <span class="fw-bold text-dark">{{ $uName }}</span></small>
                                     </div>
                                 </div>
                                 <div class="timeline-event-time fw-bold text-muted" style="font-size:0.75rem;">

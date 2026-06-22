@@ -89,6 +89,10 @@
                                 <td><span class="badge bg-label-success">Aktif</span></td>
                                 <td class="text-center">
                                     <div class="d-flex align-items-center justify-content-center">
+                                        <a class="btn btn-sm btn-icon text-info" href="{{ route('admin.users.show', $user->id) }}"
+                                            data-bs-toggle="tooltip" title="Lihat Profil">
+                                            <i class="icon-base ti tabler-eye icon-22px"></i>
+                                        </a>
                                         @if(Auth::user()->role !== 'leader')
                                         <a class="btn btn-sm btn-icon" href="{{ route('admin.users.edit', $user->id) }}"
                                             data-bs-toggle="tooltip" title="Edit User">
@@ -101,7 +105,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-icon" data-bs-toggle="tooltip"
                                                 title="Hapus User">
-                                                <i class="icon-base ti tabler-trash icon-22px"></i>
+                                                <i class="icon-base ti tabler-trash text-danger icon-22px"></i>
                                             </button>
                                         </form>
                                         @endif

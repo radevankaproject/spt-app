@@ -2,23 +2,55 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v2.1.0] - 2026-06-23
+
+**_"Premium Experience, Comprehensive Profiling & Interactivity Update"_**
+
+Pembaruan masif yang berfokus pada detail pengalaman pengguna kelas atas, perombakan tampilan profil _user_, perbaikan tata letak modal dan interaktivitas secara menyeluruh.
+
+- **Perombakan Halaman Profil Kelas Premium:**
+    - Mendesain ulang tampilan detail pengguna (`show.blade.php`) di seluruh level otoritas (Admin, Pimpinan, Bendahara, Koordinator Lapangan, dan Pengguna Umum).
+    - Menerapkan _2-column card layout_ berstandar tinggi yang menampilkan foto profil (Avatar) dinamis, tautan sosial, serta atribut profil yang detail, terstruktur, dan sangat elegan.
+    - Mengintegrasikan pembaruan _UI Profile_ ke berbagai _controller_ secara konsisten.
+- **Interaktivitas Dashboard & Pemetaan Data:**
+    - ApexCharts (Top 10 Pendapatan Ruas Jalan) pada Dashboard Admin, Pimpinan, dan Staff PKS kini sepenuhnya interaktif. Pengguna yang mengklik salah satu bar chart akan diarahkan langsung ke halaman detail Ruas Jalan terkait (`road-sections.show`).
+    - Menambahkan rute dan antarmuka `show` khusus untuk Ruas Jalan sebagai pusat informasi rinci.
+    - Memperbaiki masalah `UrlGenerationException` saat memuat _route_ dinamis melalui interaksi grafik.
+- **Standarisasi Format Data & Komponen:**
+    - Mengimplementasikan *helper* `NipIndoFormat.php` khusus untuk memformat tampilan NIP Aparatur Sipil Negara secara otomatis dengan standar BKN (Contoh: `19900101 201001 1 001`).
+    - Standardisasi integrasi **Flatpickr** (Pemilih Tanggal & Waktu) di seluruh Form Modal. Memperbaiki *bug z-index* di mana kalender tersembunyi/tertutup di belakang elemen Bootstrap Modal.
+- **Penyempurnaan Sistem OTP & Otentikasi (Lupa Password):**
+    - Alur pengiriman OTP WhatsApp disempurnakan. Menambahkan _route_ `GET` `forgot-password/otp` sehingga mencegah terjadinya _error Method Not Allowed_ (Error 405) saat memuat ulang halaman/gagal memvalidasi _form_.
+    - _Timer_ hitung mundur "Kirim Ulang" kini bersifat persisten berkat integrasi antara `localStorage` dan peladen (`Session`), sehingga tidak di-_reset_ ke 60 detik secara sepihak jika pengguna melakukan _refresh_.
+    - Formulir OTP dilengkapi fitur _Auto Submit_ yang langsung tereksekusi segera setelah angka ke-6 diketik/di-paste.
+    - Memberikan umpan balik visual premium berupa _loading spinner_ dan perubahan status "Memuat...", "Mengirim...", dan "Menyimpan..." pada seluruh tombol _submit_ form otentikasi.
+- **Desain Halaman Error _Glassmorphism_:**
+    - Mengganti total rancangan `layout.blade.php` untuk merespons halaman _error_ (404, 500, dll) menjadi desain _Glassmorphism_ (Kaca Buram) mutakhir.
+    - Latar belakang mengusung efek _gradient mesh_ beranimasi dengan komponen geometri melayang, serta logo institusi (UPT SiPKS) yang dipigura dengan pendaran cahaya elegan (_glow pulse_).
+    - Memperkenalkan halaman khusus `429.blade.php` merespons status _Too Many Requests_.
+- **Pembaruan Fitur QR Code & Keamanan PKS:**
+    - Algoritma verifikasi dokumen Perjanjian Kerjasama (PKS) ditingkatkan menggunakan _Generator Alfanumerik 10 karakter_ (`rand(10)`) yang memperkuat keabsahan identitas berkas.
+    - QR Code kini dilengkapi cap logo institusi SiPKS (Tengah) untuk menegaskan keaslian otentik.
+- **Pembersihan & Perbaikan Visual Ekstra:**
+    - Eksekusi stabilisasi visualisasi profil, penanganan tipografi, standardisasi _icon_, hingga penyeragaman tata letak tabel-tabel data master.
+
 ## [v2.0.0] - 2026-06-18
 
 **_"The Vuexy 10.11.1 Evolution & Ultimate M3 Preloader"_**
 
-Pembaruan masif dan lompatan arsitektur antarmuka terbesar dalam sejarah aplikasi. Peningkatan dari versi dasar ke versi teranyar Vuexy dengan perombakan total pada sistem pemuatan (*loading*).
+Pembaruan masif dan lompatan arsitektur antarmuka terbesar dalam sejarah aplikasi. Peningkatan dari versi dasar ke versi teranyar Vuexy dengan perombakan total pada sistem pemuatan (_loading_).
 
-- **Full Vuexy v10.11.1 Migration:** 
-    - Melakukan sinkronisasi dan migrasi menyeluruh dari seluruh kerangka kerja (*layouting*), aset, hingga komponen dasar ke **Vuexy versi 10.11.1 (Full Version Bootstrap 5)**.
-    - Halaman otentikasi (Login, Register, Forgot Password, Reset Password, OTP) sepenuhnya diganti menggunakan struktur modern `auth-login-basic` dari Vuexy 10.11.1 dengan visual yang jauh lebih *clean* dan elegan.
+- **Full Vuexy v10.11.1 Migration:**
+    - Melakukan sinkronisasi dan migrasi menyeluruh dari seluruh kerangka kerja (_layouting_), aset, hingga komponen dasar ke **Vuexy versi 10.11.1 (Full Version Bootstrap 5)**.
+    - Halaman otentikasi (Login, Register, Forgot Password, Reset Password, OTP) sepenuhnya diganti menggunakan struktur modern `auth-login-basic` dari Vuexy 10.11.1 dengan visual yang jauh lebih _clean_ dan elegan.
 - **Pemusnahan Sistem Skeleton Klasik:**
-    - Menghapus 49+ file dan *script* `_skeleton-*.blade.php` lama secara permanen. Menghilangkan beban *render* HTML berganda pada setiap halaman (*page load*), sehingga ukuran DOM jauh lebih ringan dan cepat.
+    - Menghapus 49+ file dan _script_ `_skeleton-*.blade.php` lama secara permanen. Menghilangkan beban _render_ HTML berganda pada setiap halaman (_page load_), sehingga ukuran DOM jauh lebih ringan dan cepat.
 - **Inovasi Material 3 (M3) Squiggly Preloader:**
-    - Memperkenalkan *Global Premium Preloader* berteknologi tinggi di `commonMaster.blade.php`. 
-    - Menggunakan *requestAnimationFrame* dan perhitungan fungsi *Sine/Cosine* presisi untuk merender *SVG Squiggly Line* ala **Material 3 (Android 13+/Flutter M3)** yang memutar secara meliuk-liuk (bergerigi lembut) mengelilingi logo SiPKS.
-    - Disempurnakan dengan animasi *stroke-dasharray* murni via CSS yang akan berhenti secara presisi (*indeterminate spinner*) tepat di *milisecond* ketika `window.onload` menyatakan seluruh gambar dan halaman siap.
-- **Pembersihan Modul (*Housekeeping*):**
-    - Menghapus sisa-sisa tata letak bawaan Laravel Breeze (`app.blade.php`, `guest.blade.php`) dan file-file `*copy.php` cadangan yang sudah menjadi *clutter* di ruang *server*.
+    - Memperkenalkan _Global Premium Preloader_ berteknologi tinggi di `commonMaster.blade.php`.
+    - Menggunakan _requestAnimationFrame_ dan perhitungan fungsi _Sine/Cosine_ presisi untuk merender _SVG Squiggly Line_ ala **Material 3 (Android 13+/Flutter M3)** yang memutar secara meliuk-liuk (bergerigi lembut) mengelilingi logo SiPKS.
+    - Disempurnakan dengan animasi _stroke-dasharray_ murni via CSS yang akan berhenti secara presisi (_indeterminate spinner_) tepat di _milisecond_ ketika `window.onload` menyatakan seluruh gambar dan halaman siap.
+- **Pembersihan Modul (_Housekeeping_):**
+    - Menghapus sisa-sisa tata letak bawaan Laravel Breeze (`app.blade.php`, `guest.blade.php`) dan file-file `*copy.php` cadangan yang sudah menjadi _clutter_ di ruang _server_.
 
 ## [v1.5.0] - 2026-06-13
 
@@ -27,45 +59,45 @@ Pembaruan masif dan lompatan arsitektur antarmuka terbesar dalam sejarah aplikas
 Pembaruan yang berfokus pada perombakan total antarmuka Profil Pengguna menjadi lebih premium, dinamis, serta penguatan _audit trail_ (rekam jejak sejarah) pada Master Data.
 
 - **Perombakan Total Dashboard & UI Roles (Premium Dashboard):**
-    - Mendesain ulang seluruh halaman *dashboard* dari setiap *role* (Admin, Pimpinan, Bendahara, Staff Keuangan, Staff PKS) dengan tata letak visual standar *premium government*.
-    - Menghadirkan komponen *Quick Stats* (6 kartu statistik), *Hero Search Card* gradasi, serta tabel informatif dengan desain minimalis tanpa menghilangkan fungsionalitas.
-    - Menyesuaikan *Skeleton Loading* agar setiap transisi sinkron dengan tata letak *dashboard* terbaru.
+    - Mendesain ulang seluruh halaman _dashboard_ dari setiap _role_ (Admin, Pimpinan, Bendahara, Staff Keuangan, Staff PKS) dengan tata letak visual standar _premium government_.
+    - Menghadirkan komponen _Quick Stats_ (6 kartu statistik), _Hero Search Card_ gradasi, serta tabel informatif dengan desain minimalis tanpa menghilangkan fungsionalitas.
+    - Menyesuaikan _Skeleton Loading_ agar setiap transisi sinkron dengan tata letak _dashboard_ terbaru.
 - **Fitur Baru - Adendum/Diskon Khusus (Keringanan Tagihan):**
     - Mengakomodasi kebutuhan lapangan dengan penambahan form "Potongan/Keringanan" pada transaksi setoran bulanan. Nominal tagihan akan otomatis dikurangi berdasarkan besaran potongan.
-    - Diperkuat dengan **Sistem Audit Diskon**, di mana sistem otomatis mendeteksi dan mencatat profil *user* yang menyetujui pemotongan tagihan tersebut. Rincian nama pemberi diskon dan alasannya kini dipampang transparan pada halaman *Detail Setoran* serta cetakan Struk PDF.
+    - Diperkuat dengan **Sistem Audit Diskon**, di mana sistem otomatis mendeteksi dan mencatat profil _user_ yang menyetujui pemotongan tagihan tersebut. Rincian nama pemberi diskon dan alasannya kini dipampang transparan pada halaman _Detail Setoran_ serta cetakan Struk PDF.
 - **Perombakan Premium UI Halaman Setoran & Alur Pembayaran Sekuensial:**
-    - Mendesain ulang halaman Detail Transaksi Setoran (*show*) dan Formulir Setoran (*create/edit*) dengan tampilan ultra-premium ala sistem instansi resmi (*Glassmorphism*, transisi halus, penjajaran kolom yang presisi, dan *Skeleton Loading* khusus).
-    - Melengkapi fitur interaktif berupa Modal/Popup elegan untuk memperbesar *thumbnail* lampiran Bukti Transfer langsung tanpa membuka *tab* baru.
+    - Mendesain ulang halaman Detail Transaksi Setoran (_show_) dan Formulir Setoran (_create/edit_) dengan tampilan ultra-premium ala sistem instansi resmi (_Glassmorphism_, transisi halus, penjajaran kolom yang presisi, dan _Skeleton Loading_ khusus).
+    - Melengkapi fitur interaktif berupa Modal/Popup elegan untuk memperbesar _thumbnail_ lampiran Bukti Transfer langsung tanpa membuka _tab_ baru.
     - **Pembaruan Sistematis:** Menerapkan alur pembayaran **Sekuensial (Wajib Berurutan)**. Pengguna dipaksa melunasi tunggakan bulan terlama terlebih dahulu sebelum dapat membayar tagihan bulan terbaru. Sistem secara otomatis memberikan peringatan elegan jika mencoba melewati urutan bayar.
-    - **Penguncian Akses Pintar (Validation Lock):** Mencegah *double-input* atau transaksi ganda. Jika seorang Koordinator Lapangan masih memiliki riwayat transaksi setoran yang berstatus *Pending / Menunggu Validasi*, maka form setoran baru akan **terkunci rapat** hingga Bendahara menyelesaikan validasi tersebut.
+    - **Penguncian Akses Pintar (Validation Lock):** Mencegah _double-input_ atau transaksi ganda. Jika seorang Koordinator Lapangan masih memiliki riwayat transaksi setoran yang berstatus _Pending / Menunggu Validasi_, maka form setoran baru akan **terkunci rapat** hingga Bendahara menyelesaikan validasi tersebut.
 - **Inovasi Navigasi - Tab Jatuh Tempo:**
-    - Menambahkan **Tab Jatuh Tempo** di posisi terdepan pada Halaman Indeks Setoran. Fitur ini menyeleksi dan mendeteksi seluruh PKS yang menunggak secara *real-time*.
-    - Menambahkan tombol "Bayar Sekarang" yang langsung menghubungkan pengguna ke form input setoran dengan sistem pengisian kolom otomatis *(Auto-Trigger Target Agreement)*.
-    - Kolom pencarian disederhanakan dan dioptimasi di tingkat *Controller* agar merender hasil dengan lebih gegas (*Super Fast Live Search*).
+    - Menambahkan **Tab Jatuh Tempo** di posisi terdepan pada Halaman Indeks Setoran. Fitur ini menyeleksi dan mendeteksi seluruh PKS yang menunggak secara _real-time_.
+    - Menambahkan tombol "Bayar Sekarang" yang langsung menghubungkan pengguna ke form input setoran dengan sistem pengisian kolom otomatis _(Auto-Trigger Target Agreement)_.
+    - Kolom pencarian disederhanakan dan dioptimasi di tingkat _Controller_ agar merender hasil dengan lebih gegas (_Super Fast Live Search_).
 - **Pembaruan Modul Cetak PDF & Sidebar:**
-    - Optimalisasi *layouting* cetak Struk Setoran (PDF) agar selalu presisi termuat pada 1 halaman utuh (dikunci dengan *page-break* CSS modern).
-    - Mengganti nomenklatur menu di panel Sidebar dari *"Validasi Setoran"* menjadi *"Input Setoran"* untuk memperjelas fungsionalitas bagi multi-peran admin/keuangan.
+    - Optimalisasi _layouting_ cetak Struk Setoran (PDF) agar selalu presisi termuat pada 1 halaman utuh (dikunci dengan _page-break_ CSS modern).
+    - Mengganti nomenklatur menu di panel Sidebar dari _"Validasi Setoran"_ menjadi _"Input Setoran"_ untuk memperjelas fungsionalitas bagi multi-peran admin/keuangan.
 - **Perombakan Total Profil Pengguna (Premium Profile):**
-    - Redesain antarmuka Profil menjadi jauh lebih modern, premium, dan dinamis dengan efek *Skeleton Loading* untuk transisi.
-    - Mengintegrasikan UI-Avatars API sebagai *fallback* elegan jika *user* belum mengunggah foto profil.
-    - Fitur *Live Search* langsung terintegrasi di dalam *card* Aktivitas/Informasi Detail Pengguna.
+    - Redesain antarmuka Profil menjadi jauh lebih modern, premium, dan dinamis dengan efek _Skeleton Loading_ untuk transisi.
+    - Mengintegrasikan UI-Avatars API sebagai _fallback_ elegan jika _user_ belum mengunggah foto profil.
+    - Fitur _Live Search_ langsung terintegrasi di dalam _card_ Aktivitas/Informasi Detail Pengguna.
     - Menampilkan informasi historis spesifik berdasarkan peran pengguna (Admin, Staff PKS, Bendahara, Staff Keu, Pimpinan), memastikan data yang relevan tampil di satu layar.
 - **Penyempurnaan Manajemen Koordinator (SPA Modals):**
-    - Akses Edit Data Lengkap dan Edit Data Login (Username/Password/Email) Koordinator Lapangan kini terintegrasi langsung di dalam halaman Indeks menggunakan teknologi *Single Page Application* (SPA) / Modals. Menghapus navigasi paksa ke halaman *show*.
-    - Penerapan limitasi akses yang ketat; hanya *role* Admin yang diizinkan untuk memodifikasi Data Login Koordinator.
+    - Akses Edit Data Lengkap dan Edit Data Login (Username/Password/Email) Koordinator Lapangan kini terintegrasi langsung di dalam halaman Indeks menggunakan teknologi _Single Page Application_ (SPA) / Modals. Menghapus navigasi paksa ke halaman _show_.
+    - Penerapan limitasi akses yang ketat; hanya _role_ Admin yang diizinkan untuk memodifikasi Data Login Koordinator.
 - **Penguatan Audit Trail (Rekam Jejak & Sejarah):**
     - **Titik Parkir:** Sistem kini melacak sejarah setiap perubahan informasi titik parkir menggunakan tabel `parking_location_histori`.
-    - **Arsip PKS:** Modifikasi atau unggah ulang dokumen *scan* PKS (PDF) kini direkam secara permanen ke dalam tabel `agreement_pdf_histories`.
-    - **Koordinator & Ruas Jalan:** Menambahkan field `last_updated_by` untuk melacak secara persis identitas *user* (Admin/Staff) terakhir yang membuat atau mengubah data tersebut.
+    - **Arsip PKS:** Modifikasi atau unggah ulang dokumen _scan_ PKS (PDF) kini direkam secara permanen ke dalam tabel `agreement_pdf_histories`.
+    - **Koordinator & Ruas Jalan:** Menambahkan field `last_updated_by` untuk melacak secara persis identitas _user_ (Admin/Staff) terakhir yang membuat atau mengubah data tersebut.
 - **Pembaruan Fitur Titik Parkir (Estimasi Luas & SRP):**
-    - Menambahkan metrik baru pada form pendaftaran dan *edit* Titik Parkir berupa: Estimasi Luas Wilayah (m²), Estimasi Satuan Ruang Parkir (SRP) Roda 2, dan SRP Roda 4. Informasi ini turut diintegrasikan ke halaman Detail Lokasi dengan peringatan bahwa setoran tidak bergantung pada parameter tersebut.
+    - Menambahkan metrik baru pada form pendaftaran dan _edit_ Titik Parkir berupa: Estimasi Luas Wilayah (m²), Estimasi Satuan Ruang Parkir (SRP) Roda 2, dan SRP Roda 4. Informasi ini turut diintegrasikan ke halaman Detail Lokasi dengan peringatan bahwa setoran tidak bergantung pada parameter tersebut.
 - **Penanganan Error Premium & Perbaikan Bug 419:**
-    - Mendesain ulang seluruh halaman *error* sistem (404, 403, 500, 419, 401, 503) menjadi sangat premium menggunakan tipografi dan ilustrasi *Vuexy Style*.
-    - Memperbaiki _bug_ *Page Expired* (419) yang sering muncul di halaman *login* dengan menerapkan *smart redirect*; pengguna yang sesinya masih aktif akan otomatis diarahkan ke *dashboard* masing-masing *role* tanpa harus melihat *form login* lagi.
-    - Menyempurnakan pelaporan *error* ke dalam `laravel.log` dengan pesan *error 500* yang formal dan elegan khusus untuk *environment production*.
+    - Mendesain ulang seluruh halaman _error_ sistem (404, 403, 500, 419, 401, 503) menjadi sangat premium menggunakan tipografi dan ilustrasi _Vuexy Style_.
+    - Memperbaiki _bug_ _Page Expired_ (419) yang sering muncul di halaman _login_ dengan menerapkan _smart redirect_; pengguna yang sesinya masih aktif akan otomatis diarahkan ke _dashboard_ masing-masing _role_ tanpa harus melihat _form login_ lagi.
+    - Menyempurnakan pelaporan _error_ ke dalam `laravel.log` dengan pesan _error 500_ yang formal dan elegan khusus untuk _environment production_.
 - **Penyempurnaan Form Manajemen Versi (Changelog):**
-    - Mengganti editor Quill.js yang rentan *error* validasi (*hidden input bug*) dengan *Textarea* standar yang tangguh.
-    - Menambahkan dukungan penuh *Markdown* bawaan Laravel (`Str::markdown()`) sehingga pengguna kini bisa langsung *copy-paste* catatan rilis berformat raw `.md` secara murni tanpa merusak format aslinya.
+    - Mengganti editor Quill.js yang rentan _error_ validasi (_hidden input bug_) dengan _Textarea_ standar yang tangguh.
+    - Menambahkan dukungan penuh _Markdown_ bawaan Laravel (`Str::markdown()`) sehingga pengguna kini bisa langsung _copy-paste_ catatan rilis berformat raw `.md` secara murni tanpa merusak format aslinya.
 - **Optimasi Performa Dashboard:** Memperbaiki isu performa kueri N+1 pada Dashboard Leader dan Staff Keuangan terkait pengambilan data transaksi setoran bulanan PKS.
 
 ## [v1.4.0] - 2026-06-12
@@ -88,6 +120,11 @@ Pembaruan signifikan yang berfokus pada penyempurnaan UI/UX Dashboard Pimpinan, 
     - Saat membuka detail PKS berstatus _expired_, antarmuka secara intuitif akan langsung membuka tab "Arsip PKS".
     - Menambahkan perlindungan saat mengunggah PDF _scan_ (arsip fisik). PKS _expired_ yang sudah memiliki _file scan_ tidak bisa diunggah ulang. Pada PKS aktif, pengguna akan diberi peringatan _SweetAlert_ jika ingin menimpa _file_ lama.
 - **Sistem Penyimpanan Hibrida (Ghostscript):** Melakukan perbaikan krusial pada alur unggah dan kompresi PDF (Ghostscript) agar menggunakan _temporary directory_ sistem (`sys_get_temp_dir()`) dan dipindahkan via `Storage::disk('public')`. Ini memecahkan masalah isu izin akses (Permission Denied) antara _web-server_ (`www-data`) dan CLI (`php artisan serve`), memastikan unggahan sukses di semua environment.
+- **Sistem Navigasi Cerdas (Smart Search):** Mengintegrasikan fitur pencarian global pada _navbar_ yang berfungsi pada semua _role_. Sistem ini mampu mencari data secara instan dari seluruh sistem: PKS, Titik Parkir, dan User Jukir, dengan _lazy loading_ agar tidak membebani server.
+- **Sistem Notifikasi Real-time:** Menerapkan sistem notifikasi _real-time_ berbasis WebSocket (`Laravel WebSockets`) untuk pembaruan saldo digital _Deposit_ dan status transaksi. Pembaruan saldo kini tampil instan tanpa perlu _refresh_ halaman (melalui _Vuexy-style_ `Snackbar`).
+- **Penyempurnaan Database Deposit:**
+    - Menghapus _Unique Constraint_ pada tabel `deposit_transactions` agar sistem dapat mengakomodasi lebih dari 5 (lima) setoran dengan nominal Rp 0,- dalam satu periode waktu yang sama (misal: 03-06-2026).
+    - Memisahkan pencatatan data dari _Unique Constraint_ ke _Business Logic_. Sistem kini wajib memiliki data minimal 1 (satu) setoran minimal Rp 50.000,- (Lima Puluh Ribu Rupiah) untuk menghasilkan nomor PPNP/BPKP.
 
 ## [v1.3.1] - 2026-06-07
 

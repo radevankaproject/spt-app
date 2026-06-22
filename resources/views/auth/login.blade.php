@@ -63,11 +63,36 @@ $customizerHidden = 'customizer-hide';
         </div>
       </div>
       <div class="mb-6">
-        <button class="btn btn-primary d-grid w-100" type="submit">Masuk</button>
+        <button class="btn btn-primary d-grid w-100" type="submit" id="submitBtn">
+          <span class="indicator-label">Masuk</span>
+          <span class="indicator-progress d-none">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Memuat...
+          </span>
+        </button>
       </div>
     </form>
 
   </div>
 </div>
 <!-- /Login -->
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formAuthentication');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if(form && submitBtn) {
+            form.addEventListener('submit', function() {
+                if(form.checkValidity()) {
+                    submitBtn.disabled = true;
+                    submitBtn.querySelector('.indicator-label').classList.add('d-none');
+                    submitBtn.querySelector('.indicator-progress').classList.remove('d-none');
+                }
+            });
+        }
+    });
+</script>
 @endsection

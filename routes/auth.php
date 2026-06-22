@@ -20,15 +20,20 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
+    Route::get('forgot-password/otp', [PasswordResetLinkController::class, 'showOtpForm'])
+        ->name('password.otp.form');
+
     Route::post('forgot-password/otp', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:3,1')
         ->name('password.otp.send');
         
     Route::post('forgot-password/verify', [PasswordResetLinkController::class, 'verifyOtp'])
+        ->middleware('throttle:5,1')
         ->name('password.otp.verify');
 
     // Keep password.email for legacy or override it to avoid errors if used elsewhere

@@ -85,11 +85,26 @@ class PasswordResetLinkController extends Controller
         );
 
         // We will just flash it for testing, or assume user gets it.
-        session(['reset_phone_number' => $request->phone_number]);
+        session([
+            'reset_phone_number' => $request->phone_number,
+            'otp_resend_time' => now()->addSeconds(60)->timestamp
+        ]);
         
         // Uncomment next line to see OTP in UI during testing (or comment it if production ready)
         session()->flash('status', 'Kode OTP telah dikirimkan ke nomor WhatsApp Anda.');
 
+        return redirect()->route('password.otp.form');
+    }
+
+    /**
+     * Display the OTP verification form.
+     */
+    public function showOtpForm(Request $request): View|RedirectResponse
+    {
+        if (!session('reset_phone_number')) {
+            return redirect()->route('password.request');
+        }
+        
         return view('auth.verify-otp');
     }
 

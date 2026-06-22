@@ -562,11 +562,18 @@
 
         {{-- ✅ TAMPILKAN QR CODE DARI CONTROLLER --}}
         @if (!empty($qrCodeImage))
-        <div class="verification-area">
-            <div class="qr-container">
-                <img src="{{ $qrCodeImage }}" width="90" height="90" style="display: block; margin: 0 auto;">
-                <p class="qr-text">Pindai Verifikasi</p>
-            </div>
+        <div class="verification-area" style="margin-top: 50px; page-break-inside: avoid;">
+            <table style="width: 60%; margin-left: auto; margin-right: 0; border: 1px solid #666; border-radius: 6px; padding: 8px; background-color: #fdfdfd;">
+                <tr>
+                    <td style="width: 80px; text-align: center; vertical-align: middle; padding: 0;">
+                        <img src="{{ $qrCodeImage }}" width="80" height="80" style="display: block; margin: 0 auto; border: 1px solid #ddd; padding: 3px; background: #fff;">
+                    </td>
+                    <td style="vertical-align: middle; padding-left: 12px;">
+                        <span style="font-size: 9pt; font-weight: bold; color: #000; display: block; margin-bottom: 4px;">VERIFIKASI DOKUMEN</span>
+                        <span style="font-size: 7.5pt; color: #333; display: block; line-height: 1.3; text-align: left;">Dokumen Perjanjian Kerjasama (PKS) ini sah dan terdaftar resmi pada UPT Perparkiran. Pindai QR Code untuk memverifikasi keaslian dan status terkini.</span>
+                    </td>
+                </tr>
+            </table>
         </div>
         @endif
 

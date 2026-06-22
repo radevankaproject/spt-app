@@ -65,6 +65,24 @@ class RoadSectionController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(RoadSection $roadSection)
+    {
+        $roadSection->load(['parkingLocations.agreements' => function ($query) {
+            $query->whereIn('agreements.status', ['active', 'pending_renewal'])
+                ->where('agreement_parking_locations.status', 'active')
+                ->with('fieldCoordinator.user');
+        }]);
+
+        $totalLocations = $roadSection->parkingLocations->count();
+        $availableLocations = $roadSection->parkingLocations->where('status', 'tersedia')->count();
+        $unavailableLocations = $roadSection->parkingLocations->where('status', 'tidak_tersedia')->count();
+
+        return view('admin.road-sections.show', compact('roadSection', 'totalLocations', 'availableLocations', 'unavailableLocations'));
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, RoadSection $roadSection)

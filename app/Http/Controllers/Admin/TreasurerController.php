@@ -130,22 +130,35 @@ class TreasurerController extends Controller
         }
     }
 
-    public function show(Treasurer $treasurer)
+    public function show(Request $request, Treasurer $treasurer)
     {
         $treasurer->load(['user', 'histories']);
+        $search = $request->input('search');
 
         // ✅ AMBIL DATA SETORAN YANG BERHUBUNGAN DENGAN BENDAHARA INI
-        $deposits = DepositTransaction::with(['agreement.fieldCoordinator.user'])
-            ->where('treasurer_id', $treasurer->id)
-            ->latest('deposit_date') // Urutkan dari setoran terbaru
-            ->paginate(10);
+        $depositsQuery = DepositTransaction::with(['agreement.fieldCoordinator.user'])
+            ->where('treasurer_id', $treasurer->id);
+
+        if ($search) {
+            $depositsQuery->where(function ($q) use ($search) {
+                $q->where('referral_code', 'like', "%{$search}%")
+                  ->orWhereHas('agreement', function($aq) use ($search) {
+                      $aq->where('agreement_number', 'like', "%{$search}%")
+                         ->orWhereHas('fieldCoordinator.user', function($uq) use ($search) {
+                             $uq->where('name', 'like', "%{$search}%");
+                         });
+                  });
+            });
+        }
+
+        $deposits = $depositsQuery->latest('deposit_date')->paginate(10)->withQueryString();
 
         // ✅ HITUNG TOTAL NOMINAL YANG SUDAH DIVALIDASI BENDAHARA INI (Opsional untuk UI Premium)
         $totalValidatedAmount = DepositTransaction::where('treasurer_id', $treasurer->id)
             ->where('is_validated', true)
             ->sum('amount');
 
-        return view('admin.treasurers.show', compact('treasurer', 'deposits', 'totalValidatedAmount'));
+        return view('admin.treasurers.show', compact('treasurer', 'deposits', 'totalValidatedAmount', 'search'));
     }
 
     public function update(Request $request, Treasurer $treasurer)
@@ -291,6 +304,42 @@ class TreasurerController extends Controller
             Log::error('Toggle Status Error: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'Gagal memproses status jabatan.');
+        }
+    }
+    public function extend(Request $request, Treasurer $treasurer)
+    {
+        $request->validate([
+            'status_jabatan' => 'required|in:tetap,plt,plh',
+            'start_date' => 'required|date',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Arsipkan masa jabatan lama
+            $oldEndDate = $request->end_date_old 
+                ? \Carbon\Carbon::parse($request->end_date_old)->format('Y-m-d')
+                : \Carbon\Carbon::parse($request->start_date)->subDay()->toDateString();
+
+            \App\Models\TreasurerHistory::create([
+                'treasurer_id' => $treasurer->id,
+                'status_jabatan' => $treasurer->status_jabatan ?? 'tetap',
+                'start_date' => $treasurer->start_date,
+                'end_date' => $oldEndDate,
+            ]);
+
+            // Update data bendahara dengan masa jabatan baru
+            $treasurer->update([
+                'status_jabatan' => $request->status_jabatan,
+                'start_date' => $request->start_date,
+                'end_date' => null,
+            ]);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Jabatan Bendahara berhasil diperpanjang. Riwayat jabatan sebelumnya telah diarsipkan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Treasurer Extend Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperpanjang jabatan.');
         }
     }
 }

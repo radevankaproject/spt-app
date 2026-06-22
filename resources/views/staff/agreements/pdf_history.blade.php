@@ -50,7 +50,7 @@
                             {{-- Kiri: Ikon & Info Tanggal --}}
                             <div class="d-flex align-items-center gap-3">
                                 <div class="avatar avatar-md rounded-circle bg-label-danger d-flex align-items-center justify-content-center flex-shrink-0">
-                                    <i class="ti tabler-file-pdf-2-filled fs-4"></i>
+                                    <i class="ti tabler-file-type-pdf fs-4"></i>
                                 </div>
                                 <div>
                                     <h6 class="mb-1 fw-bold text-dark">Arsip PKS - {{ $history->created_at->translatedFormat('d M Y') }}</h6>
@@ -79,7 +79,7 @@
                         {{-- Bawah: Catatan Perubahan (Premium Box) --}}
                         <div class="mt-3 pt-3 border-top">
                             <div class="d-flex align-items-start gap-2">
-                                <i class="ti tabler-message-3 text-primary mt-1"></i>
+                                <i class="ti tabler-message-2 text-primary mt-1"></i>
                                 <div class="w-100">
                                     @if($hasMultiple)
                                         <div class="d-flex justify-content-between align-items-center cursor-pointer" data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}">

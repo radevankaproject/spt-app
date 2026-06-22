@@ -145,7 +145,7 @@
             <div class="toastr-body">
                 {{-- Pesan Error Session --}}
                 @if (session('error'))
-                    <div class="mb-2 fw-bold text-danger">{!! session('error') !!}</div>
+                    <div class="mb-2 fw-bold text-danger">{{ session('error') }}</div>
                 @endif
 
                 {{-- Pesan Validasi Form --}}

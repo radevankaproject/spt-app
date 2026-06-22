@@ -2,10 +2,15 @@
 
 @section('title', 'Portofolio Koordinator: ' . $fieldCoordinator->user->name)
 
-
-
 @section('content')
-    <div class="container-xxl flex-grow-1 container-p-y">
+@php
+    $activeAgreements = $agreementsInYear->filter(function($pks) {
+        return in_array($pks->status, ['active', 'pending_renewal']);
+    });
+    $historyAgreements = $agreementsInYear->filter(function($pks) {
+        return !in_array($pks->status, ['active', 'pending_renewal']);
+    });
+@endphp
 
         {{-- ✅ FILTER TAHUN (Nav Pills Premium) --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 gap-3">
@@ -50,7 +55,7 @@
 
                         {{-- ✅ STATISTIK BERDASARKAN TAHUN --}}
                         <div class="bg-lighter rounded-3 p-3 mb-4 text-start">
-                            <h6 class="fw-bold text-primary mb-3"><i class="ti tabler-bar-chart-box me-1"></i> Statistik Tahun {{ $selectedYear }}</h6>
+                            <h6 class="fw-bold text-primary mb-3"><i class="ti tabler-chart-bar me-1"></i> Statistik Tahun {{ $selectedYear }}</h6>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Total Kontrak (PKS)</span>
                                 <span class="fw-bold text-dark">{{ $totalAgreementsCount }}</span>
@@ -69,7 +74,7 @@
                         <ul class="list-unstyled mb-4 text-start small">
                             <li class="mb-2 d-flex align-items-center"><i class="ti tabler-mail text-muted me-2"></i> <span>{{ $fieldCoordinator->user->email }}</span></li>
                             <li class="mb-2 d-flex align-items-center"><i class="ti tabler-phone text-muted me-2"></i> <span>{{ $fieldCoordinator->phone_number }}</span></li>
-                            <li class="mb-2 d-flex align-items-center"><i class="ti tabler-id-card text-muted me-2"></i> <span>{{ $fieldCoordinator->id_card_number }}</span></li>
+                            <li class="mb-2 d-flex align-items-center"><i class="ti tabler-id text-muted me-2"></i> <span>{{ $fieldCoordinator->id_card_number }}</span></li>
                             <li class="d-flex align-items-start"><i class="ti tabler-map-pin text-muted me-2 mt-1"></i> <span>{{ $fieldCoordinator->address }}</span></li>
                         </ul>
                         <div class="d-grid gap-2 mt-4">
@@ -81,7 +86,7 @@
                 {{-- KARTU KTP --}}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h6 class="pb-2 border-bottom mb-3"><i class="ti tabler-user-check me-1"></i> Dokumen KTP</h6>
+                        <h6 class="pb-2 border-bottom mb-3"><i class="ti tabler-discount-check me-1"></i> Dokumen KTP</h6>
                         @if ($fieldCoordinator->id_card_img)
                             <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#ktpModal">
                                 <img src="{{ asset('storage/'.$fieldCoordinator->id_card_img) }}" alt="Foto KTP"
@@ -89,7 +94,7 @@
                             </a>
                         @else
                             <div class="text-center py-4 bg-lighter rounded-3">
-                                <i class="icon-base ti tabler-image icon-22px"></i>
+                                <i class="icon-base ti tabler-photo icon-22px"></i>
                                 <small class="text-muted">Belum ada KTP</small>
                             </div>
                         @endif
@@ -101,7 +106,7 @@
             <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
 
                 {{-- 1. PKS SEDANG BERJALAN (AKTIF) --}}
-                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ti tabler-play-circle text-primary me-2"></i> Kontrak Berjalan (Tahun {{ $selectedYear }})</h5>
+                <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ti tabler-player-play text-primary me-2"></i> Kontrak Berjalan (Tahun {{ $selectedYear }})</h5>
                 @forelse ($activeAgreements as $pks)
                     <div class="card mb-4 border-primary border-opacity-25 shadow-sm">
                         <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center py-3">
@@ -117,7 +122,7 @@
                             <div class="row g-3">
                                 <div class="col-sm-6">
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-info"><i class="ti tabler-user-pin"></i></span></div>
+                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-info"><i class="ti tabler-user-hexagon"></i></span></div>
                                         <div>
                                             <p class="mb-0 fw-medium text-dark">{{ $pks->activeParkingLocations->count() }} Lokasi</p>
                                             <small class="text-muted">Dikelola saat ini</small>
@@ -126,7 +131,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-success"><i class="ti tabler-currency-dollar"></i></span></div>
+                                        <div class="avatar avatar-sm me-3"><span class="avatar-initial rounded-circle bg-label-success"><i class="ti tabler-cash"></i></span></div>
                                         <div>
                                             <p class="mb-0 fw-medium text-dark">Rp {{ number_format($pks->total_deposit ?? 0, 0, ',', '.') }}</p>
                                             <small class="text-muted">Setoran Masuk</small>
@@ -153,7 +158,7 @@
                 @endforelse
 
                 {{-- 2. ARSIP PKS (KEDALUWARSA/DIPUTUS) --}}
-                <h5 class="fw-bold mb-3 mt-5 d-flex align-items-center"><i class="ti tabler-archive-drawer text-secondary me-2"></i> Riwayat Kontrak Selesai</h5>
+                <h5 class="fw-bold mb-3 mt-5 d-flex align-items-center"><i class="ti tabler-archive text-secondary me-2"></i> Riwayat Kontrak Selesai</h5>
                 <div class="card border-0 shadow-sm">
                     <div class="table-responsive text-nowrap">
                         <table class="table table-hover mb-0">
@@ -217,10 +222,12 @@
                         <img src="{{ $fieldCoordinator->id_card_img ? asset('storage/'.$fieldCoordinator->id_card_img) : '' }}"
                             class="img-fluid w-100" alt="Foto KTP">
                     </div>
-    </div>
+                </div>
+            </div>
+        </div>
 @endsection
 
-@section('page-script')
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Hide scrollbar class untuk nav-pills tahun agar rapi di mobile
@@ -238,4 +245,4 @@
         });
     });
 </script>
-@endsection
+@endpush

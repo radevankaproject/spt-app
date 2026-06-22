@@ -157,7 +157,7 @@
                 </div>
                 {{-- [ICON UPDATE] --}}
                 <a href="#" onclick="downloadTemplate(event)" class="btn btn-outline-secondary btn-sm">
-                    <i class="icon-base ti tabler-download-2 me-2"></i> Download Template
+                    <i class="icon-base ti tabler-download me-2"></i> Download Template
                 </a>
             </div>
 
@@ -173,16 +173,16 @@
                             <label class="zone-radio-label w-50">
                                 <input name="zone_filter" type="radio" value="Zona 2" id="zone2" required />
                                 <div class="zone-radio-card text-center d-flex flex-column justify-content-center align-items-center py-3">
-                                    <i class="ti tabler-map-pin-2 fs-3 mb-2 text-muted icon-unselected"></i>
-                                    <i class="ti tabler-map-pin-2-filled fs-3 mb-2 text-primary icon-selected d-none"></i>
+                                    <i class="ti tabler-map-pin fs-3 mb-2 text-muted icon-unselected"></i>
+                                    <i class="ti tabler-map-pin-filled fs-3 mb-2 text-primary icon-selected d-none"></i>
                                     <span class="fw-semibold text-muted">Zona 2</span>
                                 </div>
                             </label>
                             <label class="zone-radio-label w-50">
                                 <input name="zone_filter" type="radio" value="Zona 3" id="zone3" required />
                                 <div class="zone-radio-card text-center d-flex flex-column justify-content-center align-items-center py-3">
-                                    <i class="ti tabler-user-pin fs-3 mb-2 text-muted icon-unselected"></i>
-                                    <i class="ti tabler-map-pin-user-filled fs-3 mb-2 text-primary icon-selected d-none"></i>
+                                    <i class="ti tabler-map-pin fs-3 mb-2 text-muted icon-unselected"></i>
+                                    <i class="ti tabler-map-pin-filled fs-3 mb-2 text-primary icon-selected d-none"></i>
                                     <span class="fw-semibold text-muted">Zona 3</span>
                                 </div>
                             </label>
@@ -214,7 +214,7 @@
                                 required>
                             <div id="uploadText">
                                 <div class="file-icon-wrapper">
-                                    <i class="ti tabler-file-excel-2 file-icon"></i>
+                                    <i class="ti tabler-file-excel file-icon"></i>
                                 </div>
                                 <h5 class="fw-bold mb-1">Klik atau Seret File ke Sini</h5>
                                 <p class="text-muted mb-0">Support format CSV, XLSX, XLS (Max 10MB)</p>
@@ -233,7 +233,7 @@
                     {{-- Tombol Aksi --}}
                     <div class="col-12 d-flex gap-3 pt-3">
                         <button type="submit" class="btn btn-primary btn-lg shadow-sm" id="btnSubmit">
-                            <i class="ti tabler-upload-cloud-2 me-2"></i> Mulai Proses Impor
+                            <i class="ti tabler-cloud-upload me-2"></i> Mulai Proses Impor
                         </button>
                         <a href="{{ route('masterdata.parking-locations.index') }}"
                             class="btn btn-label-secondary btn-lg">Batal</a>

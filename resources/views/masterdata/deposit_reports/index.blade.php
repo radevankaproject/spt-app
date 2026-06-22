@@ -75,7 +75,7 @@
                 <div class="pt-4 text-end border-top mt-4">
                     <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary me-2"><i class="ti tabler-refresh me-1"></i> Reset</a>
                     <button type="submit" class="btn btn-primary me-2"><i class="ti tabler-zoom-in me-1"></i> Tampilkan</button>
-                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-danger"><i class="ti tabler-file-pdf-2 me-1"></i> Cetak PDF</button>
+                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-danger"><i class="ti tabler-file-type-pdf me-1"></i> Cetak PDF</button>
                 </div>
             </form>
         </div>
@@ -89,7 +89,7 @@
 
         <div class="card-body border-bottom pt-4 pb-4 bg-lighter">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold text-dark mb-0"><i class="ti tabler-chart me-1"></i> {{ $chartTitle }}</h6>
+                <h6 class="fw-bold text-dark mb-0"><i class="ti tabler-bar-chart-2 me-1"></i> {{ $chartTitle }}</h6>
                 <span class="badge bg-label-primary px-3 py-2"><i class="ti tabler-calendar-event me-1"></i> Periode: {{ $reportType == 'yearly' ? 'Tahunan' : 'Bulanan' }}</span>
             </div>
             <div style="height: 350px; width: 100%;">

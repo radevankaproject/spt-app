@@ -164,7 +164,7 @@ class FieldCoordinatorController extends Controller
      */
     public function show(Request $request, FieldCoordinator $fieldCoordinator)
     {
-        $availableYears = $fieldCoordinator->agreements()
+        $availableYears = \App\Models\Agreement::where('field_coordinator_id', $fieldCoordinator->id)
             ->selectRaw('YEAR(start_date) as year')
             ->distinct()
             ->orderBy('year', 'desc')
@@ -175,22 +175,40 @@ class FieldCoordinatorController extends Controller
         }
 
         $selectedYear = $request->input('year', $availableYears->first());
+        $search = $request->input('search');
 
-        $agreementsInYear = $fieldCoordinator->agreements()
-            ->whereYear('start_date', $selectedYear)
+        $agreementsQuery = \App\Models\Agreement::where('field_coordinator_id', $fieldCoordinator->id)
+            ->whereYear('start_date', $selectedYear);
+
+        if ($search) {
+            $agreementsQuery->where('agreement_number', 'like', "%{$search}%");
+        }
+
+        $agreementsInYear = $agreementsQuery->clone()
             ->with(['activeParkingLocations.roadSection'])
             ->withSum(['depositTransactions as total_deposit' => function ($q) {
                 $q->where('is_validated', true);
             }], 'amount')
+            ->orderByRaw("CASE WHEN status IN ('active', 'pending_renewal') THEN 0 ELSE 1 END")
             ->orderBy('start_date', 'desc')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
-        $totalAgreementsCount = $agreementsInYear->count();
-        $activeAgreements = $agreementsInYear->whereIn('status', ['active', 'pending_renewal']);
-        $historyAgreements = $agreementsInYear->whereNotIn('status', ['active', 'pending_renewal']);
+        $totalAgreementsCount = $agreementsQuery->count();
 
-        $activeParkingLocationsCount = $activeAgreements->flatMap->activeParkingLocations->unique('id')->count();
-        $totalValidatedDeposit = $agreementsInYear->sum('total_deposit');
+        $activeParkingLocationsCount = \App\Models\ParkingLocation::whereHas('agreements', function($q) use ($selectedYear, $fieldCoordinator) {
+            $q->where('agreements.field_coordinator_id', $fieldCoordinator->id)
+              ->whereYear('agreements.start_date', $selectedYear)
+              ->whereIn('agreements.status', ['active', 'pending_renewal'])
+              ->where('agreement_parking_locations.status', 'active');
+        })->count();
+
+        $totalValidatedDeposit = $agreementsQuery->clone()
+            ->withSum(['depositTransactions as total_deposit' => function ($q) {
+                $q->where('is_validated', true);
+            }], 'amount')
+            ->get()
+            ->sum('total_deposit');
 
         $fieldCoordinator->load('user');
 
@@ -199,11 +217,10 @@ class FieldCoordinatorController extends Controller
             'availableYears',
             'selectedYear',
             'agreementsInYear',
-            'activeAgreements',
-            'historyAgreements',
             'activeParkingLocationsCount',
             'totalValidatedDeposit',
-            'totalAgreementsCount'
+            'totalAgreementsCount',
+            'search'
         ));
     }
 

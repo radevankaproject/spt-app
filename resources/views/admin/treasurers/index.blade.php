@@ -12,7 +12,8 @@
         .progress-bar-custom { transition: width 0.2s ease; font-size: 10px; line-height: 10px; }
         .cursor-pointer { cursor: pointer; }
         .nav-tabs .nav-link.active { font-weight: 600; color: #696cff; border-bottom: 3px solid #696cff; }
-    </style>
+        .flatpickr-calendar { z-index: 9999 !important; }
+</style>
 @endsection
 
 @section('content')
@@ -148,6 +149,11 @@
 
                                         @if(Auth::user()->role !== 'leader')
                                         @if($isActive)
+                                            <button type="button" class="btn btn-sm btn-icon btn-text-info rounded-pill btn-extend"
+                                                data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-status="{{ $treasurer->status_jabatan }}"
+                                                data-bs-toggle="modal" data-bs-target="#modalExtendTreasurer" data-bs-toggle="tooltip" title="Perpanjang Jabatan">
+                                                <i class="ti tabler-id-badge-2 icon-20px"></i>
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-nonaktif"
                                                 data-id="{{ $treasurer->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalNonaktif" data-bs-toggle="tooltip" title="Nonaktifkan (Purna Tugas)">
                                                 <i class="ti tabler-fingerprint-off icon-20px"></i>
@@ -353,6 +359,55 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="modalExtendTreasurer" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-info bg-opacity-10 border-bottom px-4 py-3">
+                    <h5 class="modal-title fw-bold text-info"><i class="ti tabler-id-badge-2 me-1"></i> Perpanjang Jabatan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formExtendTreasurer" method="POST">
+                    @csrf
+                    <div class="modal-body px-4 py-4">
+                        <div class="alert alert-info d-flex align-items-center p-3 mb-4">
+                            <i class="ti tabler-info-circle icon-lg me-2"></i>
+                            <div class="small">
+                                Anda akan memperbarui jabatan <strong id="namaExtendTreasurer"></strong>. Riwayat lama akan otomatis diarsipkan.
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label required">Status Jabatan Baru</label>
+                                <select class="form-select" id="extendStatusJabatanTreasurer" name="status_jabatan" required>
+                                    <option value="tetap">Bendahara Definitif (Tetap)</option>
+                                    <option value="plt">Pelaksana Tugas (Plt)</option>
+                                    <option value="plh">Pelaksana Harian (Plh)</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label required">Tanggal Mulai Jabatan Baru</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="ti tabler-calendar"></i></span>
+                                    <input type="text" name="start_date" class="form-control flatpickr-date" required placeholder="YYYY-MM-DD" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Akhir Jabatan Sebelumnya (Opsional)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="ti tabler-calendar-off"></i></span>
+                                    <input type="text" name="end_date_old" class="form-control flatpickr-date" placeholder="Otomatis H-1 jika kosong" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-info"><i class="ti tabler-device-floppy me-1"></i> Simpan Pembaruan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('page-script')
@@ -497,6 +552,18 @@
                     finally { btnSubmitModal.disabled = false; }
                 });
             }
+
+            document.querySelectorAll('.btn-extend').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('namaExtendTreasurer').innerText = this.dataset.name;
+                    let statusSelect = document.getElementById('extendStatusJabatanTreasurer');
+                    if(statusSelect) {
+                        statusSelect.value = this.dataset.status;
+                    }
+                    let urlAction = "{{ route('admin.treasurers.extend', ':id') }}";
+                    document.getElementById('formExtendTreasurer').action = urlAction.replace(':id', this.dataset.id);
+                });
+            });
 
             document.querySelectorAll('.btn-nonaktif').forEach(btn => {
                 btn.addEventListener('click', function() {

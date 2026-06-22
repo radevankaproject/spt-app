@@ -137,7 +137,7 @@
                         <div class="dropzone-area" id="dropzoneBox" onclick="document.getElementById('image-upload').click()">
                             <img src="{{ $parkingLocation->image ? asset('storage/' . $parkingLocation->image) : asset('assets/img/map.png') }}" id="image-preview" class="d-block mx-auto mb-2" style="max-height: 100px; object-fit: cover; border-radius: 6px;" />
                             <div id="upload-placeholder" style="{{ $parkingLocation->image ? 'display: none;' : '' }}">
-                                <i class="ri icon-base ti tabler-upload-cloud-2 ti-md" style="font-size: 2rem;"></i>
+                                <i class="ri icon-base ti tabler-cloud-upload ti-md" style="font-size: 2rem;"></i>
                                 <p class="mb-0 mt-1">Tarik foto baru kesini</p>
                             </div>
                             <input type="file" id="image-upload" name="image" hidden accept="image/png, image/jpeg" />
@@ -148,7 +148,7 @@
                     <div class="col-md-4">
                         <label for="proposal_document" class="form-label fw-bold">PDF Pengajuan</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-pdf ti-md"></i></span>
+                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-type-pdf ti-md"></i></span>
                             <input class="form-control" type="file" id="proposal_document" name="proposal_document" accept=".pdf">
                         </div>
                         @if ($parkingLocation->proposal_document)
@@ -158,7 +158,7 @@
                     <div class="col-md-4">
                         <label for="official_report_document" class="form-label fw-bold">PDF Berita Acara</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-pdf ti-md"></i></span>
+                            <span class="input-group-text"><i class="ri icon-base ti tabler-file-type-pdf ti-md"></i></span>
                             <input class="form-control" type="file" id="official_report_document" name="official_report_document" accept=".pdf">
                         </div>
                         @if ($parkingLocation->official_report_document)
