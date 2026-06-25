@@ -9,24 +9,30 @@
 @endsection
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Laporan Transaksi Setoran</h4>
-        <div class="d-flex align-items-center">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Master Data</a></li>
-                    <li class="breadcrumb-item active">Laporan Setoran</li>
-                </ol>
-            </nav>
+        {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-report-money me-2"></i>Laporan Setoran</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Laporan rekapitulasi setoran parkir.</p>
+            </div>
         </div>
+        <i class="ti tabler-report-money position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     {{-- Filter Card --}}
     <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-header border-bottom pb-3">
+        <div class="card-header border-bottom pb-3 p-4">
             <h5 class="card-title mb-0"><i class="ti tabler-filter me-1"></i> Filter Laporan Keuangan</h5>
         </div>
-        <div class="card-body pt-4">
+        <div class="card-body pt-4 p-4">
             <form action="{{ route('masterdata.deposit-reports.index') }}" method="GET">
                 <div class="row g-4">
                     <div class="col-md-3">
@@ -73,9 +79,9 @@
                 </div>
 
                 <div class="pt-4 text-end border-top mt-4">
-                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary me-2"><i class="ti tabler-refresh me-1"></i> Reset</a>
-                    <button type="submit" class="btn btn-primary me-2"><i class="ti tabler-zoom-in me-1"></i> Tampilkan</button>
-                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-danger"><i class="ti tabler-file-type-pdf me-1"></i> Cetak PDF</button>
+                    <a href="{{ route('masterdata.deposit-reports.index') }}" class="btn btn-outline-secondary me-2 rounded-pill"><i class="ti tabler-refresh me-1"></i> Reset</a>
+                    <button type="submit" class="btn btn-primary rounded-pill btn-action me-2"><i class="ti tabler-zoom-in me-1"></i> Tampilkan</button>
+                    <button type="submit" name="print_pdf" value="true" formtarget="_blank" class="btn btn-danger rounded-pill"><i class="ti tabler-file-type-pdf me-1"></i> Cetak PDF</button>
                 </div>
             </form>
         </div>
@@ -83,11 +89,11 @@
 
     {{-- Hasil Laporan --}}
     <div class="card border-0 shadow-sm mt-4">
-        <div class="card-header border-bottom pb-3">
+        <div class="card-header border-bottom pb-3 p-4">
             <h5 class="card-title mb-0 text-primary">{{ $reportTitle }}</h5>
         </div>
 
-        <div class="card-body border-bottom pt-4 pb-4 bg-lighter">
+        <div class="card-body border-bottom pt-4 pb-4 bg-lighter p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="fw-bold text-dark mb-0"><i class="ti tabler-bar-chart-2 me-1"></i> {{ $chartTitle }}</h6>
                 <span class="badge bg-label-primary px-3 py-2"><i class="ti tabler-calendar-event me-1"></i> Periode: {{ $reportType == 'yearly' ? 'Tahunan' : 'Bulanan' }}</span>
@@ -97,7 +103,7 @@
             </div>
         </div>
 
-        <div class="card-body pt-3">
+        <div class="card-body pt-3 p-4">
             <div class="table-responsive text-nowrap">
                 <table class="table table-hover table-striped">
                     <thead class="table-primary">

@@ -173,6 +173,15 @@ $configData = Helper::appClasses();
               </a>
           </li>
 
+          @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
+          <li class="menu-item {{ request()->routeIs('masterdata.location-requests.*') ? 'active' : '' }}">
+              <a href="{{ route('masterdata.location-requests.index') }}" class="menu-link">
+                  <i class="icon-base menu-icon tf-icons ti tabler-map-pin-plus"></i>
+                  <div data-i18n="Pengajuan Titik">Pengajuan Titik</div>
+              </a>
+          </li>
+          @endif
+
           @if (Auth::user()->role === 'admin')
           <li class="menu-item {{ request()->routeIs('admin.parking-locations.report') ? 'active' : '' }}">
               <a href="{{ route('admin.parking-locations.report') }}" class="menu-link">

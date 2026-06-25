@@ -143,7 +143,12 @@ class LocationRequestController extends Controller
     public function approve(Request $request, LocationRequest $locationRequest)
     {
         if ($locationRequest->request_type === 'add') {
-            $request->validate(['road_section_id' => 'required|exists:road_sections,id']);
+            $request->validate([
+                'road_section_id' => 'required|exists:road_sections,id',
+                'estimated_area' => 'nullable|numeric|min:0',
+                'estimated_srp_r2' => 'nullable|integer|min:0',
+                'estimated_srp_r4' => 'nullable|integer|min:0',
+            ]);
         }
 
         DB::beginTransaction();
@@ -178,6 +183,9 @@ class LocationRequestController extends Controller
                     'proposal_document' => $locationRequest->proposal_document,
                     'official_report_document' => $review->report_document ?? null,
                     'status' => 'tidak_tersedia',
+                    'estimated_area' => $request->estimated_area,
+                    'estimated_srp_r2' => $request->estimated_srp_r2,
+                    'estimated_srp_r4' => $request->estimated_srp_r4,
                 ]);
 
                 // 2. ATTACH KE PIVOT

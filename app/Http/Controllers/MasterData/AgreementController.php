@@ -37,9 +37,20 @@ class AgreementController extends Controller
         $search = $request->input('search');
         $tab = $request->input('tab', 'all'); // Default 'all'
 
-        // ✅ 1. TANGKAP INPUT TAHUN DARI URL (Default: kosong/semua)
+        // ✅ 1. TANGKAP INPUT DARI URL (Default: kosong/semua)
         $year = $request->input('year');
         $korlapId = $request->input('korlap_id');
+        
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        
+        $validSortColumns = ['agreement_number', 'start_date', 'end_date', 'status', 'created_at'];
+        if (!in_array($sortBy, $validSortColumns)) {
+            $sortBy = 'created_at';
+        }
+        if (!in_array($sortDir, ['asc', 'desc'])) {
+            $sortDir = 'desc';
+        }
 
         // ✅ 2. AMBIL DAFTAR TAHUN UNTUK DROPDOWN FILTER
         $availableYears = Agreement::selectRaw('YEAR(start_date) as year')
@@ -77,8 +88,8 @@ class AgreementController extends Controller
             });
         }
 
-        // PAGINASI
-        $agreements = $query->latest()->paginate(10);
+        // PAGINASI & SORTING
+        $agreements = $query->orderBy($sortBy, $sortDir)->paginate(10);
 
         // MENGHITUNG TOTAL UNTUK BADGE DI TAB (Disesuaikan dengan Tahun jika difilter)
         $baseCountQuery = Agreement::query();
@@ -94,7 +105,7 @@ class AgreementController extends Controller
         $countInactive = (clone $baseCountQuery)->whereIn('status', ['expired', 'terminated'])->count();
 
         return view('staff.agreements.index', compact(
-            'agreements', 'search', 'tab', 'year', 'availableYears', 'countAll', 'countActive', 'countInactive', 'fieldCoordinators', 'korlapId'
+            'agreements', 'search', 'tab', 'year', 'availableYears', 'countAll', 'countActive', 'countInactive', 'fieldCoordinators', 'korlapId', 'sortBy', 'sortDir'
         ));
     }
 

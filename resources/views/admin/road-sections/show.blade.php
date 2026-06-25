@@ -92,28 +92,30 @@
                         </div>
                     </div>
                     
-                    <ul class="list-unstyled mb-4">
-                        <li class="d-flex align-items-center mb-3">
-                            <i class="ti tabler-map-pin text-primary me-2"></i>
-                            <span class="fw-medium text-heading me-2">Koordinat Tengah:</span>
-                            <span>{{ $roadSection->latitude && $roadSection->longitude ? $roadSection->latitude . ', ' . $roadSection->longitude : 'Belum Diatur' }}</span>
-                        </li>
-                        <li class="d-flex align-items-center mb-3">
-                            <i class="ti tabler-parking text-primary me-2"></i>
-                            <span class="fw-medium text-heading me-2">Total Titik:</span>
-                            <span class="badge bg-label-primary">{{ $totalLocations }} Lokasi</span>
-                        </li>
-                        <li class="d-flex align-items-center mb-3">
-                            <i class="ti tabler-circle-check text-success me-2"></i>
-                            <span class="fw-medium text-heading me-2">Tersedia:</span>
-                            <span class="badge bg-label-success">{{ $availableLocations }} Lokasi</span>
-                        </li>
-                        <li class="d-flex align-items-center">
-                            <i class="ti tabler-circle-x text-danger me-2"></i>
-                            <span class="fw-medium text-heading me-2">Tidak Tersedia:</span>
-                            <span class="badge bg-label-danger">{{ $unavailableLocations }} Lokasi</span>
-                        </li>
-                    </ul>
+                    <table class="table table-borderless m-0 mb-4">
+                        <tbody>
+                            <tr>
+                                <td class="ps-0 py-2 align-middle" style="width: 40px;"><i class="ti tabler-map-pin text-primary"></i></td>
+                                <td class="px-0 py-2 align-middle fw-medium text-heading">Koordinat Tengah</td>
+                                <td class="pe-0 py-2 align-middle text-end w-50">{{ $roadSection->latitude && $roadSection->longitude ? $roadSection->latitude . ', ' . $roadSection->longitude : 'Belum Diatur' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="ps-0 py-2 align-middle"><i class="ti tabler-parking text-primary"></i></td>
+                                <td class="px-0 py-2 align-middle fw-medium text-heading">Total Titik</td>
+                                <td class="pe-0 py-2 align-middle text-end w-50"><span class="badge bg-label-primary">{{ $totalLocations }} Lokasi</span></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-0 py-2 align-middle"><i class="ti tabler-circle-check text-success"></i></td>
+                                <td class="px-0 py-2 align-middle fw-medium text-heading">Tersedia</td>
+                                <td class="pe-0 py-2 align-middle text-end w-50"><span class="badge bg-label-success">{{ $availableLocations }} Lokasi</span></td>
+                            </tr>
+                            <tr>
+                                <td class="ps-0 py-2 align-middle"><i class="ti tabler-circle-x text-danger"></i></td>
+                                <td class="px-0 py-2 align-middle fw-medium text-heading">Tidak Tersedia</td>
+                                <td class="pe-0 py-2 align-middle text-end w-50"><span class="badge bg-label-danger">{{ $unavailableLocations }} Lokasi</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
 
                 </div>
             </div>

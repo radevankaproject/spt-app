@@ -262,7 +262,15 @@ class DepositTransactionController extends Controller
                 ->addMonths($sequence - 1);
         }
 
-        $daysInMonth = $targetDate->daysInMonth;
+        $realStart = Carbon::parse($depositTransaction->agreement->start_date);
+        $realEnd = Carbon::parse($depositTransaction->agreement->end_date);
+        
+        if ($realStart->diffInMonths($realEnd) < 1) {
+            $daysInMonth = $realStart->diffInDays($realEnd) + 1;
+        } else {
+            $daysInMonth = $targetDate->daysInMonth;
+        }
+
         $monthName = $targetDate->translatedFormat('F');
         $year = $targetDate->year;
 
@@ -554,7 +562,15 @@ class DepositTransactionController extends Controller
                     $startAllowed = $allowedMonth->copy()->startOfMonth()->addDays($allowedMonth->daysInMonth - 7);
                     
                     if ($today->gte($startAllowed)) {
-                        $days = $curr->daysInMonth;
+                        $realStart = Carbon::parse($agr->start_date);
+                        $realEnd = Carbon::parse($agr->end_date);
+                        
+                        if ($realStart->diffInMonths($realEnd) < 1) {
+                            $days = $realStart->diffInDays($realEnd) + 1;
+                        } else {
+                            $days = $curr->daysInMonth;
+                        }
+
                         $dailyAmt = $agr->daily_deposit_amount ?? 0;
                         $label = $curr->translatedFormat('F Y');
                         if ($isTunggakan) {
@@ -652,7 +668,16 @@ class DepositTransactionController extends Controller
                 ->startOfMonth()
                 ->addMonths($sequence - 1);
         }
-        $daysInMonth = $targetDate->daysInMonth;
+        
+        $realStart = Carbon::parse($depositTransaction->agreement->start_date);
+        $realEnd = Carbon::parse($depositTransaction->agreement->end_date);
+        
+        if ($realStart->diffInMonths($realEnd) < 1) {
+            $daysInMonth = $realStart->diffInDays($realEnd) + 1;
+        } else {
+            $daysInMonth = $targetDate->daysInMonth;
+        }
+
         $monthName = $targetDate->translatedFormat('F');
         $year = $targetDate->year;
 

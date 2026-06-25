@@ -6,16 +6,22 @@
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Backup Database</h4>
-        <div class="d-flex align-items-center">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
-                    <li class="breadcrumb-item active">Backup</li>
-                </ol>
-            </nav>
+        {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-database me-2"></i>Backup Database</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Pencadangan dan pemulihan data sistem.</p>
+            </div>
         </div>
+        <i class="ti tabler-database position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     {{-- Notifikasi --}}
@@ -35,7 +41,7 @@
     <!-- Card Aksi Utama -->
     @if(Auth::user()->role !== 'leader')
     <div class="card mb-6">
-        <div class="card-body text-center">
+        <div class="card-body text-center p-4">
             <i class="icon-base ti tabler-device-desktop-down text-primary icon-30px" style="font-size: 80px;"></i>
             <h5 class="mt-4">Buat Cadangan Database Baru</h5>
             <p class="text-muted">
@@ -43,11 +49,11 @@
             </p>
             <form action="{{ route('admin.backup.store') }}" method="POST" id="backup-form" class="d-flex justify-content-center gap-3 flex-wrap">
                 @csrf
-                <button type="submit" name="type" value="db" class="btn btn-primary btn-lg backup-btn">
+                <button type="submit" name="type" value="db" class="btn btn-primary rounded-pill btn-action btn-lg backup-btn">
                     <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
                     <i class="icon-base ti tabler-database-export me-2"></i>Backup Database
                 </button>
-                <button type="submit" name="type" value="full" class="btn btn-warning btn-lg backup-btn">
+                <button type="submit" name="type" value="full" class="btn btn-warning btn-lg backup-btn rounded-pill">
                     <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
                     <i class="icon-base ti tabler-archive me-2"></i>Backup Full Aplikasi
                 </button>
@@ -57,8 +63,8 @@
     @endif
 
     <!-- Card Riwayat Backup -->
-    <div class="card">
-        <h5 class="card-header">Riwayat Backup</h5>
+    <div class="glass-card anim-2 border-0 overflow-hidden mb-4">
+        <h5 class="card-header p-4">Riwayat Backup</h5>
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
                 <thead>
@@ -123,8 +129,8 @@
                     <form id="delete-form" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger rounded-pill">Ya, Hapus</button>
                     </form>
                 </div>
             </div>

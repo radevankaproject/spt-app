@@ -294,6 +294,17 @@ class ParkingLocationController extends Controller
     {
         $parkingLocation->load(['roadSection', 'histories.user']);
 
+        if (Auth::user()->role === 'field_coordinator') {
+            $isOwned = Agreement::where('field_coordinator_id', Auth::user()->fieldCoordinator->id)
+                ->whereIn('status', ['active', 'pending_renewal'])
+                ->whereHas('parkingLocations', function($query) use ($parkingLocation) {
+                    $query->where('parking_location_id', $parkingLocation->id)
+                          ->where('agreement_parking_locations.status', 'active');
+                })->exists();
+
+            abort_if(!$isOwned, 403, 'Akses ditolak! Anda hanya dapat melihat detail lokasi parkir yang termasuk dalam PKS Anda.');
+        }
+
         $activeAgreement = Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
             $query->where('parking_location_id', $parkingLocation->id)
                 ->where('agreement_parking_locations.status', 'active');

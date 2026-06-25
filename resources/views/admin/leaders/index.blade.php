@@ -17,14 +17,25 @@
 @endsection
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Manajemen Pimpinan (Leader)</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-style1 mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
-                <li class="breadcrumb-item active">Leaders</li>
-            </ol>
-        </nav>
+    {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                    <span class="badge bg-primary text-white rounded-pill px-3 py-2 fw-bold shadow-sm" style="backdrop-filter: blur(5px);">
+                        Total: {{ $leaders->total() }} Data
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-tie me-2"></i>Manajemen Pimpinan (Leader)</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Kelola data pimpinan, riwayat jabatan, dan akses sistem.</p>
+            </div>
+        </div>
+        <i class="ti tabler-tie position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     @if ($errors->any())
@@ -62,8 +73,8 @@
         </li>
     </ul>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header d-flex flex-wrap justify-content-between gap-4 border-bottom pb-3">
+    <div class="glass-card overflow-hidden anim-2">
+        <div class="card-header p-4 d-flex flex-wrap justify-content-between align-items-center gap-4 border-bottom">
             <div class="card-title mb-0">
                 <h5 class="mb-1">
                     @if($currentTab == 'active') Daftar Pimpinan Aktif
@@ -71,34 +82,35 @@
                     @else Daftar Semua Pimpinan
                     @endif
                 </h5>
-                <p class="text-muted mb-0">Total {{ $leaders->total() }} data ditampilkan.</p>
+                <p class="text-muted mb-0">Menampilkan {{ $leaders->count() }} dari total {{ $leaders->total() }} pimpinan.</p>
             </div>
             <div class="d-flex justify-content-md-end align-items-center gap-3">
                 <form action="{{ route('admin.leaders.index') }}" method="GET" class="d-flex align-items-center">
                     <input type="hidden" name="tab" value="{{ $currentTab }}">
-                    <div class="input-group">
-                        <input type="search" name="search" class="form-control" placeholder="Cari Nama/NIP..." value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="ti tabler-search icon-20px"></i></button>
+                    <div class="input-group input-group-merge shadow-sm" style="border-radius: 50rem; overflow: hidden; height: 38px;">
+                        <input type="search" name="search" class="form-control border-0 px-3 bg-white" placeholder="Cari Nama/NIP..." value="{{ request('search') }}">
+                        <span class="input-group-text border-0 bg-white pe-3" style="cursor: pointer;" onclick="this.closest('form').submit()">
+                            <i class="ti tabler-search text-primary"></i>
+                        </span>
                     </div>
                 </form>
                 @if(Auth::user()->role !== 'leader')
-                {{-- Tombol Tambah --}}
-                <button type="button" class="btn btn-primary" id="btn-add-leader" data-bs-toggle="modal" data-bs-target="#leaderModal">
+                <button type="button" class="btn btn-primary rounded-pill shadow-sm btn-action" id="btn-add-leader" data-bs-toggle="modal" data-bs-target="#leaderModal">
                     <i class="ti tabler-plus me-1"></i> Tambah Pimpinan
                 </button>
                 @endif
             </div>
         </div>
-        <div class="card-body pt-3">
+        <div class="card-body pt-3 p-4">
             <div class="table-responsive text-nowrap">
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>Pimpinan</th>
-                            <th>Kontak (Email)</th>
-                            <th>NIP</th>
-                            <th>Masa Jabatan</th>
-                            <th class="text-center">Aksi</th>
+                            <th class="ps-4 text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Pimpinan</th>
+                            <th class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Kontak (Email)</th>
+                            <th class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">NIP</th>
+                            <th class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Masa Jabatan</th>
+                            <th class="text-center pe-4 text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
@@ -113,11 +125,11 @@
                                 $startDate = $leader->start_date ? \Carbon\Carbon::parse($leader->start_date)->format('d/m/Y') : '-';
                                 $endDate = $leader->end_date ? \Carbon\Carbon::parse($leader->end_date)->format('d/m/Y') : 'Sekarang';
                             @endphp
-                            <tr class="{{ !$isActive ? 'bg-lighter' : '' }}">
-                                <td>
+                            <tr class="premium-row {{ !$isActive ? 'bg-lighter' : '' }}">
+                                <td class="ps-4">
                                     <div class="d-flex justify-content-start align-items-center">
-                                        <div class="avatar avatar-sm me-3">
-                                            <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle {{ !$isActive ? 'opacity-50' : '' }}" style="object-fit: cover;">
+                                        <div class="avatar avatar-md bg-transparent me-3">
+                                            <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle {{ !$isActive ? 'opacity-50' : '' }}" style="object-fit: cover; background: transparent;">
                                         </div>
                                         <div class="d-flex flex-column">
                                             <div>
@@ -143,14 +155,14 @@
                                     <small class="d-block text-muted">Mulai: {{ $startDate }}</small>
                                     <small class="d-block {{ $leader->end_date ? 'text-danger' : 'text-success' }}">Akhir: {{ $endDate }}</small>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center pe-4">
                                     <div class="d-flex align-items-center justify-content-center gap-1">
-                                        <a class="btn btn-sm btn-icon btn-text-info rounded-pill" href="{{ route('admin.leaders.show', $leader->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
+                                        <a class="btn btn-sm btn-icon btn-label-info rounded-circle btn-action" href="{{ route('admin.leaders.show', $leader->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
                                             <i class="ri icon-base ti tabler-eye icon-20px"></i>
                                         </a>
                                         @if(Auth::user()->role !== 'leader')
                                         {{-- Tombol Edit --}}
-                                        <button type="button" class="btn btn-sm btn-icon btn-text-primary rounded-pill btn-edit-leader"
+                                        <button type="button" class="btn btn-sm btn-icon btn-label-primary rounded-circle btn-action btn-edit-leader"
                                             data-id="{{ $leader->id }}"
                                             data-name="{{ $uName }}"
                                             data-username="{{ $leader->user->username }}"
@@ -170,17 +182,17 @@
                                         @if(Auth::user()->role !== 'leader')
                                         {{-- SMART ACTION: Toggle Aktif/Nonaktif & Hapus Permanen --}}
                                         @if($isActive)
-                                            <button type="button" class="btn btn-sm btn-icon btn-text-info rounded-pill btn-extend"
+                                            <button type="button" class="btn btn-sm btn-icon btn-label-info rounded-circle btn-action btn-extend"
                                                 data-id="{{ $leader->id }}" data-name="{{ $uName }}" data-status="{{ $leader->status_jabatan }}"
                                                 data-bs-toggle="modal" data-bs-target="#modalExtendLeader" data-bs-toggle="tooltip" title="Perpanjang Jabatan">
                                                 <i class="ti tabler-id-badge-2 icon-20px"></i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-icon btn-text-warning rounded-pill btn-nonaktif"
+                                            <button type="button" class="btn btn-sm btn-icon btn-label-warning rounded-circle btn-action btn-nonaktif"
                                                 data-id="{{ $leader->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalNonaktif" data-bs-toggle="tooltip" title="Purna Tugas (Nonaktif)">
                                                 <i class="ti tabler-fingerprint-off icon-20px"></i>
                                             </button>
                                         @else
-                                            <button type="button" class="btn btn-sm btn-icon btn-text-success rounded-pill btn-aktif"
+                                            <button type="button" class="btn btn-sm btn-icon btn-label-success rounded-circle btn-action btn-aktif"
                                                 data-id="{{ $leader->id }}" data-name="{{ $uName }}" data-bs-toggle="modal" data-bs-target="#modalAktif" data-bs-toggle="tooltip" title="Jabat Kembali (Aktif)">
                                                 <i class="ti tabler-refresh icon-20px"></i>
                                             </button>
@@ -188,7 +200,7 @@
                                             @if($leader->agreements_count == 0)
                                                 <form action="{{ route('admin.leaders.destroy', $leader->id) }}" method="POST" class="form-delete d-inline">
                                                     @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" data-bs-toggle="tooltip" title="Hapus Permanen">
+                                                    <button type="submit" class="btn btn-sm btn-icon btn-label-danger rounded-circle btn-action" data-bs-toggle="tooltip" title="Hapus Permanen">
                                                         <i class="ti tabler-trash icon-20px"></i>
                                                     </button>
                                                 </form>
@@ -200,7 +212,15 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">Tidak ada data pimpinan ditemukan.</td>
+                                <td colspan="5" class="text-center p-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="icon-glass bg-label-secondary mb-3">
+                                            <i class="ti tabler-tie text-secondary opacity-50" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-1">Tidak Ada Data</h6>
+                                        <p class="text-muted small mb-0">Belum ada pimpinan yang ditambahkan.</p>
+                                    </div>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -242,7 +262,7 @@
                                                 <input type="text" class="form-control" id="username" name="username" placeholder="Username" required />
                                                 <label for="username">Username</label>
                                             </div>
-                                            <button class="btn btn-outline-primary w-25 px-1" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ti tabler-zoom-replace me-3 "></i></button>
+                                            <button class="btn btn-outline-primary w-25 px-1 rounded-pill" type="button" id="generate-username" data-bs-toggle="tooltip" title="Generate Otomatis"><i class="ti tabler-zoom-replace me-3 "></i></button>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -341,8 +361,8 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light px-4 py-3 border-top">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary" id="btnSubmitModal">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary rounded-pill" id="btnSubmitModal">
                             <i class="ti tabler-device-floppy me-1"></i> Simpan Pimpinan
                         </button>
                     </div>
@@ -369,8 +389,8 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light px-4 py-3 border-top">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-warning text-white">Nonaktifkan</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning text-white rounded-pill">Nonaktifkan</button>
                     </div>
                 </form>
             </div>
@@ -405,8 +425,8 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light px-4 py-3 border-top">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-success text-white">Aktifkan</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success text-white rounded-pill">Aktifkan</button>
                     </div>
                 </form>
             </div>
@@ -455,8 +475,8 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light px-4 py-3 border-top">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-info"><i class="ti tabler-device-floppy me-1"></i> Simpan Pembaruan</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-info rounded-pill"><i class="ti tabler-device-floppy me-1"></i> Simpan Pembaruan</button>
                     </div>
                 </form>
             </div>

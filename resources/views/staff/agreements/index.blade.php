@@ -8,30 +8,137 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
     <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+        }
+        
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            box-shadow: var(--glass-shadow);
+        }
+        
+        /* ===== HERO HEADER ===== */
+        .page-hero {
+            background: linear-gradient(135deg, #696cff 0%, #8b8eff 100%);
+            border-radius: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem 2.5rem;
+        }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -15%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* ===== TABLE PREMIUM ===== */
+        .premium-table { border-collapse: separate; border-spacing: 0; }
+        .premium-table thead th {
+            background: linear-gradient(135deg, #f8f7fa 0%, #f1f0f4 100%) !important;
+            border-bottom: 2px solid rgba(105, 108, 255, 0.1) !important;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            color: #697a8d !important;
+            padding: 0.875rem 1rem !important;
+            white-space: nowrap;
+        }
+        .premium-table thead th a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        .premium-table thead th a:hover { color: #696cff !important; }
+        
+        .premium-table tbody tr {
+            transition: all 0.25s ease;
+            border-left: 3px solid transparent;
+        }
+        .premium-table tbody tr:hover {
+            background: rgba(105, 108, 255, 0.03) !important;
+            border-left-color: #696cff;
+        }
+        .premium-table tbody td {
+            padding: 0.875rem 1rem !important;
+            vertical-align: middle !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        /* ===== BADGE ===== */
+        .badge-modern {
+            padding: 0.45em 0.75em;
+            font-weight: 600;
+            border-radius: 50rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.7rem;
+        }
+
+        /* ===== BUTTON ACTIONS ===== */
+        .btn-action { transition: all 0.2s ease; border-radius: 0.5rem; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .anim-1 { animation: fadeInUp 0.5s ease 0.1s both; }
+        .anim-2 { animation: fadeInUp 0.5s ease 0.2s both; }
         .nav-tabs .nav-link.active {
             font-weight: 600;
             color: #696cff;
             border-bottom: 3px solid #696cff;
         }
-        /* Highlight baris masa tenggang */
+        /* Highlight baris masa tenggang & expired */
         .row-grace-period {
-            background-color: rgba(255, 171, 0, 0.05) !important;
+            background-color: rgba(255, 171, 0, 0.04) !important;
+            border-left-color: #ffab00 !important;
+        }
+        .row-expired {
+            background-color: rgba(255, 62, 29, 0.04) !important;
+            border-left-color: #ff3e1d !important;
         }
     </style>
 @endsection
 
 @section('content')
-    {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Manajemen Perjanjian Kerjasama</h4>
-        <div class="d-flex align-items-center">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Master Data</a></li>
-                    <li class="breadcrumb-item active">PKS</li>
-                </ol>
-            </nav>
+    {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                    <span class="badge bg-primary text-white rounded-pill px-3 py-2 fw-bold shadow-sm" style="backdrop-filter: blur(5px);">
+                        Total: {{ $agreements->total() }} Data
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-file-type-doc me-2"></i>Manajemen Perjanjian Kerjasama</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Kelola seluruh dokumen PKS aktif, tidak aktif, maupun yang sedang masa tenggang.</p>
+            </div>
+            <!-- <div class="mt-3 mt-md-0">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-style1 mb-0 p-0" style="background: transparent;">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-white-50 text-decoration-none">Master Data</a></li>
+                        <li class="breadcrumb-item text-white fw-bold active" aria-current="page">PKS</li>
+                    </ol>
+                </nav>
+            </div> -->
         </div>
+        <i class="ti tabler-file-type-doc position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     {{-- Tabs Navigasi --}}
@@ -57,8 +164,8 @@
     </ul>
 
     {{-- Daftar Perjanjian --}}
-    <div class="card border-0 shadow-sm">
-        <div class="card-header d-flex flex-wrap justify-content-between gap-4 border-bottom pb-3">
+    <div class="glass-card overflow-hidden anim-2">
+        <div class="card-header p-4 d-flex flex-wrap justify-content-between align-items-center gap-4 border-bottom">
             <div class="card-title mb-0">
                 <h5 class="mb-1">
                     @if($tab == 'active') Daftar PKS Aktif
@@ -74,7 +181,7 @@
                     <input type="hidden" name="tab" value="{{ $tab }}">
 
                     {{-- Dropdown Filter Tahun --}}
-                    <select name="year" class="form-select form-select-sm" style="width: auto; height: 38px;" onchange="this.form.submit()">
+                    <select name="year" class="form-select form-select-sm shadow-sm" style="width: auto; height: 38px; border-radius: 50rem;" onchange="this.form.submit()">
                         <option value="">Semua Tahun</option>
                         @foreach($availableYears as $y)
                             <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>Tahun {{ $y }}</option>
@@ -82,27 +189,27 @@
                     </select>
 
                     {{-- Dropdown Filter Korlap --}}
-                    <select name="korlap_id" class="form-select select2" style="width: 200px;">
+                    <select name="korlap_id" class="form-select select2 shadow-sm" style="width: 200px;">
                         <option value="">Semua Korlap</option>
                         @foreach($fieldCoordinators as $fc)
                             <option value="{{ $fc->id }}" {{ request('korlap_id') == $fc->id ? 'selected' : '' }}>{{ $fc->user->name ?? 'N/A' }}</option>
                         @endforeach
                     </select>
 
-                    <div class="input-group">
-                        <input type="search" name="search" class="form-control" placeholder="Cari No PKS/Korlap..." value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="icon-base ti tabler-search icon-20px"></i></button>
+                    <div class="input-group input-group-merge shadow-sm" style="border-radius: 50rem; overflow: hidden;">
+                        <input type="search" name="search" class="form-control border-0 px-3 bg-white" placeholder="Cari No PKS/Korlap..." value="{{ request('search') }}">
+                        <button class="btn btn-primary border-0 rounded-pill" type="submit"><i class="icon-base ti tabler-search icon-20px"></i></button>
                     </div>
                 </form>
                 {{-- Tombol Tambah --}}
                 @if(Auth::user()->role !== 'leader')
-                <a href="{{ route('masterdata.agreements.create') }}" class="btn btn-primary">
+                <a href="{{ route('masterdata.agreements.create') }}" class="btn btn-primary rounded-pill shadow-sm btn-action">
                     <i class="icon-base ti tabler-plus me-1"></i> Tambah PKS
                 </a>
                 @endif
             </div>
         </div>
-        <div class="card-body pt-3">
+        <div class="card-body pt-3 p-4">
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fw-bold" role="alert">
                     <i class="ti tabler-alert-triangle me-1"></i> {{ session('error') }}
@@ -111,38 +218,71 @@
             @endif
 
             <div class="table-responsive text-nowrap">
-                <table class="table table-hover">
-                    <thead class="table-light">
+                <table class="table premium-table mb-0">
+                    <thead>
                         <tr>
-                            <th width="20%">Nomor PKS</th>
+                            <th width="20%" class="ps-4">
+                                <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'agreement_number', 'sort_dir' => ($sortBy == 'agreement_number' && $sortDir == 'asc') ? 'desc' : 'asc']) }}">
+                                    Nomor PKS
+                                    @if($sortBy == 'agreement_number')
+                                        <i class="ti tabler-chevron-{{ $sortDir == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="ti tabler-selector text-muted opacity-50"></i>
+                                    @endif
+                                </a>
+                            </th>
                             <th width="25%">Koordinator Lapangan</th>
-                            <th width="25%">Masa Berlaku</th>
-                            <th width="15%">Status</th>
-                            <th width="15%" class="text-center">Aksi</th>
+                            <th width="25%">
+                                <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'end_date', 'sort_dir' => ($sortBy == 'end_date' && $sortDir == 'asc') ? 'desc' : 'asc']) }}">
+                                    Masa Berlaku
+                                    @if($sortBy == 'end_date')
+                                        <i class="ti tabler-chevron-{{ $sortDir == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="ti tabler-selector text-muted opacity-50"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th width="15%">
+                                <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'status', 'sort_dir' => ($sortBy == 'status' && $sortDir == 'asc') ? 'desc' : 'asc']) }}">
+                                    Status
+                                    @if($sortBy == 'status')
+                                        <i class="ti tabler-chevron-{{ $sortDir == 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="ti tabler-selector text-muted opacity-50"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th width="15%" class="text-center pe-4">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
                         @forelse ($agreements as $agreement)
-                            @php
-                                // ✅ LOGIKA MASA TENGGANG (10 Hari)
-                                $isGracePeriod = false;
-                                $daysRemaining = null;
-                                if ($agreement->status === 'active') {
-                                    $daysRemaining = (int) now()->diffInDays($agreement->end_date, false);
-                                    if ($daysRemaining >= 0 && $daysRemaining <= 10) {
-                                        $isGracePeriod = true;
+                                @php
+                                    // ✅ LOGIKA MASA TENGGANG (10 Hari) & EXPIRED
+                                    $isGracePeriod = false;
+                                    $isExpired = false;
+                                    $daysRemaining = null;
+                                    
+                                    if ($agreement->status === 'active') {
+                                        $daysRemaining = (int) now()->diffInDays($agreement->end_date, false);
+                                        if ($daysRemaining >= 0 && $daysRemaining <= 10) {
+                                            $isGracePeriod = true;
+                                        }
                                     }
-                                }
+                                    
+                                    if ($agreement->end_date->isPast()) {
+                                        $isExpired = true;
+                                    }
 
-                                // Setup Avatar
-                                $cName = $agreement->fieldCoordinator->user->name ?? 'N/A';
-                                $cAvatar = ($agreement->fieldCoordinator->user && $agreement->fieldCoordinator->user->img)
-                                    ? asset('storage/'.$agreement->fieldCoordinator->user->img)
-                                    : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
-                            @endphp
+                                    // Setup Avatar
+                                    $cName = $agreement->fieldCoordinator->user->name ?? 'N/A';
+                                    $cAvatar = ($agreement->fieldCoordinator->user && $agreement->fieldCoordinator->user->img)
+                                        ? asset('storage/'.$agreement->fieldCoordinator->user->img)
+                                        : "https://ui-avatars.com/api/?name=" . urlencode($cName) . "&background=random&color=fff&size=32&rounded=true&bold=true";
+                                @endphp
 
-                            <tr class="{{ $isGracePeriod ? 'row-grace-period border-start border-4 border-warning' : '' }}">
-                                <td>
+                                <tr class="{{ $isExpired ? 'row-expired' : ($isGracePeriod ? 'row-grace-period' : '') }}">
+                                <td class="ps-4">
                                     <span class="fw-bold text-dark">{{ $agreement->agreement_number }}</span>
                                     <small class="d-block text-muted">Pimpinan: {{ Str::limit($agreement->leader->user->name ?? 'N/A', 15) }}</small>
                                     <span class="badge bg-label-info rounded-pill mt-1" style="font-size: 0.7rem;">{{ ucfirst($agreement->jenis) }}</span>
@@ -177,11 +317,11 @@
                                         if ($agreement->status == 'terminated') $statusClass = 'bg-label-dark';
                                         if ($agreement->status == 'pending_renewal') $statusClass = 'bg-label-warning';
                                     @endphp
-                                    <span class="badge rounded-pill {{ $statusClass }} fw-bold">
+                                    <span class="badge badge-modern {{ $statusClass }}">
                                         {{ strtoupper(str_replace('_', ' ', $agreement->status)) }}
                                     </span>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center pe-4">
                                     <div class="d-flex align-items-center justify-content-center gap-1">
                                         <a class="btn btn-sm btn-icon btn-text-info rounded-pill"
                                             href="{{ route('masterdata.agreements.show', $agreement->id) }}"
@@ -253,7 +393,7 @@
             </div>
             <div class="mt-4 px-3">
                 {{-- Memastikan query search dan tab dibawa saat pindah halaman --}}
-                {{ $agreements->appends(['search' => request('search'), 'tab' => $tab, 'year' => request('year')])->links() }}
+                {{ $agreements->appends(['search' => request('search'), 'tab' => $tab, 'year' => request('year'), 'sort_by' => $sortBy, 'sort_dir' => $sortDir])->links() }}
             </div>
         </div>
     </div>
@@ -310,8 +450,8 @@
                     </form>
                 </div>
                 <div class="modal-footer bg-light px-4 py-3 border-top">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="btn-cancel-upload">Batal</button>
-                    <button type="button" class="btn btn-primary" id="btn-submit-upload" disabled>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal" id="btn-cancel-upload">Batal</button>
+                    <button type="button" class="btn btn-primary rounded-pill" id="btn-submit-upload" disabled>
                         <i class="ti tabler-upload me-1"></i> Upload & Kompresi
                     </button>
                 </div>

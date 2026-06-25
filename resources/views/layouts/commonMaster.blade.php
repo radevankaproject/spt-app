@@ -233,6 +233,41 @@
         animation-play-state: paused !important;
     }
 
+    /* Premium Global Form Floating Label - Cut Border */
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .form-floating > .form-select ~ label,
+    .form-floating > .form-control:valid ~ label {
+        background-color: #ffffff !important;
+        padding: 0 8px !important;
+        left: 5px !important;
+        height: auto !important;
+        line-height: 1 !important;
+        border-radius: 4px;
+        color: inherit;
+        transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem) !important;
+    }
+    .dark-style .form-floating > .form-control:focus ~ label,
+    .dark-style .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .dark-style .form-floating > .form-select ~ label,
+    .dark-style .form-floating > .form-control:valid ~ label {
+        background-color: #222834 !important;
+    }
+
+    /* Make form-floating inputs more fit (kurangi padding atas yang terlalu lebar) */
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: 45px !important;
+        min-height: 45px !important;
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+        display: flex;
+        align-items: center;
+    }
+    .form-floating > label {
+        padding: 0.75rem !important;
+    }
+
     /* Premium Dashboard Styles */
     .hero-mesh-primary {
         background-color: #696cff;

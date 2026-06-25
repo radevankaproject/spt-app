@@ -47,6 +47,14 @@ class AuthenticatedSessionController extends Controller
         // === LOGIC REDIRECT BERDASARKAN ROLE ===
         $user = Auth::user();
 
+        \App\Models\UserActivity::create([
+            'user_id' => $user->id,
+            'action' => 'Login',
+            'description' => 'User berhasil login ke sistem.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         switch ($user->role) {
             case 'admin':
                 return redirect()->intended(route('admin.dashboard', absolute: false));
@@ -69,6 +77,16 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if (Auth::check()) {
+            \App\Models\UserActivity::create([
+                'user_id' => Auth::id(),
+                'action' => 'Logout',
+                'description' => 'User keluar dari sistem.',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

@@ -9,14 +9,19 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <style>
-        /* Modern Map Styling */
+        /* Modern Map & Card Styling */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+        }
         #map {
             height: 450px;
-            border-radius: 0 0 0.5rem 0.5rem;
+            border-radius: 0 0 1rem 1rem;
             z-index: 1;
             width: 100%;
         }
-        .leaflet-popup-content-wrapper { border-radius: 0.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .leaflet-popup-content-wrapper { border-radius: 0.75rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .leaflet-popup-content { margin: 12px; text-align: center; }
         .leaflet-popup-content .popup-image {
             width: 100%; max-height: 120px; object-fit: cover; border-radius: 0.5rem; margin-bottom: 10px;
@@ -24,7 +29,7 @@
 
         /* PDF Viewer Styling */
         .pdf-viewer-wrapper {
-            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 0.5rem; border: 1px solid #e7e7e8;
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 1rem; border: 1px solid rgba(0,0,0,0.05);
         }
         .pdf-viewer-wrapper iframe {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -32,30 +37,40 @@
 
         /* Timeline Custom */
         .timeline-scrollable {
-            max-height: 600px;
-            position: relative;
-            overflow: hidden;
-            padding-right: 15px;
-            padding-bottom: 1rem;
-            padding-left: 15px;
+            max-height: 600px; position: relative; overflow-y: auto; padding-right: 15px; padding-bottom: 1rem; padding-left: 15px;
         }
-
         .history-changes-box {
-            background-color: rgba(105, 108, 255, 0.04);
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-            border-left: 3px solid #696cff;
+            background: linear-gradient(145deg, rgba(105, 108, 255, 0.05) 0%, rgba(105, 108, 255, 0.02) 100%);
+            border-radius: 0.75rem; padding: 12px 16px; margin-top: 10px; margin-bottom: 10px;
+            font-size: 0.85rem; border-left: 4px solid #696cff;
         }
         
         .user-profile-img {
-            width: 140px; height: 140px; object-fit: cover; border-radius: 0.5rem; border: 4px solid #fff; box-shadow: 0 0 15px rgba(0,0,0,0.08);
+            width: 160px; height: 160px; object-fit: cover; border-radius: 1rem; border: 4px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
-        .nav-align-top .nav-tabs {
-            border-bottom: 1px solid #d9dee3;
+        /* Premium Tabs */
+        .nav-pills.premium-tabs .nav-link {
+            border-radius: 0.75rem; padding: 0.6rem 1.2rem; font-weight: 600; color: #697a8d; transition: all 0.3s ease;
+        }
+        .nav-pills.premium-tabs .nav-link.active {
+            background-color: #696cff; color: #fff; box-shadow: 0 4px 15px rgba(105, 108, 255, 0.3); transform: translateY(-2px);
+        }
+        .nav-pills.premium-tabs .nav-link:hover:not(.active) {
+            background-color: rgba(105, 108, 255, 0.08); color: #696cff;
+        }
+        
+        .hover-bg-light:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item-transparent .timeline-event {
+            padding: 1.5rem !important;
+            border-radius: 1rem;
+            background: rgba(0,0,0,0.02);
         }
     </style>
 @endsection
@@ -82,25 +97,25 @@
 @section('content')
 <div class="row g-4 mb-4">
     <div class="col-12">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 animate__animated animate__fadeInDown">
             <div class="d-flex align-items-center">
-                <div class="avatar avatar-lg bg-label-primary rounded-3 me-3 d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="ri icon-base ti tabler-map-pin-bolt ti tabler-30px"></i>
+                <div class="avatar avatar-xl bg-primary bg-opacity-10 rounded-4 me-3 d-flex align-items-center justify-content-center shadow-sm border border-primary border-opacity-25">
+                    <i class="ti tabler-map-pin-bolt text-primary" style="font-size: 2rem;"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1">Detail Lokasi: {{ $parkingLocation->name }}</h4>
+                    <h4 class="fw-bold mb-1 text-dark">Detail Lokasi: {{ $parkingLocation->name }}</h4>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb breadcrumb-style1 mb-0">
-                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('masterdata.parking-locations.index') }}">Lokasi Parkir</a></li>
-                            <li class="breadcrumb-item active">Detail</li>
+                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-muted">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('masterdata.parking-locations.index') }}" class="text-muted">Lokasi Parkir</a></li>
+                            <li class="breadcrumb-item active fw-bold text-primary">Detail</li>
                         </ol>
                     </nav>
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-outline-secondary">
-                    <i class="ri icon-base ti tabler-arrow-left me-1"></i> Kembali
+                <a href="{{ route('masterdata.parking-locations.index') }}" class="btn btn-label-secondary rounded-pill shadow-sm">
+                    <i class="ti tabler-arrow-left me-1"></i> Kembali
                 </a>
             </div>
         </div>
@@ -110,32 +125,35 @@
 <div class="row g-4">
     {{-- User Sidebar / Location Detail --}}
     <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
-        <div class="card mb-4 shadow-sm border-0">
-            <div class="card-body">
-                <div class="user-avatar-section">
-                    <div class="d-flex align-items-center flex-column">
+        <div class="glass-card mb-4 shadow-sm border-0 animate__animated animate__fadeInLeft">
+            <div class="card-body p-4">
+                <div class="user-avatar-section mb-4">
+                    <div class="d-flex align-items-center flex-column position-relative">
+                        <div class="position-absolute top-0 end-0 opacity-25" style="z-index: 0;">
+                            <i class="ti tabler-map-pin text-primary" style="font-size: 100px; transform: rotate(15deg) translate(20px, -20px);"></i>
+                        </div>
                         @if ($parkingLocation->image)
-                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#imageModal" class="d-block" title="Klik untuk memperbesar gambar">
-                                <img src="{{ asset('storage/' . $parkingLocation->image) }}" alt="{{ $parkingLocation->name }}" class="user-profile-img mt-3 mb-3" style="cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#imageModal" class="d-block position-relative z-1" title="Klik untuk memperbesar gambar">
+                                <img src="{{ asset('storage/' . $parkingLocation->image) }}" alt="{{ $parkingLocation->name }}" class="user-profile-img mb-3" style="cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                             </a>
                         @else
-                            <div class="bg-label-secondary d-flex align-items-center justify-content-center mt-3 mb-3 rounded" style="width: 140px; height: 140px;">
-                                <i class="ri icon-base ti tabler-photo-circle-minus text-secondary" style="font-size: 6rem;"></i>
+                            <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center mb-3 rounded-4 shadow-sm border border-primary border-opacity-25 position-relative z-1" style="width: 160px; height: 160px;">
+                                <i class="ti tabler-photo-circle-minus text-primary" style="font-size: 5rem;"></i>
                             </div>
                         @endif
-                        <div class="user-info text-center">
-                            <h5 class="mb-2">{{ $parkingLocation->name }}</h5>
+                        <div class="user-info text-center position-relative z-1">
+                            <h5 class="mb-2 fw-bold text-dark">{{ $parkingLocation->name }}</h5>
                             @if ($parkingLocation->status == 'tersedia')
-                                <span class="badge bg-label-success rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ti tabler-check me-1"></i> TERSEDIA</span>
+                                <span class="badge bg-label-success rounded-pill px-3 py-2 mb-2 d-inline-flex align-items-center fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="ti tabler-check me-1 fs-6"></i> TERSEDIA</span>
                             @else
-                                <span class="badge bg-label-secondary rounded-pill px-3 mb-2 d-inline-block"><i class="ri icon-base ti tabler-lock me-1"></i> TERIKAT PKS</span>
+                                <span class="badge bg-label-secondary rounded-pill px-3 py-2 mb-2 d-inline-flex align-items-center fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="ti tabler-lock me-1 fs-6"></i> TERIKAT PKS</span>
                             @endif
 
                             @if(!$parkingLocation->is_active)
                                 <br>
-                                <span class="badge bg-label-danger rounded-pill px-3 mb-2 mt-1 d-inline-block"><i class="ri icon-base ti tabler-circle-x me-1"></i> NONAKTIF / TUTUP</span>
-                                <div class="mt-2 text-start p-3 bg-danger bg-opacity-10 rounded border border-danger border-opacity-25" style="font-size: 0.85rem;">
-                                    <span class="fw-bold text-danger"><i class="ti tabler-info-circle me-1"></i>Keterangan Tutup:</span><br>
+                                <span class="badge bg-label-danger rounded-pill px-3 py-2 mb-2 mt-1 d-inline-flex align-items-center fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="ti tabler-circle-x me-1 fs-6"></i> NONAKTIF / TUTUP</span>
+                                <div class="mt-2 text-start p-3 bg-danger bg-opacity-10 rounded-4 border border-danger border-opacity-25 shadow-sm" style="font-size: 0.85rem;">
+                                    <span class="fw-bold text-danger d-block mb-1"><i class="ti tabler-info-circle me-1"></i>Keterangan Tutup:</span>
                                     <span class="text-dark">{{ $parkingLocation->keterangan ?? '-' }}</span>
                                 </div>
                             @endif
@@ -143,87 +161,107 @@
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-center flex-wrap mt-4 pt-3 pb-4 border-bottom">
-                    <div class="d-flex align-items-start mt-3 gap-3">
-                        <span class="badge bg-label-success p-3 rounded"><i class='ri icon-base ti tabler-currency-dollar ti-lg'></i></span>
-                        <div>
-                            <p class="mb-0 fw-medium fs-5">Rp {{ number_format($parkingLocation->daily_deposit, 0, ',', '.') }}</p>
-                            <small class="text-muted">Setoran Harian</small>
-                        </div>
+                <div class="p-3 bg-success bg-opacity-10 rounded-4 border border-success border-opacity-25 d-flex align-items-center mb-4">
+                    <div class="avatar avatar-md bg-success rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
+                        <i class='ti tabler-currency-dollar text-white fs-4'></i>
+                    </div>
+                    <div>
+                        <p class="mb-0 fw-bold fs-4 text-success">Rp {{ number_format($parkingLocation->daily_deposit, 0, ',', '.') }}</p>
+                        <small class="text-success fw-medium">Setoran Harian</small>
                     </div>
                 </div>
 
-                <h6 class="pb-3 border-bottom mt-4 mb-3 text-uppercase fw-bold text-muted">Detail Informasi</h6>
+                <h6 class="pb-2 border-bottom mb-3 text-uppercase fw-bold text-muted" style="letter-spacing: 0.5px;">Detail Informasi</h6>
                 <div class="info-container">
                     <ul class="list-unstyled mb-4">
-                        <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ti tabler-qrcode text-primary me-2 ti-md"></i>
-                            <span class="fw-medium text-heading me-2">Kode ID:</span>
-                            <span>#LOC-{{ str_pad($parkingLocation->id, 4, '0', STR_PAD_LEFT) }}</span>
+                        <li class="mb-3 d-flex align-items-center p-2 rounded-3 hover-bg-light transition-all">
+                            <div class="avatar avatar-sm bg-primary bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                <i class="ti tabler-qrcode text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Kode ID</small>
+                                <span class="fw-bold text-dark">#LOC-{{ str_pad($parkingLocation->id, 4, '0', STR_PAD_LEFT) }}</span>
+                            </div>
                         </li>
-                        <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ti tabler-route text-info me-2 ti-md"></i>
-                            <span class="fw-medium text-heading me-2">Ruas Jalan:</span>
-                            <span>{{ $parkingLocation->roadSection->name ?? '-' }}</span>
+                        <li class="mb-3 d-flex align-items-center p-2 rounded-3 hover-bg-light transition-all">
+                            <div class="avatar avatar-sm bg-info bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                <i class="ti tabler-route text-info"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Ruas Jalan</small>
+                                <span class="fw-bold text-dark">{{ $parkingLocation->roadSection->name ?? '-' }}</span>
+                            </div>
                         </li>
-                        <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ti tabler-focus-2 text-warning me-2 ti-md"></i>
-                            <span class="fw-medium text-heading me-2">Zona:</span>
-                            <span>{{ $parkingLocation->roadSection->zone ?? '-' }}</span>
+                        <li class="mb-3 d-flex align-items-center p-2 rounded-3 hover-bg-light transition-all">
+                            <div class="avatar avatar-sm bg-warning bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                <i class="ti tabler-focus-2 text-warning"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Zona</small>
+                                <span class="fw-bold text-dark">{{ $parkingLocation->roadSection->zone ?? '-' }}</span>
+                            </div>
                         </li>
-                        <li class="mb-3 d-flex align-items-center">
-                            <i class="ri icon-base ti tabler-map-pin text-danger me-2 ti-md"></i>
-                            <span class="fw-medium text-heading me-2">Koordinat:</span>
-                            @if($parkingLocation->latitude && $parkingLocation->longitude)
-                                <span class="text-truncate">{{ $parkingLocation->latitude }}, {{ $parkingLocation->longitude }}</span>
-                            @else
-                                <span class="text-muted">Belum Diatur</span>
-                            @endif
+                        <li class="mb-2 d-flex align-items-center p-2 rounded-3 hover-bg-light transition-all">
+                            <div class="avatar avatar-sm bg-danger bg-opacity-10 rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                <i class="ti tabler-map-pin text-danger"></i>
+                            </div>
+                            <div class="text-truncate w-100">
+                                <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Koordinat</small>
+                                @if($parkingLocation->latitude && $parkingLocation->longitude)
+                                    <span class="fw-bold text-dark font-monospace" style="font-size: 0.85rem;">{{ $parkingLocation->latitude }}, {{ $parkingLocation->longitude }}</span>
+                                @else
+                                    <span class="badge bg-label-secondary">Belum Diatur</span>
+                                @endif
+                            </div>
                         </li>
                     </ul>
 
-                    <h6 class="pb-3 border-bottom mt-2 mb-3 text-uppercase fw-bold text-muted">Estimasi Wilayah & SRP</h6>
+                    <h6 class="pb-2 border-bottom mt-2 mb-3 text-uppercase fw-bold text-muted" style="letter-spacing: 0.5px;">Estimasi Wilayah & SRP</h6>
                     <div class="row g-3 mb-4">
                         <div class="col-12">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-label-info p-2 rounded me-3"><i class="ri icon-base ti tabler-ruler-2 ti-md"></i></span>
+                            <div class="d-flex align-items-center p-3 border rounded-4 border-dashed bg-lighter">
+                                <div class="avatar avatar-sm bg-info text-white rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
+                                    <i class="ti tabler-ruler-2"></i>
+                                </div>
                                 <div>
-                                    <small class="text-muted d-block">Luas Wilayah</small>
-                                    <span class="fw-semibold">{{ $parkingLocation->estimated_area ? number_format($parkingLocation->estimated_area, 2, ',', '.') . ' m²' : '-' }}</span>
+                                    <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Luas Wilayah</small>
+                                    <span class="fw-bold text-dark fs-5">{{ $parkingLocation->estimated_area ? number_format($parkingLocation->estimated_area, 2, ',', '.') . ' m²' : '-' }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-label-warning p-2 rounded me-3"><i class="ri icon-base ti tabler-motorbike ti-md"></i></span>
+                            <div class="d-flex align-items-center p-2 border rounded-4 border-dashed bg-lighter">
+                                <div class="avatar avatar-sm bg-warning text-white rounded-circle me-2 d-flex align-items-center justify-content-center shadow-sm">
+                                    <i class="ti tabler-motorbike"></i>
+                                </div>
                                 <div>
-                                    <small class="text-muted d-block">SRP R2</small>
-                                    <span class="fw-semibold">{{ $parkingLocation->estimated_srp_r2 ?? '-' }}</span>
+                                    <small class="text-muted d-block fw-medium" style="font-size: 0.7rem;">SRP R2</small>
+                                    <span class="fw-bold text-dark">{{ $parkingLocation->estimated_srp_r2 ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-label-primary p-2 rounded me-3"><i class="ri icon-base ti tabler-car ti-md"></i></span>
+                            <div class="d-flex align-items-center p-2 border rounded-4 border-dashed bg-lighter">
+                                <div class="avatar avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center shadow-sm">
+                                    <i class="ti tabler-car"></i>
+                                </div>
                                 <div>
-                                    <small class="text-muted d-block">SRP R4</small>
-                                    <span class="fw-semibold">{{ $parkingLocation->estimated_srp_r4 ?? '-' }}</span>
+                                    <small class="text-muted d-block fw-medium" style="font-size: 0.7rem;">SRP R4</small>
+                                    <span class="fw-bold text-dark">{{ $parkingLocation->estimated_srp_r4 ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="alert alert-info small mb-4 border-0" role="alert">
-                        <div class="d-flex align-items-start">
-                            <i class="ri icon-base ti tabler-info-circle me-2 mt-1 ti tabler-18px"></i>
-                            <span>Jumlah Setoran <strong>tidak bergantung</strong> pada luas wilayah parkir maupun jumlah SRP R2/R4.</span>
-                        </div>
+                    <div class="alert alert-info d-flex align-items-center rounded-4 border-0 shadow-sm" role="alert" style="background: linear-gradient(135deg, rgba(0,201,255,0.1) 0%, rgba(146,254,157,0.1) 100%);">
+                        <i class="ti tabler-info-circle text-info fs-3 me-3"></i>
+                        <span style="font-size: 0.85rem;" class="text-dark">Jumlah Setoran <strong>tidak bergantung</strong> pada luas wilayah parkir maupun jumlah SRP R2/R4.</span>
                     </div>
                     
                     @if(Auth::user()->role !== 'leader')
-                    <div class="d-flex justify-content-center pt-3">
-                        <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-primary w-100 shadow-sm">
-                            <i class="ri icon-base ti tabler-pencil me-2"></i> Edit Data Lokasi
+                    <div class="d-flex justify-content-center pt-2">
+                        <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-primary rounded-pill w-100 shadow-sm fw-bold">
+                            <i class="ti tabler-pencil me-2"></i> Edit Data Lokasi
                         </a>
                     </div>
                     @endif
@@ -235,26 +273,26 @@
 
     {{-- User Content --}}
     <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
-        <div class="nav-align-top mb-4">
-            <ul class="nav nav-pills flex-column flex-md-row mb-4 gap-2" role="tablist">
+        <div class="nav-align-top mb-4 animate__animated animate__fadeInRight">
+            <ul class="nav nav-pills premium-tabs flex-column flex-md-row mb-4 gap-2" role="tablist">
                 <li class="nav-item">
                     <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pks" aria-controls="navs-pks" aria-selected="true">
-                        <i class="ri icon-base ti tabler-file-description me-1"></i> Perjanjian Aktif
+                        <i class="ti tabler-file-description me-1"></i> Perjanjian Aktif
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-map" aria-controls="navs-map" aria-selected="false">
-                        <i class="ri icon-base ti tabler-map-2 me-1"></i> Peta Posisi
+                        <i class="ti tabler-map-2 me-1"></i> Peta Posisi
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-docs" aria-controls="navs-docs" aria-selected="false">
-                        <i class="ri icon-base ti tabler-file-zip me-1"></i> Dokumen Digital
+                        <i class="ti tabler-file-zip me-1"></i> Dokumen Digital
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-history" aria-controls="navs-history" aria-selected="false">
-                        <i class="ri icon-base ti tabler-history me-1"></i> Riwayat
+                        <i class="ti tabler-history me-1"></i> Riwayat Aktivitas
                     </button>
                 </li>
             </ul>
@@ -262,11 +300,14 @@
             <div class="tab-content bg-transparent p-0 shadow-none">
                 {{-- TAB 1: PKS --}}
                 <div class="tab-pane fade show active" id="navs-pks" role="tabpanel">
-                    <div class="card mb-4 border-0 shadow-sm">
-                        <div class="card-header border-bottom">
-                            <h5 class="card-title mb-0">Perjanjian Kerja Sama (PKS)</h5>
+                    <div class="glass-card mb-4 border-0 shadow-sm animate__animated animate__fadeIn">
+                        <div class="card-header border-bottom bg-transparent p-4 d-flex align-items-center">
+                            <div class="avatar avatar-sm bg-primary bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                <i class="ti tabler-file-description text-primary"></i>
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold text-dark">Perjanjian Kerja Sama (PKS)</h5>
                         </div>
-                        <div class="card-body pt-4">
+                        <div class="card-body p-4">
                             @if ($activeAgreement)
                                 @php
                                     $cName = $activeAgreement->fieldCoordinator->user->name ?? 'N/A';
@@ -276,37 +317,48 @@
                                 @endphp
 
                                 <a href="{{ route('masterdata.agreements.show', $activeAgreement->id) }}"
-                                   class="d-flex align-items-center justify-content-between p-3 bg-primary bg-opacity-10 rounded-3 border border-primary border-opacity-25 text-decoration-none"
-                                   style="transition: all 0.2s ease;"
-                                   onmouseover="this.classList.add('shadow-sm'); this.style.transform='scale(1.01)';"
-                                   onmouseout="this.classList.remove('shadow-sm'); this.style.transform='scale(1)';">
+                                   class="d-flex align-items-center justify-content-between p-4 bg-primary bg-opacity-10 rounded-4 border border-primary border-opacity-25 text-decoration-none position-relative overflow-hidden"
+                                   style="transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                                   onmouseover="this.classList.add('shadow-md'); this.style.transform='translateY(-3px)';"
+                                   onmouseout="this.classList.remove('shadow-md'); this.style.transform='translateY(0)';">
+                                   
+                                    <div class="position-absolute top-0 end-0 p-3 opacity-10">
+                                        <i class="ti tabler-writing-sign text-info" style="font-size: 80px; transform: rotate(-15deg);"></i>
+                                    </div>
 
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="avatar avatar-md">
-                                            <img src="{{ $cAvatar }}" alt="Avatar" class="rounded-circle shadow-sm" style="object-fit: cover;">
+                                    <div class="d-flex align-items-center gap-4 position-relative z-1">
+                                        <div class="avatar avatar-lg">
+                                            <img src="{{ $cAvatar }}" alt="Avatar" class="rounded-circle shadow-sm border border-2 border-white" style="object-fit: cover;">
                                         </div>
                                         <div>
-                                            <span class="fw-bold text-primary mb-0 d-block fs-5">{{ $activeAgreement->agreement_number }}</span>
-                                            <span class="text-dark fw-medium">Korlap: {{ $cName }}</span>
+                                            <span class="text-primary fw-bold mb-1 d-block" style="font-size: 1.25rem; letter-spacing: 0.5px;">{{ $activeAgreement->agreement_number }}</span>
+                                            <div class="d-flex align-items-center text-dark fw-medium">
+                                                <i class="ti tabler-user-pin text-muted me-1 fs-6"></i> Korlap: {{ $cName }}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="text-end">
+                                    <div class="text-end position-relative z-1">
                                         @php
-                                            $pksBadge = 'bg-secondary';
+                                            $pksBadge = 'bg-label-secondary';
                                             $pksLabel = 'Tidak Diketahui';
-                                            if ($activeAgreement->status == 'active') { $pksBadge = 'bg-success'; $pksLabel = 'Aktif'; }
-                                            elseif ($activeAgreement->status == 'pending_renewal') { $pksBadge = 'bg-warning'; $pksLabel = 'Menunggu Perpanjangan'; }
-                                            elseif ($activeAgreement->status == 'expired') { $pksBadge = 'bg-danger'; $pksLabel = 'Kedaluwarsa'; }
-                                            elseif ($activeAgreement->status == 'terminated') { $pksBadge = 'bg-dark'; $pksLabel = 'Diputus'; }
+                                            if ($activeAgreement->status == 'active') { $pksBadge = 'bg-label-success'; $pksLabel = 'Aktif'; }
+                                            elseif ($activeAgreement->status == 'pending_renewal') { $pksBadge = 'bg-label-warning'; $pksLabel = 'Menunggu Perpanjangan'; }
+                                            elseif ($activeAgreement->status == 'expired') { $pksBadge = 'bg-label-danger'; $pksLabel = 'Kedaluwarsa'; }
+                                            elseif ($activeAgreement->status == 'terminated') { $pksBadge = 'bg-label-dark'; $pksLabel = 'Diputus'; }
                                         @endphp
-                                        <span class="badge {{ $pksBadge }} mb-1">{{ $pksLabel }}</span><br>
-                                        <small class="text-muted">Pimpinan: <span class="text-dark">{{ $activeAgreement->leader->user->name ?? 'N/A' }}</span></small>
+                                        <span class="badge {{ $pksBadge }} rounded-pill px-3 py-2 mb-2 d-inline-block fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="ti tabler-circle-check me-1"></i>{{ $pksLabel }}</span><br>
+                                        <small class="text-muted d-flex align-items-center justify-content-end">
+                                            <i class="ti tabler-building-bank me-1"></i>Pimpinan: <span class="text-dark fw-bold ms-1">{{ $activeAgreement->leader->user->name ?? 'N/A' }}</span>
+                                        </small>
                                     </div>
                                 </a>
                             @else
                                 <div class="text-center py-5">
-                                    <i class="ri icon-base ti tabler-unlink text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2 mb-0">Lokasi ini <strong>Tersedia</strong> dan belum terikat PKS aktif manapun.</p>
+                                    <div class="avatar avatar-xl bg-label-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                        <i class="ti tabler-unlink text-muted" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Lokasi Tersedia</h5>
+                                    <p class="text-muted mb-0">Lokasi ini belum terikat dengan Perjanjian Kerja Sama aktif manapun.</p>
                                 </div>
                             @endif
                         </div>
@@ -315,22 +367,32 @@
 
                 {{-- TAB 2: PETA --}}
                 <div class="tab-pane fade" id="navs-map" role="tabpanel">
-                    <div class="card mb-4 border-0 shadow-sm">
-                        <div class="card-header border-bottom d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">Peta Koordinat (Leaflet)</h5>
+                    <div class="glass-card mb-4 border-0 shadow-sm">
+                        <div class="card-header border-bottom bg-transparent p-4 d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm bg-info bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                    <i class="ti tabler-map-2 text-info"></i>
+                                </div>
+                                <h5 class="card-title mb-0 fw-bold text-dark">Peta Koordinat</h5>
+                            </div>
                             @if($parkingLocation->latitude && $parkingLocation->longitude)
-                                <span class="badge bg-label-info">{{ $parkingLocation->latitude }}, {{ $parkingLocation->longitude }}</span>
+                                <span class="badge bg-label-info rounded-pill px-3 py-2 font-monospace shadow-sm" style="letter-spacing: 0.5px;">
+                                    <i class="ti tabler-map-pin me-1"></i>{{ $parkingLocation->latitude }}, {{ $parkingLocation->longitude }}
+                                </span>
                             @endif
                         </div>
                         <div class="card-body p-0">
                             @if ($parkingLocation->latitude && $parkingLocation->longitude)
                                 <div id="map"></div>
                             @else
-                                <div class="text-center py-5 bg-light m-4 rounded-3 border-dashed">
-                                    <i class="ri icon-base ti tabler-map-pin-plus text-muted mb-2" style="font-size: 3rem;"></i>
+                                <div class="text-center py-5 bg-light m-4 rounded-4 border-dashed">
+                                    <div class="avatar avatar-xl bg-secondary bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                        <i class="ti tabler-map-pin-off text-muted" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Koordinat Tidak Tersedia</h5>
                                     <p class="text-muted mb-0">Titik koordinat belum ditambahkan di peta.</p>
                                     @if(Auth::user()->role !== 'leader')
-                                    <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-sm btn-outline-secondary mt-3">Set Koordinat Sekarang</a>
+                                    <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-sm btn-primary rounded-pill mt-3 shadow-sm"><i class="ti tabler-map-pin-plus me-1"></i>Set Koordinat</a>
                                     @endif
                                 </div>
                             @endif
@@ -340,31 +402,40 @@
 
                 {{-- TAB 3: DOKUMEN --}}
                 <div class="tab-pane fade" id="navs-docs" role="tabpanel">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header border-bottom">
-                            <h5 class="card-title mb-0">Arsip Dokumen Digital</h5>
+                    <div class="glass-card border-0 shadow-sm">
+                        <div class="card-header border-bottom bg-transparent p-4 d-flex align-items-center">
+                            <div class="avatar avatar-sm bg-danger bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                <i class="ti tabler-file-zip text-danger"></i>
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold text-dark">Arsip Dokumen Digital</h5>
                         </div>
-                        <div class="card-body pt-4">
+                        <div class="card-body p-4">
                             @if ($parkingLocation->proposal_document || $parkingLocation->official_report_document)
                                 <div class="row g-4">
                                     @if ($parkingLocation->proposal_document)
                                         <div class="col-md-6">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="fw-semibold text-dark"><i class="ri icon-base ti tabler-file-pdf-2 text-danger"></i> PDF Pengajuan</span>
-                                                <a href="{{ asset('storage/' . $parkingLocation->proposal_document) }}" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill">Buka Penuh</a>
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="ti tabler-file-pdf text-danger fs-3 me-2"></i>
+                                                    <span class="fw-bold text-dark">Dokumen Pengajuan</span>
+                                                </div>
+                                                <a href="{{ asset('storage/' . $parkingLocation->proposal_document) }}" target="_blank" class="btn btn-xs btn-outline-danger rounded-pill"><i class="ti tabler-external-link me-1"></i>Buka</a>
                                             </div>
-                                            <div class="pdf-viewer-wrapper shadow-sm">
+                                            <div class="pdf-viewer-wrapper shadow-sm border-danger border-opacity-25">
                                                 <iframe src="{{ asset('storage/' . $parkingLocation->proposal_document) }}#toolbar=0" frameborder="0"></iframe>
                                             </div>
                                         </div>
                                     @endif
                                     @if ($parkingLocation->official_report_document)
                                         <div class="col-md-6">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="fw-semibold text-dark"><i class="ri icon-base ti tabler-file-pdf-2 text-danger"></i> PDF Berita Acara</span>
-                                                <a href="{{ asset('storage/' . $parkingLocation->official_report_document) }}" target="_blank" class="btn btn-xs btn-outline-primary rounded-pill">Buka Penuh</a>
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="ti tabler-file-pdf text-danger fs-3 me-2"></i>
+                                                    <span class="fw-bold text-dark">Berita Acara</span>
+                                                </div>
+                                                <a href="{{ asset('storage/' . $parkingLocation->official_report_document) }}" target="_blank" class="btn btn-xs btn-outline-danger rounded-pill"><i class="ti tabler-external-link me-1"></i>Buka</a>
                                             </div>
-                                            <div class="pdf-viewer-wrapper shadow-sm">
+                                            <div class="pdf-viewer-wrapper shadow-sm border-danger border-opacity-25">
                                                 <iframe src="{{ asset('storage/' . $parkingLocation->official_report_document) }}#toolbar=0" frameborder="0"></iframe>
                                             </div>
                                         </div>
@@ -372,7 +443,10 @@
                                 </div>
                             @else
                                 <div class="text-center py-5">
-                                    <i class="ri icon-base ti tabler-folder-open text-muted" style="font-size: 3rem;"></i>
+                                    <div class="avatar avatar-xl bg-label-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                        <i class="ti tabler-folder-open text-muted" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Belum Ada Dokumen</h5>
                                     <p class="text-muted mt-2 mb-0">Belum ada dokumen yang diunggah untuk lokasi ini.</p>
                                 </div>
                             @endif
@@ -382,11 +456,14 @@
 
                 {{-- TAB 4: RIWAYAT --}}
                 <div class="tab-pane fade" id="navs-history" role="tabpanel">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header border-bottom">
-                            <h5 class="card-title mb-0">Riwayat Aktivitas Lokasi</h5>
+                    <div class="glass-card border-0 shadow-sm">
+                        <div class="card-header border-bottom bg-transparent p-4 d-flex align-items-center">
+                            <div class="avatar avatar-sm bg-warning bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                <i class="ti tabler-history text-warning"></i>
+                            </div>
+                            <h5 class="card-title mb-0 fw-bold text-dark">Riwayat Aktivitas Lokasi</h5>
                         </div>
-                        <div class="card-body pt-4">
+                        <div class="card-body p-4">
                             <div class="timeline-scrollable" id="historyTimeline">
                                 <ul class="timeline timeline-center mt-3 pb-4">
                                     @forelse($parkingLocation->histories as $history)
@@ -400,18 +477,18 @@
                                         @endphp
         
                                         <li class="timeline-item timeline-item-{{ $color }} mb-4">
-                                            <span class="timeline-indicator timeline-indicator-{{ $color }} bg-white">
-                                                <i class="ri icon-base {{ $icon }}"></i>
+                                            <span class="timeline-indicator timeline-indicator-{{ $color }} bg-white shadow border border-3 border-white">
+                                                <i class="{{ $icon }}"></i>
                                             </span>
-                                            <div class="timeline-event">
+                                            <div class="timeline-event shadow-sm rounded-4 border p-4" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border-color: rgba(255, 255, 255, 0.5);">
                                                 <div class="timeline-header mb-1 d-flex justify-content-between align-items-center">
-                                                    <h6 class="mb-0 fw-bold text-{{ $color }}">{{ strtoupper(str_replace('_', ' ', $history->action)) }}</h6>
-                                                    <small class="text-muted">{{ $history->created_at->diffForHumans() }}</small>
+                                                    <h6 class="mb-0 fw-bold text-{{ $color }} d-flex align-items-center text-uppercase" style="letter-spacing: 0.5px;"><i class="ti tabler-circle-filled me-2" style="font-size: 0.5rem;"></i>{{ str_replace('_', ' ', $history->action) }}</h6>
+                                                    <small class="text-muted"><i class="ti tabler-clock me-1"></i>{{ $history->created_at->diffForHumans() }}</small>
                                                 </div>
-                                                <p class="mb-0 text-dark" style="font-size: 0.9rem;">{{ $history->description }}</p>
+                                                <p class="mb-0 text-dark fw-medium mt-3" style="font-size: 0.95rem; line-height: 1.6;">{{ $history->description }}</p>
         
                                                 @if($history->action == 'updated' && !empty($history->new_values))
-                                                    <div class="history-changes-box">
+                                                    <div class="history-changes-box shadow-sm mt-3">
                                                         <ul class="list-unstyled mb-0">
                                                             @foreach($history->new_values as $key => $newValue)
                                                                 @php
@@ -420,41 +497,44 @@
                                                                     $displayNew = formatHistoryValue($key, $newValue);
                                                                     $fieldName = ucwords(str_replace('_', ' ', $key));
                                                                 @endphp
-                                                                <li class="mb-1 text-truncate" title="{{ $displayOld }} ➔ {{ $displayNew }}">
-                                                                    <span class="fw-semibold text-muted">{{ $fieldName }}:</span>
-                                                                    <span class="text-danger text-decoration-line-through mx-1">{{ $displayOld }}</span>
-                                                                    <i class="ri icon-base ti tabler-arrow-right ti-md text-primary mx-1"></i>
-                                                                    <span class="text-warning fw-medium">{{ $displayNew }}</span>
+                                                                <li class="mb-2 text-truncate d-flex align-items-center" title="{{ $displayOld }} ➔ {{ $displayNew }}">
+                                                                    <span class="fw-bold text-dark me-2" style="min-width: 120px;">{{ $fieldName }}</span>
+                                                                    <span class="badge bg-label-danger text-decoration-line-through me-2 rounded-pill px-2 py-1">{{ $displayOld }}</span>
+                                                                    <i class="ti tabler-arrow-right text-muted me-2"></i>
+                                                                    <span class="badge bg-label-success rounded-pill px-2 py-1">{{ $displayNew }}</span>
                                                                 </li>
                                                             @endforeach
                                                         </ul>
                                                     </div>
                                                 @endif
         
-                                                <div class="d-flex align-items-center mt-3 bg-light rounded-pill px-2 py-1 d-inline-flex">
+                                                <div class="d-flex align-items-center mt-3 bg-white shadow-sm border rounded-pill px-2 py-1 d-inline-flex">
                                                     @php
                                                         $uName = $history->user->name ?? 'Sistem Server';
                                                         $uAvatar = ($history->user && $history->user->img && file_exists(public_path('storage/' . $history->user->img)))
                                                             ? asset('storage/' . $history->user->img)
                                                             : "https://ui-avatars.com/api/?name=" . urlencode($uName) . "&background=random&color=fff&size=24&rounded=true&bold=true";
                                                     @endphp
-                                                    <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle me-2" width="20" height="20">
-                                                    <small class="fw-medium text-muted">{{ $uName }}</small>
+                                                    <img src="{{ $uAvatar }}" alt="Avatar" class="rounded-circle me-2" width="24" height="24">
+                                                    <small class="fw-bold text-dark">{{ $uName }}</small>
                                                 </div>
                                             </div>
                                         </li>
                                     @empty
                                         <div class="text-center py-5">
-                                            <i class="ri icon-base ti tabler-history text-muted" style="font-size: 2rem;"></i>
-                                            <p class="text-muted mt-2">Belum ada riwayat aktivitas yang tercatat.</p>
+                                            <div class="avatar avatar-xl bg-label-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                                <i class="ti tabler-history text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                            <h5 class="fw-bold text-dark mb-1">Riwayat Kosong</h5>
+                                            <p class="text-muted mt-2 mb-0">Belum ada riwayat aktivitas yang tercatat untuk lokasi ini.</p>
                                         </div>
                                     @endforelse
         
                                     @if($parkingLocation->histories->isNotEmpty())
                                         <li class="timeline-item timeline-item-transparent border-0">
-                                            <span class="timeline-indicator timeline-indicator-secondary"><i class="ri icon-base ti tabler-map-pin-check"></i></span>
+                                            <span class="timeline-indicator timeline-indicator-secondary bg-white"><i class="ti tabler-map-pin-check"></i></span>
                                             <div class="timeline-event pb-0">
-                                                <small class="text-muted text-uppercase fw-bold">Awal Rekaman</small>
+                                                <small class="text-muted text-uppercase fw-bold"><i class="ti tabler-flag me-1"></i>Awal Rekaman</small>
                                             </div>
                                         </li>
                                     @endif

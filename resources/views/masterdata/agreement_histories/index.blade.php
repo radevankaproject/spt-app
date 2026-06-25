@@ -15,6 +15,23 @@
 @endsection
 
 @section('content')
+    {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-history me-2"></i>Riwayat Perjanjian</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Riwayat pembaruan perjanjian kerjasama.</p>
+            </div>
+        </div>
+        <i class="ti tabler-history position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
+    </div>
     {{-- Page Title & Breadcrumb --}}
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
@@ -31,7 +48,7 @@
 
     {{-- Form Filter Premium --}}
     <div class="card mb-5 border-0 shadow-sm">
-        <div class="card-body">
+        <div class="card-body p-4">
             <form action="{{ route('masterdata.agreement-histories.index') }}" method="GET">
                 <div class="row g-3 align-items-center">
                     <div class="col-md-9 col-lg-10">
@@ -46,7 +63,7 @@
                         </select>
                     </div>
                     <div class="col-md-3 col-lg-2 mt-4 mt-md-0 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100 shadow-sm mt-4"><i class="ti tabler-history me-1"></i> Lacak Jejak</button>
+                        <button type="submit" class="btn btn-primary rounded-pill btn-action w-100 shadow-sm mt-4"><i class="ti tabler-history me-1"></i> Lacak Jejak</button>
                     </div>
                 </div>
             </form>
@@ -57,7 +74,7 @@
     @if ($agreement)
         {{-- Kartu Ringkasan PKS (Tampil jika PKS terpilih) --}}
         <div class="card bg-primary bg-opacity-10 border-0 mb-5 rounded-3 shadow-none">
-            <div class="card-body py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="card-body py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3 p-4">
                 <div class="d-flex align-items-center gap-3">
                     <div class="avatar avatar-md">
                         @php
@@ -118,11 +135,11 @@
                                 <i class="icon-base {{ $icon }}"></i>
                             </span>
                             <div class="timeline-event card p-0 border border-{{ $color }} border-opacity-25">
-                                <div class="card-header border-bottom bg-{{ $color }} bg-opacity-10 d-flex justify-content-between align-items-center flex-wrap py-2 px-3">
+                                <div class="card-header border-bottom bg-{{ $color }} bg-opacity-10 d-flex justify-content-between align-items-center flex-wrap py-2 px-3 p-4">
                                     <h6 class="card-title mb-0 fw-bold text-{{ $color }}">{{ $eventName }}</h6>
                                     <div class="meta"><span class="badge bg-white text-dark shadow-sm">{{ $history->created_at->diffForHumans() }}</span></div>
                                 </div>
-                                <div class="card-body py-3 px-3">
+                                <div class="card-body py-3 px-3 p-4">
 
                                     {{-- ✅ LOGIKA TEKS INTERAKTIF --}}
                                     <div class="mb-3">
@@ -180,7 +197,7 @@
         </div>
     @else
         <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-6">
+            <div class="card-body text-center py-6 p-4">
                 <div class="avatar avatar-xl mx-auto mb-3">
                     <span class="avatar-initial rounded-circle bg-label-primary"><i class="ti tabler-history ti-lg"></i></span>
                 </div>

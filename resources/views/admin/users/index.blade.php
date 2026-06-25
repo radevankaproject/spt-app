@@ -2,153 +2,177 @@
 
 @section('title', 'Manajemen User')
 
-
-
-{{-- 1. Tambahkan CSS SweetAlert2 --}}
 @section('page-style')
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
 @endsection
 
 @section('content')
-    {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Manajemen User</h4>
-        <div class="d-flex align-items-center">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
-                    <li class="breadcrumb-item active">Users</li>
-                </ol>
-            </nav>
+    {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                    <span class="badge bg-primary text-white rounded-pill px-3 py-2 fw-bold shadow-sm" style="backdrop-filter: blur(5px);">
+                        Total: {{ $users->total() }} User
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-users me-2"></i>Manajemen User Admin & Staff</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Kelola hak akses pengguna, staff, dan koordinator lapangan.</p>
+            </div>
         </div>
+        <i class="ti tabler-users position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
-    <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between gap-4">
+    {{-- Daftar User --}}
+    <div class="glass-card overflow-hidden anim-2">
+        <div class="card-header p-4 d-flex flex-wrap justify-content-between align-items-center gap-4 border-bottom">
             <div class="card-title mb-0">
-                <h5 class="mb-1">Daftar User (Admin & Staff)</h5>
-                <p class="text-muted mb-0">Total {{ $users->total() }} user ditemukan.</p>
+                <h5 class="mb-1">Daftar Pengguna Aktif</h5>
+                <p class="text-muted mb-0">Menampilkan {{ $users->count() }} dari total {{ $users->total() }} user.</p>
             </div>
-            <div class="d-flex justify-content-md-end align-items-center gap-4">
+            <div class="d-flex justify-content-md-end align-items-center gap-3">
                 <form action="{{ route('admin.users.index') }}" method="GET" class="d-flex align-items-center">
-                    <input type="search" name="search" class="form-control" placeholder="Cari nama/email..."
-                        value="{{ request('search') }}">
+                    <div class="input-group input-group-merge shadow-sm" style="border-radius: 50rem; overflow: hidden; height: 38px;">
+                        <input type="search" name="search" class="form-control border-0 px-3 bg-white" placeholder="Cari nama/email..." value="{{ request('search') }}">
+                        <span class="input-group-text border-0 bg-white pe-3" style="cursor: pointer;" onclick="this.closest('form').submit()">
+                            <i class="ti tabler-search text-primary"></i>
+                        </span>
+                    </div>
                 </form>
-                <a href="{{ route('admin.users.trashed') }}" class="btn btn-outline-secondary">
-                    <i class="icon-base ti tabler-archive me-2"></i>Lihat Arsip
-                </a>
                 @if(Auth::user()->role !== 'leader')
-                <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
-                    <i class="icon-base ti tabler-plus me-2"></i>Tambah User
+                <a href="{{ route('admin.users.create') }}" class="btn btn-primary rounded-pill shadow-sm btn-action">
+                    <i class="icon-base ti tabler-plus me-1"></i> Tambah User
                 </a>
                 @endif
             </div>
         </div>
-        <div class="card-body">
-            <div class="table-responsive text-nowrap">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th class="text-center">Aksi</th>
+
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4 text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">User Info</th>
+                        <th class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Email</th>
+                        <th class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Role</th>
+                        <th class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Status</th>
+                        <th class="text-center pe-4 text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    @forelse ($users as $user)
+                        <tr class="premium-row">
+                            <td class="ps-4">
+                                <div class="d-flex justify-content-start align-items-center user-name">
+                                    <div class="avatar-wrapper me-3">
+                                        <div class="avatar avatar-md bg-transparent">
+                                            @if ($user->img)
+                                                <img src="{{ asset('storage/' . $user->img) }}" alt="Avatar" class="rounded-circle" style="object-fit: cover; background: transparent;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-primary fw-bold">{{ strtoupper(substr($user->name, 0, 2)) }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-dark" style="font-size: 0.95rem;">{{ $user->name }}</span>
+                                        <small class="text-muted"><i class="ti tabler-at me-1" style="font-size: 0.8rem;"></i>{{ $user->username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box-sm bg-label-secondary me-2 rounded d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                        <i class="ti tabler-mail text-secondary" style="font-size: 1rem;"></i>
+                                    </div>
+                                    <span>{{ $user->email }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                @php
+                                    $role = $user->role;
+                                    $colorClass = $role == 'admin' ? 'bg-danger' : ($role == 'leader' ? 'bg-warning' : 'bg-info');
+                                @endphp
+                                <span class="badge rounded-pill shadow-sm {{ $colorClass }} px-3 py-2 fw-bold text-white">
+                                    <i class="ti tabler-shield-check me-1"></i> {{ ucfirst($role) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-label-success px-3 py-2 fw-bold">
+                                    <span class="badge-dot bg-success me-1"></span> Aktif
+                                </span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <a class="btn btn-sm btn-icon btn-label-info rounded-circle btn-action" href="{{ route('admin.users.show', $user->id) }}" data-bs-toggle="tooltip" title="Lihat Profil">
+                                        <i class="ti tabler-eye icon-20px"></i>
+                                    </a>
+                                    @if(Auth::user()->role !== 'leader')
+                                    <a class="btn btn-sm btn-icon btn-label-primary rounded-circle btn-action" href="{{ route('admin.users.edit', $user->id) }}" data-bs-toggle="tooltip" title="Edit User">
+                                        <i class="ti tabler-pencil icon-20px"></i>
+                                    </a>
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="form-delete d-inline-block m-0">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-icon btn-label-danger rounded-circle btn-action delete-btn" data-bs-toggle="tooltip" title="Hapus User">
+                                            <i class="ti tabler-trash icon-20px"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0">
-                        @forelse ($users as $user)
-                            <tr>
-                                <td>
-                                    <div class="d-flex justify-content-start align-items-center user-name">
-                                        <div class="avatar-wrapper me-4">
-                                            <div class="avatar avatar-sm">
-                                                @if ($user->img)
-                                                    <img src="{{ asset('storage/' . $user->img) }}" alt="Avatar"
-                                                        class="rounded-circle">
-                                                @else
-                                                    <span
-                                                        class="avatar-initial rounded-circle bg-label-secondary">{{ strtoupper(substr($user->name, 0, 2)) }}</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="fw-medium">{{ $user->name }}</span>
-                                            <small class="text-muted">{{ '@' . $user->username }}</small>
-                                        </div>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center p-5">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="icon-glass bg-label-secondary mb-3">
+                                        <i class="ti tabler-users text-secondary opacity-50" style="font-size: 2rem;"></i>
                                     </div>
-                                </td>
-                                <td>{{ $user->email }}</td>
-                                <td>
-                                    @php
-                                        $role = $user->role;
-                                        $colorClass = $role == 'admin' ? 'bg-label-danger' : 'bg-label-info';
-                                    @endphp
-                                    <span class="badge rounded-pill {{ $colorClass }}">{{ ucfirst($role) }}</span>
-                                </td>
-                                <td><span class="badge bg-label-success">Aktif</span></td>
-                                <td class="text-center">
-                                    <div class="d-flex align-items-center justify-content-center">
-                                        <a class="btn btn-sm btn-icon text-info" href="{{ route('admin.users.show', $user->id) }}"
-                                            data-bs-toggle="tooltip" title="Lihat Profil">
-                                            <i class="icon-base ti tabler-eye icon-22px"></i>
-                                        </a>
-                                        @if(Auth::user()->role !== 'leader')
-                                        <a class="btn btn-sm btn-icon" href="{{ route('admin.users.edit', $user->id) }}"
-                                            data-bs-toggle="tooltip" title="Edit User">
-                                            <i class="icon-base ti tabler-pencil icon-22px"></i>
-                                        </a>
-                                        {{-- ✅ PERUBAHAN 2: Tambahkan class 'form-delete' --}}
-                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                                            class="form-delete">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-icon" data-bs-toggle="tooltip"
-                                                title="Hapus User">
-                                                <i class="icon-base ti tabler-trash text-danger icon-22px"></i>
-                                            </button>
-                                        </form>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center">Tidak ada data user.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-4">
+                                    <h6 class="fw-bold text-dark mb-1">Tidak Ada Data User</h6>
+                                    <p class="text-muted small mb-0">Belum ada user yang ditambahkan atau sesuai pencarian Anda.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        @if($users->hasPages())
+        <div class="card-footer border-top bg-transparent p-4">
+            <div class="d-flex justify-content-center">
                 {{ $users->appends(['search' => request('search')])->links() }}
             </div>
         </div>
+        @endif
     </div>
 @endsection
 
 @section('page-script')
-    {{-- ✅ PERUBAHAN 3: Tambahkan JS SweetAlert2 dan logika pemicunya --}}
     @vite(["resources/assets/vendor/libs/sweetalert2/sweetalert2.js"])
     <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
-            // Notifikasi Sukses setelah Create/Update
             @if (session('success'))
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
                     text: '{{ session('success') }}',
                     showConfirmButton: false,
-                    timer: 2000
+                    timer: 2000,
+                    customClass: {
+                        popup: 'rounded-4 shadow-lg'
+                    }
                 });
             @endif
 
-            // Konfirmasi Hapus
-            const deleteForms = document.querySelectorAll('.form-delete');
-            deleteForms.forEach(form => {
-                form.addEventListener('submit', function(event) {
-                    event.preventDefault(); // Mencegah form dikirim langsung
-
+            const deleteBtns = document.querySelectorAll('.delete-btn');
+            deleteBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const form = this.closest('form');
                     Swal.fire({
                         title: 'Anda Yakin?',
                         text: "Data yang dihapus tidak dapat dikembalikan!",
@@ -157,10 +181,16 @@
                         confirmButtonColor: '#d33',
                         cancelButtonColor: '#3085d6',
                         confirmButtonText: 'Ya, Hapus!',
-                        cancelButtonText: 'Batal'
+                        cancelButtonText: 'Batal',
+                        customClass: {
+                            popup: 'rounded-4 shadow-lg',
+                            confirmButton: 'btn btn-danger rounded-pill px-4 me-2',
+                            cancelButton: 'btn btn-outline-secondary rounded-pill px-4'
+                        },
+                        buttonsStyling: false
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit(); // Jika dikonfirmasi, kirim form
+                            form.submit();
                         }
                     })
                 });

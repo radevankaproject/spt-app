@@ -2,6 +2,23 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Parkir Terpadu (SPT) / SiPKS** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v2.2.0] - 2026-06-25
+
+**_"Massive Premium UI Revamp for Index Pages"_**
+
+Pembaruan besar-besaran untuk menyelaraskan seluruh tampilan halaman daftar (index) ke dalam desain kelas Premium, memberikan estetika modern bergaya *glassmorphism* dan *mesh gradients*.
+
+- **Premium Glass Card & Hero Header:**
+    - Menyuntikkan `page-hero` beraksen *mesh-primary* yang mewah dan dilengkapi dengan watermark icon besar pada seluruh halaman `index.blade.php`.
+    - Mengganti *card* bawaan dengan desain tembus pandang (`glass-card` dengan efek `anim-2`) untuk memberikan ilusi kedalaman.
+    - Menyesuaikan *padding* seragam (`p-4`) ke seluruh `card-header` dan `card-body` agar komposisi jarak lebih rapi dan simetris.
+- **Konsistensi Visual & Interaksi Tombol:**
+    - Mengubah wujud seluruh tombol aksi utama menjadi oval presisi (`rounded-pill btn-action`) agar memiliki lengkungan simetris dan efek melayang.
+    - Memperbaiki kompatibilitas *Tabler Icon* agar tidak gagal muat dengan mengganti ke ikon standar yang didukung.
+- **Penyempurnaan Modul Tabel:**
+    - Judul kolom pada tabel dipertegas dengan gaya kapital, tebal, dan warna utama aplikasi (`text-uppercase fw-bold text-primary`).
+    - Modul `admin/location_requests` dan `field_coordinator/location_requests` kini menggunakan fitur kalender **Flatpickr** untuk filter tanggal.
+    - Tombol aksi pada daftar permintaan lokasi kini otomatis berubah menjadi teks "Lihat Details" jika pengajuan sudah disetujui atau ditolak.
 ## [v2.1.0] - 2026-06-23
 
 **_"Premium Experience, Comprehensive Profiling & Interactivity Update"_**

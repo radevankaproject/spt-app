@@ -25,21 +25,27 @@
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Manajemen Lokasi Parkir</h4>
-        <div class="d-flex align-items-center">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Master Data</a></li>
-                    <li class="breadcrumb-item active">Lokasi Parkir</li>
-                </ol>
-            </nav>
+        {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-map-pin me-2"></i>Lokasi Parkir</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Manajemen data lokasi titik parkir.</p>
+            </div>
         </div>
+        <i class="ti tabler-map-pin position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     {{-- Daftar Lokasi Parkir --}}
     <div class="card border-0 shadow-sm">
-        <div class="card-header d-flex flex-wrap justify-content-between gap-4 border-bottom pb-3 bg-transparent">
+        <div class="card-header d-flex flex-wrap justify-content-between gap-4 border-bottom pb-3 bg-transparent p-4">
             <div class="card-title mb-0">
                 <h5 class="mb-1 fw-bold">Daftar Semua Lokasi Parkir</h5>
                 <p class="text-muted mb-0">Total {{ $parkingLocations->total() }} lokasi terdaftar.</p>
@@ -73,7 +79,7 @@
                     {{-- 3. Search Input --}}
                     <div class="input-group filter-item shadow-sm" style="min-width: 250px;">
                         <input type="search" name="search" class="form-control" placeholder="Cari nama lokasi..." value="{{ request('search') }}">
-                        <button class="btn btn-primary" type="submit"><i class="ri icon-base ti tabler-search"></i></button>
+                        <button class="btn btn-primary rounded-pill btn-action" type="submit"><i class="ri icon-base ti tabler-search"></i></button>
                     </div>
                     
                     {{-- 4. Tombol Reset (Muncul jika ada filter aktif) --}}
@@ -92,15 +98,15 @@
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="selected_ids" id="selected_ids" value="">
-                        <button type="button" class="btn btn-danger shadow-sm d-none" id="btn-bulk-delete" onclick="confirmBulkDelete()">
+                        <button type="button" class="btn btn-danger shadow-sm d-none rounded-pill" id="btn-bulk-delete" onclick="confirmBulkDelete()">
                             <i class="ri icon-base ti tabler-delete-bin-7 me-1"></i> Hapus Terpilih (<span id="selected-count">0</span>)
                         </button>
                     </form>
 
-                    <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary shadow-sm">
+                    <a href="{{ route('masterdata.parking-locations.importCreate') }}" class="btn btn-secondary shadow-sm rounded-pill">
                         <i class="ri icon-base ti tabler-cloud-upload me-1"></i> Impor
                     </a>
-                    <a href="{{ route('masterdata.parking-locations.create') }}" class="btn btn-primary shadow-sm">
+                    <a href="{{ route('masterdata.parking-locations.create') }}" class="btn btn-primary rounded-pill btn-action shadow-sm">
                         <i class="ri icon-base ti tabler-plus me-1"></i> Tambah
                     </a>
                     @endif
@@ -118,7 +124,7 @@
 
             <div class="table-responsive text-nowrap">
                 <table class="table table-hover table-striped">
-                    <thead class="table-light">
+                    <thead class="table-light border-bottom">
                         <tr>
                             <th width="5%" class="text-center">
                                 <input class="form-check-input" type="checkbox" id="check-all">

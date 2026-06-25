@@ -11,34 +11,40 @@
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Manajemen Rekening BLUD</h4>
-        <div class="d-flex align-items-center">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
-                    <li class="breadcrumb-item active">Rekening BLUD</li>
-                </ol>
-            </nav>
+        {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-building-bank me-2"></i>Rekening Bank BLUD</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Manajemen data rekening bank.</p>
+            </div>
         </div>
+        <i class="ti tabler-building-bank position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     {{-- Daftar Rekening --}}
-    <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between gap-4">
+    <div class="glass-card anim-2 border-0 overflow-hidden mb-4">
+        <div class="card-header d-flex flex-wrap justify-content-between gap-4 p-4">
             <div class="card-title mb-0">
                 <h5 class="mb-1">Daftar Rekening BLUD</h5>
                 <p class="text-muted mb-0">Total {{ $accounts->total() }} rekening terdaftar.</p>
             </div>
             <div class="d-flex justify-content-md-end align-items-center">
                 @if(Auth::user()->role !== 'leader')
-                <a href="{{ route('admin.blud-bank-accounts.create') }}" class="btn btn-primary">
+                <a href="{{ route('admin.blud-bank-accounts.create') }}" class="btn btn-primary rounded-pill btn-action">
                     <i class="icon-base ti tabler-plus me-2"></i>Tambah Rekening
                 </a>
                 @endif
             </div>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             @if (session('success'))
                 {{-- Notifikasi akan ditangani oleh SweetAlert2 --}}
             @endif

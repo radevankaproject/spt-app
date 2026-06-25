@@ -2,10 +2,47 @@
 
 @section('title', 'Daftar Pengajuan Titik')
 
+@section('page-style')
+<link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+@endsection
+
+@section('vendor-script')
+<script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flatpickrDate = document.querySelectorAll('.flatpickr-date');
+        if (flatpickrDate) {
+            flatpickrDate.forEach(function (el) {
+                flatpickr(el, {
+                    dateFormat: 'Y-m-d'
+                });
+            });
+        }
+    });
+</script>
+@endsection
+
 @section('content')
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="ti tabler-survey me-2 text-primary"></i>Persetujuan Titik Parkir</h4>
-</div>
+    {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-map-pin me-2"></i>Persetujuan Titik Parkir</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Persetujuan dan manajemen pengajuan lokasi.</p>
+            </div>
+        </div>
+        <i class="ti tabler-map-pin position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
+    </div>
 
 {{-- NOTIFIKASI SUCCESS / ERROR --}}
 @if (session('success'))
@@ -22,8 +59,8 @@
 @endif
 
 {{-- ✅ CARD FILTER PINTAR --}}
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
+<div class="glass-card border-0 mb-4 anim-2">
+    <div class="card-body p-4">
         <form action="{{ route('masterdata.location-requests.index') }}" method="GET">
             <div class="row g-3 align-items-center">
                 {{-- Smart Search --}}
@@ -36,8 +73,8 @@
                 
                 {{-- Tombol Aksi Filter --}}
                 <div class="col-md-4 col-lg-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100 shadow-sm"><i class="ti tabler-search-2 me-1"></i> Cari</button>
-                    <button class="btn btn-outline-secondary w-100 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilter" aria-expanded="false" aria-controls="advancedFilter">
+                    <button type="submit" class="btn btn-primary w-100 shadow-sm rounded-pill btn-action"><i class="ti tabler-search me-1"></i> Cari</button>
+                    <button class="btn btn-outline-secondary w-100 shadow-sm rounded-pill btn-action" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilter" aria-expanded="false" aria-controls="advancedFilter">
                         <i class="ti tabler-filter me-1"></i> Filter
                     </button>
                 </div>
@@ -67,11 +104,11 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Dari Tanggal</label>
-                            <input type="date" name="start_date" class="form-control shadow-sm" value="{{ request('start_date') }}">
+                            <input type="text" name="start_date" class="form-control shadow-sm flatpickr-date" placeholder="YYYY-MM-DD" value="{{ request('start_date') }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Sampai Tanggal</label>
-                            <input type="date" name="end_date" class="form-control shadow-sm" value="{{ request('end_date') }}">
+                            <input type="text" name="end_date" class="form-control shadow-sm flatpickr-date" placeholder="YYYY-MM-DD" value="{{ request('end_date') }}">
                         </div>
                         
                         <div class="col-12 text-end mt-3">
@@ -85,20 +122,20 @@
 </div>
 
 {{-- ✅ TABEL DATA --}}
-<div class="card border-0 shadow-sm">
-    <div class="card-header border-bottom pb-3 bg-transparent d-flex justify-content-between align-items-center">
+<div class="glass-card border-0 anim-2">
+    <div class="card-header p-4 border-bottom pb-3 bg-transparent d-flex justify-content-between align-items-center">
         <h6 class="card-title mb-0 fw-bold">Daftar Pengajuan dari Koordinator</h6>
         <span class="badge bg-label-primary rounded-pill">Total: {{ $requests->total() }} Data</span>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive text-nowrap">
             <table class="table table-hover table-striped">
-                <thead class="table-light">
+                <thead class="table-light border-bottom">
                     <tr>
-                        <th class="fw-bold text-dark">Tanggal</th>
-                        <th class="fw-bold text-dark">Koordinator (Mitra)</th>
-                        <th class="fw-bold text-dark">Tipe Pengajuan</th>
-                        <th class="fw-bold text-dark">Detail Lokasi</th>
+                        <th class="text-uppercase fw-bold text-primary">Tanggal</th>
+                        <th class="text-uppercase fw-bold text-primary">Koordinator (Mitra)</th>
+                        <th class="text-uppercase fw-bold text-primary">Tipe Pengajuan</th>
+                        <th class="text-uppercase fw-bold text-primary">Detail Lokasi</th>
                         <th class="fw-bold text-dark text-center">Status</th>
                         <th class="fw-bold text-dark text-center">Aksi</th>
                     </tr>
@@ -113,9 +150,9 @@
                             </td>
                             <td>
                                 @if($request->request_type == 'add')
-                                    <span class="badge bg-label-success rounded-pill"><i class="ti tabler-add-circle-filled me-1"></i> Penambahan</span>
+                                    <span class="badge bg-label-success rounded-pill"><i class="ti tabler-circle-plus me-1"></i> Penambahan</span>
                                 @else
-                                    <span class="badge bg-label-danger rounded-pill"><i class="ti tabler-delete-bin-filled me-1"></i> Pencabutan</span>
+                                    <span class="badge bg-label-danger rounded-pill"><i class="ti tabler-trash me-1"></i> Pencabutan</span>
                                 @endif
                             </td>
                             <td>
@@ -140,7 +177,7 @@
                             </td>
                             <td class="text-center">
                                 <a href="{{ route('masterdata.location-requests.show', $request->id) }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-                                    <i class="ti tabler-eye me-1"></i> Proses
+                                    <i class="ti tabler-eye me-1"></i> {{ in_array($request->status, ['approved', 'rejected']) ? 'Lihat Details' : 'Proses' }}
                                 </a>
                             </td>
                         </tr>
@@ -167,4 +204,23 @@
 
     </div>
 </div>
+@endsection
+
+@section('vendor-script')
+<script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flatpickrDate = document.querySelectorAll('.flatpickr-date');
+        if (flatpickrDate) {
+            flatpickrDate.forEach(function (el) {
+                flatpickr(el, {
+                    dateFormat: 'Y-m-d'
+                });
+            });
+        }
+    });
+</script>
 @endsection

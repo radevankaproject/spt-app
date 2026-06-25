@@ -10,21 +10,27 @@
 
 @section('content')
     {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Manajemen Ruas Jalan</h4>
-        <div class="d-flex align-items-center">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-style1 mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
-                    <li class="breadcrumb-item active">Ruas Jalan</li>
-                </ol>
-            </nav>
+        {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-road me-2"></i>Manajemen Ruas Jalan</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Kelola daftar ruas jalan dan area parkir yang terdaftar.</p>
+            </div>
         </div>
+        <i class="ti tabler-road position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     {{-- Daftar Ruas Jalan --}}
-    <div class="card">
-        <div class="card-header d-flex flex-wrap justify-content-between gap-4 border-bottom pb-3">
+    <div class="glass-card anim-2 border-0 overflow-hidden mb-4">
+        <div class="card-header d-flex flex-wrap justify-content-between gap-4 border-bottom pb-3 p-4">
             <div class="card-title mb-0">
                 <h5 class="mb-1">Daftar Semua Ruas Jalan</h5>
                 <p class="text-muted mb-0">Total {{ $roadSections->total() }} ruas jalan terdaftar.</p>
@@ -35,13 +41,13 @@
                     <div class="input-group">
                         <input type="search" name="search" class="form-control" placeholder="Cari nama ruas..."
                             value="{{ request('search') }}">
-                        <button class="btn btn-outline-primary" type="submit"><i
+                        <button class="btn btn-outline-primary rounded-pill" type="submit"><i
                                 class="ri icon-base ti tabler-search"></i></button>
                     </div>
                 </form>
                 @if(Auth::user()->role !== 'leader')
                 {{-- Tombol Panggil Modal Create --}}
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                <button type="button" class="btn btn-primary rounded-pill btn-action" data-bs-toggle="modal"
                     data-bs-target="#createRoadSectionModal">
                     <i class="ri icon-base ti tabler-plus me-1"></i> Tambah
                 </button>
@@ -49,7 +55,7 @@
             </div>
         </div>
 
-        <div class="card-body pt-3">
+        <div class="card-body pt-3 p-4">
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fw-bold" role="alert">
                     <i class="ti tabler-alert-triangle me-1"></i> {{ session('error') }}
@@ -70,13 +76,13 @@
 
             <div class="table-responsive text-nowrap">
                 <table class="table table-hover">
-                    <thead class="table-light">
+                    <thead class="table-light border-bottom">
                         <tr>
-                            <th scope="col" width="5%">No</th>
-                            <th scope="col" width="40%">Nama Ruas Jalan</th>
-                            <th scope="col" width="15%">Zona</th>
-                            <th scope="col" width="20%" class="text-center">Total Titik Parkir</th>
-                            <th scope="col" width="20%" class="text-center">Aksi</th>
+                            <th scope="col" class="text-uppercase fw-bold text-primary" width="5%">No</th>
+                            <th scope="col" class="text-uppercase fw-bold text-primary" width="40%">Nama Ruas Jalan</th>
+                            <th scope="col" class="text-uppercase fw-bold text-primary" width="15%">Zona</th>
+                            <th scope="col" class="text-uppercase fw-bold text-primary" width="20%" class="text-center">Total Titik Parkir</th>
+                            <th scope="col" class="text-uppercase fw-bold text-primary" width="20%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
@@ -214,9 +220,9 @@
                                                 </div>
                                             </div>
                                             <div class="modal-footer pt-3 border-top">
-                                                <button type="button" class="btn btn-outline-secondary"
+                                                <button type="button" class="btn btn-outline-secondary rounded-pill"
                                                     data-bs-dismiss="modal">Tutup</button>
-                                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                                <button type="submit" class="btn btn-primary rounded-pill btn-action">Simpan Perubahan</button>
                                             </div>
                                         </form>
                                     </div>
@@ -225,9 +231,13 @@
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-4">
-                                    <img src="{{ asset('assets/img/illustrations/misc-coming-soon-object.png') }}"
-                                        width="120" class="mb-3 opacity-50" alt="No Data">
-                                    <p class="text-muted">Tidak ada data ruas jalan ditemukan.</p>
+                                                                    <div class="text-center py-5">
+                                    <div class="icon-glass bg-label-secondary mx-auto mb-3">
+                                        <i class="ti tabler-folder-off fs-1 text-muted"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-1">Tidak Ada Data</h5>
+                                    <p class="text-muted mb-0">Belum ada data yang tersedia di sistem.</p>
+                                </div>
                                 </td>
                             </tr>
                         @endforelse
@@ -289,8 +299,8 @@
                         </div>
                     </div>
                     <div class="modal-footer border-top pt-3">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan Ruas</button>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary rounded-pill btn-action">Simpan Ruas</button>
                     </div>
                 </form>
             </div>

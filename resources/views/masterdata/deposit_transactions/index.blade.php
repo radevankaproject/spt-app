@@ -8,14 +8,22 @@
 @endsection
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Transaksi Setoran PKS</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-style1 mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Master Data</a></li>
-                <li class="breadcrumb-item active">Setoran</li>
-            </ol>
-        </nav>
+        {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-cash me-2"></i>Transaksi Setoran</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Daftar riwayat transaksi setoran masuk.</p>
+            </div>
+        </div>
+        <i class="ti tabler-cash position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     <div class="nav-align-top mb-4">
@@ -54,10 +62,10 @@
     </div>
 
     <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-header border-bottom pb-2">
+        <div class="card-header border-bottom pb-2 p-4">
             <h6 class="card-title mb-0"><i class="ti tabler-filter me-1"></i> Filter Lanjutan</h6>
         </div>
-        <div class="card-body pt-3">
+        <div class="card-body pt-3 p-4">
             <form action="{{ route('masterdata.deposit-transactions.index') }}" method="GET">
                 <input type="hidden" name="status" value="{{ request('status', 'all') }}">
                 <div class="row g-3">
@@ -101,15 +109,15 @@
                     </div>
                 </div>
                 <div class="pt-3 text-end">
-                    <a href="{{ route('masterdata.deposit-transactions.index') }}" class="btn btn-sm btn-outline-secondary me-2">Reset</a>
-                    <button type="submit" class="btn btn-sm btn-primary"><i class="ti tabler-filter-filled me-1"></i> Terapkan Filter</button>
+                    <a href="{{ route('masterdata.deposit-transactions.index') }}" class="btn btn-sm btn-outline-secondary me-2 rounded-pill">Reset</a>
+                    <button type="submit" class="btn btn-sm btn-primary rounded-pill"><i class="ti tabler-filter-filled me-1"></i> Terapkan Filter</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div class="card border-0 shadow-sm">
-        <div class="card-header d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 p-4">
             <div>
                 @if(request('status', 'jatuh_tempo') === 'jatuh_tempo')
                     <h5 class="mb-0 text-danger"><i class="ti tabler-alert-triangle-filled me-1"></i> Daftar PKS Jatuh Tempo</h5>
@@ -120,12 +128,12 @@
                 @endif
             </div>
             @if (Auth::user()->hasRole('admin') || Auth::user()->hasRole('staff_keu') || Auth::user()->hasRole('treasurer'))
-                <a href="{{ route('masterdata.deposit-transactions.create') }}" class="btn btn-primary">
+                <a href="{{ route('masterdata.deposit-transactions.create') }}" class="btn btn-primary rounded-pill btn-action">
                     <i class="ti tabler-plus me-1"></i> Catat Setoran
                 </a>
             @endif
         </div>
-        <div class="card-body pt-3">
+        <div class="card-body pt-3 p-4">
             <div class="table-responsive text-nowrap">
                 @if(request('status', 'jatuh_tempo') === 'jatuh_tempo')
                 <table class="table table-hover">
@@ -175,7 +183,7 @@
                 </table>
                 @else
                 <table class="table table-hover">
-                    <thead class="table-light">
+                    <thead class="table-light border-bottom">
                         <tr>
                             <th>No. Perjanjian</th>
                             <th>Koordinator</th>

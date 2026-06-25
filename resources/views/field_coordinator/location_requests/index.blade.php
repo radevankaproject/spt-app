@@ -5,6 +5,7 @@
 
 
 @section('page-style')
+<link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
     <style>
         .table-premium { border-collapse: separate; border-spacing: 0; min-width: 900px; }
         .table-premium th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb !important; color: #6b7280; padding-bottom: 1rem; }
@@ -31,23 +32,48 @@
     </style>
 @endsection
 
+@section('vendor-script')
+<script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flatpickrDate = document.querySelectorAll('.flatpickr-date');
+        if (flatpickrDate) {
+            flatpickrDate.forEach(function (el) {
+                flatpickr(el, {
+                    dateFormat: 'Y-m-d'
+                });
+            });
+        }
+    });
+</script>
+@endsection
+
 @section('content')
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold mb-1"><i class="ti tabler-map-pin-time me-2 text-primary"></i>Pengajuan Titik Parkir</h4>
-        <p class="text-muted small mb-0">Pantau status penambahan atau pencabutan titik kelolaan Anda.</p>
+    {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-map-pin me-2"></i>Pengajuan Titik Parkir</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Pantau status penambahan atau pencabutan titik kelolaan Anda.</p>
+            </div>
+        </div>
+        <i class="ti tabler-map-pin position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
-    <div class="d-flex align-items-center mt-3 mt-md-0">
-        <a href="{{ route('field_coordinator.location-requests.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4">
-            <i class="ti tabler-plus me-1"></i> Buat Pengajuan Baru
-        </a>
-    </div>
-</div>
 
 {{-- PENGUMUMAN AUTO-CLEANUP 60 HARI --}}
 <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 d-flex align-items-start rounded-4 p-4 mb-4" role="alert">
     <div class="avatar avatar-md bg-warning rounded-circle me-3 d-flex flex-shrink-0 align-items-center justify-content-center text-white shadow-sm">
-        <i class="ti tabler-hard-drive-2 ti tabler-xl"></i>
+        <i class="ti tabler-database ti tabler-xl"></i>
     </div>
     <div>
         <h6 class="alert-heading fw-bold mb-1 text-dark">Informasi Penyimpanan File</h6>
@@ -58,11 +84,12 @@
     <button type="button" class="btn-close mt-2 me-2" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+<div class="glass-card anim-2 border-0 overflow-hidden mb-4">
     {{-- HEADER TABEL & FILTER --}}
-    <div class="card-header bg-white border-bottom pb-3 pt-4">
+    <div class="card-header p-4 border-bottom pb-3 bg-transparent">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <h5 class="card-title mb-0 fw-bold">Riwayat Pengajuan Anda</h5>
+            <a href="{{ route('field_coordinator.location-requests.create') }}" class="btn btn-primary rounded-pill btn-action shadow-sm px-4"><i class="ti tabler-plus me-1"></i> Buat Pengajuan Baru</a>
             
             <form action="{{ route('field_coordinator.location-requests.index') }}" method="GET" class="d-flex align-items-center gap-2 flex-wrap">
                 
@@ -76,15 +103,15 @@
                         <h6 class="fw-bold mb-3">Rentang Waktu</h6>
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Dari Tanggal</label>
-                            <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+                            <input type="text" name="start_date" class="form-control flatpickr-date" placeholder="YYYY-MM-DD" value="{{ request('start_date') }}">
                         </div>
                         <div class="mb-4">
                             <label class="form-label small fw-bold">Sampai Tanggal</label>
-                            <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                            <input type="text" name="end_date" class="form-control flatpickr-date" placeholder="YYYY-MM-DD" value="{{ request('end_date') }}">
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-outline-secondary flex-grow-1" onclick="resetDateFilter()">Reset</button>
-                            <button type="submit" class="btn btn-primary flex-grow-1">Terapkan</button>
+                            <button type="button" class="btn btn-outline-secondary rounded-pill flex-grow-1" onclick="resetDateFilter()">Reset</button>
+                            <button type="submit" class="btn btn-primary rounded-pill btn-action flex-grow-1">Terapkan</button>
                         </div>
                     </div>
                 </div>
@@ -96,7 +123,7 @@
                         <input type="text" name="search" class="form-control border-0 px-2" placeholder="Cari nama, jalan..." value="{{ request('search') }}">
                         @if(request('search') || request('start_date') || request('end_date'))
                             <a href="{{ route('field_coordinator.location-requests.index') }}" class="input-group-text bg-transparent border-0 text-danger" data-bs-toggle="tooltip" title="Hapus Semua Filter">
-                                <i class="ti tabler-close-circle-filled"></i>
+                                <i class="ti tabler-circle-x"></i>
                             </a>
                         @endif
                         <button type="submit" class="btn btn-primary rounded-pill m-1 px-3 d-none d-md-block">Cari</button>
@@ -129,7 +156,7 @@
                             </td>
                             <td>
                                 @if($request->request_type == 'add')
-                                    <span class="badge bg-label-success badge-modern"><i class="ti tabler-add-circle"></i> Penambahan</span>
+                                    <span class="badge bg-label-success badge-modern"><i class="ti tabler-circle-plus"></i> Penambahan</span>
                                 @else
                                     <span class="badge bg-label-danger badge-modern"><i class="ti tabler-trash"></i> Pencabutan</span>
                                 @endif
@@ -137,7 +164,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="avatar avatar-sm me-3 bg-lighter rounded d-flex align-items-center justify-content-center text-primary">
-                                        <i class="ti tabler-user-pin"></i>
+                                        <i class="ti tabler-user"></i>
                                     </div>
                                     <div>
                                         @if($request->request_type == 'add')
@@ -169,7 +196,7 @@
                             <td>
                                 @if($request->admin_note)
                                     <div class="d-flex align-items-start">
-                                        <i class="ti tabler-message-3 text-muted me-2 mt-1"></i>
+                                        <i class="ti tabler-message text-muted me-2 mt-1"></i>
                                         <span class="d-inline-block text-truncate text-dark small fw-medium" style="max-width: 150px;" title="{{ $request->admin_note }}">
                                             {{ $request->admin_note }}
                                         </span>
@@ -259,6 +286,25 @@
 </div>
 @endsection
 
+@section('vendor-script')
+<script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flatpickrDate = document.querySelectorAll('.flatpickr-date');
+        if (flatpickrDate) {
+            flatpickrDate.forEach(function (el) {
+                flatpickr(el, {
+                    dateFormat: 'Y-m-d'
+                });
+            });
+        }
+    });
+</script>
+@endsection
+
 @section('page-script')
 <script type="module">
         document.addEventListener("DOMContentLoaded", function() {
@@ -281,5 +327,24 @@
         // Otomatis submit form setelah di-reset
         document.querySelector('.search-bar form, form.d-flex').submit();
     }
+</script>
+@endsection
+
+@section('vendor-script')
+<script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+@endsection
+
+@section('page-script')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const flatpickrDate = document.querySelectorAll('.flatpickr-date');
+        if (flatpickrDate) {
+            flatpickrDate.forEach(function (el) {
+                flatpickr(el, {
+                    dateFormat: 'Y-m-d'
+                });
+            });
+        }
+    });
 </script>
 @endsection

@@ -34,6 +34,12 @@ class ProfileSettingController extends Controller
         $activeTab = $request->get('tab');
         $search = $request->get('search');
         $paginatedData = null;
+        $availableYears = collect();
+        $selectedYear = null;
+        $agreementsInYear = collect();
+        $activeParkingLocationsCount = 0;
+        $totalValidatedDeposit = 0;
+        $totalAgreementsCount = 0;
 
         if (in_array($user->role, ['admin', 'staff_pks'])) {
             $stats['korlapCount'] = FieldCoordinator::where('last_updated_by', $user->id)->count();
@@ -144,11 +150,53 @@ class ProfileSettingController extends Controller
         // Relasi default untuk tampilan avatar dll
         if ($user->role === 'field_coordinator') {
             $user->load('fieldCoordinator');
-            
-            // For field_coordinator, we might need a default active tab as well if they had stats, 
-            // but the original code didn't have stats for them. 
-            // Let's add simple logic for them just in case.
-            if (!$activeTab) $activeTab = 'profile';
+            $fieldCoordinator = $user->fieldCoordinator;
+            if ($fieldCoordinator) {
+                $availableYears = \App\Models\Agreement::where('field_coordinator_id', $fieldCoordinator->id)
+                    ->selectRaw('YEAR(start_date) as year')
+                    ->distinct()
+                    ->orderBy('year', 'desc')
+                    ->pluck('year');
+
+                if ($availableYears->isEmpty()) {
+                    $availableYears = collect([now()->year]);
+                }
+
+                $selectedYear = $request->input('year', $availableYears->first());
+
+                $agreementsQuery = \App\Models\Agreement::where('field_coordinator_id', $fieldCoordinator->id)
+                    ->whereYear('start_date', $selectedYear);
+
+                if ($search) {
+                    $agreementsQuery->where('agreement_number', 'like', "%{$search}%");
+                }
+
+                $agreementsInYear = $agreementsQuery->clone()
+                    ->with(['activeParkingLocations.roadSection'])
+                    ->withSum(['depositTransactions as total_deposit' => function ($q) {
+                        $q->where('is_validated', true);
+                    }], 'amount')
+                    ->orderByRaw("CASE WHEN status IN ('active', 'pending_renewal') THEN 0 ELSE 1 END")
+                    ->orderBy('start_date', 'desc')
+                    ->paginate(10)
+                    ->withQueryString();
+
+                $totalAgreementsCount = $agreementsQuery->count();
+
+                $activeParkingLocationsCount = \App\Models\ParkingLocation::whereHas('agreements', function($q) use ($selectedYear, $fieldCoordinator) {
+                    $q->where('agreements.field_coordinator_id', $fieldCoordinator->id)
+                      ->whereYear('agreements.start_date', $selectedYear)
+                      ->whereIn('agreements.status', ['active', 'pending_renewal'])
+                      ->where('agreement_parking_locations.status', 'active');
+                })->count();
+
+                $totalValidatedDeposit = $agreementsQuery->clone()
+                    ->withSum(['depositTransactions as total_deposit' => function ($q) {
+                        $q->where('is_validated', true);
+                    }], 'amount')
+                    ->get()
+                    ->sum('total_deposit');
+            }
         } elseif ($user->role === 'leader') {
             $user->load('leader');
         } elseif (in_array($user->role, ['treasurer', 'staff_keu'])) {
@@ -157,7 +205,21 @@ class ProfileSettingController extends Controller
             }
         }
 
-        return view('profile.index', compact('user', 'stats', 'paginatedData', 'activeTab', 'search'));
+        if ($activeTab === 'aktivitas') {
+            $query = \App\Models\UserActivity::where('user_id', $user->id);
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('action', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+            $paginatedData = $query->latest()->paginate(10)->withQueryString();
+        }
+
+        return view('profile.index', compact(
+            'user', 'stats', 'paginatedData', 'activeTab', 'search',
+            'availableYears', 'selectedYear', 'agreementsInYear', 'activeParkingLocationsCount', 'totalValidatedDeposit', 'totalAgreementsCount'
+        ));
     }
 
     /**
@@ -222,6 +284,14 @@ class ProfileSettingController extends Controller
 
         $user->save();
 
+        \App\Models\UserActivity::create([
+            'user_id' => $user->id,
+            'action' => 'Update Profile',
+            'description' => 'User memperbarui data profil.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return Redirect::route('profile.settings')->with('status', 'profile-updated');
     }
 
@@ -234,6 +304,14 @@ class ProfileSettingController extends Controller
 
         $request->user()->update([
             'password' => Hash::make($validated['password']),
+        ]);
+
+        \App\Models\UserActivity::create([
+            'user_id' => $request->user()->id,
+            'action' => 'Update Password',
+            'description' => 'User memperbarui kata sandi.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
         ]);
 
         return Redirect::route('profile.settings')->with('status', 'password-updated');

@@ -61,19 +61,22 @@
 @section('content')
 
     {{-- Header & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            {{-- ✅ ICON DIPERBAIKI --}}
-            <h4 class="fw-bold mb-1"><i class="ri icon-base ti tabler-chart-histogram me-2 text-primary ti-md"></i> Target Pendapatan
-                Setoran</h4>
-            <p class="text-muted mb-0">Kelola dan proyeksikan target setoran bulanan dan tahunan UPT.</p>
+        {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-target me-2"></i>Target Setoran</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Atur target nominal setoran.</p>
+            </div>
         </div>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-style1 mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item active">Target Setoran</li>
-            </ol>
-        </nav>
+        <i class="ti tabler-target position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     {{-- GRAFIK APEXCHARTS PREMIUM --}}
@@ -81,13 +84,13 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white border-bottom pb-3">
+                    <div class="card-header bg-white border-bottom pb-3 p-4">
                         {{-- ✅ ICON DIPERBAIKI --}}
                         <h5 class="card-title mb-0"><i
                                 class="ri icon-base ti tabler-chart-bar me-2 text-success ti-md"></i> Grafik Proyeksi
                             Target (3 Tahun Terakhir)</h5>
                     </div>
-                    <div class="card-body pt-4">
+                    <div class="card-body pt-4 p-4">
                         <div id="targetChart"></div>
                     </div>
                 </div>
@@ -99,7 +102,7 @@
         {{-- KOLOM KIRI: FORMULIR INPUT (Sticky) --}}
         <div class="col-lg-4 col-md-5">
             <div class="card sticky-form-card shadow-sm border-0" id="formContainer">
-                <div class="card-header bg-primary text-white d-flex align-items-center rounded-top">
+                <div class="card-header bg-primary text-white d-flex align-items-center rounded-top p-4">
                     {{-- ✅ ICON DIPERBAIKI --}}
                     <i class="ti tabler-arrow-merge-right me-2 icon-22px"></i>
                     <h5 class="card-title text-white mb-0">Set / Update Target</h5>
@@ -107,7 +110,7 @@
 
                 <form action="{{ route('masterdata.deposit-targets.store') }}" method="POST" id="targetForm">
                     @csrf
-                    <div class="card-body mt-4">
+                    <div class="card-body mt-4 p-4">
                         <p class="text-muted text-sm mb-4">Pilih tahun dan bulan, lalu masukkan nominal target. Data bulan
                             yang sudah ada akan <strong class="text-primary">otomatis diperbarui</strong>.</p>
 
@@ -171,9 +174,9 @@
                         </div>
                     </div>
                     <div class="card-footer text-end border-top pt-3 pb-3">
-                        <button type="button" class="btn btn-outline-secondary me-2" onclick="resetForm()">Batal</button>
+                        <button type="button" class="btn btn-outline-secondary me-2 rounded-pill" onclick="resetForm()">Batal</button>
                         {{-- ✅ ICON DIPERBAIKI --}}
-                        <button type="submit" class="btn btn-primary"><i class="ri icon-base ti tabler-device-floppy me-1 ti tabler-18px"></i>
+                        <button type="submit" class="btn btn-primary rounded-pill btn-action"><i class="ri icon-base ti tabler-device-floppy me-1 ti tabler-18px"></i>
                             Simpan</button>
                     </div>
                 </form>
@@ -186,11 +189,14 @@
 
             @if ($targets->isEmpty())
                 <div class="card border-0 shadow-sm text-center py-5">
-                    <div class="card-body">
-                        <img src="{{ asset('assets/img/illustrations/misc-coming-soon-object.png') }}" alt="No Data"
-                            class="img-fluid mb-4" width="150">
-                        <h5>Belum Ada Target Tersimpan</h5>
-                        <p class="text-muted">Silakan atur target pertama Anda menggunakan formulir di sebelah kiri.</p>
+                    <div class="card-body p-4">
+                                                        <div class="text-center py-5">
+                                    <div class="icon-glass bg-label-secondary mx-auto mb-3">
+                                        <i class="ti tabler-folder-off fs-1 text-muted"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-1">Tidak Ada Data</h5>
+                                    <p class="text-muted mb-0">Belum ada data yang tersedia di sistem.</p>
+                                </div>
                     </div>
                 </div>
             @else
@@ -232,7 +238,7 @@
                                 <div class="accordion-body p-0">
                                     <div class="table-responsive">
                                         <table class="table table-hover table-striped m-0">
-                                            <thead class="table-light">
+                                            <thead class="table-light border-bottom">
                                                 <tr>
                                                     <th class="text-center" width="10%">Bulan</th>
                                                     <th width="30%">Nama Bulan</th>

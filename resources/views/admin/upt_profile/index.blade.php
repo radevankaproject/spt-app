@@ -44,15 +44,25 @@
 
 
 @section('content')
-    {{-- Page Title & Breadcrumb --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Profil UPT Perparkiran</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-style1 mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
-                <li class="breadcrumb-item active">Profil UPT</li>
-            </ol>
-        </nav>
+    {{-- ============================================= --}}
+    {{-- HERO HEADER --}}
+    {{-- ============================================= --}}
+    <div class="page-hero text-white mb-4 shadow-lg anim-1 hero-mesh-primary" style="padding: 2.5rem; border-radius: 1.5rem; position: relative; overflow: hidden;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                        <i class="ti tabler-calendar-event me-1 align-middle"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+                    </span>
+                    <span class="badge bg-primary text-white rounded-pill px-3 py-2 fw-bold shadow-sm" style="backdrop-filter: blur(5px);">
+                        Akses Admin
+                    </span>
+                </div>
+                <h4 class="fw-bold text-white mb-1"><i class="ti tabler-building-bank me-2"></i>Profil Instansi & Sistem</h4>
+                <p class="text-white-50 mb-0" style="font-size: 0.85rem;">Atur identitas aplikasi, informasi UPT, kontak layanan, dan logo resmi.</p>
+            </div>
+        </div>
+        <i class="ti tabler-building-bank position-absolute text-white" style="font-size: 160px; right: -15px; bottom: -30px; opacity: 0.08; transform: rotate(-10deg); z-index: 1;"></i>
     </div>
 
     <form action="{{ route('admin.upt-profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm">
@@ -63,11 +73,11 @@
             {{-- ✅ KOLOM KIRI: FORMULIR UTAMA (Dibungkus col-lg-8 agar menumpuk rapi, tidak bertabrakan) --}}
             <div class="col-lg-8">
                 {{-- Card 1: Informasi Dasar --}}
-                <div class="card mb-4">
-                    <div class="card-header">
+                <div class="glass-card mb-4 anim-2 border-0 overflow-hidden">
+                    <div class="card-header border-bottom p-4">
                         <h5 class="card-title mb-0">Informasi Instansi & Aplikasi</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4 pt-5">
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -94,10 +104,15 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input type="text" class="form-control" id="api_token_fonnte" name="api_token_fonnte"
-                                        placeholder="Token WhatsApp Fonnte" value="{{ old('api_token_fonnte', $profile->api_token_fonnte) }}" />
-                                    <label for="api_token_fonnte">API Token Fonnte (WA)</label>
+                                <div class="form-password-toggle">
+                                    <div class="input-group input-group-merge">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="password" class="form-control" id="api_token_fonnte" name="api_token_fonnte"
+                                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" value="{{ old('api_token_fonnte', $profile->api_token_fonnte) }}" />
+                                            <label for="api_token_fonnte">API Token Fonnte (WA)</label>
+                                        </div>
+                                        <span class="input-group-text cursor-pointer" id="basic-default-password"><i class="ti tabler-eye-off"></i></span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -140,11 +155,11 @@
                 </div>
 
                 {{-- Card 2: Tentang Kami (Quill) --}}
-                <div class="card mb-4">
-                    <div class="card-header">
+                <div class="glass-card mb-4 anim-2 border-0 overflow-hidden">
+                    <div class="card-header border-bottom p-4">
                         <h5 class="card-title mb-0">Tentang Kami (About Us)</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4 pt-5">
                         {{-- ✅ Bungkus dengan class quill-editor-wrapper --}}
                         <div class="quill-editor-wrapper">
                             <div id="about_us_editor">
@@ -156,11 +171,11 @@
                 </div>
 
                 {{-- Card 3: Kebijakan Privasi (Quill) --}}
-                <div class="card mb-4">
-                    <div class="card-header">
+                <div class="glass-card mb-4 anim-2 border-0 overflow-hidden">
+                    <div class="card-header border-bottom p-4">
                         <h5 class="card-title mb-0">Kebijakan Privasi (Privacy Policy)</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4 pt-5">
                         {{-- ✅ Bungkus dengan class quill-editor-wrapper --}}
                         <div class="quill-editor-wrapper">
                             <div id="privacy_policy_editor">
@@ -175,10 +190,10 @@
             {{-- ✅ KOLOM KANAN: UPLOAD LOGO (Dibungkus col-lg-4, sticky) --}}
             <div class="col-lg-4">
                 <div class="card position-sticky" style="top: 20px;">
-                    <div class="card-header">
+                    <div class="card-header border-bottom p-4">
                         <h5 class="card-title mb-0">Logo Instansi</h5>
                     </div>
-                    <div class="card-body text-center">
+                    <div class="card-body text-center p-4">
                          <div class="d-flex flex-column align-items-center">
 
                              {{-- ✅ LOGIKA BARU: Cek langsung file logo.png di folder public --}}
@@ -198,13 +213,13 @@
 
                              @if(Auth::user()->role !== 'leader')
                              <div class="d-flex justify-content-center gap-3 mb-3">
-                                <label for="logo-upload" class="btn btn-primary btn-sm" tabindex="0">
+                                <label for="logo-upload" class="btn btn-primary btn-sm rounded-pill" tabindex="0">
                                     <span class="d-none d-sm-block">Pilih Logo</span>
                                     <i class="icon-base ti tabler-upload d-sm-none"></i>
                                     <input type="file" id="logo-upload" name="logo" class="account-file-input" hidden
                                         accept="image/png, image/jpeg" />
                                 </label>
-                                <button type="button" class="btn btn-outline-secondary btn-sm account-image-reset" data-default="{{ $avatarSrc }}">
+                                <button type="button" class="btn btn-outline-secondary btn-sm account-image-reset rounded-pill" data-default="{{ $avatarSrc }}">
                                     <span class="d-none d-sm-block">Reset</span>
                                      <i class="icon-base ti tabler-refresh d-sm-none"></i>
                                 </button>
@@ -223,8 +238,8 @@
                          </div>
                     </div>
                     @if(Auth::user()->role !== 'leader')
-                    <div class="card-footer text-center border-top">
-                        <button type="submit" class="btn btn-success w-100">
+                    <div class="card-footer text-center border-top p-4">
+                        <button type="submit" class="btn btn-success w-100 rounded-pill shadow-sm fw-bold btn-action">
                             <i class="ti tabler-device-floppy me-1"></i> Simpan Perubahan
                         </button>
                     </div>

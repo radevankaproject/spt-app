@@ -86,7 +86,7 @@
                 {{-- KARTU KTP --}}
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h6 class="pb-2 border-bottom mb-3"><i class="ti tabler-discount-check me-1"></i> Dokumen KTP</h6>
+                        <h6 class="pb-2 border-bottom mb-3"><i class="ti tabler-id-badge-2 me-1"></i> Dokumen KTP</h6>
                         @if ($fieldCoordinator->id_card_img)
                             <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#ktpModal">
                                 <img src="{{ asset('storage/'.$fieldCoordinator->id_card_img) }}" alt="Foto KTP"
