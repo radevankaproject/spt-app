@@ -11,7 +11,7 @@ import iconsPlugin from './vite.icons.plugin.js';
  * @returns array
  */
 function GetFilesArray(query) {
-  return glob.sync(query);
+  return glob.sync(query).map(file => file.replace(/\\/g, '/'));
 }
 
 // Page JS Files
