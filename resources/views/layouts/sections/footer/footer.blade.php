@@ -48,6 +48,14 @@ isset($configData['contentLayout']) && $configData['contentLayout'] === 'compact
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div class="alert alert-primary d-flex mb-4 border-0 shadow-sm rounded-3" role="alert">
+                    <span class="alert-icon align-middle me-3 mt-1">
+                      <i class="ti tabler-info-circle fs-4"></i>
+                    </span>
+                    <div style="font-size: 0.9rem; line-height: 1.5;">
+                        Semua catatan perubahan (History Log) dari aplikasi <strong>Sistem Perjanjian Kerja Sama Perparkiran (SPKP)</strong> dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
+                    </div>
+                </div>
                 <div id="changelog-content" data-loaded="false">
                     <div class="text-center py-4" id="changelog-loading">
                         <div class="m3-wavy-wrapper mx-auto" style="width: 80px; height: 80px;">

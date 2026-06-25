@@ -316,6 +316,11 @@ $unreadCount = count($notificationsRaw);
                     <i class="icon-base ti tabler-settings ti-md me-3 text-muted"></i><span class="align-middle fw-medium">Pengaturan Akun</span>
                 </a>
             </li>
+            <li>
+                <a class="dropdown-item px-4 py-2" href="{{ route('profile.index', ['tab' => 'aktivitas']) }}">
+                    <i class="icon-base ti tabler-activity ti-md me-3 text-muted"></i><span class="align-middle fw-medium">Aktivitas Akun</span>
+                </a>
+            </li>
             
             <li><div class="dropdown-divider border-light my-2"></div></li>
             

@@ -264,70 +264,7 @@
   <div class="col-xl-8 col-lg-7 col-md-7">
     <!-- Activity Table -->
     @if($activeTab === 'aktivitas')
-      <div class="card mb-6">
-        <div class="card-header align-items-center d-flex justify-content-between p-4">
-          <h5 class="card-title mb-0"><i class="icon-base ti tabler-activity icon-lg me-2"></i>Aktivitas Akun Saya</h5>
-          <form action="{{ route('profile.index') }}" method="GET" class="d-flex align-items-center">
-              <input type="hidden" name="tab" value="aktivitas">
-              <div class="input-group input-group-sm">
-                  <span class="input-group-text"><i class="icon-base ti tabler-search"></i></span>
-                  <input type="text" name="search" class="form-control" placeholder="Cari aktivitas..." value="{{ request('search') }}" onchange="this.form.submit()">
-              </div>
-          </form>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover border-top">
-              <thead>
-                  <tr>
-                      <th>Aksi</th>
-                      <th>Deskripsi</th>
-                      <th>IP & Browser</th>
-                      <th class="text-end">Waktu</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  @forelse($paginatedData ?? collect() as $data)
-                      <tr>
-                          <td class="fw-medium text-primary">{{ $data->action ?? '-' }}</td>
-                          <td>{{ $data->description ?? '-' }}</td>
-                          <td>
-                              <div class="d-flex flex-column">
-                                  <small class="mb-1"><i class="ti tabler-network"></i> {{ $data->ip_address ?? '-' }}</small>
-                                  @if($data->user_agent)
-                                  <div>
-                                      <a class="text-muted small d-inline-flex align-items-center" data-bs-toggle="collapse" href="#collapseBrowser{{ $data->id }}" role="button" aria-expanded="false" aria-controls="collapseBrowser{{ $data->id }}">
-                                          <i class="ti tabler-browser me-1"></i> Detail Browser <i class="ti tabler-chevron-down ms-1" style="font-size: 10px;"></i>
-                                      </a>
-                                      <div class="collapse mt-2" id="collapseBrowser{{ $data->id }}">
-                                          <div class="p-2 bg-label-secondary rounded small text-break" style="max-width: 300px; font-size: 0.75rem; line-height: 1.4;">
-                                              {{ $data->user_agent }}
-                                          </div>
-                                      </div>
-                                  </div>
-                                  @else
-                                  <small class="text-muted"><i class="ti tabler-browser me-1"></i> -</small>
-                                  @endif
-                              </div>
-                          </td>
-                          <td class="text-end text-muted small">{{ $data->created_at ? $data->created_at->translatedFormat('d M Y H:i') : '-' }}</td>
-                      </tr>
-                  @empty
-                      <tr>
-                          <td colspan="4" class="text-center py-5">
-                              <i class="icon-base ti tabler-inbox icon-xl text-muted mb-3"></i>
-                              <p class="text-muted mb-0">Belum ada aktivitas yang tercatat.</p>
-                          </td>
-                      </tr>
-                  @endforelse
-              </tbody>
-          </table>
-        </div>
-        @if(isset($paginatedData) && $paginatedData->hasPages())
-        <div class="card-footer py-3">
-            {{ $paginatedData->links('pagination::bootstrap-5') }}
-        </div>
-        @endif
-      </div>
+      @include('profile.partials.aktivitas_table')
     @elseif($user->role === 'leader')
       <div class="nav-align-top mb-6">
         <ul class="nav nav-pills flex-column flex-sm-row mb-6 gap-2 gap-lg-0" role="tablist">
@@ -759,7 +696,9 @@
 
             {{-- KOLOM KANAN: PORTOFOLIO KONTRAK --}}
             <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
-
+                @if($activeTab === 'aktivitas')
+                    @include('profile.partials.aktivitas_table')
+                @else
                 {{-- 1. PKS SEDANG BERJALAN (AKTIF) --}}
                 <h5 class="fw-bold mb-3 d-flex align-items-center"><i class="ti tabler-player-play text-primary me-2"></i> Kontrak Berjalan (Tahun {{ $selectedYear }})</h5>
                 @forelse ($activeAgreements as $pks)
@@ -862,6 +801,7 @@
                         </table>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
 
