@@ -173,7 +173,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('users', UserController::class);
 
             // --- Jukir ---
-            Route::resource('jukirs', JukirController::class)->except(['create', 'store', 'show']);
+            Route::resource('jukirs', JukirController::class)->except(['create', 'show', 'edit']);
 
             // --- Leaders ---
             Route::resource('leaders', LeaderController::class);

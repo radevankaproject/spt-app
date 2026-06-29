@@ -20,6 +20,10 @@ Pembaruan signifikan yang berfokus pada digitalisasi survei potensi lahan parkir
     - Menambahkan kalkulasi akurat berupa baris **Subtotal** di akhir setiap ruas jalan dan **Total Keseluruhan** di akhir laporan untuk metrik Setoran, Survey Tajuk, dan Survey Tanam.
     - **Premium Typography & Layout:** Cetakan PDF dirombak total menggunakan tipografi kustom tingkat lanjut (**Work Sans**) dengan layout header yang menyajikan _summary box_ informatif (Total Titik Lokasi & Waktu Cetak), serta pemilihan palet warna laporan yang elegan.
     - Sistem _export_ Excel sepenuhnya disinkronkan dengan desain PDF menggunakan metode migrasi dari `FromCollection` ke `FromView`, memastikan kolom dan rekapitulasi ruas jalan tercetak secara 1:1 antara PDF dan Excel.
+- **Manajemen Juru Parkir (SPA & Image Processing):**
+    - Mengubah modul pengelolaan data Jukir menjadi *Single Page Application* (SPA) menggunakan arsitektur Modal terintegrasi untuk proses Tambah dan Edit, menghilangkan navigasi halaman ganda.
+    - Mengimplementasikan *Select2* adaptif pada penentuan Titik Parkir dengan fitur *auto-fill* (menampilkan Nama Korlap, Zona, dan Ruas Jalan secara dinamis) persis di bawah kolom pilihan.
+    - **Smart Image Processor:** Foto profil Jukir kini diproses secara asinkron (langsung di browser via JavaScript/Canvas). Foto akan terpotong bulat otomatis (1:1 *circle crop*) dan ukuran *file*-nya dikompresi berulang secara progresif (maksimal < 50KB) sebelum dikirim ke server. Dilengkapi *progress bar* visual premium.
 
 ## [v2.2.0] - 2026-06-25
 
