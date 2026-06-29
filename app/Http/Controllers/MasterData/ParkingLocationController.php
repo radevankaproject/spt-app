@@ -62,7 +62,7 @@ class ParkingLocationController extends Controller
      */
     public function report(Request $request)
     {
-        $query = ParkingLocation::with(['roadSection', 'agreements' => function ($q) {
+        $query = ParkingLocation::with(['latestSurvey', 'roadSection', 'agreements' => function ($q) {
             $q->where('agreements.status', 'active')
                 ->where('agreement_parking_locations.status', 'active')
                 ->with('fieldCoordinator.user');
@@ -84,7 +84,7 @@ class ParkingLocationController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $query = ParkingLocation::with(['roadSection', 'agreements' => function ($q) {
+        $query = ParkingLocation::with(['latestSurvey', 'roadSection', 'agreements' => function ($q) {
             $q->where('agreements.status', 'active')
                 ->where('agreement_parking_locations.status', 'active')
                 ->with('fieldCoordinator.user');
@@ -292,7 +292,7 @@ class ParkingLocationController extends Controller
      */
     public function show(ParkingLocation $parkingLocation)
     {
-        $parkingLocation->load(['roadSection', 'histories.user']);
+        $parkingLocation->load(['roadSection', 'histories.user', 'latestSurvey.jukir']);
 
         if (Auth::user()->role === 'field_coordinator') {
             $isOwned = Agreement::where('field_coordinator_id', Auth::user()->fieldCoordinator->id)

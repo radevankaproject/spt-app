@@ -4,5 +4,10 @@
         "bold": "\/www\/spt-app\/storage\/fonts\/bookman_old_style_bold_a49bdc075fa3e3270141d8ff111e3141",
         "italic": "\/www\/spt-app\/storage\/fonts\/bookman_old_style_italic_e1a7c5fb42df56cee2ac80a3a4756cd7",
         "bold_italic": "bookman_old_style_bold_italic_bc02cfb7552d87293e682059814ab063"
+    },
+    "work sans": {
+        "normal": "\/www\/spt-app\/storage\/fonts\/work_sans_normal_51390129d23d4f8a01c8595623d5b787",
+        "600": "\/www\/spt-app\/storage\/fonts\/work_sans_600_d9c53284a2b8ae884fb38fe406f44b09",
+        "bold": "work_sans_bold_cb570fcfd570c08ac39a172fb262c5ce"
     }
 }

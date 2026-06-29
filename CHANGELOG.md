@@ -2,9 +2,26 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Perjanjian Kerja Sama Perparkiran (SPKP)** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
-## [v2.2.0] - 2026-06-25
+## [v2.3.0] - 2026-06-29
 
-**_"Massive Premium UI Revamp for Index Pages"_**
+**_"Survey Data Integration & Export Grouping Mastery"_**
+
+Pembaruan signifikan yang berfokus pada digitalisasi survei potensi lahan parkir, strukturisasi laporan dinamis, dan penyempurnaan estetika ekspor dokumen ke kelas premium.
+
+- **Modul Survey Potensi Lokasi (Baru):**
+    - Menambahkan fitur pendataan terintegrasi untuk mencatat hasil survei potensi harian (Survey Tajuk dan Survey Tanam) pada setiap titik parkir.
+    - Form _Create_ kini dirancang cerdas dengan logika _Update or Create_. Jika ruas jalan sudah memiliki data survei, form otomatis menarik data lama (berfungsi ganda sebagai _Bulk Edit_), sehingga meminimalkan redundansi input. Input angka 0 (nol) maupun penambahan keterangan (_notes_) dikelola secara presisi dan persisten ke dalam _database_.
+    - Indeks daftar survei dilengkapi _filter_ pencarian berlapis berdasarkan Zona (dengan UI _Premium Dot Radio_) dan Ruas Jalan (menggunakan _Select2_ yang adaptif terhadap zona terpilih).
+- **Restrukturisasi Profil Titik Parkir:**
+    - Mengrombak halaman Detail Titik Parkir (`show`) menggunakan struktur navigasi _Tab Pills_ vertikal yang elegan.
+    - Informasi kini dikategorikan rapi ke dalam tab "Data Perjanjian & Setoran", "Data Survey Potensi", dan "Data Estimasi SRP & Luas Wilayah".
+- **Laporan PDF & Excel Berbasis Grouping (Super Premium):**
+    - Mesin pelaporan kini mengelompokkan (_grouping_) titik parkir secara otomatis berdasarkan Ruas Jalan.
+    - Menambahkan kalkulasi akurat berupa baris **Subtotal** di akhir setiap ruas jalan dan **Total Keseluruhan** di akhir laporan untuk metrik Setoran, Survey Tajuk, dan Survey Tanam.
+    - **Premium Typography & Layout:** Cetakan PDF dirombak total menggunakan tipografi kustom tingkat lanjut (**Work Sans**) dengan layout header yang menyajikan _summary box_ informatif (Total Titik Lokasi & Waktu Cetak), serta pemilihan palet warna laporan yang elegan.
+    - Sistem _export_ Excel sepenuhnya disinkronkan dengan desain PDF menggunakan metode migrasi dari `FromCollection` ke `FromView`, memastikan kolom dan rekapitulasi ruas jalan tercetak secara 1:1 antara PDF dan Excel.
+
+## [v2.2.0] - 2026-06-25
 
 Pembaruan besar-besaran untuk menyelaraskan seluruh tampilan halaman daftar (index) ke dalam desain kelas Premium, memberikan estetika modern bergaya *glassmorphism* dan *mesh gradients*.
 

@@ -48,4 +48,14 @@ class ParkingLocation extends Model
         // Urutkan dari yang terbaru
         return $this->hasMany(ParkingLocationHistory::class)->latest();
     }
+
+    public function surveys()
+    {
+        return $this->hasMany(SurveyParkingLocation::class, 'parking_location_id');
+    }
+
+    public function latestSurvey()
+    {
+        return $this->hasOne(SurveyParkingLocation::class, 'parking_location_id')->latestOfMany('survey_date');
+    }
 }

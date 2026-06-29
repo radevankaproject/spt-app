@@ -4,14 +4,13 @@ namespace App\Exports;
 
 use App\Models\ParkingLocation;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ParkingLocationsExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class ParkingLocationsExport implements FromView, ShouldAutoSize, WithStyles
 {
     protected $request;
 
@@ -20,9 +19,9 @@ class ParkingLocationsExport implements FromCollection, WithHeadings, WithMappin
         $this->request = $request;
     }
 
-    public function collection()
+    public function view(): View
     {
-        $query = ParkingLocation::with(['roadSection', 'agreements' => function ($q) {
+        $query = ParkingLocation::with(['roadSection', 'latestSurvey', 'agreements' => function ($q) {
             $q->where('agreements.status', 'active')
               ->where('agreement_parking_locations.status', 'active')
               ->with('fieldCoordinator.user');
@@ -52,58 +51,15 @@ class ParkingLocationsExport implements FromCollection, WithHeadings, WithMappin
             });
         }
 
-        return $query->latest()->get();
-    }
-
-    public function headings(): array
-    {
-        return [
-            'No',
-            'Nama Titik Lokasi',
-            'Ruas Jalan',
-            'Zona',
-            'Status Lokasi',
-            'Koordinator Lapangan',
-            'Setoran Harian',
-            'Estimasi Luas',
-            'Estimasi SRP R2',
-            'Estimasi SRP R4',
-            'Titik Koordinat',
-        ];
-    }
-
-    public function map($location): array
-    {
-        static $rowNumber = 0;
-        $rowNumber++;
-
-        // Ambil data Korlap aktif dari relasi agreements yang telah di-filter 'active'
-        $activeAgreement = $location->agreements->first();
-        $korlapName = '-';
-        
-        if ($activeAgreement && $activeAgreement->fieldCoordinator && $activeAgreement->fieldCoordinator->user) {
-            $korlapName = $activeAgreement->fieldCoordinator->user->name;
-        }
-
-        return [
-            $rowNumber,
-            $location->name,
-            $location->roadSection->name ?? '-',
-            $location->roadSection->zone ?? '-',
-            ucfirst($location->status),
-            $korlapName,
-            $location->daily_deposit,
-            $location->estimated_area ?? '-',
-            $location->estimated_srp_r2 ?? '-',
-            $location->estimated_srp_r4 ?? '-',
-            ($location->latitude && $location->longitude) ? $location->latitude . ', ' . $location->longitude : '-',
-        ];
+        return view('staff.parking_locations.report_excel', [
+            'parkingLocations' => $query->latest()->get()
+        ]);
     }
 
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => ['font' => ['bold' => true]],
+            // Style header column or apply global formatting if needed
         ];
     }
 }

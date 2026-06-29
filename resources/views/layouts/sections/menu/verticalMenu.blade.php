@@ -91,7 +91,7 @@ $configData = Helper::appClasses();
       {{-- MENU ADMINISTRASI --}}
       @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
           <li class="menu-header small"><span class="menu-header-text">Administrasi</span></li>
-          <li class="menu-item {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.leaders.*') || request()->routeIs('admin.treasurers.*') || request()->routeIs('admin.field-coordinators.*') ? 'active open' : '' }}">
+          <li class="menu-item {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.jukirs.*') || request()->routeIs('admin.leaders.*') || request()->routeIs('admin.treasurers.*') || request()->routeIs('admin.field-coordinators.*') ? 'active open' : '' }}">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                   <i class="icon-base menu-icon tf-icons ti tabler-user-bolt"></i>
                   <div data-i18n="Manage Users">Manage Users</div>
@@ -100,6 +100,9 @@ $configData = Helper::appClasses();
                   @if (Auth::user()->role === 'admin')
                   <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                       <a href="{{ route('admin.users.index') }}" class="menu-link"><div>All Users</div></a>
+                  </li>
+                  <li class="menu-item {{ request()->routeIs('admin.jukirs.*') ? 'active' : '' }}">
+                      <a href="{{ route('admin.jukirs.index') }}" class="menu-link"><div>Data Jukir</div></a>
                   </li>
                   <li class="menu-item {{ request()->routeIs('admin.leaders.*') ? 'active' : '' }}">
                       <a href="{{ route('admin.leaders.index') }}" class="menu-link"><div>Pimpinan UPT</div></a>
@@ -187,6 +190,12 @@ $configData = Helper::appClasses();
               <a href="{{ route('admin.parking-locations.report') }}" class="menu-link">
                   <i class="icon-base menu-icon tf-icons ti tabler-file-text"></i>
                   <div data-i18n="Laporan Titik Parkir">Laporan Titik Parkir</div>
+              </a>
+          </li>
+          <li class="menu-item {{ request()->routeIs('admin.survey-parking-locations.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.survey-parking-locations.index') }}" class="menu-link">
+                  <i class="icon-base menu-icon tf-icons ti tabler-clipboard-check"></i>
+                  <div data-i18n="Survey Lokasi Parkir">Survey Lokasi Parkir</div>
               </a>
           </li>
           @endif

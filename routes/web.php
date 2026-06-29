@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TreasurerController;
 use App\Http\Controllers\Admin\UptProfileController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\SurveyParkingLocationController;
+use App\Http\Controllers\Admin\JukirController;
 use App\Http\Controllers\AppVersionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FieldCoordinator\LocationRequestController;
@@ -170,6 +172,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // --- Users ---
             Route::resource('users', UserController::class);
 
+            // --- Jukir ---
+            Route::resource('jukirs', JukirController::class)->except(['create', 'store', 'show']);
+
             // --- Leaders ---
             Route::resource('leaders', LeaderController::class);
             Route::post('leaders/{leader}/extend', [LeaderController::class, 'extend'])->name('leaders.extend');
@@ -198,6 +203,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
             Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+            // --- Survey Lokasi Parkir ---
+            Route::resource('survey-parking-locations', SurveyParkingLocationController::class);
         });
 
     // --- RUTE-ROUTE ADMIN & STAFF PKS (MANAGE USERS/KORLAP) ---

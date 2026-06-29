@@ -138,7 +138,7 @@
                             </a>
                         @else
                             <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center mb-3 rounded-4 shadow-sm border border-primary border-opacity-25 position-relative z-1" style="width: 160px; height: 160px;">
-                                <i class="ti tabler-photo-circle-minus text-primary" style="font-size: 5rem;"></i>
+                                <i class="ti tabler-parking-circle text-primary" style="font-size: 5rem;"></i>
                             </div>
                         @endif
                         <div class="user-info text-center position-relative z-1">
@@ -216,48 +216,7 @@
                         </li>
                     </ul>
 
-                    <h6 class="pb-2 border-bottom mt-2 mb-3 text-uppercase fw-bold text-muted" style="letter-spacing: 0.5px;">Estimasi Wilayah & SRP</h6>
-                    <div class="row g-3 mb-4">
-                        <div class="col-12">
-                            <div class="d-flex align-items-center p-3 border rounded-4 border-dashed bg-lighter">
-                                <div class="avatar avatar-sm bg-info text-white rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
-                                    <i class="ti tabler-ruler-2"></i>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Luas Wilayah</small>
-                                    <span class="fw-bold text-dark fs-5">{{ $parkingLocation->estimated_area ? number_format($parkingLocation->estimated_area, 2, ',', '.') . ' m²' : '-' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex align-items-center p-2 border rounded-4 border-dashed bg-lighter">
-                                <div class="avatar avatar-sm bg-warning text-white rounded-circle me-2 d-flex align-items-center justify-content-center shadow-sm">
-                                    <i class="ti tabler-motorbike"></i>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block fw-medium" style="font-size: 0.7rem;">SRP R2</small>
-                                    <span class="fw-bold text-dark">{{ $parkingLocation->estimated_srp_r2 ?? '-' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex align-items-center p-2 border rounded-4 border-dashed bg-lighter">
-                                <div class="avatar avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center shadow-sm">
-                                    <i class="ti tabler-car"></i>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block fw-medium" style="font-size: 0.7rem;">SRP R4</small>
-                                    <span class="fw-bold text-dark">{{ $parkingLocation->estimated_srp_r4 ?? '-' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="alert alert-info d-flex align-items-center rounded-4 border-0 shadow-sm" role="alert" style="background: linear-gradient(135deg, rgba(0,201,255,0.1) 0%, rgba(146,254,157,0.1) 100%);">
-                        <i class="ti tabler-info-circle text-info fs-3 me-3"></i>
-                        <span style="font-size: 0.85rem;" class="text-dark">Jumlah Setoran <strong>tidak bergantung</strong> pada luas wilayah parkir maupun jumlah SRP R2/R4.</span>
-                    </div>
-                    
                     @if(Auth::user()->role !== 'leader')
                     <div class="d-flex justify-content-center pt-2">
                         <a href="{{ route('masterdata.parking-locations.edit', $parkingLocation->id) }}" class="btn btn-primary rounded-pill w-100 shadow-sm fw-bold">
@@ -288,6 +247,11 @@
                 <li class="nav-item">
                     <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-docs" aria-controls="navs-docs" aria-selected="false">
                         <i class="ti tabler-file-zip me-1"></i> Dokumen Digital
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-survey" aria-controls="navs-survey" aria-selected="false">
+                        <i class="ti tabler-clipboard-data me-1"></i> Data Survey
                     </button>
                 </li>
                 <li class="nav-item">
@@ -322,8 +286,8 @@
                                    onmouseover="this.classList.add('shadow-md'); this.style.transform='translateY(-3px)';"
                                    onmouseout="this.classList.remove('shadow-md'); this.style.transform='translateY(0)';">
                                    
-                                    <div class="position-absolute top-0 end-0 p-3 opacity-10">
-                                        <i class="ti tabler-writing-sign text-info" style="font-size: 80px; transform: rotate(-15deg);"></i>
+                                    <div class="position-absolute" style="right: -10px; bottom: -20px; opacity: 0.05; z-index: 0;">
+                                        <i class="ti tabler-writing-sign text-primary" style="font-size: 120px; transform: rotate(-15deg);"></i>
                                     </div>
 
                                     <div class="d-flex align-items-center gap-4 position-relative z-1">
@@ -454,7 +418,149 @@
                     </div>
                 </div>
 
-                {{-- TAB 4: RIWAYAT --}}
+                {{-- TAB SURVEY --}}
+                <div class="tab-pane fade" id="navs-survey" role="tabpanel">
+                    <div class="glass-card border-0 shadow-sm">
+                        <div class="card-header border-bottom bg-transparent p-4 d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm bg-success bg-opacity-10 rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                    <i class="ti tabler-clipboard-data text-success"></i>
+                                </div>
+                                <h5 class="card-title mb-0 fw-bold text-dark">Data Survey Terbaru</h5>
+                            </div>
+                            @if ($parkingLocation->latestSurvey)
+                                <span class="badge bg-label-success rounded-pill px-3 py-2 shadow-sm" style="letter-spacing: 0.5px;">
+                                    <i class="ti tabler-calendar-event me-1"></i>{{ \Carbon\Carbon::parse($parkingLocation->latestSurvey->survey_date)->translatedFormat('F Y') }}
+                                </span>
+                            @endif
+                        </div>
+                        <div class="card-body p-4">
+                            @if ($parkingLocation->latestSurvey)
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="p-3 border rounded-4 border-dashed bg-lighter h-100">
+                                            <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">Hasil Survey (Pendapatan)</h6>
+                                            
+                                            <div class="mb-3 d-flex align-items-center">
+                                                <div class="avatar avatar-sm bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
+                                                    <i class="ti tabler-messages"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Survey Tajuk (Tanya Jukir)</small>
+                                                    <span class="fw-bold text-dark fs-5">Rp {{ number_format((float)$parkingLocation->latestSurvey->survey_tajuk, 0, ',', '.') }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar avatar-sm bg-info text-white rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
+                                                    <i class="ti tabler-eye"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Survey Tanam (Pantauan)</small>
+                                                    <span class="fw-bold text-dark fs-5">Rp {{ number_format((float)$parkingLocation->latestSurvey->survey_tanam, 0, ',', '.') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="p-3 border rounded-4 border-dashed bg-lighter h-100">
+                                            <h6 class="text-uppercase fw-bold text-muted mb-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">Informasi Petugas</h6>
+                                            
+                                            <div class="mb-3 d-flex align-items-center">
+                                                <div class="avatar avatar-sm bg-warning text-white rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
+                                                    <i class="ti tabler-user"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Juru Parkir (Jukir)</small>
+                                                    <span class="fw-bold text-dark">{{ $parkingLocation->latestSurvey->jukir->nama_jukir ?? '-' }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar avatar-sm bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
+                                                    <i class="ti tabler-user-search"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Surveyor</small>
+                                                    <span class="fw-bold text-dark">{{ $parkingLocation->latestSurvey->surveyor ?? '-' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if($parkingLocation->latestSurvey->notes)
+                                    <div class="col-12">
+                                        <div class="p-3 border rounded-4 border-dashed bg-lighter">
+                                            <div class="d-flex align-items-start">
+                                                <i class="ti tabler-note text-muted mt-1 me-2 fs-5"></i>
+                                                <div>
+                                                    <small class="text-muted d-block fw-medium mb-1" style="font-size: 0.75rem;">Keterangan / Catatan Survey</small>
+                                                    <p class="mb-0 text-dark">{{ $parkingLocation->latestSurvey->notes }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endif
+
+                                    <div class="col-12 mt-4">
+                                        <h6 class="pb-2 border-bottom mb-3 text-uppercase fw-bold text-muted" style="letter-spacing: 0.5px;">Estimasi Wilayah & SRP</h6>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <div class="d-flex align-items-center p-3 border rounded-4 border-dashed bg-lighter">
+                                                    <div class="avatar avatar-sm bg-info text-white rounded-circle me-3 d-flex align-items-center justify-content-center shadow-sm">
+                                                        <i class="ti tabler-ruler-2"></i>
+                                                    </div>
+                                                    <div>
+                                                        <small class="text-muted d-block fw-medium" style="font-size: 0.75rem;">Luas Wilayah</small>
+                                                        <span class="fw-bold text-dark fs-5">{{ $parkingLocation->estimated_area ? number_format($parkingLocation->estimated_area, 2, ',', '.') . ' m²' : '-' }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="d-flex align-items-center p-2 border rounded-4 border-dashed bg-lighter">
+                                                    <div class="avatar avatar-sm bg-warning text-white rounded-circle me-2 d-flex align-items-center justify-content-center shadow-sm">
+                                                        <i class="ti tabler-motorbike"></i>
+                                                    </div>
+                                                    <div>
+                                                        <small class="text-muted d-block fw-medium" style="font-size: 0.7rem;">SRP R2</small>
+                                                        <span class="fw-bold text-dark">{{ $parkingLocation->estimated_srp_r2 ?? '-' }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="d-flex align-items-center p-2 border rounded-4 border-dashed bg-lighter">
+                                                    <div class="avatar avatar-sm bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center shadow-sm">
+                                                        <i class="ti tabler-car"></i>
+                                                    </div>
+                                                    <div>
+                                                        <small class="text-muted d-block fw-medium" style="font-size: 0.7rem;">SRP R4</small>
+                                                        <span class="fw-bold text-dark">{{ $parkingLocation->estimated_srp_r4 ?? '-' }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="alert alert-info d-flex align-items-center rounded-4 border-0 shadow-sm mt-3" role="alert" style="background: linear-gradient(135deg, rgba(0,201,255,0.1) 0%, rgba(146,254,157,0.1) 100%);">
+                                            <i class="ti tabler-info-circle text-info fs-3 me-3"></i>
+                                            <span style="font-size: 0.85rem;" class="text-dark">Jumlah Setoran <strong>tidak bergantung</strong> pada luas wilayah parkir maupun jumlah SRP R2/R4.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="text-center py-5">
+                                    <div class="avatar avatar-xl bg-label-secondary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center">
+                                        <i class="ti tabler-clipboard-x text-muted" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Belum Ada Data Survey</h5>
+                                    <p class="text-muted mt-2 mb-0">Lokasi parkir ini belum memiliki data survey yang tercatat.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- TAB 5: RIWAYAT AKTIVITAS --}}
                 <div class="tab-pane fade" id="navs-history" role="tabpanel">
                     <div class="glass-card border-0 shadow-sm">
                         <div class="card-header border-bottom bg-transparent p-4 d-flex align-items-center">

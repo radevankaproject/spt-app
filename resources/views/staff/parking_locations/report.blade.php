@@ -179,7 +179,9 @@
                             <th class="text-center" width="10%"><i class="ti tabler-map-2 align-text-bottom me-1"></i> Zona</th>
                             <th width="20%"><i class="ti tabler-user-star align-text-bottom me-1"></i> Koordinator</th>
                             <th class="text-center" width="10%"><i class="ti tabler-category align-text-bottom me-1"></i> Status</th>
-                            <th class="text-end" width="15%"><i class="ti tabler-currency-dollar align-text-bottom me-1"></i> Setoran (Rp)</th>
+                            <th class="text-end" width="12%"><i class="ti tabler-currency-dollar align-text-bottom me-1"></i> Setoran (Rp)</th>
+                            <th class="text-end" width="12%"><i class="ti tabler-clipboard-text align-text-bottom me-1"></i> Survey Tajuk (Rp)</th>
+                            <th class="text-end" width="12%"><i class="ti tabler-eye align-text-bottom me-1"></i> Survey Tanam (Rp)</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
@@ -219,10 +221,16 @@
                                 <td class="text-end fw-bold text-success font-monospace">
                                     {{ number_format($location->daily_deposit, 0, ',', '.') }}
                                 </td>
+                                <td class="text-end font-monospace">
+                                    {{ $location->latestSurvey && $location->latestSurvey->survey_tajuk ? number_format((float)$location->latestSurvey->survey_tajuk, 0, ',', '.') : '-' }}
+                                </td>
+                                <td class="text-end font-monospace">
+                                    {{ $location->latestSurvey && $location->latestSurvey->survey_tanam ? number_format((float)$location->latestSurvey->survey_tanam, 0, ',', '.') : '-' }}
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="9" class="text-center py-5">
                                     <div class="d-flex flex-column justify-content-center align-items-center">
                                         <i class="ti tabler-file-search text-muted opacity-50 mb-3" style="font-size: 3rem;"></i>
                                         <h6 class="fw-bold text-dark mb-1">Tidak ada data titik lokasi parkir</h6>
