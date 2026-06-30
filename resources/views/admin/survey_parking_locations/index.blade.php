@@ -112,7 +112,7 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>
-                                    <span class="fw-medium text-dark">{{ $survey->parkingLocation->name ?? '-' }}</span>
+                                    <span class="fw-medium text-dark text-wrap d-inline-block" style="min-width: 200px; max-width: 300px;">{{ $survey->parkingLocation->name ?? '-' }}</span>
                                 </td>
                                 <td>
                                     <span class="badge bg-label-info fw-bold">{{ $survey->jukir->nama_jukir ?? '-' }}</span>
