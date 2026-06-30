@@ -52,10 +52,13 @@
                     <div class="card-body">
                         <div class="row g-6">
                             <div class="col-md-6">
-                                <div class="form-floating form-floating-outline"><input type="text" class="form-control"
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control {{ $agreement->jenis != 'draft' ? 'bg-lighter text-muted' : '' }}"
                                         id="agreement_number" name="agreement_number"
                                         value="{{ old('agreement_number', $agreement->agreement_number) }}"
-                                        readonly /><label for="agreement_number">Nomor Perjanjian</label></div>
+                                        {{ $agreement->jenis == 'draft' ? '' : 'readonly style=pointer-events:none;' }} />
+                                    <label for="agreement_number">Nomor Perjanjian {!! $agreement->jenis != 'draft' ? '<i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Hanya bisa diubah pada jenis draft"></i>' : '' !!}</label>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -69,12 +72,22 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <input type="text" class="form-control bg-lighter text-muted"
-                                        value="{{ $agreement->leader->user->name ?? 'N/A' }}"
-                                        readonly style="pointer-events: none;" />
-                                    {{-- ✅ Input hidden untuk mengirimkan data leader_id saat form disubmit --}}
-                                    <input type="hidden" name="leader_id" value="{{ $agreement->leader_id }}">
-                                    <label>Pimpinan (Pihak Pertama) <i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                    @if($agreement->jenis == 'draft')
+                                        <select name="leader_id" id="leader_id" class="form-select select2" required>
+                                            @foreach ($leaders as $leader)
+                                                <option value="{{ $leader->id }}" {{ (old('leader_id', $agreement->leader_id) == $leader->id) ? 'selected' : '' }}>
+                                                    {{ $leader->user->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <label for="leader_id">Pimpinan (Pihak Pertama)</label>
+                                    @else
+                                        <input type="text" class="form-control bg-lighter text-muted"
+                                            value="{{ $agreement->leader->user->name ?? 'N/A' }}"
+                                            readonly style="pointer-events: none;" />
+                                        <input type="hidden" name="leader_id" value="{{ $agreement->leader_id }}">
+                                        <label>Pimpinan (Pihak Pertama) <i class="ti tabler-lock text-danger ms-1" data-bs-toggle="tooltip" title="Dikunci oleh sistem"></i></label>
+                                    @endif
                                 </div>
                             </div>
 

@@ -2,6 +2,28 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Perjanjian Kerja Sama Perparkiran (SPKP)** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v2.4.0] - 2026-06-30
+
+**_"Survey & Reporting Expansion, Persistent Bulk Export"_**
+
+Pembaruan yang berfokus pada perluasan parameter data survei potensi parkir, interaktivitas sistem pelaporan (Report), serta keleluasaan seleksi data kelas premium.
+
+- **Penyempurnaan Modul Ekspor Laporan (PDF & Excel):**
+    - Mengintegrasikan antarmuka tombol tunggal "Export Data" yang secara cerdas akan membuka Modal interaktif.
+    - **Dynamic Column Selection:** Pengguna kini dapat memilih secara dinamis untuk menampilkan atau menyembunyikan kolom Nama Koordinator, Jukir, Surveyor, dan Keterangan (_Notes_) saat proses ekspor dokumen.
+    - Judul _header_ resmi kini diseragamkan menjadi "SISTEM PERJANJIAN KERJASAMA PERPARKIRAN (SPKP)".
+    - Menambahkan kalkulasi tingkat lanjut pada Ringkasan Total untuk menaksir estimasi **Total Potensi Bulanan** (Setoran harian x 30) dan **Total Potensi Tahunan** (x 12) guna menunjang target proyeksi pendapatan daerah.
+    - Penambahan notasi legenda khusus (`*` dan `**`) pada judul kolom untuk membedakan secara visual antara "Hasil Tanya Jukir" dan "Hasil Survey Tanam" beserta keterangannya di bagian kaki laporan.
+- **Persistent Bulk Selection (Checkbox Export):**
+    - Mengimplementasikan fitur _Bulk Select_ (Kotak Centang) canggih dengan teknologi _Session Storage_ bawaan peramban (_Browser_). Pengguna kini leluasa memilih titik lokasi parkir lintas halaman (_pagination_) atau saat mereset filter. Data yang telah dicentang akan otomatis tersimpan dalam _cache temporary_ tanpa ikut hilang atau ter-reset.
+    - Menambahkan panel modal khusus "Titik Terpilih" untuk memonitor, meninjau, maupun menghapus keranjang lokasi yang akan diekspor secara spesifik (Custom Export).
+- **Penambahan Filter Survei Lanjutan:**
+    - Pada halaman Laporan Titik Parkir (`ParkingLocationReport@index`), ditambahkan integrasi parameter filter mutakhir untuk melacak Nama Surveyor secara spesifik, serta status pemeriksaan survei (Sudah disurvei / Belum disurvei).
+- **Penyempurnaan Form UI & Aksesibilitas:**
+    - Memperbaiki antarmuka _Grid_ pada modul `survey@create`, memastikan nama titik parkir yang memanjang (panjang karakter ekstra) tampil harmonis meluas ke bawah (_text-wrap_), mencegah kolom _input_ nominal bergeser sempit.
+    - **Draft Mode Mutasi PKS:** Formulir Edit PKS (`agreement@edit`) kini menyesuaikan _state_ secara dinamis. Jika jenis Perjanjian masih berstatus "Draft", kolom Nomor PKS dan Pimpinan akan terbuka otomatis dan bisa diedit kembali tanpa hambatan.
+
+
 ## [v2.3.0] - 2026-06-29
 
 **_"Survey Data Integration & Export Grouping Mastery"_**

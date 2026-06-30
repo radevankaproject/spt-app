@@ -123,11 +123,31 @@
                     <label for="korlap_id" class="form-label fw-bold">
                         <i class="ti tabler-user-star me-1 text-primary"></i> Koordinator Lapangan
                     </label>
-                    <select name="korlap_id" id="korlap_id" class="form-select select2 shadow-none" data-placeholder="-- Pilih Ruas Jalan Dulu --" disabled>
+                    <select name="korlap_id" id="korlap_id" class="form-select select2 shadow-none" data-placeholder="-- Semua Korlap --">
                         <option value="">-- Semua Korlap --</option>
                         @foreach($korlaps as $korlap)
                             <option value="{{ $korlap->id }}" {{ request('korlap_id') == $korlap->id ? 'selected' : '' }}>{{ $korlap->user->name }}</option>
                         @endforeach
+                    </select>
+                </div>
+
+                <!-- Filter Nama Surveyor -->
+                <div class="col-md-6">
+                    <label for="surveyor" class="form-label fw-bold">
+                        <i class="ti tabler-user-search me-1 text-primary"></i> Nama Surveyor
+                    </label>
+                    <input type="text" name="surveyor" id="surveyor" class="form-control shadow-none" placeholder="Masukkan nama surveyor..." value="{{ request('surveyor') }}">
+                </div>
+
+                <!-- Filter Status Survey -->
+                <div class="col-md-6">
+                    <label for="survey_status" class="form-label fw-bold">
+                        <i class="ti tabler-checkbox me-1 text-primary"></i> Status Survey
+                    </label>
+                    <select name="survey_status" id="survey_status" class="form-select shadow-none">
+                        <option value="">-- Semua Status --</option>
+                        <option value="sudah" {{ request('survey_status') == 'sudah' ? 'selected' : '' }}>Sudah Disurvey</option>
+                        <option value="belum" {{ request('survey_status') == 'belum' ? 'selected' : '' }}>Belum Disurvey</option>
                     </select>
                 </div>
 
@@ -160,12 +180,12 @@
                 <i class="ti tabler-table me-2 text-primary"></i> Hasil Laporan
             </h5>
             <div class="d-flex gap-2 mt-3 mt-md-0">
-                <a href="{{ route('admin.parking-locations.report.export-pdf', request()->all()) }}" class="btn btn-danger shadow-sm px-3" data-bs-toggle="tooltip" title="Download PDF">
-                    <i class="ti tabler-file-type-pdf me-2"></i> PDF
-                </a>
-                <a href="{{ route('admin.parking-locations.report.export-excel', request()->all()) }}" class="btn btn-success shadow-sm px-3" data-bs-toggle="tooltip" title="Download Excel">
-                    <i class="ti tabler-file-excel me-2"></i> Excel
-                </a>
+                <button type="button" class="btn btn-info shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#selectedLocationsModal">
+                    <i class="ti tabler-list-check me-2"></i> Terpilih (<span id="selectedCount">0</span>)
+                </button>
+                <button type="button" class="btn btn-primary shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="ti tabler-download me-2"></i> Export Data
+                </button>
             </div>
         </div>
         <div class="card-body p-0">
@@ -173,20 +193,26 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="text-center text-muted" width="5%">#</th>
+                            <th class="text-center" width="2%">
+                                <input type="checkbox" class="form-check-input shadow-none" id="checkAll">
+                            </th>
+                            <th class="text-center text-muted" width="3%">#</th>
                             <th width="20%"><i class="ti tabler-map-pin align-text-bottom me-1"></i> Titik Lokasi</th>
                             <th width="20%"><i class="ti tabler-road align-text-bottom me-1"></i> Ruas Jalan</th>
                             <th class="text-center" width="10%"><i class="ti tabler-map-2 align-text-bottom me-1"></i> Zona</th>
                             <th width="20%"><i class="ti tabler-user-star align-text-bottom me-1"></i> Koordinator</th>
                             <th class="text-center" width="10%"><i class="ti tabler-category align-text-bottom me-1"></i> Status</th>
                             <th class="text-end" width="12%"><i class="ti tabler-currency-dollar align-text-bottom me-1"></i> Setoran (Rp)</th>
-                            <th class="text-end" width="12%"><i class="ti tabler-clipboard-text align-text-bottom me-1"></i> Survey Tajuk (Rp)</th>
-                            <th class="text-end" width="12%"><i class="ti tabler-eye align-text-bottom me-1"></i> Survey Tanam (Rp)</th>
+                            <th class="text-end" width="12%"><i class="ti tabler-clipboard-text align-text-bottom me-1"></i> Survey Tajuk (Rp) *</th>
+                            <th class="text-end" width="12%"><i class="ti tabler-eye align-text-bottom me-1"></i> Survey Tanam (Rp) **</th>
                         </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
                         @forelse($parkingLocations as $index => $location)
                             <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input shadow-none location-checkbox" value="{{ $location->id }}" data-name="{{ htmlspecialchars($location->name) }}">
+                                </td>
                                 <td class="text-center text-muted">{{ $parkingLocations->firstItem() + $index }}</td>
                                 <td>
                                     <span class="fw-bold text-dark d-block">{{ $location->name }}</span>
@@ -230,7 +256,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-5">
+                                <td colspan="10" class="text-center py-5">
                                     <div class="d-flex flex-column justify-content-center align-items-center">
                                         <i class="ti tabler-file-search text-muted opacity-50 mb-3" style="font-size: 3rem;"></i>
                                         <h6 class="fw-bold text-dark mb-1">Tidak ada data titik lokasi parkir</h6>
@@ -247,6 +273,80 @@
                 <small class="text-muted fw-semibold">Menampilkan {{ $parkingLocations->firstItem() ?? 0 }} - {{ $parkingLocations->lastItem() ?? 0 }} dari {{ $parkingLocations->total() }} data</small>
                 <div class="pagination-wrapper">
                     {{ $parkingLocations->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Export Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="exportForm" method="GET" action="">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold text-dark" id="exportModalLabel"><i class="ti tabler-download me-2 text-primary"></i>Opsi Ekspor Laporan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="export_submitted" value="1">
+                        <p class="text-muted small mb-3">Pilih kolom tambahan yang ingin ditampilkan dalam laporan ekspor:</p>
+                        
+                        @foreach(request()->except(['show_koordinator', 'show_jukir', 'show_surveyor', 'show_keterangan']) as $key => $value)
+                            @if(is_array($value))
+                                @foreach($value as $v)
+                                    <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                                @endforeach
+                            @else
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
+                        @endforeach
+
+                        <div class="form-check custom-checkbox mb-2">
+                            <input class="form-check-input" type="checkbox" name="show_koordinator" value="1" id="show_koordinator" checked>
+                            <label class="form-check-label text-dark fw-semibold" for="show_koordinator">Tampilkan Kolom Koordinator</label>
+                        </div>
+                        <div class="form-check custom-checkbox mb-2">
+                            <input class="form-check-input" type="checkbox" name="show_jukir" value="1" id="show_jukir" checked>
+                            <label class="form-check-label text-dark fw-semibold" for="show_jukir">Tampilkan Kolom Jukir</label>
+                        </div>
+                        <div class="form-check custom-checkbox mb-2">
+                            <input class="form-check-input" type="checkbox" name="show_surveyor" value="1" id="show_surveyor" checked>
+                            <label class="form-check-label text-dark fw-semibold" for="show_surveyor">Tampilkan Kolom Surveyor</label>
+                        </div>
+                        <div class="form-check custom-checkbox mb-2">
+                            <input class="form-check-input" type="checkbox" name="show_keterangan" value="1" id="show_keterangan" checked>
+                            <label class="form-check-label text-dark fw-semibold" for="show_keterangan">Tampilkan Kolom Keterangan Lokasi</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger" onclick="document.getElementById('exportForm').action='{{ route('admin.parking-locations.report.export-pdf') }}'">
+                            <i class="ti tabler-file-type-pdf me-1"></i> Export PDF
+                        </button>
+                        <button type="submit" class="btn btn-success" onclick="document.getElementById('exportForm').action='{{ route('admin.parking-locations.report.export-excel') }}'">
+                            <i class="ti tabler-file-excel me-1"></i> Export Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Selected Locations Modal -->
+    <div class="modal fade" id="selectedLocationsModal" tabindex="-1" aria-labelledby="selectedLocationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-dark" id="selectedLocationsModalLabel"><i class="ti tabler-list-check me-2 text-info"></i>Titik Parkir Terpilih</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group" id="selectedLocationsList">
+                        <li class="list-group-item text-center text-muted">Belum ada titik parkir yang dipilih.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-outline-danger" id="clearSelectionBtn">Kosongkan Pilihan</button>
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -303,14 +403,12 @@
                     roadSectionSelect.select2({ placeholder: '-- Pilih Zona Terlebih Dahulu --', allowClear: true });
                 }
                 
-                const selectedRoads = roadSectionSelect.val() || [];
-                
-                if (selectedRoads.length > 0 && !noAgreementCb.checked) {
+                if (!noAgreementCb.checked) {
                     korlapSelect.prop('disabled', false);
                     korlapSelect.select2({ placeholder: '-- Semua Korlap --', allowClear: true });
                 } else {
                     korlapSelect.prop('disabled', true).val('').trigger('change.select2');
-                    korlapSelect.select2({ placeholder: '-- Pilih Ruas Jalan Dulu --', allowClear: true });
+                    korlapSelect.select2({ placeholder: '-- Dinonaktifkan (Tanpa Koordinator) --', allowClear: true });
                 }
             }
 
@@ -328,6 +426,125 @@
             const initialZone = document.querySelector('.zone-radio:checked').value;
             renderRoadSections(initialZone);
             updateState();
+            
+            // Checkbox and SessionStorage Logic
+            const checkAll = document.getElementById('checkAll');
+            const locationCheckboxes = document.querySelectorAll('.location-checkbox');
+            const selectedCount = document.getElementById('selectedCount');
+            const selectedLocationsList = document.getElementById('selectedLocationsList');
+            const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+            
+            let selectedLocations = JSON.parse(sessionStorage.getItem('selectedParkingLocations')) || {};
+
+            window.removeSelection = function(id) {
+                delete selectedLocations[id];
+                sessionStorage.setItem('selectedParkingLocations', JSON.stringify(selectedLocations));
+                const cb = document.querySelector(`.location-checkbox[value="${id}"]`);
+                if (cb) cb.checked = false;
+                updateCheckAllState();
+                updateSelectionUI();
+            };
+
+            function updateSelectionUI() {
+                const ObjectKeys = Object.keys(selectedLocations);
+                if(selectedCount) selectedCount.textContent = ObjectKeys.length;
+                
+                if(selectedLocationsList) {
+                    selectedLocationsList.innerHTML = '';
+                    if (ObjectKeys.length === 0) {
+                        selectedLocationsList.innerHTML = '<li class="list-group-item text-center text-muted">Belum ada titik parkir yang dipilih.</li>';
+                    } else {
+                        ObjectKeys.forEach(id => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                            li.textContent = selectedLocations[id];
+                            
+                            const removeBtn = document.createElement('button');
+                            removeBtn.className = 'btn btn-sm btn-icon text-danger rounded-pill';
+                            removeBtn.innerHTML = '<i class="ti tabler-trash"></i>';
+                            removeBtn.onclick = function() { window.removeSelection(id); };
+                            
+                            li.appendChild(removeBtn);
+                            selectedLocationsList.appendChild(li);
+                        });
+                    }
+                }
+            }
+            
+            function updateCheckAllState() {
+                if (!checkAll) return;
+                const total = locationCheckboxes.length;
+                const checked = document.querySelectorAll('.location-checkbox:checked').length;
+                checkAll.checked = total > 0 && total === checked;
+                checkAll.indeterminate = checked > 0 && checked < total;
+            }
+
+            // Restore state on load
+            locationCheckboxes.forEach(cb => {
+                if (selectedLocations[cb.value]) {
+                    cb.checked = true;
+                }
+                
+                cb.addEventListener('change', function() {
+                    if (this.checked) {
+                        selectedLocations[this.value] = this.dataset.name;
+                    } else {
+                        delete selectedLocations[this.value];
+                    }
+                    sessionStorage.setItem('selectedParkingLocations', JSON.stringify(selectedLocations));
+                    updateCheckAllState();
+                    updateSelectionUI();
+                });
+            });
+            
+            updateCheckAllState();
+            updateSelectionUI();
+            
+            if (checkAll) {
+                checkAll.addEventListener('change', function() {
+                    locationCheckboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                        if (this.checked) {
+                            selectedLocations[cb.value] = cb.dataset.name;
+                        } else {
+                            delete selectedLocations[cb.value];
+                        }
+                    });
+                    sessionStorage.setItem('selectedParkingLocations', JSON.stringify(selectedLocations));
+                    updateSelectionUI();
+                });
+            }
+            
+            if (clearSelectionBtn) {
+                clearSelectionBtn.addEventListener('click', function() {
+                    selectedLocations = {};
+                    sessionStorage.removeItem('selectedParkingLocations');
+                    locationCheckboxes.forEach(cb => cb.checked = false);
+                    updateCheckAllState();
+                    updateSelectionUI();
+                });
+            }
+
+            // Export Form Submit Logic
+            const exportForm = document.getElementById('exportForm');
+            if (exportForm) {
+                exportForm.addEventListener('submit', function(e) {
+                    // Remove old selected location inputs to prevent duplication
+                    document.querySelectorAll('.selected-location-input').forEach(el => el.remove());
+                    
+                    const ObjectKeys = Object.keys(selectedLocations);
+                    if (ObjectKeys.length > 0) {
+                        ObjectKeys.forEach(id => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'selected_locations[]';
+                            input.value = id;
+                            input.className = 'selected-location-input';
+                            this.appendChild(input);
+                        });
+                    }
+                });
+            }
             
             // Tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

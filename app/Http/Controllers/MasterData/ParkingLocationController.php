@@ -30,6 +30,11 @@ class ParkingLocationController extends Controller
      */
     private function applyReportFilters(Request $request, $query)
     {
+        if ($request->filled('selected_locations') && is_array($request->selected_locations)) {
+            $query->whereIn('parking_locations.id', $request->selected_locations);
+            return $query;
+        }
+
         if ($request->filled('korlap_id')) {
             $query->whereHas('agreements', function ($q) use ($request) {
                 $q->where('agreements.status', 'active')
@@ -52,6 +57,20 @@ class ParkingLocationController extends Controller
             $query->whereDoesntHave('agreements', function ($q) {
                 $q->where('agreement_parking_locations.status', 'active');
             });
+        }
+
+        if ($request->filled('surveyor')) {
+            $query->whereHas('latestSurvey', function ($q) use ($request) {
+                $q->where('surveyor', 'like', '%' . $request->surveyor . '%');
+            });
+        }
+
+        if ($request->filled('survey_status')) {
+            if ($request->survey_status == 'sudah') {
+                $query->has('latestSurvey');
+            } elseif ($request->survey_status == 'belum') {
+                $query->doesntHave('latestSurvey');
+            }
         }
 
         return $query;
@@ -84,7 +103,7 @@ class ParkingLocationController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $query = ParkingLocation::with(['latestSurvey', 'roadSection', 'agreements' => function ($q) {
+        $query = ParkingLocation::with(['latestSurvey.jukir', 'roadSection', 'agreements' => function ($q) {
             $q->where('agreements.status', 'active')
                 ->where('agreement_parking_locations.status', 'active')
                 ->with('fieldCoordinator.user');
@@ -94,7 +113,7 @@ class ParkingLocationController extends Controller
 
         $parkingLocations = $query->latest()->get();
 
-        $pdf = Pdf::loadView('staff.parking_locations.report_pdf', compact('parkingLocations'))
+        $pdf = Pdf::loadView('staff.parking_locations.report_pdf', compact('parkingLocations', 'request'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan_titik_lokasi_parkir.pdf');

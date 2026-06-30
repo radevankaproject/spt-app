@@ -144,7 +144,7 @@
                                 @endphp
                                 <tr>
                                     <td class="text-center align-middle">{{ $index + 1 }}</td>
-                                    <td class="align-middle fw-medium">
+                                    <td class="align-middle fw-medium text-wrap" style="min-width: 200px;">
                                         {{ $location->name }}
                                         <div class="text-muted small">{{ $location->keterangan }}</div>
                                     </td>

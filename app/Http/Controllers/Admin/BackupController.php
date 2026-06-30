@@ -27,11 +27,16 @@ class BackupController extends Controller
         DB::beginTransaction();
         try {
             if ($type === 'full') {
-                Artisan::call('backup:run', ['--disable-notifications' => true]);
+                $exitCode = Artisan::call('backup:run', ['--disable-notifications' => true]);
                 $successMessage = 'Backup full aplikasi berhasil dibuat.';
             } else {
-                Artisan::call('backup:run', ['--only-db' => true, '--disable-notifications' => true]);
+                $exitCode = Artisan::call('backup:run', ['--only-db' => true, '--disable-notifications' => true]);
                 $successMessage = 'Backup database berhasil dibuat.';
+            }
+
+            if ($exitCode !== 0) {
+                $output = Artisan::output();
+                throw new \Exception('Backup process failed (Exit Code: ' . $exitCode . '). Details: ' . $output);
             }
 
             // ✅ LOGIKA BARU YANG LEBIH KUAT
@@ -42,7 +47,7 @@ class BackupController extends Controller
             $allBackups = Storage::disk($disk)->files($backupPath);
 
             if (empty($allBackups)) {
-                throw new \Exception('Backup command ran, but no backup file was found.');
+                throw new \Exception('Backup command ran successfully, but no backup file was found in storage path: ' . $backupPath);
             }
 
             // Urutkan file berdasarkan waktu modifikasi terakhir untuk menemukan yang terbaru
