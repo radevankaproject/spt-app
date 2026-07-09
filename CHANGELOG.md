@@ -2,6 +2,24 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Perjanjian Kerja Sama Perparkiran (SPKP)** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v2.5.0] - 2026-07-10
+
+**_"Jukir Blacklist & KTA Management, Complaint Module"_**
+
+Pembaruan besar yang berfokus pada penguatan kontrol manajerial data Jukir, integritas database, serta implementasi modul pengaduan masyarakat.
+
+- **Manajemen Data Juru Parkir Lanjutan:**
+    - **Fitur Blacklist:** Menambahkan status `is_blacklisted` pada tabel `jukirs`. Administrator kini dapat menandai atau mencabut status blacklist seorang juru parkir secara langsung dari halaman detail (`show`) atau formulir edit.
+    - **Manajemen Kartu Tanda Anggota (KTA):** Mengembangkan sistem pencatatan KTA, mencakup: Jenis KTA (`kta_type`: Baru/Perpanjangan), Tanggal Mulai (`kta_start_date`), dan Tanggal Berakhir (`kta_end_date`). Data ini terintegrasi penuh dalam profil Jukir dan Modul `./management/jukir`.
+- **Modul Pengaduan (Report):**
+    - Mengimplementasikan halaman pelaporan mandiri yang dapat diakses publik (`/complaint`).
+    - **Desain Frontend Premium:** Mengadopsi tema `<head>` premium (_custom CSS_) dan _Modal Window_ canggih untuk input formulir, memberikan pengalaman pengguna yang modern dan minim gangguan (_distraction-free_).
+    - **Pemrosesan Data:** Menerima input anonim (opsional), menangani unggahan foto barang bukti, dan mengaitkan laporan dengan Juru Parkir serta Zona terkait menggunakan relasi Eloquent.
+    - **Status _Auto-Follow-up_:** Setiap pengaduan yang masuk akan secara otomatis mengubah status Juru Parkir terkait menjadi **"Belum Sesuai (BS)"** sebagai mekanisme _follow-up_ cepat oleh Dishub, hingga statusnya diperbarui secara manual oleh admin.
+- **Penyempurnaan Form Edit & Validasi:**
+    - Memperbaiki _bug_ pada halaman `./management/agreement@edit` di mana kolom **Jenis Perjanjian** dan **Wilayah Hukum** tidak dapat diubah (_non-editable_) meskipun status PKS masih dalam mode _Draft_.
+    - Menambahkan validasi sisi server (`Request Validation`) pada modul pengaduan untuk menjamin integritas data yang masuk dari publik.
+
 ## [v2.4.0] - 2026-06-30
 
 **_"Survey & Reporting Expansion, Persistent Bulk Export"_**

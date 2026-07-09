@@ -88,5 +88,18 @@ class AdditionalUserSeeder extends Seeder
                 'phone_number' => '081365676299',
             ]
         );
+
+        // 5. Membuat User untuk Staff KTA Jukir
+        User::firstOrCreate(
+            ['username' => 'ilham'],
+            [
+                'name' => 'Ilham',
+                'email' => 'ilham@spt-app.com',
+                'password' => Hash::make('password'),
+                'role' => 'staff_kta_jukir',
+                'employee_number' => '199308142025211071',
+                'phone_number' => '085213369345',
+            ]
+        );
     }
 }

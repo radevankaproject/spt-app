@@ -22,6 +22,24 @@ use Illuminate\Support\Facades\DB;
 class DashboardController extends Controller
 {
     /**
+     * Menampilkan dashboard untuk Staff KTA Jukir.
+     */
+    public function staffKtaJukirDashboard()
+    {
+        $totalJukir = \App\Models\Jukir::count();
+        $activeJukir = \App\Models\Jukir::where('is_active', true)->count();
+        $blacklistedJukir = \App\Models\Jukir::where('is_blacklisted', true)->count();
+        
+        $recentViolations = \App\Models\JukirViolation::with('jukir')->latest()->limit(5)->get();
+        $recentHistories = \App\Models\JukirHistory::with(['jukir', 'user'])->latest()->limit(5)->get();
+
+        return view('dashboards.staff_kta_jukir', compact(
+            'totalJukir', 'activeJukir', 'blacklistedJukir',
+            'recentViolations', 'recentHistories'
+        ));
+    }
+
+    /**
      * Menampilkan dashboard utama untuk Admin dengan data yang komprehensif.
      * 
      * @return \Illuminate\View\View
@@ -465,6 +483,8 @@ class DashboardController extends Controller
                 return redirect()->route('staff-keuangan.dashboard');
             case 'staff_pks':
                 return redirect()->route('staff-pks.dashboard');
+            case 'staff_kta_jukir':
+                return redirect()->route('staff-kta-jukir.dashboard');
             default:
                 return view('dashboard');
         }

@@ -105,6 +105,11 @@ class User extends Authenticatable
         return $this->role === 'staff_pks';
     }
 
+    public function isStaffKtaJukir(): bool
+    {
+        return $this->role === 'staff_kta_jukir';
+    }
+
     public function hasRole(string $roleName): bool
     {
         return $this->role === $roleName;

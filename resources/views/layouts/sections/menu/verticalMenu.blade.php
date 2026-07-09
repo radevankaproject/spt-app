@@ -68,6 +68,13 @@ $configData = Helper::appClasses();
                   <div data-i18n="Dashboard Bendahara">Dashboard Bendahara</div>
               </a>
           </li>
+      @elseif (Auth::user()->role === 'staff_kta_jukir')
+          <li class="menu-item {{ request()->routeIs('staff-kta-jukir.dashboard') ? 'active' : '' }}">
+              <a href="{{ route('staff-kta-jukir.dashboard') }}" class="menu-link">
+                  <i class="icon-base menu-icon tf-icons ti tabler-layout-dashboard"></i>
+                  <div data-i18n="Dashboard">Dashboard KTA Jukir</div>
+              </a>
+          </li>
       @elseif (Auth::user()->role === 'field_coordinator')
           <li class="menu-item {{ request()->routeIs('field_coordinator.dashboard') ? 'active' : '' }}">
               <a href="{{ route('field_coordinator.dashboard') }}" class="menu-link">
@@ -89,7 +96,7 @@ $configData = Helper::appClasses();
       @endif
 
       {{-- MENU ADMINISTRASI --}}
-      @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
+      @if (in_array(Auth::user()->role, ['admin', 'staff_pks', 'staff_kta_jukir']))
           <li class="menu-header small"><span class="menu-header-text">Administrasi</span></li>
           <li class="menu-item {{ request()->routeIs('admin.users.*') || request()->routeIs('admin.jukirs.*') || request()->routeIs('admin.leaders.*') || request()->routeIs('admin.treasurers.*') || request()->routeIs('admin.field-coordinators.*') ? 'active open' : '' }}">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -101,9 +108,15 @@ $configData = Helper::appClasses();
                   <li class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                       <a href="{{ route('admin.users.index') }}" class="menu-link"><div>All Users</div></a>
                   </li>
+                  @endif
+                  
+                  @if (in_array(Auth::user()->role, ['admin', 'staff_kta_jukir']))
                   <li class="menu-item {{ request()->routeIs('admin.jukirs.*') ? 'active' : '' }}">
                       <a href="{{ route('admin.jukirs.index') }}" class="menu-link"><div>Data Jukir</div></a>
                   </li>
+                  @endif
+                  
+                  @if (Auth::user()->role === 'admin')
                   <li class="menu-item {{ request()->routeIs('admin.leaders.*') ? 'active' : '' }}">
                       <a href="{{ route('admin.leaders.index') }}" class="menu-link"><div>Pimpinan UPT</div></a>
                   </li>
@@ -111,9 +124,12 @@ $configData = Helper::appClasses();
                       <a href="{{ route('admin.treasurers.index') }}" class="menu-link"><div>Bendahara</div></a>
                   </li>
                   @endif
+                  
+                  @if (in_array(Auth::user()->role, ['admin', 'staff_pks']))
                   <li class="menu-item {{ request()->routeIs('admin.field-coordinators.*') ? 'active' : '' }}">
                       <a href="{{ route('admin.field-coordinators.index') }}" class="menu-link"><div>Koordinator Lapangan</div></a>
                   </li>
+                  @endif
               </ul>
           </li>
           @if (Auth::user()->role === 'admin')

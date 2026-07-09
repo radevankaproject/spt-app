@@ -41,6 +41,12 @@ Route::get('/', function () {
 });
 Route::get('/verify/agreement/{code}', [PublicVerificationController::class, 'verifyAgreement'])->name('public.agreement.verify');
 
+// Pengaduan Jukir (Public)
+Route::get('/jukir/{id_jukir}/pengaduan', [\App\Http\Controllers\PublicJukirComplaintController::class, 'create'])->name('public.jukir.complaint.create');
+Route::post('/jukir/{id_jukir}/pengaduan', [\App\Http\Controllers\PublicJukirComplaintController::class, 'store'])->name('public.jukir.complaint.store');
+Route::get('/jukir/{id_jukir}/pengaduan/success', [\App\Http\Controllers\PublicJukirComplaintController::class, 'success'])->name('public.jukir.complaint.success');
+
+
 // Rute yang Memerlukan Autentikasi
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -81,6 +87,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ✅ PERBAIKAN: Middleware-nya pakai role 'bendahara' sesuai isi tabel Users
     Route::middleware('role:treasurer')->prefix('treasurer')->name('treasurer.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'treasurerDashboard'])->name('dashboard');
+    });
+
+    Route::middleware('role:staff_kta_jukir')->prefix('staff-kta-jukir')->name('staff-kta-jukir.')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'staffKtaJukirDashboard'])->name('dashboard');
     });
 
     // --- MANAJEMEN DATA (CRUD) - HANYA UNTUK ADMIN & STAFF ---
@@ -172,9 +182,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // --- Users ---
             Route::resource('users', UserController::class);
 
-            // --- Jukir ---
-            Route::resource('jukirs', JukirController::class)->except(['create', 'show', 'edit']);
-
             // --- Leaders ---
             Route::resource('leaders', LeaderController::class);
             Route::post('leaders/{leader}/extend', [LeaderController::class, 'extend'])->name('leaders.extend');
@@ -217,6 +224,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('field-coordinators', FieldCoordinatorController::class);
             Route::patch('field-coordinators/{field_coordinator}/toggle-status', [FieldCoordinatorController::class, 'toggleStatus'])->name('field-coordinators.toggle-status');
             Route::patch('field-coordinators/{field_coordinator}/update-login', [FieldCoordinatorController::class, 'updateLogin'])->name('field-coordinators.update-login');
+        });
+
+    // --- RUTE JUKIR (Admin & Staff KTA Jukir) ---
+    Route::middleware('role:admin,staff_kta_jukir')
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::get('jukirs/{jukir}/print-kta', [JukirController::class, 'printKta'])->name('jukirs.print-kta');
+            Route::resource('jukirs', JukirController::class)->except(['create', 'edit']);
+            Route::resource('jukir-violations', \App\Http\Controllers\Admin\JukirViolationController::class)->only(['store', 'destroy']);
         });
 
     // --- RUTE-ROUTE AJAX (Bisa diakses oleh beberapa role) ---
