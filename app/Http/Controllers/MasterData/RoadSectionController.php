@@ -70,7 +70,7 @@ class RoadSectionController extends Controller
     public function show(RoadSection $roadSection)
     {
         $roadSection->load(['parkingLocations.agreements' => function ($query) {
-            $query->whereIn('agreements.status', ['active', 'pending_renewal'])
+            $query->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
                 ->where('agreement_parking_locations.status', 'active')
                 ->with('fieldCoordinator.user');
         }]);

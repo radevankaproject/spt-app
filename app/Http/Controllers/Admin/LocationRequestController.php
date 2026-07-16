@@ -85,7 +85,7 @@ class LocationRequestController extends Controller
                 'roadSection',
                 'agreements' => function ($query) {
                     // Ambil PKS yang sedang aktif mengikat lokasi tersebut
-                    $query->whereIn('agreements.status', ['active', 'pending_renewal'])
+                    $query->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
                         ->where('agreement_parking_locations.status', 'active')
                         ->with('fieldCoordinator.user');
                 },

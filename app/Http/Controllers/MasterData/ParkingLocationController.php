@@ -37,7 +37,7 @@ class ParkingLocationController extends Controller
 
         if ($request->filled('korlap_id')) {
             $query->whereHas('agreements', function ($q) use ($request) {
-                $q->where('agreements.status', 'active')
+                $q->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
                     ->where('agreements.field_coordinator_id', $request->korlap_id);
             });
         }
@@ -82,7 +82,7 @@ class ParkingLocationController extends Controller
     public function report(Request $request)
     {
         $query = ParkingLocation::with(['latestSurvey', 'roadSection', 'agreements' => function ($q) {
-            $q->where('agreements.status', 'active')
+            $q->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
                 ->where('agreement_parking_locations.status', 'active')
                 ->with('fieldCoordinator.user');
         }]);
@@ -104,7 +104,7 @@ class ParkingLocationController extends Controller
     public function exportPdf(Request $request)
     {
         $query = ParkingLocation::with(['latestSurvey.jukir', 'roadSection', 'agreements' => function ($q) {
-            $q->where('agreements.status', 'active')
+            $q->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
                 ->where('agreement_parking_locations.status', 'active')
                 ->with('fieldCoordinator.user');
         }]);
@@ -139,7 +139,7 @@ class ParkingLocationController extends Controller
         $query = ParkingLocation::with([
             'roadSection',
             'agreements' => function ($query) {
-                $query->whereIn('agreements.status', ['active', 'pending_renewal'])
+                $query->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
                     ->where('agreement_parking_locations.status', 'active')
                     ->with('fieldCoordinator.user');
             },
@@ -185,7 +185,7 @@ class ParkingLocationController extends Controller
         $parkingLocations = ParkingLocation::with([
             'roadSection',
             'agreements' => function ($query) {
-                $query->whereIn('agreements.status', ['active', 'pending_renewal'])
+                $query->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
                     ->where('agreement_parking_locations.status', 'active')
                     ->with('fieldCoordinator.user');
             },
@@ -315,7 +315,7 @@ class ParkingLocationController extends Controller
 
         if (Auth::user()->role === 'field_coordinator') {
             $isOwned = Agreement::where('field_coordinator_id', Auth::user()->fieldCoordinator->id)
-                ->whereIn('status', ['active', 'pending_renewal'])
+                ->whereIn('status', ['active', 'pending_renewal', 'expired'])
                 ->whereHas('parkingLocations', function($query) use ($parkingLocation) {
                     $query->where('parking_location_id', $parkingLocation->id)
                           ->where('agreement_parking_locations.status', 'active');
@@ -329,7 +329,7 @@ class ParkingLocationController extends Controller
                 ->where('agreement_parking_locations.status', 'active');
         })
             // ✅ FIX: Gunakan whereIn untuk memasukkan 'pending_renewal' juga
-            ->whereIn('status', ['active', 'pending_renewal'])
+            ->whereIn('status', ['active', 'pending_renewal', 'expired'])
             ->with(['fieldCoordinator.user', 'leader.user'])
             ->latest('start_date')
             ->first();
@@ -551,7 +551,7 @@ class ParkingLocationController extends Controller
         $hasActiveAgreement = Agreement::whereHas('parkingLocations', function ($query) use ($parkingLocation) {
             $query->where('parking_location_id', $parkingLocation->id)
                 ->where('agreement_parking_locations.status', 'active');
-        })->whereIn('status', ['active', 'pending_renewal'])->exists();
+        })->whereIn('status', ['active', 'pending_renewal', 'expired'])->exists();
 
         if ($hasActiveAgreement) {
             return redirect()->back()->with('error', 'Gagal! Lokasi ini sedang terikat dengan kontrak yang aktif.');

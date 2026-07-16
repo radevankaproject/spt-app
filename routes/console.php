@@ -9,5 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // routes/console.php
-Schedule::command('agreements:check-status')->dailyAt('00:01');
-Schedule::command('cleanup:location-requests')->dailyAt('00:01');
+Schedule::command('agreements:check-status')->dailyAt('09:00');
+Schedule::command('cleanup:location-requests')->dailyAt('09:00');

@@ -360,7 +360,7 @@
                                         @endif
                                         @endif
                                         @if(Auth::user()->role !== 'leader')
-                                        @if($agreement->status == 'active' && $agreement->end_date->isPast())
+                                        @if(($agreement->status == 'active' && $agreement->end_date->isPast()) || $agreement->status == 'pending_renewal' || ($agreement->status == 'expired' && $agreement->activeParkingLocations->count() > 0))
                                         <a class="btn btn-sm btn-icon btn-text-warning rounded-pill"
                                             href="{{ route('masterdata.agreements.renew', $agreement->id) }}"
                                             data-bs-toggle="tooltip" title="Perpanjang PKS">

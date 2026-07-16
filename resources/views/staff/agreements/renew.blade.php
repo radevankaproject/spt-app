@@ -200,7 +200,7 @@
             </div>
             <div class="col-12 text-end position-sticky bottom-0 bg-white p-3 border-top shadow z-3 rounded">
                 <a href="{{ route('masterdata.agreements.index') }}" class="btn btn-outline-secondary me-2">Batal</a>
-                <button type="submit" class="btn btn-primary"><i class="ti tabler-loop-right me-1"></i> Perpanjang PKS</button>
+                <button type="submit" class="btn btn-primary"><i class="ti tabler-refresh me-1"></i> Perpanjang PKS</button>
             </div>
         </div>
     </form>

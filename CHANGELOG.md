@@ -2,6 +2,22 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Perjanjian Kerja Sama Perparkiran (SPKP)** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v2.5.1] - 2026-07-16
+
+**_"Auto-Expired PKS & Modal Fixes"_**
+
+Pembaruan minor yang berfokus pada otomatisasi status PKS, penguncian titik lokasi pada PKS yang telah habis masa berlakunya, serta perbaikan *bug* tampilan modal.
+
+- **Otomatisasi Status PKS (Auto-Expired):**
+    - Mengaktifkan *cron job* khusus (`agreements:check-status`) yang berjalan setiap hari pukul 09:00 pagi.
+    - Sistem secara otomatis mendeteksi PKS yang telah melewati batas `end_date` dan mengubah statusnya dari `active` menjadi `expired`.
+- **Penguncian Titik Parkir (Location Locking):**
+    - Titik lokasi parkir kini akan tetap "terkunci" dan menempel pada Korlap terakhir (pada PKS yang *expired*) sampai PKS tersebut diperpanjang atau dihapus manual. Mencegah kekosongan data atau klaim ganda dari Korlap lain.
+    - Menyesuaikan tombol aksi "Perpanjang" (*Renew*) agar tetap muncul di PKS berstatus `expired` selama PKS tersebut belum diperpanjang ke PKS baru.
+- **Perbaikan UI & Bug Fixes:**
+    - Memperbaiki tata letak HTML Modal Edit dan Delete pada modul Ruas Jalan (`road-sections/index.blade.php`) yang sebelumnya macet/terkunci.
+    - Menyeragamkan ikon tombol *Renew* menjadi `ti-refresh` pada seluruh antarmuka daftar PKS dan arsip.
+
 ## [v2.5.0] - 2026-07-10
 
 **_"Jukir Blacklist & KTA Management, Complaint Module"_**

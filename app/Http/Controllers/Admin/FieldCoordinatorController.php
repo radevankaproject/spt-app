@@ -199,7 +199,7 @@ class FieldCoordinatorController extends Controller
         $activeParkingLocationsCount = \App\Models\ParkingLocation::whereHas('agreements', function($q) use ($selectedYear, $fieldCoordinator) {
             $q->where('agreements.field_coordinator_id', $fieldCoordinator->id)
               ->whereYear('agreements.start_date', $selectedYear)
-              ->whereIn('agreements.status', ['active', 'pending_renewal'])
+              ->whereIn('agreements.status', ['active', 'pending_renewal', 'expired'])
               ->where('agreement_parking_locations.status', 'active');
         })->count();
 

@@ -112,7 +112,7 @@
                                 case 'location_removed': $icon = 'ti tabler-map-pin-minus'; $color = 'danger'; $eventName = 'Lokasi Ditarik'; break;
                                 case 'deposit_changed': $icon = 'ti tabler-currency-dollar'; $color = 'info'; $eventName = 'Perubahan Setoran'; break;
                                 case 'status_changed': $icon = 'ti tabler-refresh'; $color = 'warning'; $eventName = 'Status Berubah'; break;
-                                case 'agreement_renewed': $icon = 'ti tabler-loop-right'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
+                                case 'agreement_renewed': $icon = 'ti tabler-refresh'; $color = 'success'; $eventName = 'PKS Diperpanjang'; break;
                                 case 'agreement_terminated':
                                 case 'agreement_expired': $icon = 'ti tabler-user-off'; $color = 'dark'; $eventName = 'PKS Berakhir/Diputus'; break;
                             }
