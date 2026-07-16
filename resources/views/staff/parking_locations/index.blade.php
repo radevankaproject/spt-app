@@ -251,7 +251,7 @@
                         @empty
                             <tr>
                                 <td colspan="7" class="text-center py-5">
-                                    <i class="ti tabler-map-pin-time icon-32px text-muted opacity-50 mb-2"></i>
+                                    <i class="ti tabler-search-off icon-32px text-muted opacity-50 mb-2"></i>
                                     <h6 class="fw-bold text-dark mb-1">Tidak ada data dengan keyword <span class="text-muted text-primary">"{{ request('search') }}"</span> ditemukan</h6>
                                     <p class="text-muted small">Coba ubah filter pencarian, ruas jalan, atau status.</p>
                                 </td>

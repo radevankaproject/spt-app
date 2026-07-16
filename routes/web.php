@@ -231,6 +231,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
+            Route::get('jukirs/import', [JukirController::class, 'importCreate'])->name('jukirs.importCreate');
+            Route::post('jukirs/import', [JukirController::class, 'importStore'])->name('jukirs.importStore');
             Route::get('jukirs/{jukir}/print-kta', [JukirController::class, 'printKta'])->name('jukirs.print-kta');
             Route::resource('jukirs', JukirController::class)->except(['create', 'edit']);
             Route::resource('jukir-violations', \App\Http\Controllers\Admin\JukirViolationController::class)->only(['store', 'destroy']);

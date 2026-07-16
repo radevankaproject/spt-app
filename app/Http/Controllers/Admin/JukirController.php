@@ -6,8 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Jukir;
 use App\Models\JukirHistory;
+use App\Imports\JukirsImport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\QueryException;
+use Maatwebsite\Excel\Validators\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -17,7 +23,18 @@ class JukirController extends Controller
     {
         $jukirs = Jukir::with(['parkingLocation.roadSection', 'parkingLocation.agreements' => function($q) {
             $q->wherePivot('status', 'active')->with('fieldCoordinator.user');
-        }, 'violations'])->latest()->get();
+        }, 'violations'])
+        ->when($request->search, function ($q) use ($request) {
+            $search = $request->search;
+            $q->where('id_jukir', 'like', "%{$search}%")
+              ->orWhere('nama_jukir', 'like', "%{$search}%")
+              ->orWhereHas('parkingLocation', function($q) use ($search) {
+                  $q->where('name', 'like', "%{$search}%");
+              });
+        })
+        ->orderBy('id_jukir', 'asc')
+        ->paginate(12)
+        ->withQueryString();
         $parkingLocations = \App\Models\ParkingLocation::with(['roadSection', 'agreements' => function($q) {
             $q->wherePivot('status', 'active')->with('fieldCoordinator.user');
         }])->orderBy('name')->get();
@@ -249,5 +266,80 @@ class JukirController extends Controller
         $qrCode = base64_encode(QrCode::format('png')->size(200)->margin(0)->generate($complaintUrl));
 
         return view('admin.jukirs.kta_print', compact('jukir', 'activeLeader', 'qrCode'));
+    }
+
+    /**
+     * Menampilkan halaman/form untuk impor data Jukir.
+     */
+    public function importCreate()
+    {
+        return view('admin.jukirs.import');
+    }
+
+    /**
+     * Memproses file yang di-upload untuk impor data Jukir.
+     */
+    public function importStore(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'import_file' => 'required|file|mimes:csv,txt,xlsx,xls',
+        ], [
+            'import_file.required' => 'Anda harus mengupload file.',
+            'import_file.mimes'    => 'File harus berformat CSV, TXT, XLSX, atau XLS.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi Gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $import = new JukirsImport();
+            Excel::import($import, $request->file('import_file'));
+
+            $request->session()->flash('success', "Berhasil! {$import->rowCount} data jukir telah ditambahkan.");
+
+            return response()->json([
+                'status'   => 'success',
+                'redirect' => route('admin.jukirs.index'),
+            ]);
+
+        } catch (ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()) . ' (Nilai: ' . json_encode($failure->values()) . ')';
+            }
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Terdapat data yang tidak valid dalam file.',
+                'errors'  => ['file' => $errorMessages],
+            ], 422);
+
+        } catch (QueryException $e) {
+            Log::error('Jukir Import DB Error: ' . $e->getMessage());
+
+            if ($e->errorInfo[1] == 1062) {
+                preg_match("/Duplicate entry '(.*)' for key/", $e->getMessage(), $matches);
+                $duplicateValue = $matches[1] ?? 'tidak diketahui';
+
+                $request->session()->flash('error', "ID Jukir <strong>'{$duplicateValue}'</strong> sudah ada. Mohon hapus duplikat sebelum import.");
+            } else {
+                $request->session()->flash('error', 'Terjadi kesalahan database saat mengimpor data.');
+            }
+
+            return response()->json([
+                'status'   => 'error',
+                'redirect' => route('admin.jukirs.importCreate'),
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Jukir Import Error: ' . $e->getMessage());
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Terjadi kesalahan sistem saat memproses file: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

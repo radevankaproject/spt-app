@@ -134,7 +134,7 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Foto Lokasi</label>
-                        <div class="dropzone-area" id="dropzoneBox" onclick="document.getElementById('image-upload').click()">
+                        <div class="dropzone-area position-relative" id="dropzoneBox" onclick="document.getElementById('image-upload').click()">
                             <img src="{{ $parkingLocation->image ? asset('storage/' . $parkingLocation->image) : asset('assets/img/map.png') }}" id="image-preview" class="d-block mx-auto mb-2" style="max-height: 100px; object-fit: cover; border-radius: 6px;" />
                             <div id="upload-placeholder" style="{{ $parkingLocation->image ? 'display: none;' : '' }}">
                                 <i class="ri icon-base ti tabler-cloud-upload ti-md" style="font-size: 2rem;"></i>
@@ -143,6 +143,17 @@
                             <input type="file" id="image-upload" name="image" hidden accept="image/png, image/jpeg" />
                         </div>
                         <div id="image-status" class="mt-2 text-center text-sm fw-semibold"></div>
+                        
+                        <!-- Premium Compression Progress Bar -->
+                        <div id="compression-progress-container" class="mt-3 d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-xs fw-semibold text-primary"><i class="ti tabler-loader ti-spin me-1"></i>Mengompresi...</span>
+                                <span id="compression-percentage" class="text-xs fw-bold text-primary">0%</span>
+                            </div>
+                            <div class="progress" style="height: 6px; border-radius: 10px; background-color: #e0e0ff;">
+                                <div id="compression-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%; border-radius: 10px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-md-4">
@@ -284,6 +295,9 @@
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            const compressionContainer = document.getElementById('compression-progress-container');
+            const compressionBar = document.getElementById('compression-progress-bar');
+            const compressionPercentage = document.getElementById('compression-percentage');
 
             if (!['image/jpeg', 'image/png'].includes(file.type)) {
                 imageStatus.innerHTML = '<span class="text-danger">Hanya format JPG/PNG!</span>'; return;
@@ -292,10 +306,23 @@
             placeholder.style.display = 'none';
             imagePreview.style.display = 'block';
             imagePreview.src = URL.createObjectURL(file);
-            imageStatus.innerHTML = `<span class="text-warning">Mengompresi...</span>`;
+            imageStatus.innerHTML = `<span class="text-warning">Menyiapkan...</span>`;
+            
+            compressionContainer.classList.remove('d-none');
+            compressionBar.style.width = '0%';
+            compressionPercentage.innerText = '0%';
 
             try {
-                const options = { maxSizeMB: 0.08, maxWidthOrHeight: 1200, useWebWorker: true };
+                const options = { 
+                    maxSizeMB: 0.05, // <50Kb
+                    maxWidthOrHeight: 1200, 
+                    useWebWorker: true,
+                    onProgress: (progress) => {
+                        compressionBar.style.width = progress + '%';
+                        compressionPercentage.innerText = progress + '%';
+                    }
+                };
+                
                 const compressedFile = await imageCompression(file, options);
 
                 const dt = new DataTransfer();
@@ -303,8 +330,10 @@
                 fileInput.files = dt.files;
 
                 imagePreview.src = URL.createObjectURL(compressedFile);
-                imageStatus.innerHTML = `<span class="text-success">${formatBytes(file.size)} ➔ ${formatBytes(compressedFile.size)} 🚀</span>`;
+                compressionContainer.classList.add('d-none');
+                imageStatus.innerHTML = `<span class="text-success"><i class="ti tabler-check"></i> ${formatBytes(file.size)} ➔ ${formatBytes(compressedFile.size)}</span>`;
             } catch (error) {
+                compressionContainer.classList.add('d-none');
                 imageStatus.innerHTML = `<span class="text-danger">Gagal kompresi.</span>`;
             }
         });

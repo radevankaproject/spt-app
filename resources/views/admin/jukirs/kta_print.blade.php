@@ -705,6 +705,28 @@
             .kta-card { box-shadow: none !important; }
         @endif
 
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+            .controls { display: none !important; }
+            .kta-card {
+                box-shadow: none !important;
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                /* Force background graphics to print */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            @page {
+                size: auto;
+                margin: 0mm;
+            }
+        }
     </style>
 </head>
 <body>
@@ -953,6 +975,96 @@
                 console.error('Error:', err);
                 alert('Gagal generate gambar. Silakan coba lagi.');
             });
+        }
+
+        function printCard() {
+            const printWindow = window.open('', '_blank');
+            const frontHtml = document.getElementById('kta-front').outerHTML;
+            const backHtml = document.getElementById('kta-back').outerHTML;
+            
+            // Collect all internal and external styles
+            let styles = '';
+            for (let i = 0; i < document.styleSheets.length; i++) {
+                try {
+                    const sheet = document.styleSheets[i];
+                    if (sheet.href) {
+                        styles += `<link rel="stylesheet" href="${sheet.href}">`;
+                    } else {
+                        let rules = sheet.cssRules || sheet.rules;
+                        let cssText = '';
+                        for (let j = 0; j < rules.length; j++) {
+                            cssText += rules[j].cssText;
+                        }
+                        styles += `<style>${cssText}</style>`;
+                    }
+                } catch(e) {}
+            }
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Print KTA - {{ $jukir->nama_jukir }}</title>
+                    ${styles}
+                    <style>
+                        @media print {
+                            @page {
+                                size: A4;
+                                margin: 10mm;
+                            }
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                background: white !important;
+                                display: block !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+                            .print-container {
+                                display: flex;
+                                flex-direction: row;
+                                gap: 10mm;
+                            }
+                            .kta-wrapper {
+                                width: 5.398cm;
+                                height: 8.56cm;
+                                position: relative;
+                                overflow: hidden;
+                                border: 1px dashed #ccc; /* Panduan potong ringan */
+                            }
+                            .kta-card {
+                                transform-origin: top left !important;
+                                /* 5.398cm = 204.019px -> 204.019 / 638px = 0.31977 */
+                                transform: scale(0.31977) !important;
+                                margin: 0 !important;
+                                box-shadow: none !important;
+                            }
+                        }
+                        
+                        /* Tampilan preview di tab baru sebelum dialog print muncul */
+                        body { background: #f0f0f0; display: flex; justify-content: center; padding: 40px; }
+                        .print-container { display: flex; gap: 20px; }
+                        .kta-wrapper { width: 5.398cm; height: 8.56cm; position: relative; overflow: hidden; border: 1px dashed #999; background: white; }
+                        .kta-card { transform-origin: top left; transform: scale(0.31977); margin: 0; box-shadow: none !important; }
+                        .controls { display: none !important; }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-container">
+                        <div class="kta-wrapper">${frontHtml}</div>
+                        <div class="kta-wrapper">${backHtml}</div>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            setTimeout(() => {
+                                window.print();
+                            }, 500);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
     </script>
 </body>

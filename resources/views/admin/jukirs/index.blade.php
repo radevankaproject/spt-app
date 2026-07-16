@@ -43,6 +43,9 @@
                 <p class="text-muted mb-0">Total {{ count($jukirs) }} jukir.</p>
             </div>
             <div class="d-flex justify-content-md-end align-items-center gap-3">
+                <a href="{{ route('admin.jukirs.importCreate') }}" class="btn btn-outline-primary rounded-pill btn-action">
+                    <i class="ri icon-base ti tabler-file-import me-1"></i> Import Bulk
+                </a>
                 <button type="button" class="btn btn-primary rounded-pill btn-action" data-bs-toggle="modal" data-bs-target="#createModal">
                     <i class="ri icon-base ti tabler-plus me-1"></i> Tambah Jukir
                 </button>
@@ -58,14 +61,18 @@
             @endif
 
             {{-- Search Box --}}
-            <div class="row mb-4">
+            <form action="{{ route('admin.jukirs.index') }}" method="GET" class="row mb-4">
                 <div class="col-12 col-md-6 mx-auto">
                     <div class="input-group input-group-merge shadow-sm" style="border-radius: 50px; overflow: hidden; background: white;">
                         <span class="input-group-text border-0 bg-transparent text-primary ps-4"><i class="ti tabler-search fs-4"></i></span>
-                        <input type="text" id="searchInput" class="form-control border-0 bg-transparent py-3" placeholder="Cari ID, nama jukir, atau lokasi parkir..." aria-label="Search">
+                        <input type="text" name="search" id="searchInput" value="{{ request('search') }}" class="form-control border-0 bg-transparent py-3" placeholder="Cari ID, nama jukir, atau lokasi parkir..." aria-label="Search">
+                        @if(request('search'))
+                            <a href="{{ route('admin.jukirs.index') }}" class="input-group-text border-0 bg-transparent text-danger pe-4"><i class="ti tabler-x fs-4"></i></a>
+                        @endif
+                        <button type="submit" class="d-none"></button>
                     </div>
                 </div>
-            </div>
+            </form>
 
             {{-- Jukir Cards --}}
             <div class="row g-4" id="jukir-cards-container">
@@ -177,6 +184,11 @@
                         <p class="text-muted mb-0">Belum ada data Jukir yang terdaftar.</p>
                     </div>
                 @endforelse
+            </div>
+
+            {{-- Pagination --}}
+            <div class="mt-4 d-flex justify-content-center">
+                {{ $jukirs->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
@@ -558,16 +570,7 @@
             }
 
             // ==================== SEARCH FILTER ====================
-            $('#searchInput').on('keyup', function() {
-                var value = $(this).val().toLowerCase();
-                $('.jukir-card-item').each(function() {
-                    var id = $(this).data('id') || '';
-                    var nama = $(this).data('nama') || '';
-                    var lokasi = $(this).data('lokasi') || '';
-                    var match = id.indexOf(value) > -1 || nama.indexOf(value) > -1 || lokasi.indexOf(value) > -1;
-                    $(this).toggle(match);
-                });
-            });
+            // Pencarian sekarang dilakukan di sisi server via Form Submit (Enter).
 
             // ==================== SELECT2 INIT ====================
             $('#createModal .select2-parking').select2({

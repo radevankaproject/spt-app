@@ -258,25 +258,56 @@
                 selectedCountEl.text(locations.length);
 
                 if (locations.length === 0) {
-                    summaryContainer.html('<p class="text-muted text-center">Belum ada lokasi yang dipilih.</p>');
+                    summaryContainer.html('<p class="text-muted text-center mt-3">Belum ada lokasi yang dipilih.</p>');
                     return;
                 }
 
+                const grouped = {};
                 locations.forEach(loc => {
-                    const itemHtml = `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <p class="mb-0 fw-semibold">${loc.name}</p>
-                        <small class="text-muted">${loc.road_section_name}</small>
-                        <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
-                    </div>
-                    <button type="button" class="btn btn-icon btn-sm btn-danger remove-location-btn" data-id="${loc.id}">
-                        <i class="ti tabler-x"></i>
-                    </button>
-                </div>
-            `;
-                    summaryContainer.append(itemHtml);
+                    const rs = loc.road_section_name || 'Tidak Diketahui';
+                    if (!grouped[rs]) grouped[rs] = [];
+                    grouped[rs].push(loc);
                 });
+
+                for (const rs in grouped) {
+                    let rsTotal = 0;
+                    let rowsHtml = '';
+                    grouped[rs].forEach(loc => {
+                        rsTotal += parseFloat(loc.daily_deposit) || 0;
+                        rowsHtml += `
+                            <tr>
+                                <td class="px-0 py-1">
+                                    <span class="fw-semibold d-block" style="line-height:1.2; font-size:0.9rem;">${loc.name}</span>
+                                    <input type="hidden" name="parking_location_ids[]" value="${loc.id}" />
+                                </td>
+                                <td class="text-end px-0 py-1" style="width: 40px;">
+                                    <button type="button" class="btn btn-icon btn-sm btn-text-danger rounded-pill remove-location-btn" data-id="${loc.id}">
+                                        <i class="ti tabler-trash icon-16px"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    const formattedTotal = new Intl.NumberFormat('id-ID').format(rsTotal);
+                    const groupHtml = `
+                        <div class="mb-3 border rounded p-2 bg-lighter">
+                            <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom border-secondary-subtle">
+                                <div>
+                                    <span class="fw-bold text-primary small text-uppercase">${rs}</span>
+                                    <span class="badge bg-secondary ms-1" style="font-size: 0.7rem;">${grouped[rs].length} Lokasi</span>
+                                </div>
+                                <span class="badge bg-label-primary">Rp ${formattedTotal}</span>
+                            </div>
+                            <table class="table table-sm table-borderless mb-0">
+                                <tbody>
+                                    ${rowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    summaryContainer.append(groupHtml);
+                }
             }
 
             function updateDailyDepositTotal(isManualAction = false) {

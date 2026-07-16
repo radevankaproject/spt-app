@@ -14,7 +14,13 @@ Pembaruan minor yang berfokus pada otomatisasi status PKS, penguncian titik loka
 - **Penguncian Titik Parkir (Location Locking):**
     - Titik lokasi parkir kini akan tetap "terkunci" dan menempel pada Korlap terakhir (pada PKS yang *expired*) sampai PKS tersebut diperpanjang atau dihapus manual. Mencegah kekosongan data atau klaim ganda dari Korlap lain.
     - Menyesuaikan tombol aksi "Perpanjang" (*Renew*) agar tetap muncul di PKS berstatus `expired` selama PKS tersebut belum diperpanjang ke PKS baru.
+- **Penyempurnaan Modul Juru Parkir (Jukir):**
+    - **Bulk Import CSV:** Menambahkan fitur import masal (Bulk Import) data Jukir melalui file CSV (NAMA, NIK) lengkap dengan *template* yang bisa diunduh.
+    - **Pagination & Sorting:** Menerapkan paginasi dan pengurutan `id_jukir ASC` pada halaman daftar jukir, lengkap dengan *server-side filter*.
+    - **Perbaikan Cetak KTA:** Menyempurnakan fitur "Cetak Langsung (Ukuran Asli)" KTA agar membuka tab pop-up baru dengan ukuran fisik KTP yang presisi (8,56 cm × 5,398 cm).
 - **Perbaikan UI & Bug Fixes:**
+    - Peningkatan tampilan (*Premium UI*) pada *progress bar* kompresi file/gambar.
+    - Mengganti ikon *pin location* dengan *thumbnail* foto lokasi asli (jika tersedia) pada tab daftar lokasi dalam detail PKS (Agreement Show).
     - Memperbaiki tata letak HTML Modal Edit dan Delete pada modul Ruas Jalan (`road-sections/index.blade.php`) yang sebelumnya macet/terkunci.
     - Menyeragamkan ikon tombol *Renew* menjadi `ti-refresh` pada seluruh antarmuka daftar PKS dan arsip.
 

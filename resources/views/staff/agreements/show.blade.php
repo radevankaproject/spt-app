@@ -468,9 +468,13 @@
                                                             <li
                                                                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
                                                                 <div class="d-flex align-items-center">
-                                                                    <div class="avatar avatar-sm me-3"><span
-                                                                            class="avatar-initial rounded-circle bg-label-primary"><i
-                                                                                class="ti tabler-map-pin"></i></span></div>
+                                                                    <div class="avatar avatar-sm me-3">
+                                                                        @if($location->image)
+                                                                            <img src="{{ asset('storage/' . $location->image) }}" alt="Lokasi" class="rounded-circle" style="object-fit: cover; width: 100%; height: 100%;">
+                                                                        @else
+                                                                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="ti tabler-map-pin"></i></span>
+                                                                        @endif
+                                                                    </div>
                                                                     <a href="{{ route('masterdata.parking-locations.show', $location->id) }}"
                                                                         class="fw-medium text-dark text-decoration-none">{{ $location->name }}</a>
                                                                 </div>
