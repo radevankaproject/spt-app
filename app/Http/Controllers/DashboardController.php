@@ -695,6 +695,34 @@ class DashboardController extends Controller
             }
         }
 
+        // 6. Cari Jukir (Khusus Admin & Staff KTA Jukir)
+        if (Auth::check() && in_array(Auth::user()->role, ['admin', 'staff_kta_jukir'])) {
+            $jukirs = \App\Models\Jukir::where('nama_jukir', 'like', "%{$term}%")
+                ->orWhere('id_jukir', 'like', "%{$term}%")
+                ->limit(3)->get();
+                
+            foreach ($jukirs as $jukir) {
+                if ($jukir->image) {
+                    $iconHtml = "<img src='" . asset('storage/' . $jukir->image) . "' alt='Jukir' style='width:100%;height:100%;object-fit:cover;' />";
+                    $avatarType = 'image';
+                    $colorClass = '';
+                } else {
+                    $iconHtml = "<i class='ti tabler-user'></i>";
+                    $avatarType = 'icon';
+                    $colorClass = 'bg-label-info text-info';
+                }
+                
+                $results[] = [
+                    'title' => $jukir->nama_jukir,
+                    'subtitle' => 'Juru Parkir (' . ($jukir->id_jukir ?? 'Tanpa ID') . ')',
+                    'url' => route('admin.jukirs.show', $jukir->id),
+                    'avatar_type' => $avatarType,
+                    'avatar_html' => $iconHtml,
+                    'color_class' => $colorClass,
+                ];
+            }
+        }
+
         return response()->json($results);
     }
 }

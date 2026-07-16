@@ -11,24 +11,35 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: #222;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            gap: 40px;
-            min-height: 100vh;
+            @if(request('preview'))
+                background: transparent;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            @else
+                background: #222;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 40px 20px;
+                gap: 40px;
+                min-height: 100vh;
+            @endif
         }
 
         /* ============ CONTROLS ============ */
         .controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 999;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+            @if(request('preview'))
+                display: none !important;
+            @else
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 999;
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+            @endif
         }
         .controls a, .controls button {
             padding: 10px 20px;
@@ -48,6 +59,8 @@
         .btn-dl-front:hover { background: #1d4ed8; }
         .btn-dl-back { background: #059669; }
         .btn-dl-back:hover { background: #047857; }
+        .btn-print { background: #db2777; }
+        .btn-print:hover { background: #be185d; }
 
         /* ============ CARD BASE ============ */
         .kta-card {
@@ -115,6 +128,16 @@
             position: relative;
             padding: 15px 15px; /* Reduced padding to fit more */
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+        .separator-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--orange), transparent);
+            margin: 0 auto;
+            width: 85%;
+            position: relative;
+            z-index: 5;
         }
         
         /* ONLY on the data jukir (top white area) */
@@ -128,14 +151,13 @@
             z-index: 1;
         }
 
-        /* Header */
         .header-box {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 20px;
             position: relative;
             z-index: 5;
+            margin-bottom: 15px;
         }
         .header-logos {
             display: flex;
@@ -149,8 +171,6 @@
             z-index: 2;
             margin-right: -15px; 
             filter: drop-shadow(2px 0 3px rgba(0,0,0,0.2));
-            background: #fff;
-            border-radius: 50%;
         }
         .header-logos img.logo-dishub {
             height: 70px;
@@ -158,8 +178,7 @@
             object-fit: contain;
             position: relative;
             z-index: 1;
-            background: #fff;
-            border-radius: 50%;
+            filter: drop-shadow(2px 0 3px rgba(0,0,0,0.2));
         }
         .header-text {
             display: flex;
@@ -184,40 +203,94 @@
             letter-spacing: 0.5px;
         }
 
-        /* Photo & Name Info */
         .info-box {
             display: flex;
-            gap: 18px;
+            gap: 25px;
             position: relative;
             z-index: 5;
             align-items: center;
-            margin-top: 15px; /* Push it down a bit to center vertically in the white area */
+            margin-top: auto;
+            margin-bottom: auto;
+            width: 100%;
+            padding: 0 5px;
         }
-        /* Circular Photo with Premium Orange Border */
+        
+        /* Modern Premium Photo Frame (Portrait Ratio) */
         .photo-area {
-            width: 190px; /* Slight reduction for better balance */
-            height: 190px;
-            border-radius: 50%;
-            background: #ccc;
-            border: 5px solid var(--orange);
-            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4), inset 0 2px 10px rgba(0,0,0,0.2);
-            overflow: hidden;
+            width: 170px; 
+            height: 215px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--orange), #fcd34d);
+            padding: 4px; /* acts as the border */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.1);
             flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+        }
+        .photo-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            border: 3px solid #fff; /* Internal white padding effect */
         }
-        .photo-area img {
+        .photo-inner img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 9px;
         }
         .photo-placeholder {
             font-size: 70px;
             font-weight: 900;
-            color: #fff;
+            color: #9ca3af;
         }
+        
+        /* MICROTEXT SECURITY FEATURE */
+        .microtext-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+            border-radius: 9px;
+            overflow: hidden;
+        }
+        .micro-line {
+            position: absolute;
+            font-size: 4.5px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.4);
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            text-shadow: 0px 0px 2px rgba(0,0,0,0.8), 1px 1px 1px rgba(0,0,0,0.5);
+        }
+        .micro-top { 
+            top: 2px; 
+            left: 2px; 
+        }
+        .micro-bottom { 
+            bottom: 2px; 
+            left: 2px; 
+        }
+        .micro-left {
+            top: 100%;
+            left: 2px;
+            transform-origin: top left;
+            transform: rotate(-90deg);
+        }
+        .micro-right {
+            top: 0;
+            left: calc(100% - 2px);
+            transform-origin: top left;
+            transform: rotate(90deg);
+        }
+
         .name-area {
             display: flex;
             flex-direction: column;
@@ -231,43 +304,75 @@
             if (empty($firstName)) { $firstName = $lastName; $lastName = ''; }
         @endphp
         .name-first {
-            font-size: 38px;
+            font-size: 34px;
             font-weight: 900;
-            color: #111;
-            line-height: 1;
+            color: #0f172a;
+            line-height: 1.05;
+            letter-spacing: -0.5px;
             margin-bottom: 2px;
         }
         .name-last {
-            font-size: 38px;
-            font-weight: 900;
+            font-size: 34px;
+            font-weight: 800;
             color: var(--orange);
-            line-height: 1;
+            line-height: 1.05;
+            letter-spacing: -0.5px;
             margin-bottom: 12px;
         }
-        .info-nik {
-            font-size: 17px;
-            font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 4px;
+        .divider-micro {
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--orange), #fcd34d);
+            border-radius: 2px;
+            margin-bottom: 15px;
+        }
+
+        /* Modern Stats Grid */
+        .modern-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .stat-row {
+            display: flex;
+            gap: 20px;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        .stat-val {
+            font-size: 19px;
+            font-weight: 900;
+            color: #1e293b;
+        }
+        .val-highlight {
+            color: var(--orange);
+            font-size: 20px;
+        }
+
+        .badge-berlaku {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--orange) 0%, #c2410c 100%);
+            color: #fff !important;
+            padding: 4px 14px;
+            border-radius: 8px;
+            font-size: 19px;
+            font-weight: 900;
+            box-shadow: 0 4px 12px rgba(194, 65, 12, 0.3);
             letter-spacing: 0.5px;
-        }
-        .info-reg {
-            font-size: 22px;
-            font-weight: 900;
-            color: var(--orange);
-            margin-bottom: 8px;
-        }
-        .info-valid-label {
-            font-size: 14px;
-            font-style: italic;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: -2px;
-        }
-        .info-valid-date {
-            font-size: 22px;
-            font-weight: 900;
-            color: var(--orange);
+            border: 1px solid #fdba74;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            margin-top: 2px;
         }
 
         /* Bottom Blue Area */
@@ -285,26 +390,50 @@
         .fb-content {
             position: relative;
             z-index: 5;
-            display: flex;
-            flex-direction: column;
-            gap: 12px; /* Tighter gaps */
             flex-grow: 1;
-        }
-        .data-group {
             display: flex;
             flex-direction: column;
-            line-height: 1.1;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
-        .data-label {
-            font-size: 26px; /* Bigger label */
-            font-weight: 800;
-            color: var(--orange);
-            margin-bottom: 2px;
+        .loc-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            width: 100%;
         }
-        .data-value {
-            font-size: 28px; /* Bigger value */
+        .loc-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .loc-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 3px;
+        }
+        .loc-value {
+            font-size: 26px; /* Slightly larger since there's no box */
             font-weight: 900;
             color: #fff;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
+        }
+        .loc-value-highlight {
+            color: var(--orange);
+        }
+        .bottom-divider {
+            width: 100%;
+            height: 0;
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 5;
+            margin: 15px 0 12px 0;
         }
 
         /* QR and Report Layout */
@@ -334,26 +463,27 @@
             font-family: 'Oswald', sans-serif;
             font-size: 15px;
             font-weight: 500;
-            color: #fff;
-            letter-spacing: 0;
-            margin-bottom: -2px;
+            color: #cbd5e1;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
         }
         .report-title {
             font-family: 'Oswald', sans-serif;
-            font-size: 38px;
+            font-size: 34px;
             font-weight: 700;
             color: #fff;
             line-height: 1.1;
-            margin-bottom: -5px;
+            margin-bottom: -4px;
         }
         .report-number {
             font-family: 'Oswald', sans-serif;
-            font-size: 52px;
+            font-size: 48px;
             font-weight: 700;
-            color: #fff;
+            color: var(--orange);
             line-height: 1;
             white-space: nowrap;
-            letter-spacing: -1.5px;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 10px rgba(249, 115, 22, 0.3);
         }
 
         .qr-label {
@@ -375,6 +505,20 @@
         .qr-box-front img {
             width: 100%;
             height: 100%;
+        }
+
+        .print-date {
+            position: absolute;
+            bottom: 6px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.15); /* Lebih samar lagi */
+            letter-spacing: 1.5px;
+            z-index: 5;
+            font-family: 'Inter', sans-serif;
         }
 
         /* --- Right Column (22%) --- */
@@ -569,6 +713,7 @@
         @if(!request()->has('preview'))
             <a href="{{ url()->previous() }}" class="btn-nav">← Kembali</a>
         @endif
+        <button class="btn-print" onclick="printCard()">🖨️ Cetak Langsung (Ukuran Asli)</button>
         <button class="btn-dl-front" onclick="downloadCard('kta-front', 'KTA-Front-{{ $jukir->id_jukir }}')">📥 Download Depan</button>
         <button class="btn-dl-back" onclick="downloadCard('kta-back', 'KTA-Back-{{ $jukir->id_jukir }}')">📥 Download Belakang</button>
     </div>
@@ -598,27 +743,61 @@
                         </div>
                     </div>
 
+                    <div class="separator-line"></div>
+
                     <div class="info-box">
-                        <!-- Circular photo frame -->
+                        <!-- Premium Portrait Photo Frame -->
                         <div class="photo-area">
-                            @if($jukir->image)
-                                <img src="{{ asset('storage/' . $jukir->image) }}" alt="Foto">
-                            @else
-                                <div class="photo-placeholder">{{ strtoupper(substr($jukir->nama_jukir, 0, 1)) }}</div>
-                            @endif
+                            <div class="photo-inner">
+                                @if($jukir->image)
+                                    <img src="{{ asset('storage/' . $jukir->image) }}" alt="Foto">
+                                @else
+                                    <div class="photo-placeholder">{{ strtoupper(substr($jukir->nama_jukir, 0, 1)) }}</div>
+                                @endif
+                                
+                                <!-- Microtext overlay (4 Sisi) -->
+                                @php
+                                    $rawMicro = ($jukir->no_ktp ?? '') . $jukir->nama_jukir . $jukir->id_jukir;
+                                    $microText = strtoupper(str_replace(' ', '', $rawMicro));
+                                    $microTextLong = str_repeat($microText, 10); // Diperbanyak agar cukup mengitari foto
+                                @endphp
+                                <div class="microtext-container">
+                                    <div class="micro-line micro-top">{{ $microTextLong }}</div>
+                                    <div class="micro-line micro-right">{{ $microTextLong }}</div>
+                                    <div class="micro-line micro-bottom">{{ $microTextLong }}</div>
+                                    <div class="micro-line micro-left">{{ $microTextLong }}</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="name-area">
                             <div class="name-first">{{ $firstName }}</div>
                             <div class="name-last">{{ $lastName }}</div>
-                            <div class="info-nik">{{ $jukir->no_ktp ?? '1401060501840004' }}</div>
-                            <div class="info-reg">ID REG : {{ $jukir->id_jukir }}</div>
-                            <div class="info-valid-label">Berlaku Sampai dengan:</div>
-                            <div class="info-valid-date">
-                                @if($jukir->kta_end_date)
-                                    {{ strtoupper(\Carbon\Carbon::parse($jukir->kta_end_date)->translatedFormat('F Y')) }}
-                                @else
-                                    -
-                                @endif
+                            
+                            <div class="divider-micro"></div>
+                            
+                            <div class="modern-stats">
+                                <div class="stat-row">
+                                    <div class="stat-item" style="flex: 1;">
+                                        <span class="stat-label">NIK</span>
+                                        <span class="stat-val">{{ $jukir->no_ktp ?? '-' }}</span>
+                                    </div>
+                                    <div class="stat-item" style="flex: 1;">
+                                        <span class="stat-label">ID REG</span>
+                                        <span class="stat-val val-highlight">{{ $jukir->id_jukir }}</span>
+                                    </div>
+                                </div>
+                                <div class="stat-item" style="margin-top: 2px;">
+                                    <span class="stat-label">Masa Berlaku</span>
+                                    <div>
+                                        <span class="badge-berlaku">
+                                            @if($jukir->kta_end_date)
+                                                {{ strtoupper(\Carbon\Carbon::parse($jukir->kta_end_date)->translatedFormat('F Y')) }}
+                                            @else
+                                                -
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -630,32 +809,37 @@
                     <div class="wave-pattern"></div>
 
                     <div class="fb-content">
-                        <div class="data-group">
-                            <div class="data-label">LOKASI :</div>
-                            <div class="data-value">{{ strtoupper($jukir->parkingLocation->name ?? 'BELUM DITENTUKAN') }}</div>
-                        </div>
-                        <div class="data-group">
-                            <div class="data-label">ALAMAT:</div>
-                            <div class="data-value">{{ strtoupper($jukir->parkingLocation->roadSection->name ?? 'BELUM DITENTUKAN') }}</div>
-                        </div>
-                        <div class="data-group">
-                            <div class="data-label">PENGELOLA:</div>
-                            @php
-                                $pengelolaName = '-';
-                                if($jukir->parkingLocation && $jukir->parkingLocation->agreements->isNotEmpty()) {
-                                    $pengelolaName = $jukir->parkingLocation->agreements->first()->leader->user->name ?? '-';
-                                }
-                            @endphp
-                            <div class="data-value">{{ strtoupper($pengelolaName) }}</div>
+                        <div class="loc-grid">
+                            <div class="loc-item">
+                                <span class="loc-label">Lokasi Parkir</span>
+                                <span class="loc-value">{{ strtoupper($jukir->parkingLocation->name ?? 'BELUM DITENTUKAN') }}</span>
+                            </div>
+                            <div class="loc-item">
+                                <span class="loc-label">Alamat / Ruas Jalan</span>
+                                <span class="loc-value">{{ strtoupper($jukir->parkingLocation->roadSection->name ?? 'BELUM DITENTUKAN') }}</span>
+                            </div>
+                            <div class="loc-item">
+                                <span class="loc-label">Pengelola Wilayah</span>
+                                @php
+                                    $pengelolaName = '-';
+                                    if($jukir->parkingLocation && $jukir->parkingLocation->agreements->isNotEmpty()) {
+                                        $activeAgr = $jukir->parkingLocation->agreements->first();
+                                        $pengelolaName = $activeAgr->fieldCoordinator->user->name ?? '-';
+                                    }
+                                @endphp
+                                <span class="loc-value loc-value-highlight">{{ strtoupper($pengelolaName) }}</span>
+                            </div>
                         </div>
                     </div>
+                    
+                    <div class="bottom-divider"></div>
                     
                     <!-- Report and QR Section -->
                     <div class="report-wrapper">
                         <!-- Left 80% -->
                         <div class="report-left">
-                            <div class="report-text">LAPORKAN KAMI JIKA MEMINTA LEBIH DARI PERATURAN</div>
-                            <div class="report-title">NO PENGADUAN</div>
+                            <div class="report-text">LAPORKAN JIKA TERDAPAT PELANGGARAN ATURAN ATAU TARIF PARKIR</div>
+                            <div class="report-title">LAYANAN PENGADUAN</div>
                             <div class="report-number">0812-6639-7770</div>
                         </div>
                         <!-- Right 20% (QR) -->
@@ -666,6 +850,9 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Subtle Print Date -->
+                    <div class="print-date">DICETAK: {{ strtoupper(\Carbon\Carbon::now()->translatedFormat('d F Y H:i')) }}</div>
 
                 </div>
             </div>
@@ -701,19 +888,16 @@
 
             <div class="sig-card">
                 <div class="sig-role">
-                    @php
-                        $hasRealLeader = $jukir->parkingLocation && $jukir->parkingLocation->agreements->isNotEmpty();
-                    @endphp
-                    @if($hasRealLeader)
-                        PENGELOLA / KORLAP<br>LOKASI PARKIR
-                    @else
+                    @if($activeLeader && strtoupper($activeLeader->status_jabatan ?? '') === 'PLT')
                         PLT KEPALA UPT SELAKU PIMPINAN<br>BLUD UPT PERPARKIRAN
+                    @else
+                        KEPALA UPT SELAKU PIMPINAN<br>BLUD UPT PERPARKIRAN
                     @endif
                 </div>
 
                 <div class="sig-space">
-                    @if($hasRealLeader && isset($activeLeader->user->img) && $activeLeader->user->img)
-                        <img src="{{ asset('storage/' . $activeLeader->user->img) }}" alt="Tanda Tangan">
+                    @if($activeLeader && isset($activeLeader->signature) && $activeLeader->signature)
+                        <img src="{{ asset('storage/' . $activeLeader->signature) }}" alt="Tanda Tangan">
                     @endif
                 </div>
 
@@ -726,11 +910,7 @@
                 </div>
                 <div class="sig-line"></div>
                 <div class="sig-nip">
-                    @if($hasRealLeader)
-                        ID : {{ $activeLeader->employee_number ?? '-' }}
-                    @else
-                        NIP : {{ $activeLeader->employee_number ?? '19960224 201808 1 002' }}
-                    @endif
+                    NIP : {{ formatNip($activeLeader->employee_number ?? '199602242018081002') }}
                 </div>
             </div>
         </div>

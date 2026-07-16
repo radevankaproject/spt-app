@@ -164,46 +164,65 @@
 
         .nik-text {
             position: absolute;
-            top: 450px;
+            top: 440px;
             width: 100%;
             text-align: center;
             font-size: 16px;
-            color: #9bd7ed;
+            color: #0b78a9;
             font-weight: bold;
+            letter-spacing: 1px;
         }
         
         /* Name and Title */
         .name-container {
             position: absolute;
-            top: 480px;
+            top: 460px;
             width: 100%;
             text-align: center;
         }
+        .val-date {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffffff;
+            background: #ea580c; /* Orange premium */
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 8px;
+            margin-top: 5px;
+            border: 2px solid #fdba74;
+        }
+        
         .name-text {
-            font-size: 42px;
+            font-size: 38px;
             font-weight: 900;
             color: #212529;
             text-transform: uppercase;
+            line-height: 1.1;
         }
         .name-last {
-            color: #0b78a9; /* Darker Cyan */
-        }
-        .title-text {
-            margin-top: 10px;
-            font-size: 28px;
-            font-weight: bold;
-            color: #1b1b1b;
-        }
-        .id-reg {
-            margin-top: 5px;
-            font-size: 18px;
-            font-weight: bold;
             color: #0b78a9;
         }
-        .id-reg span {
-            color: #333;
+        
+        .id-reg-box {
+            margin-top: 15px;
+            display: inline-block;
+            background: #0b78a9;
+            color: #fff;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
         
+        .separator-line {
+            position: absolute;
+            top: 140px;
+            left: 10%;
+            width: 80%;
+            border-bottom: 2px solid #58cbf6;
+        }
+
         /* Location Details */
         .location-container {
             position: absolute;
@@ -447,6 +466,8 @@
             </div>
         </div>
 
+        <div class="separator-line"></div>
+
         <!-- Photo -->
         <!-- Dompdf has bugs with rotate, let's use the simple container layout which looks decent -->
         <div class="photo-simple-container">
@@ -459,7 +480,7 @@
             </div>
         </div>
         
-        <div class="nik-text">{{ $jukir->no_ktp ?? 'N/A' }}</div>
+        <div class="nik-text">NIK: {{ $jukir->no_ktp ?? '-' }}</div>
         
         <!-- Name & ID -->
         <div class="name-container">
@@ -473,17 +494,23 @@
                 }
             @endphp
             <div class="name-text">
-                {{ $firstName }} <span class="name-last">{{ $lastName }}</span>
+                {{ $firstName }} <br><span class="name-last">{{ $lastName }}</span>
             </div>
-            <div class="title-text">JURU PARKIR</div>
-            <div class="id-reg"><span>ID REG :</span> {{ $jukir->id_jukir }}</div>
+            <div class="id-reg-box">ID REG : {{ $jukir->id_jukir }}</div>
         </div>
 
         <!-- Location -->
         <div class="location-container">
             <div class="loc-jalan">{{ $jukir->parkingLocation->roadSection->name ?? 'N/A' }}</div>
             <div class="loc-detail"><span>Lokasi :</span> {{ $jukir->parkingLocation->name ?? 'N/A' }}</div>
-            <div class="loc-pengelola"><span>Pengelola :</span> {{ $activeLeader->user->name ?? 'N/A' }}</div>
+            @php
+                $pengelolaName = 'N/A';
+                if($jukir->parkingLocation && $jukir->parkingLocation->agreements->isNotEmpty()) {
+                    $activeAgr = $jukir->parkingLocation->agreements->first();
+                    $pengelolaName = $activeAgr->fieldCoordinator->user->name ?? 'N/A';
+                }
+            @endphp
+            <div class="loc-pengelola"><span>Pengelola :</span> {{ $pengelolaName }}</div>
         </div>
 
         <!-- Validity -->
@@ -536,8 +563,8 @@
         
         <div class="signature-box">
             <div class="sig-title">
-                @if($activeLeader)
-                    PENGELOLA / KORLAP<br>LOKASI PARKIR
+                @if($activeLeader && strtoupper($activeLeader->status_jabatan ?? '') === 'PLT')
+                    PLT KEPALA UPT SELAKU PIMPINAN<br>BLUD UPT PERPARKIRAN
                 @else
                     KEPALA UPT SELAKU PIMPINAN<br>BLUD UPT PERPARKIRAN
                 @endif
@@ -561,7 +588,7 @@
                 @if($activeLeader)
                     ID: {{ $activeLeader->employee_number ?? '-' }}
                 @else
-                    NIP : 19890823 201406 1 001
+                    NIP : {{ formatNip($activeLeader->employee_number ?? '198908232014061001') }}
                 @endif
             </div>
         </div>

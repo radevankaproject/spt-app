@@ -150,84 +150,7 @@
                                 </td>
                             </tr>
 
-                            {{-- =============================================== --}}
-                            {{-- ✅ MODAL EDIT (Di-generate per baris data) --}}
-                            {{-- =============================================== --}}
-                            <div class="modal fade" id="editModal{{ $roadSection->id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-label-primary border-bottom">
-                                            <h5 class="modal-title fw-bold" id="exampleModalLabel1">Edit Ruas Jalan</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <form action="{{ route('masterdata.road-sections.update', $roadSection->id) }}"
-                                            method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <div class="modal-body">
-                                                @if ($inUse)
-                                                    <div class="alert alert-warning d-flex align-items-center p-2 mb-4"
-                                                        role="alert">
-                                                        <i class="ti tabler-info-circle me-2"></i>
-                                                        <small>Zona tidak dapat diubah karena sudah memiliki titik parkir
-                                                            terdaftar.</small>
-                                                    </div>
-                                                @endif
 
-                                                <div class="row g-4">
-                                                    <div class="col-12">
-                                                        <div class="form-floating form-floating-outline">
-                                                            <input type="text" class="form-control" name="name"
-                                                                placeholder="Nama Ruas" value="{{ $roadSection->name }}"
-                                                                required />
-                                                            <label>Nama Ruas Jalan</label>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <label class="form-label d-block mb-2">Pilih Zona</label>
-                                                        <div class="d-flex align-items-center gap-4">
-                                                            <div class="form-check">
-                                                                <input name="zone" class="form-check-input"
-                                                                    type="radio" value="Zona 2"
-                                                                    id="editZone2{{ $roadSection->id }}"
-                                                                    {{ $roadSection->zone == 'Zona 2' ? 'checked' : '' }}
-                                                                    {{ $inUse ? 'disabled' : '' }} />
-                                                                <label class="form-check-label"
-                                                                    for="editZone2{{ $roadSection->id }}"> Zona 2 </label>
-                                                            </div>
-                                                            <div class="form-check">
-                                                                <input name="zone" class="form-check-input"
-                                                                    type="radio" value="Zona 3"
-                                                                    id="editZone3{{ $roadSection->id }}"
-                                                                    {{ $roadSection->zone == 'Zona 3' ? 'checked' : '' }}
-                                                                    {{ $inUse ? 'disabled' : '' }} />
-                                                                <label class="form-check-label"
-                                                                    for="editZone3{{ $roadSection->id }}"> Zona 3 </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-12 mt-3">
-                                                        <div class="form-floating form-floating-outline">
-                                                            <input type="text" class="form-control" name="coordinates"
-                                                                placeholder="Contoh: 0.5333, 101.4500" value="{{ $roadSection->latitude && $roadSection->longitude ? $roadSection->latitude . ', ' . $roadSection->longitude : '' }}" />
-                                                            <label>Koordinat Titik Tengah (Latitude, Longitude)</label>
-                                                        </div>
-                                                        <small class="text-muted"><i class="ti tabler-info-circle"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer pt-3 border-top">
-                                                <button type="button" class="btn btn-outline-secondary rounded-pill"
-                                                    data-bs-dismiss="modal">Tutup</button>
-                                                <button type="submit" class="btn btn-primary rounded-pill btn-action">Simpan Perubahan</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-4">
@@ -249,6 +172,90 @@
             </div>
         </div>
     </div>
+
+    @foreach ($roadSections as $roadSection)
+    @php
+        $inUse = $roadSection->parking_locations_count > 0;
+    @endphp
+    {{-- =============================================== --}}
+    {{-- ✅ MODAL EDIT (Di-generate per baris data) --}}
+    {{-- =============================================== --}}
+    <div class="modal fade" id="editModal{{ $roadSection->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-label-primary border-bottom">
+                    <h5 class="modal-title fw-bold" id="exampleModalLabel1">Edit Ruas Jalan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form action="{{ route('masterdata.road-sections.update', $roadSection->id) }}"
+                    method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div class="modal-body">
+                        @if ($inUse)
+                            <div class="alert alert-warning d-flex align-items-center p-2 mb-4"
+                                role="alert">
+                                <i class="ti tabler-info-circle me-2"></i>
+                                <small>Zona tidak dapat diubah karena sudah memiliki titik parkir
+                                    terdaftar.</small>
+                            </div>
+                        @endif
+
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control" name="name"
+                                        placeholder="Nama Ruas" value="{{ $roadSection->name }}"
+                                        required />
+                                    <label>Nama Ruas Jalan</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label d-block mb-2">Pilih Zona</label>
+                                <div class="d-flex align-items-center gap-4">
+                                    <div class="form-check">
+                                        <input name="zone" class="form-check-input"
+                                            type="radio" value="Zona 2"
+                                            id="editZone2{{ $roadSection->id }}"
+                                            {{ $roadSection->zone == 'Zona 2' ? 'checked' : '' }}
+                                            {{ $inUse ? 'disabled' : '' }} />
+                                        <label class="form-check-label"
+                                            for="editZone2{{ $roadSection->id }}"> Zona 2 </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input name="zone" class="form-check-input"
+                                            type="radio" value="Zona 3"
+                                            id="editZone3{{ $roadSection->id }}"
+                                            {{ $roadSection->zone == 'Zona 3' ? 'checked' : '' }}
+                                            {{ $inUse ? 'disabled' : '' }} />
+                                        <label class="form-check-label"
+                                            for="editZone3{{ $roadSection->id }}"> Zona 3 </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" class="form-control" name="coordinates"
+                                        placeholder="Contoh: 0.5333, 101.4500" value="{{ $roadSection->latitude && $roadSection->longitude ? $roadSection->latitude . ', ' . $roadSection->longitude : '' }}" />
+                                    <label>Koordinat Titik Tengah (Latitude, Longitude)</label>
+                                </div>
+                                <small class="text-muted"><i class="ti tabler-info-circle"></i> Opsional. Dapat di-copy langsung dari Google Maps.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill"
+                            data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary rounded-pill btn-action">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
 
     {{-- =============================================== --}}
     {{-- ✅ MODAL CREATE (Satu saja untuk halaman ini) --}}
@@ -328,7 +335,7 @@
         });
 
         // ✅ 3. Fungsi Konfirmasi Delete via SweetAlert (Hanya untuk aksi krusial)
-        function confirmDelete(id, name) {
+        window.confirmDelete = function(id, name) {
             Swal.fire({
                 title: 'Apakah Anda yakin?',
                 html: `Anda akan menghapus ruas jalan <strong>${name}</strong>.<br>Data tidak dapat dikembalikan!`,
@@ -346,6 +353,6 @@
                     document.getElementById('deleteForm' + id).submit();
                 }
             });
-        }
+        };
     </script>
 @endsection
