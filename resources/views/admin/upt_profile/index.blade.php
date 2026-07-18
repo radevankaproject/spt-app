@@ -141,13 +141,83 @@
                                 <div class="form-floating form-floating-outline">
                                     <input type="url" class="form-control" id="website" name="website"
                                         placeholder="https://contoh.com" value="{{ old('website', $profile->website) }}" />
-                                    <label for="website">Website</label>
+                                    <label for="website">Website Instansi</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="url" class="form-control" id="complaint_website_link" name="complaint_website_link"
+                                        placeholder="Misal: https://pengaduan-parkir.dishub.go.id" value="{{ old('complaint_website_link', $profile->complaint_website_link) }}" />
+                                    <label for="complaint_website_link">Link Website Pengaduan (Eksternal)</label>
+                                    <div class="form-text">Biarkan kosong jika ingin menggunakan form pengaduan internal (bawaan).</div>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-floating form-floating-outline">
                                     <textarea class="form-control" id="address" name="address" placeholder="Alamat lengkap UPT" style="height: 100px;">{{ old('address', $profile->address) }}</textarea>
                                     <label for="address">Alamat Lengkap</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Card 1.5: Sosial Media --}}
+                <div class="glass-card mb-4 anim-2 border-0 overflow-hidden">
+                    <div class="card-header border-bottom p-4">
+                        <h5 class="card-title mb-0">Sosial Media</h5>
+                        <small class="text-muted">Masukkan username saja (contoh: dishub_pekanbaru).</small>
+                    </div>
+                    <div class="card-body p-4 pt-5">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti tabler-brand-facebook"></i></span>
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="text" class="form-control" id="social_fb" name="social_fb"
+                                            placeholder="Username Facebook" value="{{ old('social_fb', $profile->social_fb) }}" />
+                                        <label for="social_fb">Facebook</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti tabler-brand-instagram"></i></span>
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="text" class="form-control" id="social_ig" name="social_ig"
+                                            placeholder="Username Instagram" value="{{ old('social_ig', $profile->social_ig) }}" />
+                                        <label for="social_ig">Instagram</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti tabler-brand-tiktok"></i></span>
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="text" class="form-control" id="social_tiktok" name="social_tiktok"
+                                            placeholder="Username TikTok" value="{{ old('social_tiktok', $profile->social_tiktok) }}" />
+                                        <label for="social_tiktok">TikTok</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti tabler-brand-x"></i></span>
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="text" class="form-control" id="social_x" name="social_x"
+                                            placeholder="Username X / Twitter" value="{{ old('social_x', $profile->social_x) }}" />
+                                        <label for="social_x">X / Twitter</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text"><i class="ti tabler-brand-youtube"></i></span>
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="text" class="form-control" id="social_youtube" name="social_youtube"
+                                            placeholder="Username/Channel Youtube" value="{{ old('social_youtube', $profile->social_youtube) }}" />
+                                        <label for="social_youtube">Youtube</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

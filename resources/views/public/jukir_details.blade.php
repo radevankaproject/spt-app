@@ -208,7 +208,7 @@
                 @php
                     $isExpired = \Carbon\Carbon::parse($jukir->kta_end_date)->isPast();
                 @endphp
-                <img src="{{ $jukir->image ? asset('storage/' . $jukir->image) : asset('assets/img/avatars/1.png') }}" alt="{{ $jukir->nama_jukir }}" class="profile-img">
+                <img src="{{ $jukir->image_url }}" alt="{{ $jukir->nama_jukir }}" class="profile-img">
                 <div class="status-badge {{ $isExpired ? 'expired' : '' }}" title="Status KTA: {{ $isExpired ? 'Kedaluwarsa' : 'Aktif' }}">
                     <i class="ti {{ $isExpired ? 'ti-x' : 'ti-check' }}"></i>
                 </div>
@@ -271,7 +271,15 @@
 
         <div class="action-section">
             <h6 class="text-muted mb-3 fw-bold" style="font-size: 0.95rem;">Ada masalah dengan Juru Parkir ini?</h6>
-            <a href="{{ route('public.jukir.complaint.create', $jukir->id_jukir) }}" class="btn-report">
+            @php
+                $uptProfile = \App\Models\UptProfile::first();
+                $complaintUrl = route('public.jukir.complaint.create', $jukir->id_jukir);
+                
+                if ($uptProfile && !empty($uptProfile->complaint_website_link)) {
+                    $complaintUrl = rtrim($uptProfile->complaint_website_link, '/') . '/laporan/buat?jukir_id=' . $jukir->id_jukir;
+                }
+            @endphp
+            <a href="{{ $complaintUrl }}" class="btn-report">
                 <i class="ti ti-alert-triangle-filled"></i> Buat Pengaduan
             </a>
             

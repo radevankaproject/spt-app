@@ -241,6 +241,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('jukir-violations', \App\Http\Controllers\Admin\JukirViolationController::class)->only(['store', 'destroy']);
         });
 
+    // --- RUTE PENGADUAN JUKIR & KONTAK MASYARAKAT ---
+    Route::middleware('role:admin,leader,staff_kta_jukir,staff_pks')
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::get('jukir-complaints', [\App\Http\Controllers\Admin\JukirComplaintController::class, 'index'])->name('jukir-complaints.index');
+            Route::get('jukir-complaints/{jukirComplaint}', [\App\Http\Controllers\Admin\JukirComplaintController::class, 'show'])->name('jukir-complaints.show');
+            Route::post('jukir-complaints/{jukirComplaint}/update-status', [\App\Http\Controllers\Admin\JukirComplaintController::class, 'updateStatus'])->name('jukir-complaints.update-status');
+            
+            Route::get('kontak-masyarakat', [\App\Http\Controllers\Admin\JukirComplaintController::class, 'contactList'])->name('kontak-masyarakat.index');
+        });
+
     // --- RUTE-ROUTE AJAX (Bisa diakses oleh beberapa role) ---
     Route::middleware('role:admin,staff_pks,staff_keu,leader,treasurer')->prefix('masterdata')->name('masterdata.')->group(function () {
         Route::get('get-road-sections-by-zone/{zone}', [ParkingLocationController::class, 'getRoadSectionsByZone'])->name('road-sections.getByZone');

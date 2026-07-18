@@ -126,13 +126,7 @@
         <div class="card mb-4 border-0 shadow-sm profile-card {{ $jukir->is_blacklisted ? 'blacklisted' : '' }}">
             <div class="card-body pt-5 text-center" style="{{ $jukir->is_blacklisted ? 'opacity: 0.85;' : '' }}">
                 <div class="user-avatar-section mb-4 position-relative mx-auto" style="width: fit-content;">
-                    @if($jukir->image)
-                        <img src="{{ Storage::url($jukir->image) }}" alt="Foto Profil" class="img-fluid rounded-circle shadow-sm border border-4 {{ $jukir->is_blacklisted ? 'border-danger' : 'border-primary' }}" width="130" height="130" style="object-fit: cover;">
-                    @else
-                        <div class="avatar avatar-xl rounded-circle mx-auto d-flex align-items-center justify-content-center fw-bold shadow-sm border border-4 {{ $jukir->is_blacklisted ? 'border-danger bg-label-danger' : 'border-primary bg-label-primary' }}" style="width: 130px; height: 130px; font-size: 3rem;">
-                            {{ strtoupper(substr($jukir->nama_jukir, 0, 2)) }}
-                        </div>
-                    @endif
+                    <img src="{{ $jukir->image_url }}" alt="Foto Profil" class="img-fluid rounded-circle shadow-sm border border-4 {{ $jukir->is_blacklisted ? 'border-danger' : 'border-primary' }}" width="130" height="130" style="object-fit: cover;">
                     @if($jukir->is_blacklisted)
                         <span class="position-absolute bottom-0 end-0 badge bg-danger p-2 shadow" style="border-radius: 50%; transform: translate(10%, 10%);" data-bs-toggle="tooltip" title="Jukir telah di-blacklist"><i class="ti tabler-ban fs-4"></i></span>
                     @elseif($jukir->is_active)

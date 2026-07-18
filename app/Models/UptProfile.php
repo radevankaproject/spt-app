@@ -22,5 +22,12 @@ class UptProfile extends Model
         'api_token_fonnte',
         'about_us',
         'privacy_policy',
+        'social_fb',
+        'social_ig',
+        'social_tiktok',
+        'social_x',
+        'social_youtube',
+        'complaint_website_link',
     ];
+
 }

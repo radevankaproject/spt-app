@@ -105,13 +105,7 @@
                             <div class="card-body text-center pt-0 position-relative" style="{{ $jukir->is_blacklisted ? 'filter: grayscale(100%);' : '' }}">
                                 {{-- Avatar --}}
                                 <div class="mx-auto mb-3" style="margin-top: -45px; position: relative; z-index: 5;">
-                                    @if($jukir->image)
-                                        <img src="{{ Storage::url($jukir->image) }}" alt="Foto" class="rounded-circle border border-4 border-white shadow-sm" width="90" height="90" style="object-fit: cover; background: #fff;">
-                                    @else
-                                        <div class="rounded-circle bg-white text-primary border border-4 border-white shadow-sm mx-auto d-flex align-items-center justify-content-center fw-bold fs-3" style="width: 90px; height: 90px;">
-                                            {{ strtoupper(substr($jukir->nama_jukir, 0, 2)) }}
-                                        </div>
-                                    @endif
+                                    <img src="{{ $jukir->image_url }}" alt="Foto" class="rounded-circle border border-4 border-white shadow-sm" width="90" height="90" style="object-fit: cover; background: #fff;">
                                 </div>
 
                                 {{-- Info --}}

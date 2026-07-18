@@ -258,6 +258,29 @@ $configData = Helper::appClasses();
           </li>
       @endif
 
+      {{-- ✅ PENGADUAN & LAYANAN MASYARAKAT --}}
+      @if (in_array(Auth::user()->role, ['admin', 'leader', 'staff_kta_jukir', 'staff_pks']))
+          @php
+              $pendingComplaintsCount = \App\Models\JukirComplaint::where('status', 'pending')->count();
+          @endphp
+          <li class="menu-header small"><span class="menu-header-text">Layanan Masyarakat</span></li>
+          <li class="menu-item {{ request()->routeIs('admin.jukir-complaints.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.jukir-complaints.index') }}" class="menu-link">
+                  <i class="icon-base menu-icon tf-icons ti tabler-messages"></i>
+                  <div data-i18n="Pengaduan Jukir">Pengaduan Jukir</div>
+                  @if($pendingComplaintsCount > 0)
+                      <div class="badge bg-danger rounded-pill ms-auto">{{ $pendingComplaintsCount }}</div>
+                  @endif
+              </a>
+          </li>
+          <li class="menu-item {{ request()->routeIs('admin.kontak-masyarakat.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.kontak-masyarakat.index') }}" class="menu-link">
+                  <i class="icon-base menu-icon tf-icons ti tabler-address-book"></i>
+                  <div data-i18n="Kontak Masyarakat">Kontak Masyarakat</div>
+              </a>
+          </li>
+      @endif
+
       <li class="menu-header small"><span class="menu-header-text">Sistem</span></li>
       <li class="menu-item {{ request()->routeIs('profile.settings') ? 'active' : '' }}">
           <a href="{{ route('profile.settings') }}" class="menu-link">

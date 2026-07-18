@@ -109,7 +109,7 @@
                             <td class="py-2">
                                 <div class="d-flex align-items-center">
                                     <div class="avatar avatar-sm me-2">
-                                        <img src="{{ $violation->jukir->image ? Storage::url($violation->jukir->image) : asset('assets/img/avatars/1.png') }}" class="rounded-circle" style="object-fit: cover;">
+                                        <img src="{{ $violation->jukir->image_url }}" class="rounded-circle" style="object-fit: cover;">
                                     </div>
                                     <div class="d-flex flex-column">
                                         <a href="{{ route('admin.jukirs.show', $violation->jukir->id) }}" class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $violation->jukir->nama_jukir }}</a>
@@ -158,7 +158,7 @@
                             <p class="mb-2 text-muted" style="font-size: 0.85rem;">{{ $history->description }}</p>
                             <div class="d-flex align-items-center bg-lighter rounded p-2">
                                 <div class="avatar avatar-xs me-2">
-                                    <img src="{{ $history->jukir->image ? Storage::url($history->jukir->image) : asset('assets/img/avatars/1.png') }}" class="rounded-circle" style="object-fit: cover;">
+                                    <img src="{{ $history->jukir->image_url }}" class="rounded-circle" style="object-fit: cover;">
                                 </div>
                                 <div class="d-flex flex-column">
                                     <span class="fw-bold text-dark" style="font-size: 0.75rem;">{{ $history->jukir->nama_jukir }}</span>

@@ -41,4 +41,27 @@ class Jukir extends Model
     {
         return $this->hasMany(JukirViolation::class)->latest();
     }
+
+    public function complaints()
+    {
+        return $this->hasMany(JukirComplaint::class, 'jukir_id')->latest();
+    }
+
+    public function getImageUrlAttribute()
+    {
+        if ($this->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->image)) {
+            return asset('storage/' . $this->image);
+        }
+
+        $jenisKelamin = strtolower(trim($this->jenis_kelamin ?? ''));
+        if (empty($jenisKelamin) || !in_array($jenisKelamin, ['l', 'laki-laki', 'pria', 'p', 'perempuan', 'wanita'])) {
+            return asset('assets/img/avatars/13.png');
+        }
+
+        if (in_array($jenisKelamin, ['perempuan', 'wanita', 'p'])) {
+            return asset('assets/img/avatars/20.png');
+        }
+
+        return asset('assets/img/avatars/90.png');
+    }
 }

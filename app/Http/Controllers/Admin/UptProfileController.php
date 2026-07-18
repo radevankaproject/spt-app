@@ -54,6 +54,12 @@ class UptProfileController extends Controller
             'api_token_fonnte' => 'nullable|string',
             'about_us' => 'nullable|string',
             'privacy_policy' => 'nullable|string',
+            'social_fb' => 'nullable|string|max:100',
+            'social_ig' => 'nullable|string|max:100',
+            'social_tiktok' => 'nullable|string|max:100',
+            'social_x' => 'nullable|string|max:100',
+            'social_youtube' => 'nullable|string|max:100',
+            'complaint_website_link' => 'nullable|url|max:255',
             'logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 

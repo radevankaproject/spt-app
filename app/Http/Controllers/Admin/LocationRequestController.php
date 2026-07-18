@@ -10,6 +10,7 @@ use App\Models\ParkingLocation;
 use App\Models\ParkingLocationHistory;
 use App\Models\RoadSection; // ✅ WAJIB IMPORT MODEL INI
 use App\Models\UptProfile;
+use App\Traits\SendsWhatsApp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Log;
 
 class LocationRequestController extends Controller
 {
+    use SendsWhatsApp;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -325,31 +328,5 @@ class LocationRequestController extends Controller
         }
 
         return redirect()->back()->with('success', 'Pengajuan telah ditolak dan notifikasi WA telah terkirim.');
-    }
-
-    /**
-     * PRIVATE METHOD: Mengirim Pesan WhatsApp via Fonnte
-     */
-    private function sendWhatsAppNotification($phoneNumber, $message)
-    {
-        try {
-            $uptProfile = UptProfile::first();
-
-            if (! $uptProfile || empty($uptProfile->api_token_fonnte) || empty($phoneNumber)) {
-                return;
-            }
-
-            $phoneFormatted = preg_replace('/[^0-9]/', '', $phoneNumber);
-
-            Http::withHeaders([
-                'Authorization' => $uptProfile->api_token_fonnte,
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $phoneFormatted,
-                'message' => $message,
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Fonnte WA Error: '.$e->getMessage());
-        }
     }
 }

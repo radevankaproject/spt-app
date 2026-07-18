@@ -2,6 +2,24 @@
 
 Semua catatan perubahan (History Log) dari aplikasi **Sistem Perjanjian Kerja Sama Perparkiran (SPKP)** dicatat di bawah ini. Dokumen ini merangkum seluruh perjalanan evolusi aplikasi dari inisialisasi awal hingga versi mutakhir.
 
+## [v2.6.0] - 2026-07-18
+
+**_"SiParkirKita Seamless API Integration & Advanced Complaint Sync"_**
+
+Pembaruan arsitektural yang berfokus pada pembukaan jalur akses data (_endpoints_) untuk pihak ketiga (SiParkirKita), integrasi Webhook, dan sinkronisasi lintas platform.
+
+- **API Modul Juru Parkir (Sanctum Auth):**
+    - Mengembangkan `JukirApiController` untuk memfasilitasi _sharing_ data Jukir secara terstruktur via REST API dengan autentikasi berbasis **Laravel Sanctum**.
+    - Mendukung operasi pencarian (`search`), paginasi indeks (`index`), informasi detail (`show`), serta agregasi data cepat (`publicStats`) untuk aplikasi _client_.
+- **Webhooks Modul Pengaduan Lintas Sistem:**
+    - Membangun mekanisme integrasi data pengaduan Jukir menggunakan metode `Webhook`.
+    - Setiap laporan warga yang diajukan di _platform_ SiParkirKita akan secara otomatis dan instan ditarik/dimasukkan ke _database_ internal SPT-App (`jukir_complaints`).
+- **Sinkronisasi Kode Laporan & Pembuktian (Follow-Up):**
+    - Menambahkan parameter `report_code` untuk melacak kode tiket eksternal.
+    - Mengembangkan fitur pendataan `is_violation_proven` untuk mencatat hasil investigasi lapangan (Terbukti / Tidak Terbukti) yang nantinya tersinkronisasi kembali statusnya ke pelapor di SiParkirKita.
+- **Pembaruan Profil UPT (Link Institusi):**
+    - Mengembangkan profil kelembagaan UPT Perparkiran dengan menambahkan tautan langsung ke _website_ pelaporan (`complaint_website_link`) serta integrasi tautan media sosial.
+
 ## [v2.5.1] - 2026-07-16
 
 **_"Auto-Expired PKS & Modal Fixes"_**
