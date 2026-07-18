@@ -18,6 +18,7 @@ Pembaruan minor yang berfokus pada otomatisasi status PKS, penguncian titik loka
     - **Bulk Import CSV:** Menambahkan fitur import masal (Bulk Import) data Jukir melalui file CSV (NAMA, NIK) lengkap dengan *template* yang bisa diunduh.
     - **Pagination & Sorting:** Menerapkan paginasi dan pengurutan `id_jukir ASC` pada halaman daftar jukir, lengkap dengan *server-side filter*.
     - **Perbaikan Cetak KTA:** Menyempurnakan fitur "Cetak Langsung (Ukuran Asli)" KTA agar membuka tab pop-up baru dengan ukuran fisik KTP yang presisi (8,56 cm × 5,398 cm).
+    - **Penghapusan Lokasi Parkir:** Menambahkan tombol aksi "Kosongkan" pada Data Penugasan (modal edit Jukir) yang memungkinkan pengosongan titik parkir dan secara otomatis menyembunyikan serta menonaktifkan informasi KTA.
 - **Perbaikan UI & Bug Fixes:**
     - Peningkatan tampilan (*Premium UI*) pada *progress bar* kompresi file/gambar.
     - Mengganti ikon *pin location* dengan *thumbnail* foto lokasi asli (jika tersedia) pada tab daftar lokasi dalam detail PKS (Agreement Show).

@@ -437,8 +437,11 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Titik Parkir <span class="text-danger">*</span></label>
-                                    <select name="parking_location_id" id="edit_parking_location_id" class="form-select select2-parking" required disabled>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label class="form-label fw-bold mb-0">Titik Parkir</label>
+                                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="$('#edit_road_section_id').val('').trigger('change'); $('#edit_parking_location_id').val('').trigger('change');" title="Kosongkan Titik Parkir"><i class="ti tabler-trash" style="font-size: 14px;"></i> Kosongkan</button>
+                                    </div>
+                                    <select name="parking_location_id" id="edit_parking_location_id" class="form-select select2-parking" disabled>
                                         <option value="">Pilih Titik Parkir</option>
                                         @foreach($parkingLocations as $pl)
                                             @php
