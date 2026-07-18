@@ -210,26 +210,26 @@
                 @endphp
                 <img src="{{ $jukir->image ? asset('storage/' . $jukir->image) : asset('assets/img/avatars/1.png') }}" alt="{{ $jukir->nama_jukir }}" class="profile-img">
                 <div class="status-badge {{ $isExpired ? 'expired' : '' }}" title="Status KTA: {{ $isExpired ? 'Kedaluwarsa' : 'Aktif' }}">
-                    <i class="ti {{ $isExpired ? 'tabler-x' : 'tabler-check' }}"></i>
+                    <i class="ti {{ $isExpired ? 'ti-x' : 'ti-check' }}"></i>
                 </div>
             </div>
             <h1 class="profile-name">{{ $jukir->nama_jukir }}</h1>
-            <div class="profile-id"><i class="ti tabler-id-badge-2 me-1"></i> ID: {{ $jukir->id_jukir }}</div>
+            <div class="profile-id"><i class="ti ti-id-badge-2 me-1"></i> ID: {{ $jukir->id_jukir }}</div>
         </div>
 
         <div class="info-section">
             
             <div class="info-group">
                 <div class="info-icon">
-                    <i class="ti tabler-shield-check"></i>
+                    <i class="ti ti-shield-check"></i>
                 </div>
                 <div class="info-content">
                     <div class="info-label">Status KTA</div>
                     <div class="info-value">
                         @if($isExpired)
-                            <span class="badge bg-danger rounded-pill px-3 shadow-sm py-2"><i class="ti tabler-x me-1"></i> Kedaluwarsa</span>
+                            <span class="badge bg-danger rounded-pill px-3 shadow-sm py-2"><i class="ti ti-x me-1"></i> Kedaluwarsa</span>
                         @else
-                            <span class="badge bg-success rounded-pill px-3 shadow-sm py-2"><i class="ti tabler-check me-1"></i> Aktif & Resmi</span>
+                            <span class="badge bg-success rounded-pill px-3 shadow-sm py-2"><i class="ti ti-check me-1"></i> Aktif & Resmi</span>
                         @endif
                     </div>
                 </div>
@@ -237,7 +237,7 @@
 
             <div class="info-group">
                 <div class="info-icon">
-                    <i class="ti tabler-map-pin-filled"></i>
+                    <i class="ti ti-map-pin-filled"></i>
                 </div>
                 <div class="info-content">
                     <div class="info-label">Titik Parkir</div>
@@ -247,7 +247,7 @@
 
             <div class="info-group">
                 <div class="info-icon">
-                    <i class="ti tabler-road"></i>
+                    <i class="ti ti-road"></i>
                 </div>
                 <div class="info-content">
                     <div class="info-label">Ruas Jalan</div>
@@ -258,7 +258,7 @@
             @if($jukir->jenis_kelamin)
             <div class="info-group">
                 <div class="info-icon">
-                    <i class="ti {{ $jukir->jenis_kelamin == 'L' ? 'tabler-gender-male' : 'tabler-gender-female' }}"></i>
+                    <i class="ti {{ $jukir->jenis_kelamin == 'L' ? 'ti-gender-male' : 'ti-gender-female' }}"></i>
                 </div>
                 <div class="info-content">
                     <div class="info-label">Jenis Kelamin</div>
@@ -272,11 +272,11 @@
         <div class="action-section">
             <h6 class="text-muted mb-3 fw-bold" style="font-size: 0.95rem;">Ada masalah dengan Juru Parkir ini?</h6>
             <a href="{{ route('public.jukir.complaint.create', $jukir->id_jukir) }}" class="btn-report">
-                <i class="ti tabler-alert-triangle-filled"></i> Buat Pengaduan
+                <i class="ti ti-alert-triangle-filled"></i> Buat Pengaduan
             </a>
             
             <div class="footer-note">
-                <i class="ti tabler-shield-lock me-1"></i> Dikelola oleh Dinas Perhubungan
+                <i class="ti ti-shield-lock me-1"></i> Dikelola oleh Dinas Perhubungan
             </div>
         </div>
     </div>
