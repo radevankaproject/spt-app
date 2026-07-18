@@ -158,7 +158,7 @@
                                         <i class="ti tabler-printer"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-primary rounded-pill px-3"
-                                        onclick="openEditModal({{ $jukir->id }}, '{{ $jukir->id_jukir }}', '{{ addslashes($jukir->nama_jukir) }}', '{{ $jukir->tanggal_lahir }}', '{{ addslashes($jukir->alamat) }}', '{{ $jukir->parking_location_id }}', '{{ addslashes($jukir->no_ktp) }}', '{{ addslashes($jukir->phone_number) }}', {{ $jukir->is_active ? 'true' : 'false' }}, '{{ $jukir->image ? Storage::url($jukir->image) : '' }}', '{{ $jukir->image_ktp ? Storage::url($jukir->image_ktp) : '' }}', '{{ $jukir->kta_type }}', '{{ $jukir->kta_start_date }}')"
+                                        onclick="openEditModal({{ $jukir->id }}, '{{ $jukir->id_jukir }}', '{{ addslashes($jukir->nama_jukir) }}', '{{ $jukir->jenis_kelamin }}', '{{ $jukir->tanggal_lahir }}', '{{ addslashes($jukir->alamat) }}', '{{ $jukir->parking_location_id }}', '{{ addslashes($jukir->no_ktp) }}', '{{ addslashes($jukir->phone_number) }}', {{ $jukir->is_active ? 'true' : 'false' }}, '{{ $jukir->image ? Storage::url($jukir->image) : '' }}', '{{ $jukir->image_ktp ? Storage::url($jukir->image_ktp) : '' }}', '{{ $jukir->kta_type }}', '{{ $jukir->kta_start_date }}')"
                                         data-bs-toggle="tooltip" title="Edit Data">
                                         <i class="ti tabler-pencil"></i>
                                     </button>
@@ -217,6 +217,17 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Nama Jukir <span class="text-danger">*</span></label>
                                     <input type="text" name="nama_jukir" class="form-control" placeholder="Nama lengkap jukir" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold d-block">Jenis Kelamin</label>
+                                    <div class="form-check form-check-inline mt-1">
+                                        <input class="form-check-input" type="radio" name="jenis_kelamin" id="create_jk_l" value="L">
+                                        <label class="form-check-label" for="create_jk_l">Laki-laki</label>
+                                    </div>
+                                    <div class="form-check form-check-inline mt-1">
+                                        <input class="form-check-input" type="radio" name="jenis_kelamin" id="create_jk_p" value="P">
+                                        <label class="form-check-label" for="create_jk_p">Perempuan</label>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">No. KTP</label>
@@ -367,6 +378,17 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Nama Jukir <span class="text-danger">*</span></label>
                                     <input type="text" name="nama_jukir" id="edit_nama_jukir" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold d-block">Jenis Kelamin</label>
+                                    <div class="form-check form-check-inline mt-1">
+                                        <input class="form-check-input" type="radio" name="jenis_kelamin" id="edit_jk_l" value="L">
+                                        <label class="form-check-label" for="edit_jk_l">Laki-laki</label>
+                                    </div>
+                                    <div class="form-check form-check-inline mt-1">
+                                        <input class="form-check-input" type="radio" name="jenis_kelamin" id="edit_jk_p" value="P">
+                                        <label class="form-check-label" for="edit_jk_p">Perempuan</label>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">No. KTP</label>
@@ -810,13 +832,22 @@
         });
 
         // ==================== OPEN EDIT MODAL ====================
-        window.openEditModal = function(id, idJukir, nama, tanggalLahir, alamat, parkingLocationId, noKtp, phoneNumber, isActive, imageUrl, imageKtpUrl, ktaType, ktaStartDate) {
+        window.openEditModal = function(id, idJukir, nama, jenisKelamin, tanggalLahir, alamat, parkingLocationId, noKtp, phoneNumber, isActive, imageUrl, imageKtpUrl, ktaType, ktaStartDate) {
             let form = document.getElementById('editForm');
             form.action = `/admin/jukirs/${id}`;
 
             document.getElementById('edit_id_jukir').value = idJukir;
             document.getElementById('edit_nama_jukir').value = nama;
             
+            if (jenisKelamin === 'L') {
+                document.getElementById('edit_jk_l').checked = true;
+            } else if (jenisKelamin === 'P') {
+                document.getElementById('edit_jk_p').checked = true;
+            } else {
+                document.getElementById('edit_jk_l').checked = false;
+                document.getElementById('edit_jk_p').checked = false;
+            }
+
             document.getElementById('edit_tanggal_lahir').value = tanggalLahir;
             if (document.getElementById('edit_tanggal_lahir')._flatpickr) {
                 if (tanggalLahir) {

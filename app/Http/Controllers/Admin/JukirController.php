@@ -67,6 +67,7 @@ class JukirController extends Controller
         $rules = [
             'id_jukir' => 'required|string|max:255|unique:jukirs,id_jukir',
             'nama_jukir' => 'required|string|max:255',
+            'jenis_kelamin' => 'nullable|in:L,P',
             'tanggal_lahir' => 'nullable|date',
             'alamat' => 'nullable|string',
             'parking_location_id' => 'nullable|exists:parking_locations,id',
@@ -115,6 +116,7 @@ class JukirController extends Controller
         $jukir = Jukir::create([
             'id_jukir' => $request->id_jukir,
             'nama_jukir' => $request->nama_jukir,
+            'jenis_kelamin' => $request->jenis_kelamin,
             'tanggal_lahir' => $request->tanggal_lahir,
             'alamat' => $request->alamat,
             'parking_location_id' => $request->parking_location_id,
@@ -144,6 +146,7 @@ class JukirController extends Controller
     {
         $rules = [
             'nama_jukir' => 'required|string|max:255',
+            'jenis_kelamin' => 'nullable|in:L,P',
             'tanggal_lahir' => 'nullable|date',
             'alamat' => 'nullable|string',
             'parking_location_id' => 'nullable|exists:parking_locations,id',
@@ -197,6 +200,7 @@ class JukirController extends Controller
 
         $jukir->update([
             'nama_jukir' => $request->nama_jukir,
+            'jenis_kelamin' => $request->jenis_kelamin,
             'tanggal_lahir' => $request->tanggal_lahir,
             'alamat' => $request->alamat,
             'parking_location_id' => $request->parking_location_id,

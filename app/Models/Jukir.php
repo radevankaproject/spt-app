@@ -12,6 +12,7 @@ class Jukir extends Model
     protected $fillable = [
         'id_jukir',
         'nama_jukir',
+        'jenis_kelamin',
         'tanggal_lahir',
         'alamat',
         'parking_location_id',
