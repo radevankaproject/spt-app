@@ -219,8 +219,30 @@
                         <div class="col-7 info-value text-end">{{ $jukir->phone_number ?? '-' }}</div>
                     </div>
                     <div class="row mb-2">
+                        <div class="col-5 info-label text-muted d-flex align-items-center"><i class="ti tabler-gender-bigender me-2"></i> Kelamin</div>
+                        <div class="col-7 info-value text-end">
+                            @if($jukir->jenis_kelamin === 'L')
+                                Laki-laki
+                            @elseif($jukir->jenis_kelamin === 'P')
+                                Perempuan
+                            @else
+                                -
+                            @endif
+                        </div>
+                    </div>
+                    <div class="row mb-2">
                         <div class="col-5 info-label text-muted d-flex align-items-center"><i class="ti tabler-cake me-2"></i> Tgl Lahir</div>
                         <div class="col-7 info-value text-end">{{ $jukir->tanggal_lahir ? \Carbon\Carbon::parse($jukir->tanggal_lahir)->format('d M Y') : '-' }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 info-label text-muted d-flex align-items-center"><i class="ti tabler-user-heart me-2"></i> Usia</div>
+                        <div class="col-7 info-value text-end">
+                            @if($jukir->tanggal_lahir)
+                                <span class="badge bg-label-primary rounded-pill px-3 shadow-sm border border-primary"><i class="ti tabler-calendar-time me-1"></i> {{ \Carbon\Carbon::parse($jukir->tanggal_lahir)->age }} Tahun</span>
+                            @else
+                                -
+                            @endif
+                        </div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-5 info-label text-muted d-flex align-items-center"><i class="ti tabler-home me-2"></i> Alamat</div>
