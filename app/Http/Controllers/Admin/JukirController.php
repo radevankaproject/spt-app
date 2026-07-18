@@ -265,9 +265,9 @@ class JukirController extends Controller
             $activeLeader = \App\Models\Leader::with('user')->first();
         }
 
-        // Generate QR code (PNG format, base64 encoded) pointing to public complaint page
-        $complaintUrl = route('public.jukir.complaint.create', $jukir->id_jukir);
-        $qrCode = base64_encode(QrCode::format('png')->size(200)->margin(0)->generate($complaintUrl));
+        // Generate QR code (PNG format, base64 encoded) pointing to public details page
+        $detailsUrl = route('public.jukir.show', $jukir->id_jukir);
+        $qrCode = base64_encode(QrCode::format('png')->size(200)->margin(0)->generate($detailsUrl));
 
         return view('admin.jukirs.kta_print', compact('jukir', 'activeLeader', 'qrCode'));
     }

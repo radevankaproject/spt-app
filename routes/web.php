@@ -41,6 +41,9 @@ Route::get('/', function () {
 });
 Route::get('/verify/agreement/{code}', [PublicVerificationController::class, 'verifyAgreement'])->name('public.agreement.verify');
 
+// Detail Jukir (Public)
+Route::get('/jukir/{id_jukir}', [\App\Http\Controllers\PublicJukirComplaintController::class, 'show'])->name('public.jukir.show');
+
 // Pengaduan Jukir (Public)
 Route::get('/jukir/{id_jukir}/pengaduan', [\App\Http\Controllers\PublicJukirComplaintController::class, 'create'])->name('public.jukir.complaint.create');
 Route::post('/jukir/{id_jukir}/pengaduan', [\App\Http\Controllers\PublicJukirComplaintController::class, 'store'])->name('public.jukir.complaint.store');

@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class PublicJukirComplaintController extends Controller
 {
+    public function show($id_jukir)
+    {
+        $jukir = Jukir::where('id_jukir', $id_jukir)->with('parkingLocation.roadSection')->firstOrFail();
+        return view('public.jukir_details', compact('jukir'));
+    }
+
     public function create($id_jukir)
     {
         $jukir = Jukir::where('id_jukir', $id_jukir)->with('parkingLocation.roadSection')->firstOrFail();
