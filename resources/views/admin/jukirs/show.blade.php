@@ -88,13 +88,13 @@
         if ($value === null || $value === '') return '-';
         
         if ($key === 'is_active') {
-            return $value ? '<span class="badge bg-label-success">Aktif</span>' : '<span class="badge bg-label-danger">Nonaktif</span>';
+            return $value ? 'Aktif' : 'Nonaktif';
         }
         if ($key === 'parking_location_id') {
-            return '<span class="fw-bold text-primary">' . ($locationNames[$value] ?? 'Lokasi #' . $value) . '</span>';
+            return $locationNames[$value] ?? 'Lokasi #' . $value;
         }
         if (in_array($key, ['image', 'image_ktp'])) {
-            return '<span class="badge bg-label-info"><i class="ti tabler-photo me-1"></i> Gambar Diperbarui</span>';
+            return 'Gambar Diperbarui';
         }
         if (in_array($key, ['tanggal_lahir', 'kta_start_date', 'kta_end_date'])) {
             return \Carbon\Carbon::parse($value)->format('d/m/Y');
@@ -380,30 +380,25 @@
                                         <p class="mb-3 text-muted">{{ $history->description }}</p>
                                         
                                         @if($history->action == 'Update' && $history->old_values && $history->new_values)
-                                            <div class="mb-3 bg-white border rounded p-3 shadow-sm">
-                                                <h6 class="fw-bold text-primary mb-2 fs-6"><i class="ti tabler-list-details me-1"></i> Detail Perubahan</h6>
-                                                <div class="table-responsive">
-                                                    <table class="table table-sm table-hover mb-0">
-                                                        <thead class="table-light">
-                                                            <tr>
-                                                                <th width="30%">Data</th>
-                                                                <th width="35%">Sebelumnya</th>
-                                                                <th width="35%">Diperbarui Menjadi</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody class="border-top-0">
-                                                            @foreach($history->new_values as $key => $newValue)
-                                                                @if(isset($history->old_values[$key]) && $history->old_values[$key] !== $newValue)
-                                                                    <tr>
-                                                                        <td class="fw-bold text-dark bg-lighter">{{ translateHistoryField($key) }}</td>
-                                                                        <td class="text-danger"><del>{!! translateHistoryValue($key, $history->old_values[$key], $locationNames) !!}</del></td>
-                                                                        <td class="text-success fw-bold"><i class="ti tabler-arrow-right me-1 fs-6"></i> {!! translateHistoryValue($key, $newValue, $locationNames) !!}</td>
-                                                                    </tr>
-                                                                @endif
-                                                            @endforeach
-                                                        </tbody>
-                                                    </table>
-                                                </div>
+                                            <div class="history-changes-box shadow-sm mt-3 bg-white border rounded p-3">
+                                                <ul class="list-unstyled mb-0">
+                                                    @foreach($history->new_values as $key => $newValue)
+                                                        @if(isset($history->old_values[$key]) && $history->old_values[$key] !== $newValue)
+                                                            @php
+                                                                $oldValue = $history->old_values[$key] ?? null;
+                                                                $displayOld = translateHistoryValue($key, $oldValue, $locationNames);
+                                                                $displayNew = translateHistoryValue($key, $newValue, $locationNames);
+                                                                $fieldName = translateHistoryField($key);
+                                                            @endphp
+                                                            <li class="mb-2 text-truncate d-flex align-items-center" title="{{ $displayOld }} ➔ {{ $displayNew }}">
+                                                                <span class="fw-bold text-dark me-2" style="min-width: 120px;">{{ $fieldName }}</span>
+                                                                <span class="badge bg-label-danger text-decoration-line-through me-2 rounded-pill px-2 py-1">{{ $displayOld }}</span>
+                                                                <i class="ti tabler-arrow-right text-muted me-2"></i>
+                                                                <span class="badge bg-label-success rounded-pill px-2 py-1">{{ $displayNew }}</span>
+                                                            </li>
+                                                        @endif
+                                                    @endforeach
+                                                </ul>
                                             </div>
                                         @endif
                                         
