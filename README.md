@@ -1,19 +1,19 @@
 <h1 align="center">
-  <img src="public/logo.png" width="80" alt="SiPKS Logo" onerror="this.style.display='none'"><br>
+  <img src="public/logo.png" width="90" alt="SiPKS Logo" onerror="this.style.display='none'"><br>
   Sistem Informasi Manajemen Perparkiran Terpadu (SiPKS)
 </h1>
 
 <h4 align="center">Enterprise-Grade Parking Management & Collaboration System</h4>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Laravel-12.x-EF4135?style=for-the-badge&logo=laravel" alt="Laravel 12">
-  <img src="https://img.shields.io/badge/Vuexy-10.11.1-7367F0?style=for-the-badge&logo=bootstrap" alt="Vuexy UI">
-  <img src="https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php" alt="PHP 8.4">
+  <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
+  <img src="https://img.shields.io/badge/Vuexy_Admin-3.0-7367F0?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Vuexy UI">
+  <img src="https://img.shields.io/badge/PHP-8.4+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.4">
   <img src="https://img.shields.io/badge/Version-v2.1.0-FFB020?style=for-the-badge" alt="Version 2.1.0">
 </p>
 
 <p align="center">
-  <b>SiPKS (Sistem Parkir Terpadu)</b> adalah mahakarya arsitektur perangkat lunak yang dirancang eksklusif untuk mendigitalisasi tata kelola perparkiran pada Dinas Perhubungan / UPT Perparkiran Kota Pekanbaru. Menghadirkan keseimbangan sempurna antara keamanan tingkat tinggi, manajemen data presisi, dan antarmuka pengguna ultra-premium bergaya <i>Glassmorphism</i>.
+  <b>SiPKS (Sistem Parkir Terpadu)</b> adalah mahakarya arsitektur perangkat lunak yang dirancang eksklusif untuk mendigitalisasi tata kelola perparkiran pada <b>Dinas Perhubungan / UPT Perparkiran Kota Pekanbaru</b>. Menghadirkan keseimbangan sempurna antara keamanan tingkat tinggi, manajemen data presisi, dan antarmuka pengguna ultra-premium.
 </p>
 
 ---
@@ -23,56 +23,102 @@
 SiPKS bukan sekadar aplikasi pencatatan, melainkan instrumen cerdas yang memadukan otomasi proses bisnis dengan _user experience_ (UX) modern.
 
 - 📊 **Executive Dashboard Interaktif**
-  Visualisasi _real-time_ berbasis ApexCharts. Dilengkapi navigasi cerdas—klik grafik batang untuk melompat langsung ke rincian spesifik (misal: analisis detail ruas jalan penyumbang setoran terbesar).
+  Visualisasi _real-time_ berbasis ApexCharts & Chart.js. Dilengkapi navigasi cerdas—klik grafik untuk melompat langsung ke rincian spesifik (analisis detail ruas jalan penyumbang setoran terbesar).
   
 - 📄 **Digitalisasi Dokumen & PKS Terpadu**
-  Otomatisasi pembuatan _Draft_ Perjanjian Kerjasama (PKS) ke dalam format PDF berstandar tinggi. Dilengkapi Generator QR Code berlapis keamanan _10-char Alphanumeric_ dengan _watermark_ logo instansi di tengahnya.
+  Otomatisasi pembuatan _Draft_ Perjanjian Kerjasama (PKS) ke dalam format PDF berstandar tinggi. Dilengkapi Generator QR Code berlapis keamanan _10-char Alphanumeric_ dengan _watermark_ instansi. Export data luas ke format Excel.
 
 - 🗺️ **Sistem Informasi Geografis (GIS)**
-  Pemetaan presisi menggunakan Leaflet.js & OpenStreetMap. Memantau koordinat setiap lahan parkir lengkap dengan status aktif, masa berlaku PKS, dan performa retribusi secara spasial.
+  Pemetaan presisi tinggi menggunakan **Leaflet.js** & **Mapbox GL**. Memantau koordinat setiap lahan parkir lengkap dengan status aktif, masa berlaku PKS, dan performa retribusi secara spasial.
 
 - 💳 **Akuntansi & Rekonsiliasi Deposit BLUD**
   Modul manajemen keuangan tingkat _enterprise_ yang melacak kalkulasi setoran harian/bulanan koordinator, membandingkannya dengan target tahunan, dan mengintegrasikannya dengan buku rekening BLUD daerah.
 
-- 🔒 **Arsitektur Keamanan Berlapis (RBAC 5-Level)**
-  Sistem otonomi wewenang presisi untuk Admin, Pimpinan, Bendahara, Staff PKS, dan Staff Keuangan. Dilengkapi sistem proteksi anti-IDOR dan enkripsi OTP WhatsApp _passwordless recovery_.
+- 📅 **Manajemen Jadwal & Penugasan (FullCalendar)**
+  Penjadwalan petugas di lapangan dan manajemen masa berlaku PKS divisualisasikan dengan apik menggunakan integrasi FullCalendar 6.
 
-- 💎 **Premium Glassmorphism UI & M3 Animations**
-  Menerapkan standar desain web mutakhir. Mulai dari _Squiggly Preloader_ bertenaga Material 3, formulir _Auto-Submit_ responsif, hingga halaman respons _error_ berhiaskan animasi _Gradient Mesh_ dan efek kaca buram (_frosted glass_).
+- 🔒 **Arsitektur Keamanan Berlapis (RBAC 5-Level)**
+  Sistem otonomi wewenang presisi (Admin, Pimpinan, Bendahara, Staff PKS, Staff Keuangan). Dilengkapi sistem proteksi anti-IDOR, Laravel Sanctum, dan enkripsi OTP WhatsApp _passwordless recovery_.
+
+- 💎 **Premium UI & M3 Animations**
+  Menerapkan standar desain web mutakhir dengan **Vuexy Admin Template**. Mulai dari formulir responsif (_DataTables, SweetAlert2, Dropzone, Flatpickr_), hingga halaman _error_ berhiaskan efek kaca buram (_frosted glass_).
 
 ---
 
-## 🛠️ Tech Stack & Ekosistem
+## 🛠️ Ekosistem Teknologi & Stack
+
+Aplikasi ini ditenagai oleh kombinasi teknologi terbaik di kelasnya untuk menjamin stabilitas dan skalabilitas:
 
 <div align="center">
   <table>
     <tr>
-      <td align="center"><b>Backend & Core</b></td>
-      <td align="center"><b>Frontend & UI</b></td>
-      <td align="center"><b>Database & DevOps</b></td>
+      <th align="center"><b>Backend & Core</b></th>
+      <th align="center"><b>Frontend & UI</b></th>
+      <th align="center"><b>Database & Tools</b></th>
     </tr>
     <tr>
-      <td>
+      <td valign="top">
         • Laravel 12<br>
-        • PHP 8.4+<br>
-        • Laravel WebSockets<br>
-        • Ghostscript (PDF Opt)
+        • PHP 8.2+ / 8.4+<br>
+        • Laravel Sanctum<br>
+        • Barryvdh DomPDF<br>
+        • Maatwebsite Excel<br>
+        • Simple QrCode
       </td>
-      <td>
-        • Vuexy v10.11.1 (Bootstrap 5)<br>
-        • ApexCharts & Leaflet.js<br>
-        • SweetAlert2 & Flatpickr<br>
-        • Blade UI Components
+      <td valign="top">
+        • Vuexy Template (Bootstrap 5)<br>
+        • Vite 6.x & SCSS<br>
+        • DataTables, SweetAlert2<br>
+        • ApexCharts, Chart.js<br>
+        • Leaflet.js, Mapbox GL<br>
+        • FullCalendar 6
       </td>
-      <td>
+      <td valign="top">
         • MySQL / MariaDB<br>
         • Fonnte API (WA Gateway)<br>
+        • Spatie Backup<br>
         • Git Version Control<br>
-        • Ubuntu Server Environment
+        • Ubuntu Server Environment<br>
+        • Artisan Console
       </td>
     </tr>
   </table>
 </div>
+
+---
+
+## 🚀 Panduan Instalasi (Development)
+
+Bagi pengembang yang ingin menjalankan aplikasi ini di _local environment_:
+
+```bash
+# 1. Clone repositori ini
+git clone [repository-url]
+cd spt-app
+
+# 2. Install dependensi PHP
+composer install
+
+# 3. Install dependensi JavaScript (NPM)
+npm install
+
+# 4. Konfigurasi Environment
+cp .env.example .env
+php artisan key:generate
+
+# 5. Konfigurasi Database di file .env, kemudian jalankan migrasi
+php artisan migrate --seed
+
+# 6. Buat symbolic link untuk storage
+php artisan storage:link
+
+# 7. Build aset frontend via Vite
+npm run build
+# atau untuk mode development: npm run dev
+
+# 8. Jalankan local server
+php artisan serve
+```
 
 ---
 
