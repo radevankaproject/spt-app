@@ -34,8 +34,8 @@ SiPKS bukan sekadar aplikasi pencatatan, melainkan instrumen cerdas yang memaduk
 - 💳 **Akuntansi & Rekonsiliasi Deposit BLUD**
   Modul manajemen keuangan tingkat _enterprise_ yang melacak kalkulasi setoran harian/bulanan koordinator, membandingkannya dengan target tahunan, dan mengintegrasikannya dengan buku rekening BLUD daerah.
 
-- 📅 **Manajemen Jadwal & Penugasan (FullCalendar)**
-  Penjadwalan petugas di lapangan dan manajemen masa berlaku PKS divisualisasikan dengan apik menggunakan integrasi FullCalendar 6.
+- 🦺 **Manajemen Juru Parkir & Rekam Jejak Pelanggaran (Punishment)**
+  Sistem pendataan komprehensif untuk Juru Parkir (Jukir). Menampilkan visualisasi data titik tugas, status keanggotaan (KTA), hingga kalkulasi _count punishment_ secara otomatis bagi jukir yang tercatat melakukan pelanggaran/bermasalah.
 
 - 🔒 **Arsitektur Keamanan Berlapis (RBAC 5-Level)**
   Sistem otonomi wewenang presisi (Admin, Pimpinan, Bendahara, Staff PKS, Staff Keuangan). Dilengkapi sistem proteksi anti-IDOR, Laravel Sanctum, dan enkripsi OTP WhatsApp _passwordless recovery_.
@@ -71,7 +71,7 @@ Aplikasi ini ditenagai oleh kombinasi teknologi terbaik di kelasnya untuk menjam
         • DataTables, SweetAlert2<br>
         • ApexCharts, Chart.js<br>
         • Leaflet.js, Mapbox GL<br>
-        • FullCalendar 6
+        • Dropzone & Flatpickr
       </td>
       <td valign="top">
         • MySQL / MariaDB<br>
