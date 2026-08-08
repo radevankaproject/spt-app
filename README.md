@@ -1,6 +1,6 @@
 <h1 align="center">
   <img src="public/logo.png" width="90" alt="SiPKS Logo" onerror="this.style.display='none'"><br>
-  Sistem Informasi Manajemen Perparkiran Terpadu (SiPKS)
+  SPKP - Sistem Perjanjian Kerjasama Perparkiran
 </h1>
 
 <h4 align="center">Enterprise-Grade Parking Management & Collaboration System</h4>
@@ -13,18 +13,17 @@
 </p>
 
 <p align="center">
-  <b>SiPKS (Sistem Parkir Terpadu)</b> adalah mahakarya arsitektur perangkat lunak yang dirancang eksklusif untuk mendigitalisasi tata kelola perparkiran pada <b>Dinas Perhubungan / UPT Perparkiran Kota Pekanbaru</b>. Menghadirkan keseimbangan sempurna antara keamanan tingkat tinggi, manajemen data presisi, dan antarmuka pengguna ultra-premium.
+  <b>SPKP (Sistem Perjanjian Kerjasama Perparkiran)</b> adalah platform digital kolaboratif berskala <i>enterprise</i> yang dirancang secara spesifik untuk memfasilitasi dan mengelola perjanjian kerjasama perparkiran. Sistem ini menjadi jembatan strategis antara <b>UPT Perparkiran Dinas Perhubungan Kota Pekanbaru</b> dengan para <b>Pengelola Perparkiran (Pihak Ketiga)</b> di seluruh wilayah Kota Pekanbaru. Menghadirkan transparansi proses, efisiensi administrasi, keamanan tingkat tinggi, dan antarmuka pengguna ultra-premium dalam mengelola retribusi dan tata kelola parkir secara profesional.
 </p>
 
 ---
 
 ## 🌟 Fitur Premium & Kemampuan Sistem
 
-SiPKS bukan sekadar aplikasi pencatatan, melainkan instrumen cerdas yang memadukan otomasi proses bisnis dengan _user experience_ (UX) modern.
+SPKP bukan sekadar aplikasi pencatatan, melainkan instrumen cerdas yang memadukan otomasi proses bisnis dengan _user experience_ (UX) modern.
 
 - 📊 **Executive Dashboard Interaktif**
   Visualisasi _real-time_ berbasis ApexCharts & Chart.js. Dilengkapi navigasi cerdas—klik grafik untuk melompat langsung ke rincian spesifik (analisis detail ruas jalan penyumbang setoran terbesar).
-  
 - 📄 **Digitalisasi Dokumen & PKS Terpadu**
   Otomatisasi pembuatan _Draft_ Perjanjian Kerjasama (PKS) ke dalam format PDF berstandar tinggi. Dilengkapi Generator QR Code berlapis keamanan _10-char Alphanumeric_ dengan _watermark_ instansi. Export data luas ke format Excel.
 
@@ -38,7 +37,7 @@ SiPKS bukan sekadar aplikasi pencatatan, melainkan instrumen cerdas yang memaduk
   Sistem pendataan komprehensif untuk Juru Parkir (Jukir). Menampilkan visualisasi data titik tugas, status keanggotaan (KTA), hingga kalkulasi _count punishment_ secara otomatis bagi jukir yang tercatat melakukan pelanggaran/bermasalah.
 
 - 🔒 **Arsitektur Keamanan Berlapis (RBAC 5-Level)**
-  Sistem otonomi wewenang presisi (Admin, Pimpinan, Bendahara, Staff PKS, Staff Keuangan). Dilengkapi sistem proteksi anti-IDOR, Laravel Sanctum, dan enkripsi OTP WhatsApp _passwordless recovery_.
+  Sistem otonomi wewenang presisi (Admin, Pimpinan, Bendahara, Staff PKS, Staff Keuangan, Staff Jukir). Dilengkapi sistem proteksi anti-IDOR, Laravel Sanctum, dan enkripsi OTP WhatsApp _passwordless recovery_.
 
 - 💎 **Premium UI & M3 Animations**
   Menerapkan standar desain web mutakhir dengan **Vuexy Admin Template**. Mulai dari formulir responsif (_DataTables, SweetAlert2, Dropzone, Flatpickr_), hingga halaman _error_ berhiaskan efek kaca buram (_frosted glass_).
@@ -143,6 +142,7 @@ Sistem ini dirancang dan dikembangkan sepenuhnya oleh **Bangameck** di bawah ben
 </p>
 
 ### 💼 _Available for Collaboration_
+
 Menerima pembuatan _Enterprise System_, MVP Startup, _Government Project_, hingga Aplikasi Mobile terintegrasi _Biometric/GPS_.
 
 📱 **WhatsApp**: +62 822-8844-5265 <br>
